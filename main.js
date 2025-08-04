@@ -2,93 +2,114 @@
 
 $(document).ready(function() {
 
-    (() => {
-      const CELL_SIZE = 4;
-      const COLS = 480;
-      const ROWS = 270;
+    
+        
+      const CELL_SIZE = 3;
+      let COLS = 640;
+      let ROWS = 360;
+      
+
+
+      
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
 
       const canvas = document.getElementById('gol');
       canvas.width = COLS * CELL_SIZE;
       canvas.height = ROWS * CELL_SIZE;
       const ctx = canvas.getContext('2d');
 
-      // Create offscreen canvas
       const offscreen = document.createElement('canvas');
       offscreen.width = canvas.width;
       offscreen.height = canvas.height;
       const offCtx = offscreen.getContext('2d');
 
-      // State arrays
-      let current = Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
-      let next = Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
+      // Sparse grid: Map<y, Set<x>>
+      let liveCells = new Map();
 
-      // Random seed
-      function seedGrid() {
+      // Seed random cells (~5% alive)
+      function seedGrid(density = 0.05) {
         for (let y = 0; y < ROWS; y++) {
           for (let x = 0; x < COLS; x++) {
-            current[y][x] = Math.random() < 0.2 ? 1 : 0;
+            if (Math.random() < density) {
+              if (!liveCells.has(y)) liveCells.set(y, new Set());
+              liveCells.get(y).add(x);
+            }
           }
         }
       }
 
-      // Count neighbors with wraparound
-      function countNeighbors(x, y) {
-        let count = 0;
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const nx = (x + dx + COLS) % COLS;
-            const ny = (y + dy + ROWS) % ROWS;
-            count += current[ny][nx];
-          }
-        }
-        return count;
+      function getCell(x, y) {
+        x = (x + COLS) % COLS;
+        y = (y + ROWS) % ROWS;
+        return liveCells.has(y) && liveCells.get(y).has(x);
       }
 
-      // Game logic step
       function step() {
-        for (let y = 0; y < ROWS; y++) {
-          for (let x = 0; x < COLS; x++) {
-            const neighbors = countNeighbors(x, y);
-            const alive = current[y][x] === 1;
-            next[y][x] = alive
-              ? (neighbors === 2 || neighbors === 3 ? 1 : 0)
-              : (neighbors === 3 ? 1 : 0);
+        const neighborCounts = new Map();
+
+        // Count neighbors of live cells
+        for (let [y, row] of liveCells.entries()) {
+          for (let x of row) {
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                const nx = (x + dx + COLS) % COLS;
+                const ny = (y + dy + ROWS) % ROWS;
+                const key = ny * COLS + nx;
+                if (dx === 0 && dy === 0) continue;
+                neighborCounts.set(key, (neighborCounts.get(key) || 0) + 1);
+              }
+            }
           }
         }
-        [current, next] = [next, current];
+
+        const newLive = new Map();
+
+        // Determine next generation
+        for (let [key, count] of neighborCounts.entries()) {
+          const x = key % COLS;
+          const y = Math.floor(key / COLS);
+          const alive = getCell(x, y);
+          if ((alive && (count === 2 || count === 3)) || (!alive && count === 3)) {
+            if (!newLive.has(y)) newLive.set(y, new Set());
+            newLive.get(y).add(x);
+          }
+        }
+
+        liveCells = newLive;
       }
 
-      // Drawing to offscreen canvas
-function draw() {
-  // Clear offscreen canvas
-  offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
+      function draw() {
+        offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
+        offCtx.fillStyle = '#0f0';
 
-  // Draw current live cells to offscreen
-  offCtx.fillStyle = '#0f0';
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      if (current[y][x] === 1) {
-        offCtx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        for (let [y, row] of liveCells.entries()) {
+          for (let x of row) {
+            offCtx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          }
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(offscreen, 0, 0);
       }
-    }
-  }
+      
 
-  // Clear onscreen canvas (not strictly necessary, but safe)
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Blit to visible canvas
-  ctx.drawImage(offscreen, 0, 0);
+function loop() {
+  step();
+  draw();
+  requestAnimationFrame(loop);
 }
 
-      function loop() {
-        step();
-        draw();
-        requestAnimationFrame(loop);
-      }
 
-      seedGrid();
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();  // initial call on load
+
+      seedGrid(0.1);
       loop();
-    })();
-
+    
 });
+
