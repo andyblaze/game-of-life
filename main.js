@@ -35,6 +35,7 @@ class GameEngine {
         this.ROWS = 360; 
         this.canvasses = new Canvasses(this.COLS * this.CELL_SIZE, this.ROWS * this.CELL_SIZE);
         this.liveCells = new Map();
+        this.neighborCounts = new Map();
     }
     resize() {
         this.canvasses.resize();
@@ -58,52 +59,40 @@ class GameEngine {
         y = (y + this.ROWS) % this.ROWS;
         return this.liveCells.has(y) && this.liveCells.get(y).has(x);
       }
-
-      step() {
-        const neighborCounts = new Map();
+      countNeighbor(x, y) {
+        const nx = (x + this.COLS) % this.COLS;
+        const ny = (y + this.ROWS) % this.ROWS;
+        const key = ny * this.COLS + nx;
+        this.neighborCounts.set(key, (this.neighborCounts.get(key) || 0) + 1);
+    }
+    countNeighbors() {
+        this.neighborCounts.clear();
 
         // Count neighbors of live cells
-for (let [y, row] of this.liveCells.entries()) {
-  for (let x of row) {
+        for (let [y, row] of this.liveCells.entries()) {
+          for (let x of row) {
+            this.countNeighbor(x - 1, y - 1);
+            this.countNeighbor(x,     y - 1);
+            this.countNeighbor(x + 1, y - 1);
 
-    // Top row
-    let nx = (x - 1 + this.COLS) % this.COLS;
-    let ny = (y - 1 + this.ROWS) % this.ROWS;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
+            this.countNeighbor(x - 1, y);
+            this.countNeighbor(x + 1, y);
 
-    nx = x;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-
-    nx = (x + 1) % this.COLS;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-
-    // Middle row
-    ny = y;
-    nx = (x - 1 + this.COLS) % this.COLS;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-
-    nx = (x + 1) % this.COLS;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-
-    // Bottom row
-    ny = (y + 1) % this.ROWS;
-    nx = (x - 1 + this.COLS) % this.COLS;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-
-    nx = x;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-
-    nx = (x + 1) % this.COLS;
-    neighborCounts.set(ny * this.COLS + nx, (neighborCounts.get(ny * this.COLS + nx) || 0) + 1);
-  }
-}
-
+            this.countNeighbor(x - 1, y + 1);
+            this.countNeighbor(x,     y + 1);
+            this.countNeighbor(x + 1, y + 1);
+          }
+        }
+    }
+    keyToCoords(key) {
+        return [key % this.COLS, Math.floor(key / this.COLS)];
+    }
+    getNextGeneration() {
         const newLive = new Map();
 
         // Determine next generation
-        for (let [key, count] of neighborCounts.entries()) {
-          const x = key % this.COLS;
-          const y = Math.floor(key / this.COLS);
+        for (let [key, count] of this.neighborCounts.entries()) {
+          const [x, y] = this.keyToCoords(key);
           const alive = this.getCell(x, y);
           if ((alive && (count === 2 || count === 3)) || (!alive && count === 3)) {
             if (!newLive.has(y)) newLive.set(y, new Set());
@@ -112,6 +101,11 @@ for (let [y, row] of this.liveCells.entries()) {
         }
 
         this.liveCells = newLive;
+    }
+
+      step() {
+        this.countNeighbors();
+        this.getNextGeneration();
       }        
 
     loop() {
@@ -122,15 +116,10 @@ for (let [y, row] of this.liveCells.entries()) {
 }
 
 $(document).ready(function() {
-
-    
-        
-
-const life = new GameEngine();
-window.addEventListener('resize', life.resize);
-life.resize();  // initial call on load
-life.seedGrid(0.05);
-life.loop();
-    
+    const life = new GameEngine();
+    window.addEventListener('resize', life.resize);
+    life.resize();  // initial call on load
+    life.seedGrid(0.05);
+    life.loop();    
 });
 
