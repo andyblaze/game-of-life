@@ -42,6 +42,7 @@ class LifeGame {
         this.canvasses = new Canvasses(this.COLS * this.CELL_SIZE, this.ROWS * this.CELL_SIZE);
         this.liveCells = new Map();
         this.neighborCounts = new Map();
+        this.paused = false;
         this.gliders = [
             [[0,2],[1,0],[1,2],[2,1],[2,2]],
             [[0,1],[0,2],[1,0],[1,1],[2,1]],
@@ -50,7 +51,10 @@ class LifeGame {
         ];
     }
     resize() {
+        this.paused = true;
+        this.canvasses.draw(this.liveCells, this.CELL_SIZE);
         this.canvasses.resize();
+        this.paused = false;
     }
     seedGrid(density = 0.05) {
         for (let y = 0; y < this.ROWS; y++) {
@@ -133,18 +137,18 @@ class LifeGame {
     }        
 
     loop() {
-        this.step();
-        this.spawnRandomGlider(); // <- insert 1 glider per frame
-        this.canvasses.draw(this.liveCells, this.CELL_SIZE);
+        if ( this.paused === false ) {
+            this.step();
+            this.spawnRandomGlider(); // <- insert 1 glider per frame
+            this.canvasses.draw(this.liveCells, this.CELL_SIZE);
+        }
         requestAnimationFrame(this.loop.bind(this));        
     }
 }
 
-$(document).ready(function() {
-    const life = new LifeGame();
-    window.addEventListener('resize', life.resize);
-    life.resize();  // initial call on load
-    //life.seedGrid(0.06);
-    life.loop();    
+window.addEventListener("DOMContentLoaded", () => {
+  const life = new LifeGame();
+  window.addEventListener("resize", life.resize.bind(life));
+  life.resize();
+  life.loop();
 });
-
