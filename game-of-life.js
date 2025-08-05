@@ -1,3 +1,4 @@
+
 class Renderer {
     constructor(cfg) {
         this.canvas = document.getElementById("onscreen");
@@ -73,7 +74,6 @@ class GameOfLife {
     countNeighbors() {
         this.neighborCounts.clear();
 
-        // Count neighbors of live cells
         for (let [y, row] of this.liveCells.entries()) {
             for (let x of row) {
                 this.countNeighbor(x - 1, y - 1);
