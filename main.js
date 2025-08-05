@@ -11,8 +11,9 @@ class Canvasses {
         this.offCtx = this.offscreen.getContext('2d');
     }
     draw(liveCells, cellSz) {
-        this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
-        this.offCtx.fillStyle = '#0f0';
+        this.offCtx.fillStyle = "rgba(0, 0, 0, 0.1)"; // tweak alpha
+        this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
+        this.offCtx.fillStyle = "rgba(0,255,0,1)";
 
         for ( let [y, row] of liveCells.entries() ) {
             for (let x of row) {
@@ -28,7 +29,7 @@ class Canvasses {
     }
 }
 
-class GameEngine {
+class LifeGame {
     constructor() {
         this.CELL_SIZE = 3;
         this.COLS = 640;
@@ -40,26 +41,23 @@ class GameEngine {
     resize() {
         this.canvasses.resize();
     }
-
-
-      // Seed random cells (~5% alive)
-      seedGrid(density = 0.05) {
+    seedGrid(density = 0.05) {
         for (let y = 0; y < this.ROWS; y++) {
-          for (let x = 0; x < this.COLS; x++) {
-            if (Math.random() < density) {
-              if ( ! this.liveCells.has(y)) this.liveCells.set(y, new Set());
-              this.liveCells.get(y).add(x);
+            for (let x = 0; x < this.COLS; x++) {
+                if (Math.random() < density) {
+                    if ( ! this.liveCells.has(y) ) 
+                        this.liveCells.set(y, new Set());
+                this.liveCells.get(y).add(x);
+                }
             }
-          }
         }
-      }
-
-      getCell(x, y) {
+    }
+    getCell(x, y) {
         x = (x + this.COLS) % this.COLS;
         y = (y + this.ROWS) % this.ROWS;
         return this.liveCells.has(y) && this.liveCells.get(y).has(x);
-      }
-      countNeighbor(x, y) {
+    }
+    countNeighbor(x, y) {
         const nx = (x + this.COLS) % this.COLS;
         const ny = (y + this.ROWS) % this.ROWS;
         const key = ny * this.COLS + nx;
@@ -70,18 +68,18 @@ class GameEngine {
 
         // Count neighbors of live cells
         for (let [y, row] of this.liveCells.entries()) {
-          for (let x of row) {
-            this.countNeighbor(x - 1, y - 1);
-            this.countNeighbor(x,     y - 1);
-            this.countNeighbor(x + 1, y - 1);
+            for (let x of row) {
+                this.countNeighbor(x - 1, y - 1);
+                this.countNeighbor(x,     y - 1);
+                this.countNeighbor(x + 1, y - 1);
 
-            this.countNeighbor(x - 1, y);
-            this.countNeighbor(x + 1, y);
+                this.countNeighbor(x - 1, y);
+                this.countNeighbor(x + 1, y);
 
-            this.countNeighbor(x - 1, y + 1);
-            this.countNeighbor(x,     y + 1);
-            this.countNeighbor(x + 1, y + 1);
-          }
+                this.countNeighbor(x - 1, y + 1);
+                this.countNeighbor(x,     y + 1);
+                this.countNeighbor(x + 1, y + 1);
+            }
         }
     }
     keyToCoords(key) {
@@ -92,21 +90,21 @@ class GameEngine {
 
         // Determine next generation
         for (let [key, count] of this.neighborCounts.entries()) {
-          const [x, y] = this.keyToCoords(key);
-          const alive = this.getCell(x, y);
-          if ((alive && (count === 2 || count === 3)) || (!alive && count === 3)) {
-            if (!newLive.has(y)) newLive.set(y, new Set());
-            newLive.get(y).add(x);
-          }
+            const [x, y] = this.keyToCoords(key);
+            const alive = this.getCell(x, y);
+            if ( (alive && (count === 2 || count === 3)) || (!alive && count === 3) ) {
+                if ( ! newLive.has(y) ) 
+                    newLive.set(y, new Set());
+                newLive.get(y).add(x);
+            }
         }
-
         this.liveCells = newLive;
     }
 
-      step() {
+    step() {
         this.countNeighbors();
         this.getNextGeneration();
-      }        
+    }        
 
     loop() {
         this.step();
@@ -116,10 +114,10 @@ class GameEngine {
 }
 
 $(document).ready(function() {
-    const life = new GameEngine();
+    const life = new LifeGame();
     window.addEventListener('resize', life.resize);
     life.resize();  // initial call on load
-    life.seedGrid(0.05);
+    life.seedGrid(0.06);
     life.loop();    
 });
 
