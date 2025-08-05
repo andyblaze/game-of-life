@@ -1,28 +1,26 @@
-class Canvasses {
-    constructor(w, h) {
-        this.canvas = document.getElementById('gol');
-        this.canvas.width = w;
-        this.canvas.height = h;
-        this.ctx = this.canvas.getContext('2d');
+class Renderer {
+    constructor(cfg) {
+        this.canvas = document.getElementById("onscreen");
+        this.canvas.width = cfg.COLS * cfg.CELL_SIZE;
+        this.canvas.height = cfg.ROWS * cfg.CELL_SIZE;
+        this.ctx = this.canvas.getContext("2d");
 
-        this.offscreen = document.createElement('canvas');
+        this.offscreen = document.createElement("canvas");
         this.offscreen.width = this.canvas.width;
         this.offscreen.height = this.canvas.height;
-        this.offCtx = this.offscreen.getContext('2d');
+        this.offCtx = this.offscreen.getContext("2d");
         this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
-    cellColor(x, y) {
-
-    }
-    draw(liveCells, cellSz) {
-        this.offCtx.fillStyle = "rgba(0, 0, 0, 0.1)"; // tweak alpha
+    draw(data) {
+        const { liveCells, CELL_SIZE } = data;
+        this.offCtx.fillStyle = "rgba(0, 0, 0, 0.1)";
         this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
         this.offCtx.fillStyle = "rgba(0,255,0,1)";
         for ( let [y, row] of liveCells.entries() ) {
             for (let x of row) {
                 const h = (x + y) % 360;
                 this.offCtx.fillStyle = this.colorPalette[h];
-                this.offCtx.fillRect(x * cellSz, y * cellSz, cellSz, cellSz);
+                this.offCtx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
             }
         }
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -34,12 +32,12 @@ class Canvasses {
     }
 }
 
-class LifeGame {
-    constructor() {
-        this.CELL_SIZE = 3;
-        this.COLS = 640;
-        this.ROWS = 360; 
-        this.canvasses = new Canvasses(this.COLS * this.CELL_SIZE, this.ROWS * this.CELL_SIZE);
+class GameOfLife {
+    constructor(cfg) {
+        this.CELL_SIZE = cfg.CELL_SIZE;
+        this.COLS = cfg.COLS;
+        this.ROWS = cfg.ROWS; 
+        this.view = new Renderer(cfg);
         this.liveCells = new Map();
         this.neighborCounts = new Map();
         this.paused = false;
@@ -49,12 +47,6 @@ class LifeGame {
             [[0,0],[1,0],[1,2],[2,0],[2,1]],
             [[0,1],[1,1],[1,2],[2,0],[2,1]]
         ];
-    }
-    resize() {
-        this.paused = true;
-        this.canvasses.draw(this.liveCells, this.CELL_SIZE);
-        this.canvasses.resize();
-        this.paused = false;
     }
     seedGrid(density = 0.05) {
         for (let y = 0; y < this.ROWS; y++) {
@@ -116,9 +108,7 @@ class LifeGame {
         this.liveCells = newLive;
     }
     spawnRandomGlider() {
-        // Pick a random glider pattern
         const pattern = this.gliders[Math.floor(Math.random() * this.gliders.length)];
-        // Choose a safe random position (leave room to fit the glider)
         const offsetX = Math.floor(Math.random() * (this.COLS - 3));
         const offsetY = Math.floor(Math.random() * (this.ROWS - 3));
         for ( let [dx, dy] of pattern ) {
@@ -132,23 +122,43 @@ class LifeGame {
         }
     }
     tick() {
+        this.spawnRandomGlider();
         this.countNeighbors();
         this.getNextGeneration();
+        return {
+            "liveCells": this.liveCells,
+            "CELL_SIZE": this.CELL_SIZE
+        };
     }        
+}
 
+class GraphicsController {
+    constructor(model, config) {
+        this.model = model;
+        this.view = new Renderer(config);
+        this.paused = false;
+    }
+    resize() {
+        this.paused = true;
+        const data = this.model.tick();
+        this.view.draw(data);
+        this.view.resize();
+        this.paused = false;
+    }
     loop() {
         if ( this.paused === false ) {
-            this.tick();
-            this.spawnRandomGlider(); // <- insert 1 glider per frame
-            this.canvasses.draw(this.liveCells, this.CELL_SIZE);
+            const data = this.model.tick();
+            this.view.draw(data);
         }
         requestAnimationFrame(this.loop.bind(this));        
-    }
+    }    
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  const life = new LifeGame();
-  window.addEventListener("resize", life.resize.bind(life));
-  life.resize();
-  life.loop();
+    const config = {"CELL_SIZE": 3, "COLS": 640, "ROWS": 360 };
+    const model = new GameOfLife(config);
+    const controller = new GraphicsController(model, config);
+    window.addEventListener("resize", controller.resize.bind(controller));
+    controller.resize();
+    controller.loop();
 });
