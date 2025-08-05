@@ -9,14 +9,19 @@ class Canvasses {
         this.offscreen.width = this.canvas.width;
         this.offscreen.height = this.canvas.height;
         this.offCtx = this.offscreen.getContext('2d');
+        this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
+    }
+    cellColor(x, y) {
+
     }
     draw(liveCells, cellSz) {
         this.offCtx.fillStyle = "rgba(0, 0, 0, 0.1)"; // tweak alpha
         this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
         this.offCtx.fillStyle = "rgba(0,255,0,1)";
-
         for ( let [y, row] of liveCells.entries() ) {
             for (let x of row) {
+                const h = (x + y) % 360;
+                this.offCtx.fillStyle = this.colorPalette[h];
                 this.offCtx.fillRect(x * cellSz, y * cellSz, cellSz, cellSz);
             }
         }
@@ -37,6 +42,12 @@ class LifeGame {
         this.canvasses = new Canvasses(this.COLS * this.CELL_SIZE, this.ROWS * this.CELL_SIZE);
         this.liveCells = new Map();
         this.neighborCounts = new Map();
+        this.gliders = [
+            [[0,2],[1,0],[1,2],[2,1],[2,2]],
+            [[0,1],[0,2],[1,0],[1,1],[2,1]],
+            [[0,0],[1,0],[1,2],[2,0],[2,1]],
+            [[0,1],[1,1],[1,2],[2,0],[2,1]]
+        ];
     }
     resize() {
         this.canvasses.resize();
@@ -100,7 +111,22 @@ class LifeGame {
         }
         this.liveCells = newLive;
     }
+    spawnRandomGlider() {
+        // Pick a random glider pattern
+        const pattern = this.gliders[Math.floor(Math.random() * this.gliders.length)];
+        // Choose a safe random position (leave room to fit the glider)
+        const offsetX = Math.floor(Math.random() * (this.COLS - 3));
+        const offsetY = Math.floor(Math.random() * (this.ROWS - 3));
+        for ( let [dx, dy] of pattern ) {
+            const x = (offsetX + dx + this.COLS) % this.COLS;
+            const y = (offsetY + dy + this.ROWS) % this.ROWS;
 
+            if ( ! this.liveCells.has(y) ) {
+                this.liveCells.set(y, new Set());
+            }
+            this.liveCells.get(y).add(x);
+        }
+    }
     step() {
         this.countNeighbors();
         this.getNextGeneration();
@@ -108,6 +134,7 @@ class LifeGame {
 
     loop() {
         this.step();
+        this.spawnRandomGlider(); // <- insert 1 glider per frame
         this.canvasses.draw(this.liveCells, this.CELL_SIZE);
         requestAnimationFrame(this.loop.bind(this));        
     }
@@ -117,7 +144,7 @@ $(document).ready(function() {
     const life = new LifeGame();
     window.addEventListener('resize', life.resize);
     life.resize();  // initial call on load
-    life.seedGrid(0.06);
+    //life.seedGrid(0.06);
     life.loop();    
 });
 
