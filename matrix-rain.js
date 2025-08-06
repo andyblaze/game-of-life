@@ -34,7 +34,8 @@ class Renderer {
         this.offCtx.fillStyle = '#0f0'; // Classic matrix green
         this.offCtx.textBaseline = 'top';
 
-        for (const { col, row, char } of data.drops) {
+        for (const { col, row, char, ghost } of data.drops) { 
+            this.offCtx.fillStyle = ghost ? 'rgba(0,255,0,0.5)' : '#0f0';
             const x = col * this.CELL_SIZE;
             const y = row * this.CELL_SIZE;
             //console.log(col, row, char,x,y);
@@ -65,36 +66,63 @@ class MatrixRain {
         const i = Math.floor(Math.random() * this.charPool.length);
         return this.charPool[i];
     }
-    tick() {
+    getLiveCells() {
         for ( let col = 0; col < this.COLS; col++ ) {
             // Possibly spawn a new drop
             if ( ! this.liveCells.has(col) ) {
-                if ( Math.random() < 0.04 ) { // tune spawn chance
+                if ( Math.random() < 0.07 ) { // tune spawn chance
                     this.liveCells.set(col, {
                         row: Math.floor(Math.random() * 12),
                         speed: Math.floor(Math.random() * 2) + 2, // tweak
-                        char: this.getRandomChar()
+                        char: this.getRandomChar(),
+                        trailLength:45,
+                        ghost: false
                     });
                 }
             }
+            // only add sparsely - tweak it
+            if ( ! this.liveCells.has(col) && Math.random() < 0.1 ) {
+                const ghostDrop = {
+                    row: Math.floor(Math.random() * this.ROWS * 0.5),
+                    speed: 1,
+                    char: this.getRandomChar(),
+                    trailLength: Math.floor(5 + Math.random() * 5),
+                    ghost: true
+                };
+                this.liveCells.set(col, ghostDrop);
+            }
         }
+    }
+    updateDrops() {
         // Update all live drops
         const drops = [];
         for ( let [col, drop] of this.liveCells.entries() ) {
             drop.frameCount = (drop.frameCount || 0) + 1;
             if ( drop.frameCount % drop.speed === 0 )
                 drop.row += 1; // or drop.row += 0.1 * drop.speed; for ultra smooth motion
+            
+            if ( drop.ghost ) {
+                drop.trailLength--;
+                if ( drop.trailLength < 1 ) {
+                    this.liveCells.delete(col);
+                    continue;
+                }
+            }
+            
             //drop.row += drop.speed;
             drop.char = this.getRandomChar(); // or not every time
 
             if ( drop.row >= this.ROWS ) {
                 this.liveCells.delete(col);
             } else {
-                drops.push({ col, row: drop.row, char: drop.char });
+                drops.push({ col, row: drop.row, char: drop.char, ghost:drop.ghost });
             }
         }
-
         return { drops };
+    }
+    tick() {
+        this.getLiveCells();
+        return this.updateDrops();
     }        
 }
 
@@ -104,7 +132,7 @@ class GraphicsController {
         this.view = new Renderer(config);
         this.paused = false;
         this.frameCount = 0;
-        this.framesPerTick = 5; // slows to 60fps / framesPerTick - more frameCount is slower fps
+        this.framesPerTick = config.FRAMES_PER_TICK;
     }
     resize() {
         this.paused = true;
@@ -113,10 +141,13 @@ class GraphicsController {
         this.view.resize();
         this.paused = false;
     }
+    frameReady() {
+        this.frameCount = (this.frameCount + 1) % (this.framesPerTick * 1000);
+        return this.frameCount % this.framesPerTick === 0;
+    }
     loop() {
-        if ( this.paused === false ) {
-            this.frameCount = (this.frameCount + 1) % (this.framesPerTick * 1000);
-            if ( this.frameCount % this.framesPerTick === 0 ) {
+        if ( this.paused === false ) {            
+            if ( this.frameReady() ) {
                 const data = this.model.tick();
                 this.view.draw(data);
             }
@@ -140,6 +171,7 @@ const config = {
   COLUMN_SPAWN_CHANCE: 0.05, // chance per frame to start a drop in an idle column
   HEAD_BRIGHTNESS: 1.0,   // brightness of head char
   TRAIL_BRIGHTNESS: 0.5,  // brightness of trailing chars
+  FRAMES_PER_TICK: 5      // more FRAMES_PER_TICK is slower fps
 };
 
 window.addEventListener("DOMContentLoaded", () => {
