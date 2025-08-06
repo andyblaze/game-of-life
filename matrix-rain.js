@@ -19,7 +19,7 @@ class Renderer {
         // Fade previous frame for trailing effect
         const alpha = 0.05 + Math.random() * 0.1; // Range: 0.05–0.15
         this.offCtx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
-        this.offCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        //this.offCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
         this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
 
         this.offCtx.font = "24px monospace";
@@ -50,7 +50,7 @@ class MatrixRain {
         this.COLS = cfg.COLS;
         this.ROWS = cfg.ROWS; 
         this.view = new Renderer(cfg);
-        this.charPool = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~");
+        this.charPool = Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~");
         this.liveCells = new Map();
         this.paused = false;
     }
@@ -64,7 +64,7 @@ class MatrixRain {
             if ( ! this.liveCells.has(col) ) {
                 if ( Math.random() < 0.02 ) { // tune spawn chance
                     this.liveCells.set(col, {
-                        row: 2,
+                        row: 0,
                         speed: Math.floor(Math.random() * 3) + 1,
                         char: this.getRandomChar()
                     });
