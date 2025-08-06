@@ -5,6 +5,7 @@ class Renderer {
         this.canvas.width = cfg.COLS * cfg.CELL_SIZE;
         this.canvas.height = cfg.ROWS * cfg.CELL_SIZE;
         this.CELL_SIZE = cfg.CELL_SIZE;
+        this.cols = cfg.COLS;
         this.ctx = this.canvas.getContext("2d");
 
         this.offscreen = document.createElement("canvas");
@@ -15,12 +16,18 @@ class Renderer {
     }
     draw(data) {
         //console.log("draw", data.drops);
-        this.offCtx.fillStyle = '#0f0';
+        //this.offCtx.fillStyle = '#0f0';
         // Fade previous frame for trailing effect
         const alpha = 0.05 + Math.random() * 0.1; // Range: 0.05–0.15
-        this.offCtx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
-        //this.offCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        this.offCtx.fillStyle = "rgba(0,0,0," + alpha.toFixed(3) + ")";
         this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
+/*for (let col = 0; col < this.cols; col++) {
+    const alpha = 0.05 + Math.random() * 0.1; // Per-column variation
+    const x = col * this.CELL_SIZE;
+
+    this.offCtx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
+    this.offCtx.fillRect(x, 0, this.CELL_SIZE, this.offscreen.height);
+}*/
 
         this.offCtx.font = "24px monospace";
         this.offCtx.textAlign = 'center';
@@ -62,10 +69,10 @@ class MatrixRain {
         for ( let col = 0; col < this.COLS; col++ ) {
             // Possibly spawn a new drop
             if ( ! this.liveCells.has(col) ) {
-                if ( Math.random() < 0.02 ) { // tune spawn chance
+                if ( Math.random() < 0.04 ) { // tune spawn chance
                     this.liveCells.set(col, {
-                        row: 0,
-                        speed: Math.floor(Math.random() * 3) + 1,
+                        row: Math.floor(Math.random() * 12),
+                        speed: Math.floor(Math.random() * 2) + 2, // tweak
                         char: this.getRandomChar()
                     });
                 }
@@ -74,7 +81,10 @@ class MatrixRain {
         // Update all live drops
         const drops = [];
         for ( let [col, drop] of this.liveCells.entries() ) {
-            drop.row += drop.speed;
+            drop.frameCount = (drop.frameCount || 0) + 1;
+            if ( drop.frameCount % drop.speed === 0 )
+                drop.row += 1; // or drop.row += 0.1 * drop.speed; for ultra smooth motion
+            //drop.row += drop.speed;
             drop.char = this.getRandomChar(); // or not every time
 
             if ( drop.row >= this.ROWS ) {
