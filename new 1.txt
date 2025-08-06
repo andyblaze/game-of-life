@@ -1,0 +1,168 @@
+🎯 Goal
+
+Simulate the iconic "digital rain" effect from The Matrix — cascading streams of green symbols falling vertically across the screen, each at its own pace, with a glowing or fading trail.
+
+const config = {
+  CELL_SIZE: 16,          // px per cell (sets char size & spacing)
+  COLS: 120,              // number of columns
+  ROWS: 60,               // number of rows
+  MIN_SPEED: 1,           // fastest a drop can move (frames per step)
+  MAX_SPEED: 5,           // slowest a drop can move
+  MIN_LENGTH: 5,          // min characters in a drop
+  MAX_LENGTH: 20,         // max characters in a drop
+  CHAR_POOL: "アカサタナハマヤラワ0123456789@#$%&", // usable characters
+  GLOW_FADE: true,        // whether to fade out trailing characters
+  FADE_SPEED: 0.05,       // how fast trails fade
+  MAX_ACTIVE_DROPS: 80,   // upper limit on how many active drops at once
+  COLUMN_SPAWN_CHANCE: 0.05, // chance per frame to start a drop in an idle column
+  HEAD_BRIGHTNESS: 1.0,   // brightness of head char
+  TRAIL_BRIGHTNESS: 0.5,  // brightness of trailing chars
+};
+
+const CELL_SIZE = 16;
+const COLS = Math.floor(canvas.width / CELL_SIZE);
+const ROWS = Math.floor(canvas.height / CELL_SIZE);
+
+Great Monospaced Fonts with CJK (Kanji etc) Support:
+1. M PLUS 1 Code  https://fonts.google.com/specimen/M+PLUS+1+Code
+
+    ✅ Monospaced
+
+    ✅ Japanese support (Kanji, Kana)
+
+    ✅ Free and on Google Fonts
+
+    🎯 Ideal for code, terminal-style, and Matrix effects.
+
+2. Noto Sans Mono CJK https://fonts.google.com/noto/specimen/Noto+Sans+Mono
+
+    ✅ Noto is Google's all-language font project.
+
+    ✅ "Noto Sans Mono CJK" supports Chinese, Japanese, and Korean.
+
+    ✅ Designed to be monospace
+
+    ✅ Free to use
+
+    🔍 Might need to self-host or download manually for full support (Google Fonts doesn’t include the Mono CJK subset yet).
+
+3. Cica https://github.com/miiton/Cica
+
+    ✅ Japanese-focused monospace font
+
+    ✅ Popular among Japanese developers
+
+    🧩 May require downloading and bundling locally.
+
+4. IBM Plex Mono + Plex Sans JP https://github.com/IBM/plex
+
+    You can mix:
+
+        IBM Plex Mono for ASCII
+
+        IBM Plex Sans JP for Kanji/Kana
+
+    Both are stylistically close enough to work together if you fall back selectively.
+
+🔧 How to use (example with M PLUS 1 Code):
+
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code&display=swap"
+
+🧠 Core Concepts
+1. Grid / Columns
+
+    The screen is divided into vertical columns (like a grid of characters).
+
+    Each column can have one or more active drops falling down it.
+
+    Columns should be equally spaced — determined by character width or some fixed spacing.
+
+2. Drops
+
+Each drop is a stream of characters falling vertically. It consists of:
+
+    A head: the current character being rendered at the front.
+
+    A trail: a few previous characters fading in brightness or opacity.
+
+Properties per drop might include:
+
+    X-position (column)
+
+    Current Y-position (row)
+
+    Length of trail
+
+    Speed
+
+    Characters in the stream (can be randomly picked or generated on the fly)
+
+3. Character Rendering
+
+    Each character is a symbol, usually from a selected set (e.g., katakana, Latin, or binary).
+
+    Characters change as they fall (either every frame, every few frames, or randomly).
+
+Colors:
+
+    Head: bright green or white.
+
+    Trail: gradient of green, fading to black.
+
+4. Timing & Movement
+
+    Each drop should move at its own pace — to avoid uniformity.
+
+    You may update positions per frame or with a staggered/random delay.
+
+    When a drop reaches the bottom, it:
+
+        Can restart from the top.
+
+        Or "rest" for a while before restarting.
+
+5. Canvas / Rendering
+
+    A Canvas fits the entire screen.
+
+    Rendering involves:
+
+        Clearing the canvas (or using alpha transparency for trailing effect).
+
+        Drawing each drop's head and trail characters.
+
+        Applying fading via opacity or color interpolation.
+
+6. Data Model Design
+
+Think about:
+
+    An array of columns, each holding one or more drops.
+
+    Each drop is an object with its position, speed, trail, and symbols.
+
+✅ Optional Enhancements
+
+    Random symbol switching on the fly.
+
+    Occasional symbol "explosions" or bursts.
+
+    Keyboard/mouse interaction to spawn extra drops.
+
+    Glowing or blur effects via shadow blur or post-processing.
+
+Summary: What Needs to Happen
+
+    Setup: Divide screen into vertical columns.
+
+    Spawn drops: One or more per column, with unique speed/trail.
+
+    Render loop:
+
+        Clear/fade screen slightly.
+
+        Update positions of drops.
+
+        Draw head/trail symbols with fading effect.
+
+    Cycle: Drop reaches bottom → reset it or remove it.
