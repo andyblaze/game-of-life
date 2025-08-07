@@ -1,3 +1,7 @@
+function mt_rand(min = 0, max = 2147483647) {
+    if (min > max) [min, max] = [max, min]; // swap if min > max
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 class Renderer {
     constructor(cfg) {
@@ -15,19 +19,19 @@ class Renderer {
         //this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
     draw(data) {
-        //console.log("draw", data.drops);
-        //this.offCtx.fillStyle = '#0f0';
         // Fade previous frame for trailing effect
-        const alpha = 0.05 + Math.random() * 0.1; // Range: 0.05–0.15
-        this.offCtx.fillStyle = "rgba(0,0,0," + alpha.toFixed(3) + ")";
-        this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
-/*for (let col = 0; col < this.cols; col++) {
-    const alpha = 0.05 + Math.random() * 0.1; // Per-column variation
-    const x = col * this.CELL_SIZE;
+        // whole screen fill
+        //const alpha = 0.05 + Math.random() * 0.1; // Range: 0.05–0.15
+        //this.offCtx.fillStyle = "rgba(0,0,0," + alpha.toFixed(3) + ")";
+        //this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
+        // per column fill
+        for (let col = 0; col < this.cols; col++) {
+            const alpha = 0.05 + Math.random() * 0.1; // Per-column variation
+            const x = col * this.CELL_SIZE;
 
-    this.offCtx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
-    this.offCtx.fillRect(x, 0, this.CELL_SIZE, this.offscreen.height);
-}*/
+            this.offCtx.fillStyle = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
+            this.offCtx.fillRect(x, 0, this.CELL_SIZE, this.offscreen.height);
+        }
 
         this.offCtx.font = "24px monospace";
         this.offCtx.textAlign = 'center';
@@ -38,11 +42,8 @@ class Renderer {
             this.offCtx.fillStyle = ghost ? 'rgba(0,255,0,0.5)' : '#0f0';
             const x = col * this.CELL_SIZE;
             const y = row * this.CELL_SIZE;
-            //console.log(col, row, char,x,y);
-
             this.offCtx.fillText(char, x, y);
         }
-
         // Blit offscreen to onscreen canvas
         this.ctx.drawImage(this.offscreen, 0, 0);
     }
@@ -57,36 +58,39 @@ class MatrixRain {
         this.CELL_SIZE = cfg.CELL_SIZE;
         this.COLS = cfg.COLS;
         this.ROWS = cfg.ROWS; 
+        this.charPool = cfg.CHAR_POOL;
+        this.spawnChance = cfg.COLUMN_SPAWN_CHANCE;
+        this.ghostChance = cfg.GHOST_SPAWN_CHANCE;
+        this.speed = {min: cfg.MIN_SPEED, max: cfg.MAX_SPEED};
         this.view = new Renderer(cfg);
-        this.charPool = Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~");
         this.liveCells = new Map();
         this.paused = false;
     }
     getRandomChar() {
-        const i = Math.floor(Math.random() * this.charPool.length);
+        const i = mt_rand(0, this.charPool.length - 1);
         return this.charPool[i];
     }
     getLiveCells() {
         for ( let col = 0; col < this.COLS; col++ ) {
             // Possibly spawn a new drop
             if ( ! this.liveCells.has(col) ) {
-                if ( Math.random() < 0.07 ) { // tune spawn chance
+                if ( Math.random() < this.spawnChance ) { // tune spawn chance
                     this.liveCells.set(col, {
-                        row: Math.floor(Math.random() * 12),
-                        speed: Math.floor(Math.random() * 2) + 2, // tweak
+                        row: mt_rand(0, 4),
+                        speed: mt_rand(this.speed.min, this.speed.max), // tweak
                         char: this.getRandomChar(),
-                        trailLength:45,
+                        trailLength:this.ROWS,
                         ghost: false
                     });
                 }
             }
             // only add sparsely - tweak it
-            if ( ! this.liveCells.has(col) && Math.random() < 0.1 ) {
+            if ( ! this.liveCells.has(col) && Math.random() < this.ghostChance ) {
                 const ghostDrop = {
-                    row: Math.floor(Math.random() * this.ROWS * 0.5),
-                    speed: 1,
+                    row: mt_rand(0, this.ROWS) * 0.5,
+                    speed: mt_rand(this.speed.min, this.speed.max), // tweak
                     char: this.getRandomChar(),
-                    trailLength: Math.floor(5 + Math.random() * 5),
+                    trailLength: mt_rand(5, this.ROWS / 2),
                     ghost: true
                 };
                 this.liveCells.set(col, ghostDrop);
@@ -108,9 +112,7 @@ class MatrixRain {
                     continue;
                 }
             }
-            
-            //drop.row += drop.speed;
-            drop.char = this.getRandomChar(); // or not every time
+            drop.char = this.getRandomChar();
 
             if ( drop.row >= this.ROWS ) {
                 this.liveCells.delete(col);
@@ -141,6 +143,7 @@ class GraphicsController {
         this.view.resize();
         this.paused = false;
     }
+    // fps throttling
     frameReady() {
         this.frameCount = (this.frameCount + 1) % (this.framesPerTick * 1000);
         return this.frameCount % this.framesPerTick === 0;
@@ -164,11 +167,12 @@ const config = {
   MAX_SPEED: 5,           // slowest a drop can move
   MIN_LENGTH: 5,          // min characters in a drop
   MAX_LENGTH: 20,         // max characters in a drop
-  CHAR_POOL: "アカサタナハマヤラワ0123456789@#$%&", // usable characters
+  CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~"),
   GLOW_FADE: true,        // whether to fade out trailing characters
   FADE_SPEED: 0.05,       // how fast trails fade
   MAX_ACTIVE_DROPS: 80,   // upper limit on how many active drops at once
   COLUMN_SPAWN_CHANCE: 0.05, // chance per frame to start a drop in an idle column
+  GHOST_SPAWN_CHANCE: 0.1, // chance of a ghost drop spawning
   HEAD_BRIGHTNESS: 1.0,   // brightness of head char
   TRAIL_BRIGHTNESS: 0.5,  // brightness of trailing chars
   FRAMES_PER_TICK: 5      // more FRAMES_PER_TICK is slower fps
