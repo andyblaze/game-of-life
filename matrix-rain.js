@@ -38,11 +38,35 @@ class Renderer {
         this.offCtx.fillStyle = '#0f0'; // Classic matrix green
         this.offCtx.textBaseline = 'top';
 
-        for (const { col, row, char, ghost } of data.drops) { 
-            this.offCtx.fillStyle = ghost ? 'rgba(0,255,0,0.5)' : '#0f0';
+        for (const { col, row, chars, ghost } of data.drops) { 
+
+        for (let i = 0; i < chars.length; i++) {
+            let char = chars[i];
+            const y = (row - i) * this.CELL_SIZE;
+
+            // Skip characters above the screen
+            if (y < 0) continue;
+            if (y >= this.canvas.height) break;
+
+            const x = col * this.CELL_SIZE;
+
+            // Style for head vs trail
+            if (i === 0 && !ghost) {
+                char = chars[mt_rand(1, chars.length - 1)];
+                this.offCtx.fillStyle = "#fff"; // white head
+            } else {
+                const alpha = ghost ? 0.3 : Math.max(0, 1 - i * 0.1); // fade tail
+                this.offCtx.fillStyle = `rgba(0, 255, 0, ${alpha.toFixed(2)})`;
+            }
+
+            this.offCtx.fillText(char, x, y);
+        }
+            /*this.offCtx.fillStyle = ghost ? 'rgba(0,255,0,0.5)' : '#0f0';
             const x = col * this.CELL_SIZE;
             const y = row * this.CELL_SIZE;
-            this.offCtx.fillText(char, x, y);
+            // Skip drawing if offscreen (optional optimization)
+            if ( y < 0 || y >= this.canvas.height ) continue;
+            this.offCtx.fillText(chars[0], x, y);*/
         }
         // Blit offscreen to onscreen canvas
         this.ctx.drawImage(this.offscreen, 0, 0);
@@ -70,6 +94,11 @@ class MatrixRain {
         const i = mt_rand(0, this.charPool.length - 1);
         return this.charPool[i];
     }
+    getRandomChars(num) {
+        return Array.from({ length: num }, () =>
+            this.charPool[mt_rand(0, this.charPool.length - 1)]
+        );
+    }
     getLiveCells() {
         for ( let col = 0; col < this.COLS; col++ ) {
             // Possibly spawn a new drop
@@ -78,7 +107,7 @@ class MatrixRain {
                     this.liveCells.set(col, {
                         row: mt_rand(0, 4),
                         speed: mt_rand(this.speed.min, this.speed.max), // tweak
-                        char: this.getRandomChar(),
+                        chars: this.getRandomChars(this.ROWS),
                         trailLength:this.ROWS,
                         ghost: false
                     });
@@ -89,7 +118,7 @@ class MatrixRain {
                 const ghostDrop = {
                     row: mt_rand(0, this.ROWS) * 0.5,
                     speed: mt_rand(this.speed.min, this.speed.max), // tweak
-                    char: this.getRandomChar(),
+                    chars: this.getRandomChars(mt_rand(5, 12)),
                     trailLength: mt_rand(5, this.ROWS / 2),
                     ghost: true
                 };
@@ -112,12 +141,12 @@ class MatrixRain {
                     continue;
                 }
             }
-            drop.char = this.getRandomChar();
+            //drop.chars = this.getRandomChars();
 
             if ( drop.row >= this.ROWS ) {
                 this.liveCells.delete(col);
             } else {
-                drops.push({ col, row: drop.row, char: drop.char, ghost:drop.ghost });
+                drops.push({ col, row: drop.row, chars: drop.chars, ghost:drop.ghost });
             }
         }
         return { drops };
@@ -164,7 +193,7 @@ const config = {
   COLS: 80,              // number of columns
   ROWS: 45,               // number of rows
   MIN_SPEED: 1,           // fastest a drop can move (frames per step)
-  MAX_SPEED: 5,           // slowest a drop can move
+  MAX_SPEED: 3,           // slowest a drop can move
   MIN_LENGTH: 5,          // min characters in a drop
   MAX_LENGTH: 20,         // max characters in a drop
   CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~"),
@@ -175,7 +204,7 @@ const config = {
   GHOST_SPAWN_CHANCE: 0.1, // chance of a ghost drop spawning
   HEAD_BRIGHTNESS: 1.0,   // brightness of head char
   TRAIL_BRIGHTNESS: 0.5,  // brightness of trailing chars
-  FRAMES_PER_TICK: 5      // more FRAMES_PER_TICK is slower fps
+  FRAMES_PER_TICK: 9      // more FRAMES_PER_TICK is slower fps
 };
 
 window.addEventListener("DOMContentLoaded", () => {
