@@ -36,15 +36,31 @@ class Renderer {
         this.offCtx.font = this.font;
         this.offCtx.textAlign = "center";
         this.offCtx.textBaseline = "top";
+        const fonts = {main:24, big:30};
 
         for (const { col, speed, row, chars, alphas } of data.drops) {
             const x = col * this.cellSize + this.cellSize / 2;
             const charsToDraw = chars.length; // you'll control this externally based on frame
             // Draw only chars that fit into the current "falling window"
             for (let i = 0; i < chars.length; i++) {
-                this.offCtx.fillStyle = `rgba(0,255,0,${alphas[i]})`;
+                let font = fonts;
+                //if ( Math.random() < 0.1 ) 
+                //    font = {main:12, big:15};
+                if (i === 0) {
+                    this.offCtx.fillStyle = '#fff';
+                } else {
+                    this.offCtx.fillStyle = `rgba(0,255,0,${alphas[i]})`;
+                }
                 const y = ((row - i) * this.cellSize); // stack upward from row
-                this.offCtx.fillText(chars[i], x, y);
+                // fake glow
+                this.offCtx.fillStyle = `rgba(0,255,0,${alphas[i] * 0.5})`;
+                this.offCtx.font = "bold " + font.big + "px monospace"; // slightly larger
+                this.offCtx.fillText(chars[i], x, y-2);    
+
+                // main char
+                this.offCtx.fillStyle = (i === 0) ? '#fff' : `rgba(0,255,0,${alphas[i]})`;
+                this.offCtx.font = font.main + "px monospace";            
+                this.offCtx.fillText(chars[i], x, y);               
             }
         }  
 
@@ -72,14 +88,25 @@ class MatrixRain {
         this.liveCols = new Map();
         this.paused = false;
     }
-    getRandomChar() {
+    getRandomChar(allowSpace=true) {
+        if ( allowSpace === false ) {
+            const idx = this.charPool.indexOf(" ");
+            const i = mt_rand(0, this.charPool.length - idx);
+            return this.charPool[i];
+        }
         const i = mt_rand(0, this.charPool.length - 1);
         return this.charPool[i];
     }
     getRandomChars(num) {
-        return Array.from({ length: num }, () =>
+        let chars = [];
+        chars[0] = this.getRandomChar(false);
+        chars[1] = this.getRandomChar(false);
+        chars[2] = this.getRandomChar(false);
+        
+        const end = Array.from({ length: num - 3 }, () =>
             this.charPool[mt_rand(0, this.charPool.length - 1)]
         );
+        return chars.concat(end);
     }
     generateAlphas(length) {
         const alphas = [];
@@ -123,6 +150,16 @@ class MatrixRain {
                 this.liveCols.delete(col);
                 continue;
             }
+            // Randomly change the head char
+            if (Math.random() < 0.1) { // 10% chance per frame
+                const tmp = drop.chars[0];
+                drop.chars[0] = drop.chars[1];
+                drop.chars[1] = tmp;
+
+                const tmpAlpha = drop.alphas[0];
+                drop.alphas[0] = drop.alphas[1];
+                drop.alphas[1] = tmpAlpha;
+            }            
             drops.push({
                 col,
                 row: drop.row,
@@ -175,8 +212,9 @@ const config = {
   COLS: 80,              // number of columns
   ROWS: 45,               // number of rows
   SPEED: {baseRate:0.15, min:10, max:13},
-  DROP_LENGTHS: {min: 12, max:30}, // min / max characters in a drop
-  CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~                 "),
+  DROP_LENGTHS: {min: 5, max:13}, // min / max characters in a drop
+  CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
+                 "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),//ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~                 "),
   FONT: "24px monospace",
   FADE_ALPHA: 0.01,
   GLOW_FADE: true,        // whether to fade out trailing characters
