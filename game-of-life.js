@@ -145,6 +145,9 @@ class GraphicsController {
         this.view.resize();
         this.paused = false;
     }
+    lockSize(w, h) {
+        
+    }
     loop() {
         if ( this.paused === false ) {
             const data = this.model.tick();
@@ -154,6 +157,66 @@ class GraphicsController {
     }    
 }
 
+function recordCanvas(canvas, durationMs = 120000) {
+    return new Promise((resolve, reject) => {
+        if (!canvas.captureStream) {
+            reject(new Error("Canvas captureStream() not supported in this browser."));
+            return;
+        }
+
+        // 60 fps stream from canvas
+        const stream = canvas.captureStream(60);
+
+        // Choose a safe codec
+        const options = { mimeType: "video/webm; codecs=vp8" };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options.mimeType = "video/webm"; // fallback
+        }
+
+        const mediaRecorder = new MediaRecorder(stream, options);
+        const chunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+                chunks.push(e.data);
+            }
+        };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: options.mimeType });
+            const url = URL.createObjectURL(blob);
+
+            // Auto-download
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'vid.webm';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            resolve(url); // also return the blob URL if needed
+        };
+
+        mediaRecorder.start(1000); // timeslice: emit chunks every 1s
+        console.log("Recording started...");
+
+        setTimeout(() => {
+            mediaRecorder.stop();
+            console.log("Recording stopped.");
+        }, durationMs);
+    });
+}
+
+/*const ttrm = 0; // minutes;
+const ttrs = 120; //seconds
+const ttrms = ttrs * 1000; // ms*/
+
+// Example usage:
+/*recordCanvas(document.getElementById("onscreen"), ttrms)
+    .then(url => console.log("Saved video URL:", url))
+    .catch(err => console.error(err));*/
+
 window.addEventListener("DOMContentLoaded", () => {
     const config = {"CELL_SIZE": 3, "COLS": 640, "ROWS": 360 };
     const model = new GameOfLife(config);
@@ -162,3 +225,6 @@ window.addEventListener("DOMContentLoaded", () => {
     controller.resize();
     controller.loop();
 });
+
+
+
