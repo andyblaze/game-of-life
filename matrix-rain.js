@@ -42,14 +42,15 @@ class Renderer {
         this.offCtx.fillText(char, x, y);               
     }
     drawGlowChar(char, x, y, fill, alpha) {
-        const glowLayers = 4;
+        const glowLayers = 5;//mt_rand(3, 5);
         for (let i = glowLayers; i > 0; i--) {
             this.offCtx.font = `${24 + i}px monospace`; // bigger for outer layers
             if (i === 0) {
-                this.offCtx.fillStyle = "rgba(" + fill.join(",") + ",0.2)"; // final color
+                this.offCtx.fillStyle = "rgba(" + fill.join(",") + ",0.7)"; // final color
             } else {
                 this.offCtx.fillStyle = "rgba(" + fill.join(",") + "," + alpha * 0.5 + ")"; // outer glow
             }
+            //console.log(alpha);
             this.offCtx.fillText(char, x, y);
         }
     }
@@ -154,6 +155,30 @@ generateAlphas(length) {
             }
         }    
     }
+    swapHead(chars, alphas) {
+        if (Math.random() < 0.05) { // 5% chance per frame
+            const tmp = chars[0];
+            chars[0] = chars[1];
+            chars[1] = tmp;
+
+            const tmpAlpha = alphas[0];
+            alphas[0] = alphas[1];
+            alphas[1] = tmpAlpha;
+        }            
+    }
+    swapChars(chars, alphas) {
+        if (Math.random() < 0.05) { // 5% chance per frame
+            const idx1 = mt_rand(1, chars.length -1);
+            const idx2 = mt_rand(1, chars.length -1);
+            const tmp = chars[idx1];
+            chars[idx1] = chars[idx2];
+            chars[idx2] = tmp;
+
+            const tmpAlpha = alphas[idx1];
+            alphas[idx1] = alphas[idx2];
+            alphas[idx2] = tmpAlpha;
+        }            
+    }
     updateCols() {
         const drops = [];
 
@@ -168,15 +193,8 @@ generateAlphas(length) {
                 continue;
             }
             // Randomly change the head char
-            if (Math.random() < 0.1) { // 10% chance per frame
-                const tmp = drop.chars[0];
-                drop.chars[0] = drop.chars[1];
-                drop.chars[1] = tmp;
-
-                const tmpAlpha = drop.alphas[0];
-                drop.alphas[0] = drop.alphas[1];
-                drop.alphas[1] = tmpAlpha;
-            }            
+            this.swapHead(drop.chars, drop.alphas);  
+            this.swapChars(drop.chars, drop.alphas);
             drops.push({
                 col,
                 row: drop.row,
