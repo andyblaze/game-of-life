@@ -29,38 +29,49 @@ class Renderer {
         this.offCtx = this.offscreen.getContext("2d");
         //this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
+    drawChar(char, fills, fonts, x, y) {
+        this.offCtx.textAlign = "center";
+        this.offCtx.textBaseline = "top";
+        // fake glow
+        this.offCtx.fillStyle = fills.big;
+        this.offCtx.font = fonts.big; 
+        this.offCtx.fillText(char, x, y-2);
+        // main char
+        this.offCtx.fillStyle = fill;
+        this.offCtx.font = font; 
+        this.offCtx.fillText(char, x, y);               
+    }
+    drawGlowChar(char, x, y, fill, alpha) {
+        const glowLayers = 4;
+        for (let i = glowLayers; i > 0; i--) {
+            this.offCtx.font = `${24 + i}px monospace`; // bigger for outer layers
+            if (i === 0) {
+                this.offCtx.fillStyle = "rgba(" + fill.join(",") + ",0.2)"; // final color
+            } else {
+                this.offCtx.fillStyle = "rgba(" + fill.join(",") + "," + alpha * 0.5 + ")"; // outer glow
+            }
+            this.offCtx.fillText(char, x, y);
+        }
+    }
     draw(data) {
         // draw to offscreen
         this.offCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.offCtx.fillStyle = "#0f0";
-        this.offCtx.font = this.font;
-        this.offCtx.textAlign = "center";
-        this.offCtx.textBaseline = "top";
-        const fonts = {main:24, big:30};
+        const font = {main:24, big:30};
 
         for (const { col, speed, row, chars, alphas } of data.drops) {
             const x = col * this.cellSize + this.cellSize / 2;
             const charsToDraw = chars.length; // you'll control this externally based on frame
             // Draw only chars that fit into the current "falling window"
             for (let i = 0; i < chars.length; i++) {
-                let font = fonts;
-                //if ( Math.random() < 0.1 ) 
-                //    font = {main:12, big:15};
-                if (i === 0) {
-                    this.offCtx.fillStyle = '#fff';
-                } else {
-                    this.offCtx.fillStyle = `rgba(0,255,0,${alphas[i]})`;
-                }
                 const y = ((row - i) * this.cellSize); // stack upward from row
-                // fake glow
-                this.offCtx.fillStyle = `rgba(0,255,0,${alphas[i] * 0.5})`;
-                this.offCtx.font = "bold " + font.big + "px monospace"; // slightly larger
-                this.offCtx.fillText(chars[i], x, y-2);    
-
-                // main char
-                this.offCtx.fillStyle = (i === 0) ? '#fff' : `rgba(0,255,0,${alphas[i]})`;
-                this.offCtx.font = font.main + "px monospace";            
-                this.offCtx.fillText(chars[i], x, y);               
+                const fills = {
+                    main: (i === 0) ? '#fff' : `rgba(0,255,0,${alphas[i]})`,
+                    big: `rgba(0,255,0,${alphas[i] * 0.5})`
+                };
+                const fonts = {main: font.main + "px monospace", big: "bold " + font.big + "px monospace"};
+                //this.drawChar(chars[i], fills, fonts, x, y); 
+                const fill = (i === 0) ? [255,255,255] : [0,255,0];
+                this.drawGlowChar(chars[i], x, y, fill, alphas[i]);               
             }
         }  
 
@@ -108,19 +119,25 @@ class MatrixRain {
         );
         return chars.concat(end);
     }
-    generateAlphas(length) {
-        const alphas = [];
-        const headAlpha = 1.0;   // brightest at head
-        const tailMinAlpha = 0.1; // dimmest at tail
+generateAlphas(length) {
+    const alphas = [];
+    const headAlpha = 1.0;   
+    const tailMinAlpha = 0.01;
+    const brightCount = mt_rand(1,3); // keep first n bright
 
-        for (let i = 0; i < length; i++) {
-            const t = i / (length - 1); // 0 at head, 1 at tail
-            const alpha = tailMinAlpha + (1 - t) * (headAlpha - tailMinAlpha);
+    for (let i = 0; i < length; i++) {
+        if (i < brightCount) {
+            alphas.push(headAlpha);
+        } else {
+            const t = (i - brightCount) / (length - brightCount - 1);
+            const eased = 1 - Math.pow(t, 2);
+            const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
             alphas.push(alpha);
         }
-
-        return alphas;
     }
+
+    return alphas;
+}
     getLiveCols() {
         for (let col = 0; col < this.COLS; col++) {
             if (!this.liveCols.has(col)) {
