@@ -155,29 +155,33 @@ generateAlphas(length) {
             }
         }    
     }
+    doSwap(chars, idx1, idx2, alphas=null) {
+        let tmp = chars[idx1];
+        chars[idx1] = chars[idx2];
+        chars[idx2] = tmp;
+        
+        if ( alphas === null ) return;
+        tmp = alphas[idx1];
+        alphas[idx1] = alphas[idx2];
+        alphas[idx2] = tmp;
+    }
     swapHead(chars, alphas) {
-        if (Math.random() < 0.05) { // 5% chance per frame
-            const tmp = chars[0];
-            chars[0] = chars[1];
-            chars[1] = tmp;
-
-            const tmpAlpha = alphas[0];
-            alphas[0] = alphas[1];
-            alphas[1] = tmpAlpha;
+        if ( Math.random() < 0.05 ) { // 5% chance per frame
+            this.doSwap(chars, 0, 1, alphas);
         }            
     }
     swapChars(chars, alphas) {
-        if (Math.random() < 0.05) { // 5% chance per frame
+        if ( Math.random() < 0.05 ) { // 5% chance per frame
             const idx1 = mt_rand(1, chars.length -1);
             const idx2 = mt_rand(1, chars.length -1);
-            const tmp = chars[idx1];
-            chars[idx1] = chars[idx2];
-            chars[idx2] = tmp;
-
-            const tmpAlpha = alphas[idx1];
-            alphas[idx1] = alphas[idx2];
-            alphas[idx2] = tmpAlpha;
+            const param = Math.random() < 0.05 ? alphas : null;
+            this.doSwap(chars, idx1, idx2, param);
         }            
+    }
+    flipChars(chars) {
+        if ( Math.random() < 0.01 ) { // 1% chance per frame
+            chars = chars.reverse();
+        }
     }
     updateCols() {
         const drops = [];
@@ -195,6 +199,7 @@ generateAlphas(length) {
             // Randomly change the head char
             this.swapHead(drop.chars, drop.alphas);  
             this.swapChars(drop.chars, drop.alphas);
+            this.flipChars(drop.chars);
             drops.push({
                 col,
                 row: drop.row,
