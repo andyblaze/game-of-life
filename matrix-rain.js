@@ -41,41 +41,13 @@ class Renderer {
         this.offCtx.font = font; 
         this.offCtx.fillText(char, x, y);               
     }
-    drawGlowChar(char, x, y, fill, alpha) {
-        const glowLayers = 5;//mt_rand(3, 5);
-        for (let i = glowLayers; i > 0; i--) {
-            this.offCtx.font = `${24 + i}px monospace`; // bigger for outer layers
-            if (i === 0) {
-                this.offCtx.fillStyle = "rgba(" + fill.join(",") + ",0.7)"; // final color
-            } else {
-                this.offCtx.fillStyle = "rgba(" + fill.join(",") + "," + alpha * 0.5 + ")"; // outer glow
-            }
-            //console.log(alpha);
-            this.offCtx.fillText(char, x, y);
-        }
-    }
-    draw(data) {
+    draw(drops) {
         // draw to offscreen
         this.offCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        const font = {main:24, big:30};
-
-        for (const { col, speed, row, chars, alphas } of data.drops) {
-            const x = col * this.cellSize + this.cellSize / 2;
-            const charsToDraw = chars.length; // you'll control this externally based on frame
-            // Draw only chars that fit into the current "falling window"
-            for (let i = 0; i < chars.length; i++) {
-                const y = ((row - i) * this.cellSize); // stack upward from row
-                const fills = {
-                    main: (i === 0) ? '#fff' : `rgba(0,255,0,${alphas[i]})`,
-                    big: `rgba(0,255,0,${alphas[i] * 0.5})`
-                };
-                const fonts = {main: font.main + "px monospace", big: "bold " + font.big + "px monospace"};
-                //this.drawChar(chars[i], fills, fonts, x, y); 
-                const fill = (i === 0) ? [255,255,255] : [0,255,0];
-                this.drawGlowChar(chars[i], x, y, fill, alphas[i]);               
-            }
-        }  
-
+        
+        for ( let [col, drop] of drops ) {
+            drop.draw(this.offCtx, this.cellSize)
+        }
         // blit offscreen to onscreen
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.offscreen, 0, 0);    
@@ -83,6 +55,115 @@ class Renderer {
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;    
+    }
+}
+
+class Drop {
+    constructor(col, speed, chars, alphas) {
+        this.col = col;
+        this.speed = speed;
+        this.chars = chars;
+        this.alphas = alphas;
+        this.frameCount = 0;
+        this.row = 0;
+        // Spotlight effect state
+        this.flashIndex = null;     // index of the char being lit
+        this.flashFramesLeft = 0;   // countdown until it stops  
+        this.lightedCharOriginalAlpha = null;
+    }
+    updateRow(cfgSpeed) {
+        this.frameCount++;
+        if (this.frameCount % parseInt(this.speed) === 0) {                
+            this.row += cfgSpeed * this.speed;
+        }
+    }
+    bottomRow() {
+        return this.row - this.chars.length - 1;
+    }
+    doSwap(idx1, idx2, alphas=false) {
+        let tmp = this.chars[idx1];
+        this.chars[idx1] = this.chars[idx2];
+        this.chars[idx2] = tmp;
+        
+        if ( alphas === false ) return;
+        tmp = this.alphas[idx1];
+        this.alphas[idx1] = this.alphas[idx2];
+        this.alphas[idx2] = tmp;
+    }
+    swapHead() {
+        if ( Math.random() < 0.05 ) { // 5% chance per frame
+            this.doSwap(0, 1, true);
+        }            
+    }
+    swapChars() {
+        if ( Math.random() < 0.05 ) { // 5% chance per frame
+            const idx1 = mt_rand(1, this.chars.length -1);
+            const idx2 = mt_rand(1, this.chars.length -1);
+            const param = Math.random() < 0.05;
+            this.doSwap(idx1, idx2, param);
+        }            
+    }
+    flipChars() {
+        if ( Math.random() < 0.01 ) { // 1% chance per frame
+            this.chars.reverse();
+        }
+    }
+    drawGlowChar(ctx, char, x, y, fill, alpha) {
+        const glowLayers = 5;//mt_rand(3, 5);
+        for (let i = glowLayers; i > 0; i--) {
+            ctx.font = `${24 + i}px monospace`; // bigger for outer layers
+            if (i === 0) {
+                ctx.fillStyle = "rgba(" + fill.join(",") + ",0.7)"; // final color
+            } else {
+                ctx.fillStyle = "rgba(" + fill.join(",") + "," + alpha * 0.5 + ")"; // outer glow
+            }
+            //console.log(alpha);
+            ctx.fillText(char, x, y);
+        }
+    }
+    lightUpRandomChar(duration) {
+        if (this.chars.length === 0) return;
+
+        if ( this.lightedCharIsRunning() ) return;
+        
+        if ( Math.random() < 0.05 ) {
+            this.flashIndex = Math.floor(Math.random() * this.chars.length);
+            this.lightedCharOriginalAlpha = this.alphas[this.flashIndex];
+            this.alphas[this.flashIndex] = 1;  // set to full brightness
+            this.flashFramesLeft = duration;
+        }
+    }
+    lightedCharIsRunning() {
+        if ( this.flashFramesLeft > 0 ) {
+            this.flashFramesLeft--;
+            if ( this.flashFramesLeft === 0 && this.flashIndex !== null ) {
+                // Restore original alpha when done
+                this.alphas[this.flashIndex] = this.lightedCharOriginalAlpha;
+                this.flashIndex = null;
+                this.lightedCharOriginalAlpha = null;
+            }
+        }
+        return (this.flashIndex !== null && this.lightedCharOriginalAlpha !== null);
+    }
+    draw(ctx, cellSz) {
+        // Randomly change things
+        this.swapHead();  
+        this.lightUpRandomChar(60);
+        this.swapChars();
+        this.flipChars();
+        const x = this.col * cellSz + cellSz / 2;
+        for ( let i = 0; i < this.chars.length; i++ ) {
+            const y = ((this.row - i) * cellSz); // stack upward from row
+            const fills = {
+                main: (i === 0) ? '#fff' : `rgba(0,255,0,${this.alphas[i]})`,
+                big: `rgba(0,255,0,${this.alphas[i] * 0.5})`
+            };
+            const font = {main:24, big:30};
+            const fonts = {main: font.main + "px monospace", big: "bold " + font.big + "px monospace"};
+            //this.drawChar(chars[i], fills, fonts, x, y); 
+            const fill = (i === 0) ? [255,255,255] : [0,255,0];
+            this.drawGlowChar(ctx, this.chars[i], x, y, fill, this.alphas[i]);               
+        }
     }
 }
 
@@ -120,95 +201,50 @@ class MatrixRain {
         );
         return chars.concat(end);
     }
-generateAlphas(length) {
-    const alphas = [];
-    const headAlpha = 1.0;   
-    const tailMinAlpha = 0.01;
-    const brightCount = mt_rand(1,3); // keep first n bright
+    generateAlphas(length) {
+        const alphas = [];
+        const headAlpha = 1.0;   
+        const tailMinAlpha = 0.01;
+        const brightCount = mt_rand(1,3); // keep first n bright
 
-    for (let i = 0; i < length; i++) {
-        if (i < brightCount) {
-            alphas.push(headAlpha);
-        } else {
-            const t = (i - brightCount) / (length - brightCount - 1);
-            const eased = 1 - Math.pow(t, 2);
-            const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
-            alphas.push(alpha);
+        for (let i = 0; i < length; i++) {
+            if (i < brightCount) {
+                alphas.push(headAlpha);
+            } else {
+                const t = (i - brightCount) / (length - brightCount - 1);
+                const eased = 1 - Math.pow(t, 2);
+                const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
+                alphas.push(alpha);
+            }
         }
-    }
 
-    return alphas;
-}
+        return alphas;
+    }
     getLiveCols() {
         for (let col = 0; col < this.COLS; col++) {
-            if (!this.liveCols.has(col)) {
+            if ( ! this.liveCols.has(col) ) {
                 if (Math.random() < this.spawnChance) { // 5% chance per frame
                     const characters = this.getRandomChars(mt_rand(this.dropLength.min, this.dropLength.max));
-                    this.liveCols.set(col, {
-                        row: 0,
-                        speed: mt_rand(this.speed.min, this.speed.max) / 10,  // gives speeds like 1, 1.2, etc.
-                        frameCount: 0,
-                        chars: characters,
-                        alphas: this.generateAlphas(characters.length)
-                    });
+                    this.liveCols.set(col, new Drop(
+                        col,
+                        mt_rand(this.speed.min, this.speed.max) / 10,  // gives speeds like 1, 1.2, etc.
+                        characters,
+                        this.generateAlphas(characters.length)
+                    ));
                 }
             }
         }    
     }
-    doSwap(chars, idx1, idx2, alphas=null) {
-        let tmp = chars[idx1];
-        chars[idx1] = chars[idx2];
-        chars[idx2] = tmp;
-        
-        if ( alphas === null ) return;
-        tmp = alphas[idx1];
-        alphas[idx1] = alphas[idx2];
-        alphas[idx2] = tmp;
-    }
-    swapHead(chars, alphas) {
-        if ( Math.random() < 0.05 ) { // 5% chance per frame
-            this.doSwap(chars, 0, 1, alphas);
-        }            
-    }
-    swapChars(chars, alphas) {
-        if ( Math.random() < 0.05 ) { // 5% chance per frame
-            const idx1 = mt_rand(1, chars.length -1);
-            const idx2 = mt_rand(1, chars.length -1);
-            const param = Math.random() < 0.05 ? alphas : null;
-            this.doSwap(chars, idx1, idx2, param);
-        }            
-    }
-    flipChars(chars) {
-        if ( Math.random() < 0.01 ) { // 1% chance per frame
-            chars = chars.reverse();
-        }
-    }
     updateCols() {
-        const drops = [];
-
         for (let [col, drop] of this.liveCols.entries()) {
-            drop.frameCount++;
-            if (drop.frameCount % parseInt(drop.speed) === 0) {                
-                drop.row += this.speed.baseRate * drop.speed;
-            }
+            drop.updateRow(this.speed.baseRate);
             // remove when past bottom
-            if (drop.row - (drop.chars.length - 1) > this.ROWS) {
+            if (drop.bottomRow() > this.ROWS) {
                 this.liveCols.delete(col);
                 continue;
             }
-            // Randomly change the head char
-            this.swapHead(drop.chars, drop.alphas);  
-            this.swapChars(drop.chars, drop.alphas);
-            this.flipChars(drop.chars);
-            drops.push({
-                col,
-                row: drop.row,
-                speed:drop.speed,
-                chars: drop.chars,
-                alphas: drop.alphas
-            });
         }
-        return { drops };    
+        return this.liveCols.entries();    
     }
     tick() {
         this.getLiveCols();
