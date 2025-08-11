@@ -38,6 +38,7 @@ class Renderer {
         this.offCtx = this.offscreen.getContext("2d");
         this.offCtx.textAlign = "center";
         this.offCtx.textBaseline = "top";
+        this.offCtx.font = "24px monospace";
 
         //this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
@@ -72,6 +73,21 @@ class Drop {
         this.flashIndex = null;     // index of the char being lit
         this.flashFramesLeft = 0;   // countdown until it stops  
         this.lightedCharOriginalAlpha = null;
+        this.glowLayers = 11;
+        this.layerAlphas = this.precomputeLayerAlphas();;
+    }
+    precomputeLayerAlphas() {
+        let result = [];
+        const half = Math.floor(this.glowLayers / 2);
+        const maxAlpha = 1.0;
+        const minAlpha = 0.01;
+
+        for (let i = 0; i <= half; i++) {
+            const t = 1 - i / half;
+            const curve = Math.sin(t * Math.PI);
+            result[i] = minAlpha + curve * (maxAlpha - minAlpha);
+        }
+        return result;
     }
     updateRow(cfgSpeed) {
         this.frameCount++;
@@ -157,22 +173,13 @@ class Drop {
         //this.drawGhostChars(ctx, char, x+12, y);
         const char = this.chars[index];
         const alpha = this.alphas[index];
-        const maxAlpha = 1.0;
-        const minAlpha = 0.01;
-        const glowLayers = 11;
-        const half = Math.floor(glowLayers / 2); // middle index
-        
-        let offset = -2;
-        ctx.save();
-        ctx.font = "24px monospace";
-        
-        const centerAlpha = (minAlpha + 1.0 * (maxAlpha - minAlpha)) * alpha; // curve=1 at center
-        ctx.fillStyle = `rgba(${fill.glow.join(",")},${centerAlpha})`;
+        const half = Math.floor(this.glowLayers / 2); // middle index
+
+        //ctx.save();
+        //ctx.font = "24px monospace";
         
         for ( let i = 1; i <= half; i++ ) {
-            const t = 1 - i / half; // scale 1 → 0
-            const curve = Math.sin(t * Math.PI); // bell-shaped
-            const layerAlpha = Math.abs((minAlpha + curve * (maxAlpha - minAlpha)) * alpha);         
+            const layerAlpha = this.layerAlphas[i] * alpha;   
             ctx.fillStyle = "rgba(" + fill.glow.join(",") + "," + layerAlpha + ")"; 
             
             const offset = i * 0.5; 
@@ -183,7 +190,7 @@ class Drop {
         }
         ctx.fillStyle = "rgba(" + fill.stroke.join(",") + ",1)"; // final color
         ctx.fillText(char, x, y);
-        ctx.restore();
+        //ctx.restore();
      }
     lightUpRandomChar(duration) {
         if (this.chars.length === 0) return;
