@@ -159,27 +159,31 @@ class Drop {
         const alpha = this.alphas[index];
         const maxAlpha = 1.0;
         const minAlpha = 0.01;
-        const glowLayers = 11;//mt_rand(3, 5);
-        const glowCenter = parseInt((glowLayers + 1) / 2);
+        const glowLayers = 11;
+        const half = Math.floor(glowLayers / 2); // middle index
+        
         let offset = -2;
-        for (let i = glowLayers; i > 0; i--) {
-            const t = i / (glowLayers - 1); // 0 → 1
+        ctx.save();
+        ctx.font = "24px monospace";
+        
+        const centerAlpha = (minAlpha + 1.0 * (maxAlpha - minAlpha)) * alpha; // curve=1 at center
+        ctx.fillStyle = `rgba(${fill.glow.join(",")},${centerAlpha})`;
+        
+        for ( let i = 1; i <= half; i++ ) {
+            const t = 1 - i / half; // scale 1 → 0
             const curve = Math.sin(t * Math.PI); // bell-shaped
-            const layerAlpha = Math.abs((minAlpha + curve * (maxAlpha - minAlpha)) * alpha).toFixed(2);
-            ctx.font = `${24}px monospace`; // bigger for outer layers
-            //if ( i === glowCenter ) {
-            //    ctx.fillStyle = "rgba(" + fill.join(",") + ",1)"; // final color
-            //} else {
-                ctx.fillStyle = "rgba(" + fill.glow.join(",") + "," + layerAlpha + ")"; // outer glow
-            //}
+            const layerAlpha = Math.abs((minAlpha + curve * (maxAlpha - minAlpha)) * alpha);         
+            ctx.fillStyle = "rgba(" + fill.glow.join(",") + "," + layerAlpha + ")"; 
+            
+            const offset = i * 0.5; 
             ctx.fillText(char, x + offset, y);
-            if ( y + offset > 0 )
-                //console.error(layerAlpha, ctx.fillStyle, x + offset, y, x, y + offset, offset);
-                ctx.fillText(char, x, y + offset);
-           offset += 0.5;
+            ctx.fillText(char, x - offset, y);
+            ctx.fillText(char, x, y + offset);
+            ctx.fillText(char, x, y - offset);
         }
         ctx.fillStyle = "rgba(" + fill.stroke.join(",") + ",1)"; // final color
         ctx.fillText(char, x, y);
+        ctx.restore();
      }
     lightUpRandomChar(duration) {
         if (this.chars.length === 0) return;
