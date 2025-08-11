@@ -158,8 +158,8 @@ class Drop {
         const char = this.chars[index];
         const alpha = this.alphas[index];
         const maxAlpha = 1.0;
-        const minAlpha = 0.05;
-        const glowLayers = 9;//mt_rand(3, 5);
+        const minAlpha = 0.01;
+        const glowLayers = 11;//mt_rand(3, 5);
         const glowCenter = parseInt((glowLayers + 1) / 2);
         let offset = -2;
         for (let i = glowLayers; i > 0; i--) {
@@ -167,18 +167,20 @@ class Drop {
             const curve = Math.sin(t * Math.PI); // bell-shaped
             const layerAlpha = Math.abs((minAlpha + curve * (maxAlpha - minAlpha)) * alpha).toFixed(2);
             ctx.font = `${24}px monospace`; // bigger for outer layers
-            if ( i === glowCenter ) {
-                ctx.fillStyle = "rgba(" + fill.join(",") + ",1)"; // final color
-            } else {
-                ctx.fillStyle = "rgba(" + fill.join(",") + "," + layerAlpha + ")"; // outer glow
-            }
-            if ( x + offset < 0  || y + offset < 0 )
-                console.error(layerAlpha, ctx.fillStyle, x + offset, y, x, y + offset, offset);
+            //if ( i === glowCenter ) {
+            //    ctx.fillStyle = "rgba(" + fill.join(",") + ",1)"; // final color
+            //} else {
+                ctx.fillStyle = "rgba(" + fill.glow.join(",") + "," + layerAlpha + ")"; // outer glow
+            //}
             ctx.fillText(char, x + offset, y);
-            ctx.fillText(char, x, y + offset);
-            offset += 0.5;
+            if ( y + offset > 0 )
+                //console.error(layerAlpha, ctx.fillStyle, x + offset, y, x, y + offset, offset);
+                ctx.fillText(char, x, y + offset);
+           offset += 0.5;
         }
-    }
+        ctx.fillStyle = "rgba(" + fill.stroke.join(",") + ",1)"; // final color
+        ctx.fillText(char, x, y);
+     }
     lightUpRandomChar(duration) {
         if (this.chars.length === 0) return;
 
@@ -211,15 +213,8 @@ class Drop {
         //this.flipChars();
         const x = this.col * cellSz + cellSz / 2;
         for ( let i = 0; i < this.chars.length; i++ ) {
+            const fill = {glow:[0,255,0], stroke:(i === 0) ? [255,255,255] : [0,255,0]};
             const y = ((this.row - i) * cellSz); // stack upward from row
-            const fills = {
-                main: (i === 0) ? '#d5ffd5' : `rgba(0,255,0,${this.alphas[i]})`,
-                big: `rgba(0,255,0,${this.alphas[i] * 0.5})`
-            };
-            const font = {main:24, big:30};
-            const fonts = {main: font.main + "px monospace", big: "bold " + font.big + "px monospace"};
-            //this.drawChar(chars[i], fills, fonts, x, y); 
-            const fill = (i === 0) ? [213,255,213] : [0,255,0];
             if ( y > 0 ) 
                 this.drawGlowChar(ctx, x, y, fill, i);               
         }
