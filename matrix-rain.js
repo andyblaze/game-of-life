@@ -3,6 +3,14 @@ function mt_rand(min = 0, max = 2147483647) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function hexToRgba(hex, alpha) {
+    const bigint = parseInt(hex.slice(1), 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
 class Column {
     constructor(c) {
         this.chars = c;
@@ -20,6 +28,7 @@ class Renderer {
         this.canvas.width = cfg.COLS * cfg.CELL_SIZE;
         this.canvas.height = cfg.ROWS * cfg.CELL_SIZE;
         this.cellSize = cfg.CELL_SIZE;
+        this.glowCfg = cfg.GLOW_CFG;
         this.cols = cfg.COLS;
         this.ctx = this.canvas.getContext("2d");
 
@@ -27,13 +36,16 @@ class Renderer {
         this.offscreen.width = this.canvas.width;
         this.offscreen.height = this.canvas.height;
         this.offCtx = this.offscreen.getContext("2d");
+        this.offCtx.textAlign = "center";
+        this.offCtx.textBaseline = "top";
+
         //this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
     draw(drops) {
         // draw to offscreen
         this.offCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.offCtx.textAlign = "center";
-        this.offCtx.textBaseline = "top";
+        //this.offCtx.textAlign = "center";
+        //this.offCtx.textBaseline = "top";
         
         for ( let [col, drop] of drops ) {
             drop.draw(this.offCtx, this.cellSize)
@@ -111,18 +123,60 @@ class Drop {
         }
         ctx.globalAlpha = 1.0;
     }
-    drawGlowChar(ctx, char, x, y, fill, alpha) {
+    drawBetterGlow(ctx, char, x, y, config) {
+        ctx.font = `${config.fontSize}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        for (let i = config.blurStrength; i > 0; i--) {
+            const alpha = config.glowAlpha * (i / config.blurStrength); // fade out glow layers
+            ctx.fillStyle = hexToRgba(config.glowColor, alpha);
+
+            // Offset position based on glow spread (config.glowScale)
+            const offset = i * config.glowScale;
+            ctx.fillText(config.char, x - offset, y);
+            ctx.fillText(config.char, x + offset, y);
+            ctx.fillText(config.char, x, y - offset);
+            ctx.fillText(config.char, x, y + offset);
+
+            // Optional: diagonal offsets for rounder glow
+            //ctx.fillText(ctx, char, x - offset, y - offset);
+            //ctx.fillText(ctx, char, x + offset, y - offset);
+            //ctx.fillText(ctx, char, x - offset, y + offset);
+            //ctx.fillText(ctx, char, x + offset, y + offset);
+        }
+        let jitterX = 0;
+        let jitterY = 0;
+        if (config.jitter) {
+            jitterX = (Math.random() - 0.5) * 2; // ±1px jitter
+            jitterY = (Math.random() - 0.5) * 2;
+        }
+        ctx.fillStyle = hexToRgba(config.blurColor, config.mainAlpha);
+        ctx.fillText(ctx, char, x + jitterX, y + jitterY);
+    }
+    drawGlowChar(ctx, x, y, fill, index) {
         //this.drawGhostChars(ctx, char, x+12, y);
-        const glowLayers = 5;//mt_rand(3, 5);
+        const char = this.chars[index];
+        const alpha = this.alphas[index];
+        const maxAlpha = 1.0;
+        const minAlpha = 0.05;
+        const glowLayers = 9;//mt_rand(3, 5);
+        const glowCenter = parseInt((glowLayers + 1) / 2);
+        let offset = -2;
         for (let i = glowLayers; i > 0; i--) {
-            ctx.font = `${24 + i}px monospace`; // bigger for outer layers
-            if (i === 0) {
+            const t = i / (glowLayers - 1); // 0 → 1
+            const curve = Math.sin(t * Math.PI); // bell-shaped
+            const layerAlpha = Math.abs((minAlpha + curve * (maxAlpha - minAlpha)) * alpha).toFixed(2);
+            ctx.font = `${24}px monospace`; // bigger for outer layers
+            if ( i === glowCenter ) {
                 ctx.fillStyle = "rgba(" + fill.join(",") + ",1)"; // final color
             } else {
-                ctx.fillStyle = "rgba(" + fill.join(",") + "," + alpha * 0.5 + ")"; // outer glow
+                ctx.fillStyle = "rgba(" + fill.join(",") + "," + layerAlpha + ")"; // outer glow
             }
-            //console.log(alpha);
-            ctx.fillText(char, x, y);
+            if ( x + offset < 0  || y + offset < 0 )
+                console.error(layerAlpha, ctx.fillStyle, x + offset, y, x, y + offset, offset);
+            ctx.fillText(char, x + offset, y);
+            ctx.fillText(char, x, y + offset);
+            offset += 0.5;
         }
     }
     lightUpRandomChar(duration) {
@@ -151,22 +205,23 @@ class Drop {
     }
     draw(ctx, cellSz) {
         // Randomly change things
-        this.swapHead();  
-        this.lightUpRandomChar(60);
-        this.swapChars();
-        this.flipChars();
+        //this.swapHead();  
+        //this.lightUpRandomChar(60);
+        //this.swapChars();
+        //this.flipChars();
         const x = this.col * cellSz + cellSz / 2;
         for ( let i = 0; i < this.chars.length; i++ ) {
             const y = ((this.row - i) * cellSz); // stack upward from row
             const fills = {
-                main: (i === 0) ? '#fff' : `rgba(0,255,0,${this.alphas[i]})`,
+                main: (i === 0) ? '#d5ffd5' : `rgba(0,255,0,${this.alphas[i]})`,
                 big: `rgba(0,255,0,${this.alphas[i] * 0.5})`
             };
             const font = {main:24, big:30};
             const fonts = {main: font.main + "px monospace", big: "bold " + font.big + "px monospace"};
             //this.drawChar(chars[i], fills, fonts, x, y); 
-            const fill = (i === 0) ? [255,255,255] : [0,255,0];
-            this.drawGlowChar(ctx, this.chars[i], x, y, fill, this.alphas[i]);               
+            const fill = (i === 0) ? [213,255,213] : [0,255,0];
+            if ( y > 0 ) 
+                this.drawGlowChar(ctx, x, y, fill, i);               
         }
     }
 }
@@ -304,13 +359,26 @@ const config = {
   GHOST_SPAWN_CHANCE: 0.1, // chance of a ghost drop spawning
   HEAD_BRIGHTNESS: 1.0,   // brightness of head char
   TRAIL_BRIGHTNESS: 0.5,  // brightness of trailing chars
-  FRAMES_PER_TICK: 2      // more FRAMES_PER_TICK is slower fps
+  FRAMES_PER_TICK: 2 ,     // more FRAMES_PER_TICK is slower fps
+  GLOW_CFG : {
+    fontSize: 24,
+    glowColor: "#d5ffd5",
+    glowAlpha: 1,
+    glowLayers: 2,
+    glowOffset: 0,
+    glowScale: 1,
+    mainAlpha: 1,
+    jitter: false,
+    blurStrength: 6,
+    blurColor: "#00ff00"
+  }
 };
 
 window.addEventListener("DOMContentLoaded", () => {
     const model = new MatrixRain(config);
     const controller = new GraphicsController(model, config);
     window.addEventListener("resize", controller.resize.bind(controller));
+    window.addEventListener("click", function() {controller.paused = ! controller.paused;});
     controller.resize();
     controller.loop();
 });
