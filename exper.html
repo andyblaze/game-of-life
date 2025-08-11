@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Character Glow Lab</title>
+<style>
+  body {
+    background: black;
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+  }
+  canvas {
+    background: black;
+    display: block;
+    margin: 1em auto;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 0.5em 1em;
+    max-width: 500px;
+    margin: auto;
+    text-align: left;
+  }
+  label { text-align: right; }
+  textarea {
+    width: 90%;
+    height: 90px;
+    margin-top: 1em;
+    background: #111;
+    color: #0f0;
+    border: none;
+    padding: 0.5em;
+    font-family: monospace;
+    resize: none;
+  }
+</style>
+</head>
+<body>
+<h2>Character Glow Lab</h2>
+<canvas id="glowCanvas" width="400" height="400"></canvas>
+
+<div class="controls">
+  <label>Character:</label>
+  <input id="charInput" value="ア" maxlength="1">
+
+  <label>Font Size:</label>
+  <input type="range" id="fontSizeSlider" min="12" max="100" step="1" value="100">
+
+  <label>Glow Color:</label>
+  <input type="color" id="colorPicker" value="#00ff00">
+
+  <label>Glow Alpha:</label>
+  <input type="range" id="alphaSlider" min="0" max="1" step="0.01" value="0.2">
+
+  <label>Glow Layers:</label>
+  <input type="range" id="layersSlider" min="1" max="10" step="1" value="4">
+
+  <label>Glow Offset(px):</label>
+  <input type="range" id="offsetSlider" min="0" max="10" step="0.5" value="3">
+
+  <label>Glow Size Scale:</label>
+  <input type="range" id="scaleSlider" min="1" max="2" step="0.05" value="1.3">
+
+  <label>Main Alpha:</label>
+  <input type="range" id="mainAlphaSlider" min="0" max="1" step="0.01" value="1">
+
+  <label>Jitter:</label>
+  <input type="checkbox" id="jitterCheckbox">
+
+  <label>Blur Strength:</label>
+  <input type="range" id="blurStrengthSlider" min="0" max="10" step="1" value="3">
+
+  <label>Blur Color:</label>
+  <input type="color" id="blurColorPicker" value="#00ff00">
+</div>
+
+<textarea id="settingsOutput" readonly></textarea>
+
+<script>
+const canvas = document.getElementById('glowCanvas');
+const ctx = canvas.getContext('2d');
+
+function drawChar() {
+  const char = document.getElementById('charInput').value || 'ア';
+  const fontSize = parseInt(document.getElementById('fontSizeSlider').value);
+  const glowColor = document.getElementById('colorPicker').value;
+  const glowAlpha = parseFloat(document.getElementById('alphaSlider').value);
+  const glowLayers = parseInt(document.getElementById('layersSlider').value);
+  const offset = parseFloat(document.getElementById('offsetSlider').value);
+  const scale = parseFloat(document.getElementById('scaleSlider').value);
+  const mainAlpha = parseFloat(document.getElementById('mainAlphaSlider').value);
+  const jitter = document.getElementById('jitterCheckbox').checked;
+  const blurStrength = parseInt(document.getElementById('blurStrengthSlider').value);
+  const blurColor = document.getElementById('blurColorPicker').value;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  // Faux Gaussian blur: draw both bigger and smaller versions per step
+  for (let i = blurStrength; i > 0; i--) {
+    const scaleFactor = 1 + (i / blurStrength) * 0.5;
+    const sizeUp = fontSize * scaleFactor;
+    const sizeDown = fontSize / scaleFactor;
+
+    const jitterX = jitter ? (Math.random() - 0.5) * offset * 2 : 0;
+    const jitterY = jitter ? (Math.random() - 0.5) * offset * 2 : 0;
+
+    ctx.font = `${sizeUp}px monospace`;
+    ctx.fillStyle = hexToRGBA(blurColor, (glowAlpha / 2) * (i / blurStrength));
+    ctx.fillText(char, centerX + jitterX, centerY + jitterY);
+
+    ctx.font = `${sizeDown}px monospace`;
+    ctx.fillStyle = hexToRGBA(blurColor, (glowAlpha / 2) * (i / blurStrength));
+    ctx.fillText(char, centerX + jitterX, centerY + jitterY);
+  }
+
+  // Glow layers
+  for (let i = glowLayers; i > 0; i--) {
+    const size = fontSize * (1 + (scale - 1) * (i / glowLayers));
+    const jitterX = jitter ? (Math.random() - 0.5) * offset : offset * (i / glowLayers);
+    const jitterY = jitter ? (Math.random() - 0.5) * offset : offset * (i / glowLayers);
+    ctx.font = `${size}px monospace`;
+    ctx.fillStyle = hexToRGBA(glowColor, glowAlpha * (i / glowLayers));
+    ctx.fillText(char, centerX + jitterX, centerY + jitterY);
+  }
+
+  // Main char
+  ctx.font = `${fontSize}px monospace`;
+  ctx.fillStyle = hexToRGBA(glowColor, mainAlpha);
+  ctx.fillText(char, centerX, centerY);
+
+  // Output settings
+  document.getElementById('settingsOutput').value =
+`{
+  char: "${char}",
+  fontSize: ${fontSize},
+  glowColor: "${glowColor}",
+  glowAlpha: ${glowAlpha},
+  glowLayers: ${glowLayers},
+  glowOffset: ${offset},
+  glowScale: ${scale},
+  mainAlpha: ${mainAlpha},
+  jitter: ${jitter},
+  blurStrength: ${blurStrength},
+  blurColor: "${blurColor}"
+}`;
+}
+
+function hexToRGBA(hex, alpha) {
+  const r = parseInt(hex.substr(1, 2), 16);
+  const g = parseInt(hex.substr(3, 2), 16);
+  const b = parseInt(hex.substr(5, 2), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('input', drawChar);
+});
+
+drawChar();
+</script>
+</body>
+</html>

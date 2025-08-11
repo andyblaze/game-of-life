@@ -29,21 +29,11 @@ class Renderer {
         this.offCtx = this.offscreen.getContext("2d");
         //this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
-    drawChar(char, fills, fonts, x, y) {
-        this.offCtx.textAlign = "center";
-        this.offCtx.textBaseline = "top";
-        // fake glow
-        this.offCtx.fillStyle = fills.big;
-        this.offCtx.font = fonts.big; 
-        this.offCtx.fillText(char, x, y-2);
-        // main char
-        this.offCtx.fillStyle = fill;
-        this.offCtx.font = font; 
-        this.offCtx.fillText(char, x, y);               
-    }
     draw(drops) {
         // draw to offscreen
         this.offCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.offCtx.textAlign = "center";
+        this.offCtx.textBaseline = "top";
         
         for ( let [col, drop] of drops ) {
             drop.draw(this.offCtx, this.cellSize)
@@ -108,12 +98,26 @@ class Drop {
             this.chars.reverse();
         }
     }
+    drawGhostChars(ctx, char, x, y) {
+        ctx.fillStyle = "#0f0";
+        for ( let pass = 1; pass < 3; pass++ ) {
+            const offset = pass; // pixels offset
+            ctx.globalAlpha = 0.09; // very faint
+            this.chars.forEach((char, i) => {
+                const gx = this.col * 24 + offset;
+                const gy = (this.row - i) * 24 + offset;
+                ctx.fillText(char, gx+48, gy-24);
+            });
+        }
+        ctx.globalAlpha = 1.0;
+    }
     drawGlowChar(ctx, char, x, y, fill, alpha) {
+        //this.drawGhostChars(ctx, char, x+12, y);
         const glowLayers = 5;//mt_rand(3, 5);
         for (let i = glowLayers; i > 0; i--) {
             ctx.font = `${24 + i}px monospace`; // bigger for outer layers
             if (i === 0) {
-                ctx.fillStyle = "rgba(" + fill.join(",") + ",0.7)"; // final color
+                ctx.fillStyle = "rgba(" + fill.join(",") + ",1)"; // final color
             } else {
                 ctx.fillStyle = "rgba(" + fill.join(",") + "," + alpha * 0.5 + ")"; // outer glow
             }
