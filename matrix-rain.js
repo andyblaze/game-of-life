@@ -3,13 +3,13 @@ function mt_rand(min = 0, max = 2147483647) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function hexToRgba(hex, alpha) {
+/*function hexToRgba(hex, alpha) {
     const bigint = parseInt(hex.slice(1), 16);
     const r = (bigint >> 16) & 255;
     const g = (bigint >> 8) & 255;
     const b = bigint & 255;
     return `rgba(${r},${g},${b},${alpha})`;
-}
+}*/
 
 class Column {
     constructor(c) {
