@@ -39,12 +39,14 @@ class Renderer {
         this.offCtx.textAlign = "center";
         this.offCtx.textBaseline = "top";
         this.offCtx.font = "24px monospace";
+        this.punkDust = [];
 
         //this.colorPalette = Array.from({ length: 360 }, (_, h) => `hsl(${h}, 100%, 50%)`);
     }
     draw(drops) {
         // draw to offscreen
         this.offCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        //this.drawDust();
         //this.offCtx.textAlign = "center";
         //this.offCtx.textBaseline = "top";
         
@@ -58,6 +60,13 @@ class Renderer {
     resize() {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;    
+    }
+    drawDust() { 
+        for ( const {x, y, char} of this.punkDust.entries() ) {
+            const a = mt_rand(1, 5) / 10;
+            this.offCtx.fillStyle = "rgba(0,255,0," + a + ")"; 
+            this.offCtx.fillText(char, x, y);
+        }
     }
 }
 
@@ -74,7 +83,10 @@ class Drop {
         this.flashFramesLeft = 0;   // countdown until it stops  
         this.lightedCharOriginalAlpha = null;
         this.glowLayers = 11;
-        this.layerAlphas = this.precomputeLayerAlphas();;
+        this.layerAlphas = this.precomputeLayerAlphas();
+        /*this.layerColors = this.layerAlphas.map(a => 
+            `rgba(${fill.glow.join(",")},${a.toFixed(2)})`
+        );*/
     }
     precomputeLayerAlphas() {
         let result = [];
@@ -139,59 +151,6 @@ class Drop {
         }
         ctx.globalAlpha = 1.0;
     }
-    drawBetterGlow(ctx, char, x, y, config) {
-        ctx.font = `${config.fontSize}px monospace`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        for (let i = config.blurStrength; i > 0; i--) {
-            const alpha = config.glowAlpha * (i / config.blurStrength); // fade out glow layers
-            ctx.fillStyle = hexToRgba(config.glowColor, alpha);
-
-            // Offset position based on glow spread (config.glowScale)
-            const offset = i * config.glowScale;
-            ctx.fillText(config.char, x - offset, y);
-            ctx.fillText(config.char, x + offset, y);
-            ctx.fillText(config.char, x, y - offset);
-            ctx.fillText(config.char, x, y + offset);
-
-            // Optional: diagonal offsets for rounder glow
-            //ctx.fillText(ctx, char, x - offset, y - offset);
-            //ctx.fillText(ctx, char, x + offset, y - offset);
-            //ctx.fillText(ctx, char, x - offset, y + offset);
-            //ctx.fillText(ctx, char, x + offset, y + offset);
-        }
-        let jitterX = 0;
-        let jitterY = 0;
-        if (config.jitter) {
-            jitterX = (Math.random() - 0.5) * 2; // ±1px jitter
-            jitterY = (Math.random() - 0.5) * 2;
-        }
-        ctx.fillStyle = hexToRgba(config.blurColor, config.mainAlpha);
-        ctx.fillText(ctx, char, x + jitterX, y + jitterY);
-    }
-    drawGlowChar(ctx, x, y, fill, index) {
-        //this.drawGhostChars(ctx, char, x+12, y);
-        const char = this.chars[index];
-        const alpha = this.alphas[index];
-        const half = Math.floor(this.glowLayers / 2); // middle index
-
-        //ctx.save();
-        //ctx.font = "24px monospace";
-        
-        for ( let i = 1; i <= half; i++ ) {
-            const layerAlpha = this.layerAlphas[i] * alpha;   
-            ctx.fillStyle = "rgba(" + fill.glow.join(",") + "," + layerAlpha + ")"; 
-            
-            const offset = i * 0.5; 
-            ctx.fillText(char, x + offset, y);
-            ctx.fillText(char, x - offset, y);
-            ctx.fillText(char, x, y + offset);
-            ctx.fillText(char, x, y - offset);
-        }
-        ctx.fillStyle = "rgba(" + fill.stroke.join(",") + ",1)"; // final color
-        ctx.fillText(char, x, y);
-        //ctx.restore();
-     }
     lightUpRandomChar(duration) {
         if (this.chars.length === 0) return;
 
@@ -216,6 +175,30 @@ class Drop {
         }
         return (this.flashIndex !== null && this.lightedCharOriginalAlpha !== null);
     }
+    drawGlowChar(ctx, x, y, fill, index) {
+        //this.drawGhostChars(ctx, char, x+12, y);
+        const char = this.chars[index];
+        const alpha = this.alphas[index];
+        const half = Math.floor(this.glowLayers / 2); // middle index
+
+        //ctx.save();
+        //ctx.font = "24px monospace";
+        
+        for ( let i = 1; i <= half; i++ ) {
+            const layerAlpha = this.layerAlphas[i] * alpha;   
+            //ctx.fillStyle = this.layerColors[i];
+            ctx.fillStyle = "rgba(" + fill.glow.join(",") + "," + layerAlpha + ")"; 
+            
+            const offset = i * 0.5; 
+            ctx.fillText(char, x + offset, y);
+            ctx.fillText(char, x - offset, y);
+            ctx.fillText(char, x, y + offset);
+            ctx.fillText(char, x, y - offset);
+        }
+        ctx.fillStyle = "rgba(" + fill.stroke.join(",") + ",1)"; // final color
+        ctx.fillText(char, x, y);
+        //ctx.restore();
+    }
     draw(ctx, cellSz) {
         // Randomly change things
         //this.swapHead();  
@@ -237,12 +220,12 @@ class MatrixRain {
         this.CELL_SIZE = cfg.CELL_SIZE;
         this.COLS = cfg.COLS;
         this.ROWS = cfg.ROWS; 
-        this.charPool = cfg.CHAR_POOL;
+        this.charPool = cfg.DROP.CHAR_POOL;
         this.spawnChance = cfg.COLUMN_SPAWN_CHANCE;
         this.ghostChance = cfg.GHOST_SPAWN_CHANCE;
-        this.speed = cfg.SPEED;
-        this.dropLength = cfg.DROP_LENGTHS;
-        this.view = new Renderer(cfg);
+        this.speed = cfg.DROP.SPEED;
+        this.dropLength = cfg.DROP.DROP_LENGTHS;
+        this.view = null;
         this.liveCols = new Map();
         this.paused = false;
     }
@@ -271,15 +254,22 @@ class MatrixRain {
         const headAlpha = 1.0;   
         const tailMinAlpha = 0.01;
         const brightCount = mt_rand(1,3); // keep first n bright
+        const fadeLength = Math.max(1, length - brightCount);
+        const decayRate = 5; // higher = faster drop
 
         for (let i = 0; i < length; i++) {
             if (i < brightCount) {
                 alphas.push(headAlpha);
             } else {
-                const t = (i - brightCount) / (length - brightCount - 1);
-                const eased = 1 - Math.pow(t, 2);
+                const t = (i - brightCount) / fadeLength; // 0 → 1
+                // Exponential falloff
+                const eased = Math.exp(-decayRate * t);
                 const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
-                alphas.push(alpha);
+                alphas.push(alpha);                
+                //const t = (i - brightCount) / (length - brightCount - 1);
+                //const eased = 1 - Math.pow(t, 2);
+                //const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
+                //alphas.push(alpha);
             }
         }
 
@@ -310,6 +300,18 @@ class MatrixRain {
             }
         }
         return this.liveCols.entries();    
+    }
+    getPunkDust() {
+        const max = 200;
+        let points = [];
+        const d = [".", "·", "-", "+", "'", '"', "・"];
+        for ( let i = 0; i < max; i++ ) {
+            const c = d[mt_rand(0, d.length-1)];
+            points.push(
+                {x:mt_rand(0, 1920), y:mt_rand(0, 1080), char:c}
+            );
+        }
+        return points;
     }
     tick() {
         this.getLiveCols();
@@ -352,11 +354,14 @@ const config = {
   CELL_SIZE: 24,          // px per cell (sets char size & spacing)
   COLS: 80,              // number of columns
   ROWS: 45,               // number of rows
-  SPEED: {baseRate:0.15, min:10, max:13},
-  DROP_LENGTHS: {min: 5, max:13}, // min / max characters in a drop
-  CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
+  DROP: {
+    SPEED: {baseRate:0.15, min:10, max:13},
+    DROP_LENGTHS: {min: 5, max:13}, // min / max characters in a drop
+    CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
                  "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),//ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~                 "),
-  FONT: "24px monospace",
+    FONT: "24px monospace",
+    IS_GHOST:false
+  },
   FADE_ALPHA: 0.01,
   GLOW_FADE: true,        // whether to fade out trailing characters
   FADE_SPEED: 0.05,       // how fast trails fade
@@ -377,7 +382,8 @@ const config = {
     jitter: false,
     blurStrength: 6,
     blurColor: "#00ff00"
-  }
+  },
+  //PUNK_DUST: [., ·, -, +, ', ", ・]
 };
 
 window.addEventListener("DOMContentLoaded", () => {
