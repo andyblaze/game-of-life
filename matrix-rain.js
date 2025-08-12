@@ -201,9 +201,9 @@ class Drop {
     }
     draw(ctx, cellSz) {
         // Randomly change things
-        //this.swapHead();  
-        //this.lightUpRandomChar(60);
-        //this.swapChars();
+        this.swapHead();  
+        this.lightUpRandomChar(60);
+        this.swapChars();
         //this.flipChars();
         const x = this.col * cellSz + cellSz / 2;
         for ( let i = 0; i < this.chars.length; i++ ) {
@@ -266,16 +266,13 @@ class MatrixRain {
                 const eased = Math.exp(-decayRate * t);
                 const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
                 alphas.push(alpha);                
-                //const t = (i - brightCount) / (length - brightCount - 1);
-                //const eased = 1 - Math.pow(t, 2);
-                //const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
-                //alphas.push(alpha);
             }
         }
 
         return alphas;
     }
     getLiveCols() {
+        if ( this.liveCols.size > 30 ) return;
         for (let col = 0; col < this.COLS; col++) {
             if ( ! this.liveCols.has(col) ) {
                 if (Math.random() < this.spawnChance) { // 5% chance per frame
@@ -318,7 +315,6 @@ class MatrixRain {
         return this.updateCols();
     }        
 }
-
 class GraphicsController {
     constructor(model, config) {
         this.model = model;
@@ -354,20 +350,39 @@ const config = {
   CELL_SIZE: 24,          // px per cell (sets char size & spacing)
   COLS: 80,              // number of columns
   ROWS: 45,               // number of rows
+    SPEED: {baseRate:0.15, min:10, max:13},
+    DROP_LENGTHS: {min: 5, max:13}, // min / max characters in a drop
+    CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
+                 "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),//ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~                 "),
+    FONT: "24px monospace",
+    HEAD_ALPHA: 1.0,
+    TAIL_ALPHA: 0.01,
+    IS_GHOST:false,
   DROP: {
     SPEED: {baseRate:0.15, min:10, max:13},
     DROP_LENGTHS: {min: 5, max:13}, // min / max characters in a drop
     CHAR_POOL: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
                  "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),//ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*+=-;:/?~                 "),
     FONT: "24px monospace",
+    HEAD_ALPHA: 1.0,
+    TAIL_ALPHA: 0.01,
     IS_GHOST:false
+  },
+  GHOST: {
+    SPEED: {baseRate:0.05, min:10, max:13},
+    DROP_LENGTHS: {min: 4, max:9}, // min / max characters in a drop
+    CHAR_POOL: Array.from(".·-+',・|`" + "   "),
+    FONT: "12px monospace",
+    HEAD_ALPHA: 0.5,
+    TAIL_ALPHA: 0.1,
+    IS_GHOST:true
   },
   FADE_ALPHA: 0.01,
   GLOW_FADE: true,        // whether to fade out trailing characters
   FADE_SPEED: 0.05,       // how fast trails fade
-  MAX_ACTIVE_DROPS: 80,   // upper limit on how many active drops at once
-  COLUMN_SPAWN_CHANCE: 0.01, // chance per frame to start a drop in an idle column
-  GHOST_SPAWN_CHANCE: 0.1, // chance of a ghost drop spawning
+  MAX_ACTIVE_DROPS: 60,   // upper limit on how many active drops at once
+  COLUMN_SPAWN_CHANCE: 0.1, // chance per frame to start a drop in an idle column
+  GHOST_SPAWN_CHANCE: 0.8, // chance of a ghost drop spawning
   HEAD_BRIGHTNESS: 1.0,   // brightness of head char
   TRAIL_BRIGHTNESS: 0.5,  // brightness of trailing chars
   FRAMES_PER_TICK: 2 ,     // more FRAMES_PER_TICK is slower fps
