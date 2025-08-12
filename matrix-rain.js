@@ -20,7 +20,7 @@ class Column {
     }
 }
 
-class Renderer {
+class Renderer { 
     constructor(cfg) {
         this.font = cfg.FONT;
         this.overlayFade = cfg.FADE_ALPHA;
