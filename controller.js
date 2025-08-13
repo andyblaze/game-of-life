@@ -7,15 +7,15 @@ export default class Controller {
         this.ctx = canvas.getContext('2d');
         this.config = config;
 
-        this.charWidth = 24; // px — can be dynamic later
-        this.charHeight = 24;
+        this.charWidth = config.fontSize;
+        this.charHeight = config.fontSize;
         this.lanes = [];
 
-        this.spawnChanceNormal = 0.05; // per frame
-        this.spawnChanceGhost = 0.1;
+        this.spawnChanceNormal = config.spawnChanceNormal; // per frame
+        this.spawnChanceGhost = config.spawnChanceGhost;
 
         // Create lanes
-        const laneCount = Math.floor(canvas.width / this.charWidth);
+        const laneCount = this.config.laneCount;
         for (let i = 0; i < laneCount; i++) {
             this.lanes.push(new Lane(i));
         }
@@ -36,7 +36,7 @@ export default class Controller {
             Math.random() * (cfg.brightCountMax - cfg.brightCountMin + 1)
         ) + cfg.brightCountMin;
 
-        for (let i = 0; i < length; i++) {
+        for (let i = length - 1; i >= 0; i--) {
             if (i < brightCount) {
                 alphas.push(headAlpha);
             } else {
@@ -88,10 +88,10 @@ export default class Controller {
     }
 
     draw(drawFn) {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        //this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         for (let lane of this.lanes) {
             for (let drop of lane.drops) {
-                drawFn(this.ctx, drop, lane.index * this.charWidth, this.charHeight);
+                drawFn(drop, lane.index * this.charWidth, this.charHeight);
             }
         }
     }
