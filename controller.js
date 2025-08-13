@@ -1,6 +1,11 @@
 import Drop from "./drop.js";
 import Lane from "./lane.js";
 
+function mt_rand(min = 0, max = 2147483647) {
+    if (min > max) [min, max] = [max, min]; // swap if min > max
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export default class Controller {
     constructor(canvas, config) {
         this.canvas = canvas;
@@ -11,7 +16,7 @@ export default class Controller {
         this.charHeight = config.fontSize;
         this.lanes = [];
 
-        this.spawnChanceNormal = config.spawnChanceNormal; // per frame
+        this.spawnChanceNormal = config.spawnChanceNormal;
         this.spawnChanceGhost = config.spawnChanceGhost;
 
         // Create lanes
@@ -20,14 +25,12 @@ export default class Controller {
             this.lanes.push(new Lane(i));
         }
     }
-
     randomChars(len) {
         const set = this.config.CHAR_SET;
         return Array.from({ length: len }, () =>
             set[Math.floor(Math.random() * set.length)]
         );
     }
-
     generateAlphas(length, cfg) {
         const alphas = [];
         const headAlpha = cfg.alphaMax;
@@ -53,7 +56,7 @@ export default class Controller {
         const laneIndex = Math.floor(Math.random() * this.lanes.length);
         const lane = this.lanes[laneIndex];
 
-        const length = Math.floor(Math.random() * 15) + 5;
+        const length = mt_rand(5, 13);
         const chars = this.randomChars(length);
         const alphas = this.generateAlphas(length, cfg);
         const speed = cfg.speedMin + Math.random() * (cfg.speedMax - cfg.speedMin);

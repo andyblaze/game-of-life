@@ -1,5 +1,6 @@
 
 export default class Lane {
+
     constructor(index) {
         this.index = index;
         this.drops = [];
@@ -11,6 +12,5 @@ export default class Lane {
 
     removeOffScreen(canvasHeight, charHeight) {
         this.drops = this.drops.filter(drop => !drop.isOffScreen(canvasHeight, charHeight));
-        console.log(this.drops.length);
     }
 }

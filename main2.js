@@ -4,15 +4,15 @@ import MatrixView from "./renderer.js";
 const config = {
     fontSize: 24,
     fontFamily: 'monospace',
-    CHAR_SET: 'ｱｲｳｴｵｶｷｸｹｺ0123456789    '.split(''),
-    laneCount:40,
-    spawnChanceNormal: 0.05, // per frame
-    spawnChanceGhost: 0.1,
+    CHAR_SET: 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・         '.split(''),
+    laneCount:80,
+    spawnChanceNormal: 0.0025, // per frame
+    spawnChanceGhost: 0.02,
 
     NORMAL: {
         color: [0, 255, 0], // bright green
-        speedMin: 2,
-        speedMax: 5,
+        speedMin: 1,
+        speedMax: 3,
         alphaMax: 1,
         alphaMin: 0.05,
         brightCountMin: 1,
