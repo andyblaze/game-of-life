@@ -4,7 +4,7 @@ function mt_rand(min = 0, max = 2147483647) {
 }
 
 const config = {
-    framesPerTick : 1,
+    framesPerTick : 120,
     font: "24px monospace",
     fillColor: "#0f0"
 }
@@ -35,11 +35,11 @@ class Renderer {
         this.resetCtx();
     }
     draw(data) {
-        //this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
+        this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
         const x = mt_rand(24, this.onscreen.width - 24);
-        const y = mt_rand(24, this.onscreen.height - 24);
+        const y = 24;//mt_rand(24, this.onscreen.height - 240);
         //this.offCtx.fillText(data, x, y);
-        Drop.draw(this.offCtx, data, x, y);
+        Drop.draw(this.offCtx, x, y);
         this.blit();
     }
     blit() {
@@ -49,27 +49,36 @@ class Renderer {
 }
 
 class Drop {
-    static draw(ctx, txt, x, y) {
-        const layerAlphas = Glow.precomputeAlphas();
-        const alpha = 1;
-        const half = Math.floor(Glow.layers / 2); //this.glowLayers / 2); // middle index
-        for ( let i = 1; i <= half; i++ ) {
-            const layerAlpha = layerAlphas[i] * alpha;   
-            ctx.fillStyle = "rgba(0,255,0," + layerAlpha + ")"; 
-            
-            const offset = i * 0.5; 
-            ctx.fillText(txt, x + offset, y);
-            ctx.fillText(txt, x - offset, y);
-            ctx.fillText(txt, x, y + offset);
-            ctx.fillText(txt, x, y - offset);
+    static chars = Array.from("アイウエオカキ");
+    static alphas = [];
+    static draw(ctx, x, y) {
+        this.alphas = this.generateAlphas(this.chars.length, 1, 0.01);
+        for ( const [i, c] of this.chars.entries() ) {
+            GlowingChar.draw(ctx, c, x, y*i, this.alphas[i]);
         }
-        ctx.fillStyle = "rgba(213,255,213," + ",1)"; // final color
-        ctx.fillText(txt, x, y);
-        ctx.fillText(txt, x, y);
+    }
+    static generateAlphas(length, headAlpha, tailMinAlpha) {
+        let result = [];
+        const brightCount = mt_rand(1,3); // keep first n bright
+        const fadeLength = Math.max(1, length - brightCount);
+        const decayRate = 5; // higher = faster drop
+
+        for (let i = 0; i < length; i++) {
+            if (i < brightCount) {
+                result.push(headAlpha);
+            } else {
+                const t = (i - brightCount) / fadeLength; // 0 → 1
+                // Exponential falloff
+                const eased = Math.exp(-decayRate * t);
+                const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
+                result.unshift(alpha);                
+            }
+        }
+        return result;
     }
 }
 
-class Glow {
+class GlowingChar {
     static layers = 11;
 
     static precomputeAlphas() {
@@ -85,6 +94,23 @@ class Glow {
         }
         return result;
     }
+    static draw(ctx, txt, x, y, alpha) {
+        this.layerAlphas = this.precomputeAlphas();
+        const half = Math.floor(this.layers / 2); //this.glowLayers / 2); // middle index
+        for ( let i = 1; i <= half; i++ ) {
+            const layerAlpha = this.layerAlphas[i] * alpha;   
+            ctx.fillStyle = "rgba(0,255,0," + layerAlpha + ")"; 
+            
+            const offset = i * 0.5; 
+            ctx.fillText(txt, x + offset, y);
+            ctx.fillText(txt, x - offset, y);
+            ctx.fillText(txt, x, y + offset);
+            ctx.fillText(txt, x, y - offset);
+        }
+        ctx.fillStyle = "rgba(213,255,213,1)"; // final color
+        ctx.fillText(txt, x, y);
+        ctx.fillText(txt, x, y);
+    }
 }
 
 class Lane {
@@ -99,7 +125,7 @@ class Model {
         this.lanes = [];
     } 
     tick() {
-        return "A";
+        return "ア";
     }
 }
 
