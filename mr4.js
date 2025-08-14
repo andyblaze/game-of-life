@@ -4,28 +4,42 @@ function mt_rand(min = 0, max = 2147483647) {
 }
 
 const config = {
-    framesPerTick : 5
+    framesPerTick : 1,
+    font: "24px monospace",
+    fillColor: "#0f0"
 }
 
 class Renderer {
     constructor(id, cfg) {
-        this.onscreen = document.getElementById(id);
         this.cfg = cfg;
+        this.canvasInit(id);
+    }
+    canvasInit(id) {
+        this.onscreen = document.getElementById(id);
         this.onCtx = this.onscreen.getContext("2d");
         this.offscreen = document.createElement("canvas");
         this.offCtx = this.offscreen.getContext("2d");
+        this.resetCtx();
+    }
+    resetCtx() {
+        this.offCtx.textAlign = "center";
+        this.offCtx.textBaseline = "top";
+        this.offCtx.font = this.cfg.font;
+        this.offCtx.fillStyle = this.cfg.fillColor;
     }
     resize(w, h) {
         this.onscreen.width = w;
         this.onscreen.height = h;
         this.offscreen.width = w;
         this.offscreen.height = h;
+        this.resetCtx();
     }
     draw(data) {
+        //this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
         const x = mt_rand(24, this.onscreen.width - 24);
         const y = mt_rand(24, this.onscreen.height - 24);
-        this.offCtx.fillStyle = "#fff";
-        this.offCtx.fillText(data, x, y);
+        //this.offCtx.fillText(data, x, y);
+        Drop.draw(this.offCtx, data, x, y);
         this.blit();
     }
     blit() {
@@ -35,8 +49,41 @@ class Renderer {
 }
 
 class Drop {
-    draw() {
-        
+    static draw(ctx, txt, x, y) {
+        const layerAlphas = Glow.precomputeAlphas();
+        const alpha = 1;
+        const half = Math.floor(Glow.layers / 2); //this.glowLayers / 2); // middle index
+        for ( let i = 1; i <= half; i++ ) {
+            const layerAlpha = layerAlphas[i] * alpha;   
+            ctx.fillStyle = "rgba(0,255,0," + layerAlpha + ")"; 
+            
+            const offset = i * 0.5; 
+            ctx.fillText(txt, x + offset, y);
+            ctx.fillText(txt, x - offset, y);
+            ctx.fillText(txt, x, y + offset);
+            ctx.fillText(txt, x, y - offset);
+        }
+        ctx.fillStyle = "rgba(213,255,213," + ",1)"; // final color
+        ctx.fillText(txt, x, y);
+        ctx.fillText(txt, x, y);
+    }
+}
+
+class Glow {
+    static layers = 11;
+
+    static precomputeAlphas() {
+        let result = [];
+        const half = Math.floor(this.layers / 2);
+        const maxAlpha = 1.0;
+        const minAlpha = 0.01;
+
+        for (let i = 0; i <= half; i++) {
+            const t = 1 - i / half;
+            const curve = Math.sin(t * Math.PI);
+            result[i] = minAlpha + curve * (maxAlpha - minAlpha);
+        }
+        return result;
     }
 }
 
@@ -69,7 +116,7 @@ class Controller {
     }
     // fps throttling
     frameReady() {
-        this.frameCount = (this.frameCount + 1) % (this.cfg.framesPerTick * 1000);
+        this.frameCount = (this.frameCount + 1) % this.cfg.framesPerTick;
         return this.frameCount % this.cfg.framesPerTick === 0;
     }
     loop(timestamp) {
@@ -77,10 +124,10 @@ class Controller {
             if ( this.frameReady() ) {
                 const data = this.model.tick();
                 this.view.draw(data);
+                DeltaReport.log(timestamp);
             }
         }
         requestAnimationFrame(this.loop.bind(this)); 
-        DeltaReport.log(timestamp);
     } 
 }
 
@@ -90,14 +137,14 @@ class DeltaReport {
     static sum = 0;
     
     static log(timestamp) {
-        DeltaReport.frameCount++;
-        const delta = (timestamp - DeltaReport.lastTime) / 16.67;
-        DeltaReport.sum += delta;
-        DeltaReport.lastTime = timestamp;
-        if ( DeltaReport.frameCount === 120 ) {
-            console.log(DeltaReport.sum / DeltaReport.frameCount);
-            DeltaReport.frameCount = 0;
-            DeltaReport.sum = 0;
+        this.frameCount++;
+        const delta = (timestamp - this.lastTime) / 16.67;
+        this.sum += delta;
+        this.lastTime = timestamp;
+        if ( this.frameCount === 120 ) {
+            console.log(this.sum / this.frameCount);
+            this.frameCount = 0;
+            this.sum = 0;
         }
     }
 }
