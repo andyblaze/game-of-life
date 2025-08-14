@@ -4,7 +4,7 @@ function mt_rand(min = 0, max = 2147483647) {
 }
 
 const config = {
-    framesPerTick : 120,
+    framesPerTick : 1,
     font: "24px monospace",
     fillColor: "#0f0"
 }
@@ -36,10 +36,11 @@ class Renderer {
     }
     draw(data) {
         this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
-        const x = mt_rand(24, this.onscreen.width - 24);
-        const y = 24;//mt_rand(24, this.onscreen.height - 240);
-        //this.offCtx.fillText(data, x, y);
-        Drop.draw(this.offCtx, x, y);
+        for ( const lane of data ) {
+            for ( const drop of lane.drops )
+                drop.draw(this.offCtx);
+        }
+        
         this.blit();
     }
     blit() {
@@ -49,15 +50,32 @@ class Renderer {
 }
 
 class Drop {
-    static chars = Array.from("アイウエオカキ");
-    static alphas = [];
-    static draw(ctx, x, y) {
-        this.alphas = this.generateAlphas(this.chars.length, 1, 0.01);
+    constructor(chars, x, y, speed, charHeight) {
+        this.chars = chars;
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.charHeight = charHeight;
+        this.alphas = this.generateAlphas(this.chars.length, 1, 0.01); // 1, 0.01 from cfg
+        this.canvasHeight = 0;
+    }
+
+    update() {
+        this.y += this.speed;
+    }
+    draw(ctx) {
+        if ( this.canvasHeight === 0 ) this.canvasHeight = ctx.canvas.height;
         for ( const [i, c] of this.chars.entries() ) {
-            GlowingChar.draw(ctx, c, x, y*i, this.alphas[i]);
+            const charY = this.y - i * this.charHeight;
+            if (charY > -this.charHeight && charY < ctx.canvas.height) {
+                GlowingChar.draw(ctx, c, this.x, charY, this.alphas[i]);
+            }
         }
     }
-    static generateAlphas(length, headAlpha, tailMinAlpha) {
+    isOffscreen() {
+        return this.y - (this.chars.length * this.charHeight) > this.canvasHeight;
+    }
+    generateAlphas(length, headAlpha, tailMinAlpha) {
         let result = [];
         const brightCount = mt_rand(1,3); // keep first n bright
         const fadeLength = Math.max(1, length - brightCount);
@@ -71,7 +89,7 @@ class Drop {
                 // Exponential falloff
                 const eased = Math.exp(-decayRate * t);
                 const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
-                result.unshift(alpha);                
+                result.push(alpha);                
             }
         }
         return result;
@@ -114,18 +132,48 @@ class GlowingChar {
 }
 
 class Lane {
-    constructor() {
+    constructor(x, charHeight) {
+        this.x = x;
+        this.charHeight = charHeight;
         this.drops = [];
+    }
+    spawnDrop() {
+        const length = mt_rand(5, 13);
+        const chars = Array.from({ length }, () =>
+            String.fromCharCode(mt_rand(0x30A0, 0x30FF)) // get from cfg charPool
+        );
+        const speed = mt_rand(2, 5) / 4;
+        if ( this.drops.length === 0 )  // FOR TESTING !!!!!!!!!!!!!!!!!!!!!!
+            this.drops.push(new Drop(chars, this.x, -length * this.charHeight, speed, this.charHeight));
+    }
+    update() {
+        this.drops.forEach(drop => {
+            drop.update();
+        });
+
+        // Remove finished drops
+        this.drops = this.drops.filter(drop => !drop.isOffscreen());
+
+        // Randomly spawn new drop
+        if (Math.random() < 0.01) { // tune spawn chance from cfg
+            this.spawnDrop();
+        }
     }
 }
 
 class Model {
     constructor(cfg) {
         this.cfg = cfg;
-        this.lanes = [];
+        const charWidth = 24; // from cfg setting
+        const numLanes = 80; // numLanes = cfg setting
+        const maxActiveLanes = 30; // from cfg setting
+        this.lanes = Array.from({ length: numLanes }, (_, i) =>
+            new Lane(i * charWidth + charWidth / 2, 24) // 24 = cfg setting
+        );
     } 
     tick() {
-        return "ア";
+        this.lanes.forEach(lane => lane.update());
+        return this.lanes;
     }
 }
 
@@ -168,7 +216,7 @@ class DeltaReport {
         this.sum += delta;
         this.lastTime = timestamp;
         if ( this.frameCount === 120 ) {
-            console.log(this.sum / this.frameCount);
+            console.log((this.sum / this.frameCount).toFixed(2), parseInt(60 / (this.sum / this.frameCount)));
             this.frameCount = 0;
             this.sum = 0;
         }
