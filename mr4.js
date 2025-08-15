@@ -6,7 +6,18 @@ function mt_rand(min = 0, max = 2147483647) {
 const config = {
     framesPerTick : 1,
     font: "24px monospace",
-    fillColor: "#0f0"
+    fillColor: "#0f0",
+    laneCount: 80,
+    maxMainDrops: 30,
+    charWidth: 24,
+    speed: {baseRate:0.05, min:10, max:13},
+    DropLengths: {min: 5, max:13}, // min / max characters in a drop
+    CharPool: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
+              "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                ")
+}
+
+function Point(x, y) {
+    return {"x": x, "y": y};
 }
 
 class Renderer {
@@ -50,10 +61,10 @@ class Renderer {
 }
 
 class Drop {
-    constructor(chars, x, y, speed, charHeight) {
+    constructor(chars, point, speed, charHeight) {
         this.chars = chars;
-        this.x = x;
-        this.y = y;
+        this.x = point.x;
+        this.y = point.y;
         this.speed = speed;
         this.charHeight = charHeight;
         this.alphas = this.generateAlphas(this.chars.length, 1, 0.01); // 1, 0.01 from cfg
@@ -64,11 +75,13 @@ class Drop {
         this.y += this.speed;
     }
     draw(ctx) {
-        if ( this.canvasHeight === 0 ) this.canvasHeight = ctx.canvas.height;
+        if ( this.canvasHeight === 0 ) 
+            this.canvasHeight = ctx.canvas.height;
+        
         for ( const [i, c] of this.chars.entries() ) {
             const charY = this.y - i * this.charHeight;
-            if (charY > -this.charHeight && charY < ctx.canvas.height) {
-                GlowingChar.draw(ctx, c, this.x, charY, this.alphas[i]);
+            if (charY > -this.charHeight && charY < this.canvasHeight) {
+                GlowingChar.draw(ctx, c, Point(this.x, charY), this.alphas[i]);
             }
         }
     }
@@ -112,8 +125,9 @@ class GlowingChar {
         }
         return result;
     }
-    static draw(ctx, txt, x, y, alpha) {
+    static draw(ctx, txt, point, alpha) {
         this.layerAlphas = this.precomputeAlphas();
+        const {x, y} = point;
         const half = Math.floor(this.layers / 2); //this.glowLayers / 2); // middle index
         for ( let i = 1; i <= half; i++ ) {
             const layerAlpha = this.layerAlphas[i] * alpha;   
@@ -132,47 +146,75 @@ class GlowingChar {
 }
 
 class Lane {
-    constructor(x, charHeight) {
+    constructor(x, charHeight, cfg) {
         this.x = x;
         this.charHeight = charHeight;
         this.drops = [];
+        this.hasMainDrop = false;
+        this.cfg = cfg;
     }
     spawnDrop() {
         const length = mt_rand(5, 13);
         const chars = Array.from({ length }, () =>
             String.fromCharCode(mt_rand(0x30A0, 0x30FF)) // get from cfg charPool
         );
-        const speed = mt_rand(2, 5) / 4;
-        if ( this.drops.length === 0 )  // FOR TESTING !!!!!!!!!!!!!!!!!!!!!!
-            this.drops.push(new Drop(chars, this.x, -length * this.charHeight, speed, this.charHeight));
+        const speed = mt_rand(this.cfg.speed.min, this.cfg.speed.max) / 10;
+        if ( this.drops.length === 0 ) { // FOR TESTING !!!!!!!!!!!!!!!!!!!!!!
+            const point = Point(this.x, -length * this.charHeight);
+            this.drops.push(new Drop(chars, point, speed, this.charHeight));
+            this.hasMainDrop = true;
+        }
     }
-    update() {
+    update(canSpawn) {
         this.drops.forEach(drop => {
             drop.update();
         });
 
         // Remove finished drops
-        this.drops = this.drops.filter(drop => !drop.isOffscreen());
+        this.drops = this.drops.filter(drop => ! drop.isOffscreen());
 
         // Randomly spawn new drop
-        if (Math.random() < 0.01) { // tune spawn chance from cfg
+        if (canSpawn && Math.random() < 0.01) { // tune spawn chance from cfg
             this.spawnDrop();
         }
+    }
+    hasDrops() {
+        return this.drops.length > 0;
     }
 }
 
 class Model {
     constructor(cfg) {
         this.cfg = cfg;
-        const charWidth = 24; // from cfg setting
-        const numLanes = 80; // numLanes = cfg setting
-        const maxActiveLanes = 30; // from cfg setting
-        this.lanes = Array.from({ length: numLanes }, (_, i) =>
-            new Lane(i * charWidth + charWidth / 2, 24) // 24 = cfg setting
-        );
+        this.maxActiveLanes = cfg.maxMainDrops;
+        this.activeLanes = [];
+        this.lanes = this.initLanes(cfg.laneCount, cfg.charWidth);
     } 
+    initLanes(num, charWidth) {
+        return Array.from({ length: num }, (_, i) =>
+            new Lane(i * charWidth + charWidth / 2, charWidth, this.cfg)
+        );
+    }
+    updateLanes() {
+        this.activeLanes = this.activeLanes.filter(idx => {
+            this.lanes[idx].update();
+            return this.lanes[idx].hasDrops(); // keep only lanes that still have drops
+        });
+    }
+    getEmptyLaneIndex() {
+        // pick a random lane not already active
+        const available = this.lanes
+            .map((lane, idx) => idx)
+            .filter(idx => ! this.activeLanes.includes(idx));
+        const laneIndex = available[Math.floor(Math.random() * available.length)];
+        return laneIndex;
+    }
     tick() {
-        this.lanes.forEach(lane => lane.update());
+        const laneIndex = this.getEmptyLaneIndex();
+        this.activeLanes.push(laneIndex);
+        const canSpawn = (this.activeLanes.length < this.maxActiveLanes); 
+        this.lanes.forEach(lane => lane.update(canSpawn));
+        this.updateLanes();
         return this.lanes;
     }
 }
@@ -198,7 +240,7 @@ class Controller {
             if ( this.frameReady() ) {
                 const data = this.model.tick();
                 this.view.draw(data);
-                DeltaReport.log(timestamp);
+                //DeltaReport.log(timestamp);
             }
         }
         requestAnimationFrame(this.loop.bind(this)); 
@@ -215,8 +257,8 @@ class DeltaReport {
         const delta = (timestamp - this.lastTime) / 16.67;
         this.sum += delta;
         this.lastTime = timestamp;
-        if ( this.frameCount === 120 ) {
-            console.log((this.sum / this.frameCount).toFixed(2), parseInt(60 / (this.sum / this.frameCount)));
+        if ( this.frameCount === 120 ) { // every 2 seconds
+            console.log("fps", parseInt(60 / (this.sum / this.frameCount)));
             this.frameCount = 0;
             this.sum = 0;
         }
