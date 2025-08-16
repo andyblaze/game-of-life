@@ -1,46 +1,40 @@
 
-export default class MatrixView {
-    constructor(config, width, height) {
-        this.config = config;
-        console.log("mv.c", width, height);
-        this.createOffscreenBuffer(window.innerWidth, window.innerHeight);
-
-        // Pre-compute font strings
-        this.font = `${config.fontSize}px ${config.fontFamily}`;
+export default class Renderer {
+    constructor(id, cfg) {
+        this.cfg = cfg;
+        this.canvasInit(id);
     }
-    resize(width, height) {
-        this.offscreen.width = width;
-        this.offscreen.height = height;
-        console.log("mv.rs", this.offscreen.width, this.offscreen.height);
+    canvasInit(id) {
+        this.onscreen = document.getElementById(id);
+        this.onCtx = this.onscreen.getContext("2d");
+        this.offscreen = document.createElement("canvas");
+        this.offCtx = this.offscreen.getContext("2d");
+        this.resetCtx();
     }
-    createOffscreenBuffer(width, height) {
-        this.offscreen = document.createElement('canvas');
-        console.log("mv.cob", width, height);
-        this.resize(width, height);        
-        this.offCtx = this.offscreen.getContext('2d');
+    resetCtx() {
+        this.offCtx.textAlign = "center";
+        this.offCtx.textBaseline = "top";
+        this.offCtx.font = this.cfg.font;
+        this.offCtx.fillStyle = this.cfg.fillColor;
     }
-    clear() {
+    resize(w, h) {
+        this.onscreen.width = w;
+        this.onscreen.height = h;
+        this.offscreen.width = w;
+        this.offscreen.height = h;
+        this.resetCtx();
+    }
+    draw(data) {
         this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
-    }
-    drawDrop(drop, x, charHeight) {
-        const ctx = this.offCtx;
-        ctx.font = this.font;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-
-        const isGhost = drop.isGhost;
-        const cfg = isGhost ? this.config.GHOST : this.config.NORMAL;
-
-        for (let i = 0; i < drop.chars.length; i++) {
-            const char = drop.chars[i];
-            const alpha = drop.alphas[i];
-
-            ctx.fillStyle = `rgba(${cfg.color.join(',')},${alpha})`;
-            ctx.fillText(char, x + cfg.offsetX, drop.y + i * charHeight + cfg.offsetY);
+        for ( const lane of data ) {
+            for ( const drop of lane.drops )
+                drop.draw(this.offCtx);
         }
+        
+        this.blit();
     }
-    blitToScreen(screenCtx) {
-        screenCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
-        screenCtx.drawImage(this.offscreen, 0, 0);
+    blit() {
+        this.onCtx.clearRect(0, 0, this.onscreen.width, this.onscreen.height);
+        this.onCtx.drawImage(this.offscreen, 0, 0);  
     }
 }
