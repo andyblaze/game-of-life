@@ -29,8 +29,7 @@ export default class Renderer {
         for ( const lane of data ) {
             for ( const drop of lane.drops )
                 drop.draw(this.offCtx);
-        }
-        
+        }        
         this.blit();
     }
     blit() {
