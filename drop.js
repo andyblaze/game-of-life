@@ -1,4 +1,4 @@
-import GlowingChar from "./effects.js";
+import Effects from "./effects.js";
 import { Point, mt_rand } from "./functions.js";
 
 export default class Drop {
@@ -20,7 +20,7 @@ export default class Drop {
     update() {
         this.y += this.speed;
     }
-    doSwap(idx1, idx2, alphas=false) {
+    /*doSwap(idx1, idx2, alphas=false) {
         let tmp = this.chars[idx1];
         this.chars[idx1] = this.chars[idx2];
         this.chars[idx2] = tmp;
@@ -29,11 +29,9 @@ export default class Drop {
         tmp = this.alphas[idx1];
         this.alphas[idx1] = this.alphas[idx2];
         this.alphas[idx2] = tmp;
-    }
-    swapHead() {
-        if ( Math.random() < 0.05 ) { // 5% chance per frame
-            this.doSwap(0, 1, true);
-        }            
+    }*/
+    swapHead() { 
+        Effects.swapHead(this.chars, this.alphas);          
     }
     lightUpRandomChar(duration) {
         if (this.chars.length === 0) return;
@@ -60,12 +58,7 @@ export default class Drop {
         return (this.flashIndex !== null && this.lightedCharOriginalAlpha !== null);
     }
     swapChars() {
-        if ( Math.random() < 0.05 ) { // 5% chance per frame
-            const idx1 = mt_rand(1, this.chars.length -1);
-            const idx2 = mt_rand(1, this.chars.length -1);
-            const param = Math.random() < 0.05;
-            this.doSwap(idx1, idx2, param);
-        }            
+        Effects.swapChars(this.chars, this.alphas);            
     }
     flipChars() {
         if ( Math.random() < 0.01 ) { // 1% chance per frame
@@ -77,13 +70,13 @@ export default class Drop {
             this.canvasHeight = ctx.canvas.height;
         
         this.swapHead();
-        this.lightUpRandomChar(60);
+        //this.lightUpRandomChar(60);
         this.swapChars();
         for ( const [i, c] of this.chars.entries() ) {
             const charY = this.y - i * this.charHeight;
             if (charY > -this.charHeight && charY < this.canvasHeight) {
                 const fill = (i === 0 ? [213,255,213] : [0,255,0]);
-                GlowingChar.draw(ctx, c, Point(this.x, charY), fill, this.alphas[i]);
+                Effects.glowingChar(ctx, c, Point(this.x, charY), fill, this.alphas[i]);
             }
         }
     }
