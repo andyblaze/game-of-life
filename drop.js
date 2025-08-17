@@ -18,26 +18,39 @@ export default class Drop {
     update() {
         this.y += this.speed;
     }
-    draw(ctx) {
+    ensureCanvasHeight(ctx) {
         if ( this.canvasHeight === 0 ) 
             this.canvasHeight = ctx.canvas.height;
-
+    }
+    applyEffects() {
         if ( this.cfg.isGhost === true )
             GhostEffects.applyTo(this);
         else 
-            MainEffects.applyTo(this);
-        
-        for ( const [i, c] of this.chars.entries() ) {
-            const charY = this.y - i * this.charHeight;
-            if (charY > -this.charHeight && charY < this.canvasHeight) {
-                const fill = (i === 0 ? [213,255,213] : [0,255,0]);
-                if ( this.cfg.isGhost === true ) {
-                    ctx.fillStyle = "rgba(0,255,0," + this.alphas[i] + ")"; 
-                    ctx.fillText(c, this.x, charY);
-                }
-                else 
-                    GlowingChar.draw(ctx, c, Point(this.x, charY), fill, this.alphas[i]);
-            }
+            MainEffects.applyTo(this);        
+    }
+    computeCharY(i) {
+        return this.y - i * this.charHeight;
+    }
+    isVisible(charY) {
+        return (charY > -this.charHeight && charY < this.canvasHeight);
+    }
+    drawChar(ctx, c, i, charY) {
+        const fill = (i === 0 ? [213,255,213] : [0,255,0]);
+        if ( this.cfg.isGhost === true ) {
+            ctx.fillStyle = "rgba(0,255,0," + this.alphas[i] + ")"; 
+            ctx.fillText(c, this.x, charY);
+        }
+        else 
+            GlowingChar.draw(ctx, c, Point(this.x, charY), fill, this.alphas[i]);
+    }
+    draw(ctx) {
+        this.ensureCanvasHeight(ctx);
+        this.applyEffects();
+
+        for ( const [i, c] of this.chars.entries() ) {            
+            const charY = this.computeCharY(i);
+            if ( this.isVisible(charY) === false ) continue;
+            this.drawChar(ctx, c, i, charY);
         }
     }
     isOffscreen() {
