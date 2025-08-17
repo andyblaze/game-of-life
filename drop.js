@@ -1,4 +1,4 @@
-import { Effects, GlowingChar } from "./effects.js";
+import { MainEffects, GhostEffects, GlowingChar } from "./effects.js";
 import { Point, mt_rand, getRandomChars } from "./functions.js";
 
 export default class Drop {
@@ -15,11 +15,6 @@ export default class Drop {
     getSpeed(cfg) {
         return mt_rand(cfg.min, cfg.max) / 10;
     }
-    getChars(cfg) {
-        const { min, max } = cfg;
-        const length = mt_rand(min, max);
-        return getRandomChars(length);
-    }
     update() {
         this.y += this.speed;
     }
@@ -27,7 +22,11 @@ export default class Drop {
         if ( this.canvasHeight === 0 ) 
             this.canvasHeight = ctx.canvas.height;
 
-        Effects.applyTo(this);
+        if ( this.cfg.isGhost === true )
+            GhostEffects.applyTo(this);
+        else 
+            MainEffects.applyTo(this);
+        
         for ( const [i, c] of this.chars.entries() ) {
             const charY = this.y - i * this.charHeight;
             if (charY > -this.charHeight && charY < this.canvasHeight) {

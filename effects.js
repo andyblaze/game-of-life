@@ -1,6 +1,6 @@
 import { mt_rand } from "./functions.js";
 
-export class Effects {
+export class MainEffects {
     static applyTo(drop) {
         this.swapHead(drop.chars, drop.alphas);
         this.swapChars(drop.chars, drop.alphas);
@@ -13,6 +13,10 @@ export class Effects {
     //static flashChar(drop) { charLighter.flashRandomChar(drop, 60); }
 }
 
+export class GhostEffects {
+    static applyTo(drop) {
+    }
+}
 class charFlipper {
     static flip(chars) {
         if ( Math.random() < 0.01 ) { // 1% chance per frame

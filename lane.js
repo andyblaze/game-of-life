@@ -13,7 +13,7 @@ export default class Lane {
     getChars(cfg) {
         const { min, max } = cfg.dropLengths;
         const length = mt_rand(min, max);
-        return getRandomChars(length);
+        return getRandomChars(cfg.charPool, length);
     }
     spawnMain() {        
         if ( this.mainDrops.length === 0 ) { 
@@ -23,8 +23,8 @@ export default class Lane {
         }
     }
     spawnGhost() { //return;
-        if ( this.ghostDrops.length < 3 ) {
-            const chars = this.getChars(this.cfg.ghost); //console.log(this.cfg.ghost);
+        if ( this.ghostDrops.length < 5 ) {
+            const chars = this.getChars(this.cfg.ghost);
             const point = Point(this.x, -chars.length * this.charHeight);
             this.ghostDrops.push(new Drop(chars, point, this.cfg.ghost));
         }

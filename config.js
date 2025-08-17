@@ -4,7 +4,7 @@ const config = {
     font: "24px monospace",
     fillColor: "#0f0",
     laneCount: 80,
-    maxMainDrops: 10,
+    maxMainDrops: 20,
     charWidth: 24,
     charHeight: 24,
     main: {
@@ -12,14 +12,18 @@ const config = {
         dropLengths: {min: 5, max:13}, // min / max characters in a drop
         alphaRange: {headAlpha: 1, tailAlpha: 0.01},
         charHeight:24,
-        isGhost: false
+        isGhost: false,
+        charPool: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
+                    "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                ")
     },
     ghost: {
         speed: {baseRate:0.05, min:4, max:9},
         dropLengths: {min: 5, max:13}, // min / max characters in a drop
         alphaRange: {headAlpha: 0.4, tailAlpha: 0.01},
         charHeight:24,
-        isGhost: true
+        isGhost: true,
+        charPool: Array.from(",.`'・\"+*^≠±×÷∑∆π√─┐└┘┌•◦●○◉◎" + "        ")
+                    //"日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                ")
     },
     charPool: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +
               "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),
