@@ -23,7 +23,7 @@ export default class Lane {
         }
     }
     spawnGhost() { //return;
-        if ( this.ghostDrops.length < 5 ) {
+        if ( this.ghostDrops.length < this.cfg.ghostsPerLane ) {
             const chars = this.getChars(this.cfg.ghost);
             const point = Point(this.x, -chars.length * this.charHeight);
             this.ghostDrops.push(new Drop(chars, point, this.cfg.ghost));

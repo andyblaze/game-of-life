@@ -15,6 +15,24 @@ export class MainEffects {
 
 export class GhostEffects {
     static applyTo(drop) {
+        this.upAlpha(drop.alphas);
+        this.downAlpha(drop.alphas);
+    }
+    static upAlpha(alphas) { charAlpha.up(alphas); }
+    static downAlpha(alphas) { charAlpha.down(alphas); }
+}
+class charAlpha {
+    static up(alphas) {
+        if ( Math.random() < 0.01 ) { // 5% chance per frame
+            const idx = mt_rand(0, alphas.length -1);
+            alphas[idx] = 1;
+        }
+    }
+    static down(alphas) {
+        if ( Math.random() < 0.1 ) { // 5% chance per frame
+            const idx = mt_rand(0, alphas.length -1);
+            alphas[idx] = 0.4;
+        }
     }
 }
 class charFlipper {
