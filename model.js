@@ -27,11 +27,15 @@ export default class Model {
         return laneIndex;
     }
     tick() {
-        const laneIndex = this.getEmptyLaneIndex();
-        this.activeLanes.push(laneIndex);
-        const canSpawn = (this.activeLanes.length < this.maxActiveLanes); 
+        let canSpawn = false;
+        if ( this.activeLanes.length <= this.maxActiveLanes ) {
+            const laneIndex = this.getEmptyLaneIndex();
+            this.activeLanes.push(laneIndex);
+            canSpawn = true;
+        }
+        //console.error(canSpawn === true && this.activeLanes.length > 30);
         this.lanes.forEach(lane => lane.update(canSpawn));
-        this.updateLanes();
+        this.updateLanes(); 
         return this.lanes;
     }
 }

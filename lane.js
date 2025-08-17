@@ -7,32 +7,49 @@ export default class Lane {
         this.charHeight = cfg.charHeight;
         this.drops = [];
         this.mainDrops = [];
+        this.ghostDrops = [];
         this.cfg = cfg;
     }
-    spawnDrop() {
-        
+    getChars(cfg) {
+        const { min, max } = cfg.dropLengths;
+        const length = mt_rand(min, max);
+        return getRandomChars(length);
+    }
+    spawnMain() {        
         if ( this.mainDrops.length === 0 ) { 
-            const { min, max } = this.cfg.dropLengths;
-            const length = mt_rand(min, max);
-            const chars = getRandomChars(length);
-            const speed = mt_rand(this.cfg.speed.min, this.cfg.speed.max) / 10;
-            const point = Point(this.x, -length * this.charHeight);
-            this.mainDrops.push(new Drop(chars, point, speed, this.cfg));
+            const chars = this.getChars(this.cfg.main);
+            const point = Point(this.x, -chars.length * this.charHeight);
+            this.mainDrops.push(new Drop(chars, point, this.cfg.main));
         }
     }
-    update(canSpawn) {
+    spawnGhost() { //return;
+        if ( this.ghostDrops.length < 3 ) {
+            const chars = this.getChars(this.cfg.ghost); //console.log(this.cfg.ghost);
+            const point = Point(this.x, -chars.length * this.charHeight);
+            this.ghostDrops.push(new Drop(chars, point, this.cfg.ghost));
+        }
+    }
+    update(canSpawn) { //console.log(canSpawn);
         this.mainDrops.forEach(drop => {
+            drop.update();
+        });
+        this.ghostDrops.forEach(drop => {
             drop.update();
         });
 
         // Remove finished drops
         this.mainDrops = this.mainDrops.filter(drop => ! drop.isOffscreen());
+        this.ghostDrops = this.ghostDrops.filter(drop => ! drop.isOffscreen());
 
-        // Randomly spawn new drop
-        if (canSpawn && Math.random() < this.cfg.mainSpawnChance) {
-            this.spawnDrop();
+        // Randomly spawn new main drop
+        if (canSpawn === true && Math.random() < this.cfg.mainSpawnChance) {
+            this.spawnMain();
         }
-        this.drops = this.mainDrops;
+        
+        if ( Math.random() < this.cfg.ghostSpawnChance )
+            this.spawnGhost();
+        
+        this.drops = this.mainDrops.concat(this.ghostDrops);
     }
     hasDrops() {
         return this.mainDrops.length > 0;

@@ -1,94 +1,55 @@
-import Effects from "./effects.js";
-import { Point, mt_rand } from "./functions.js";
+import { Effects, GlowingChar } from "./effects.js";
+import { Point, mt_rand, getRandomChars } from "./functions.js";
 
 export default class Drop {
-    constructor(chars, point, speed, cfg) {
-        this.chars = chars;
+    constructor(chars, point, cfg) { //console.log(cfg);
+        this.chars = chars; //this.getChars(cfg.dropLengths);
+        this.speed = this.getSpeed(cfg.speed);
+        this.alphas = this.generateAlphas(cfg.alphaRange);
         this.x = point.x;
         this.y = point.y;
-        this.speed = speed;
         this.cfg = cfg;
         this.charHeight = cfg.charHeight;
-        this.alphas = this.generateAlphas();
         this.canvasHeight = 0;
-        // Spotlight effect state
-        this.flashIndex = null;     // index of the char being lit
-        this.flashFramesLeft = 0;   // countdown until it stops  
-        this.lightedCharOriginalAlpha = null;
     }
-
+    getSpeed(cfg) {
+        return mt_rand(cfg.min, cfg.max) / 10;
+    }
+    getChars(cfg) {
+        const { min, max } = cfg;
+        const length = mt_rand(min, max);
+        return getRandomChars(length);
+    }
     update() {
         this.y += this.speed;
-    }
-    /*doSwap(idx1, idx2, alphas=false) {
-        let tmp = this.chars[idx1];
-        this.chars[idx1] = this.chars[idx2];
-        this.chars[idx2] = tmp;
-        
-        if ( alphas === false ) return;
-        tmp = this.alphas[idx1];
-        this.alphas[idx1] = this.alphas[idx2];
-        this.alphas[idx2] = tmp;
-    }*/
-    swapHead() { 
-        Effects.swapHead(this.chars, this.alphas);          
-    }
-    lightUpRandomChar(duration) {
-        if (this.chars.length === 0) return;
-
-        if ( this.lightedCharIsRunning() ) return;
-        
-        if ( Math.random() < 0.05 ) {
-            this.flashIndex = Math.floor(Math.random() * this.chars.length);
-            this.lightedCharOriginalAlpha = this.alphas[this.flashIndex];
-            this.alphas[this.flashIndex] = 1;  // set to full brightness
-            this.flashFramesLeft = duration;
-        }
-    }
-    lightedCharIsRunning() {
-        if ( this.flashFramesLeft > 0 ) {
-            this.flashFramesLeft--;
-            if ( this.flashFramesLeft === 0 && this.flashIndex !== null ) {
-                // Restore original alpha when done
-                this.alphas[this.flashIndex] = this.lightedCharOriginalAlpha;
-                this.flashIndex = null;
-                this.lightedCharOriginalAlpha = null;
-            }
-        }
-        return (this.flashIndex !== null && this.lightedCharOriginalAlpha !== null);
-    }
-    swapChars() {
-        Effects.swapChars(this.chars, this.alphas);            
-    }
-    flipChars() {
-        if ( Math.random() < 0.01 ) { // 1% chance per frame
-            this.chars.reverse();
-        }
     }
     draw(ctx) {
         if ( this.canvasHeight === 0 ) 
             this.canvasHeight = ctx.canvas.height;
-        
-        this.swapHead();
-        //this.lightUpRandomChar(60);
-        this.swapChars();
+
+        Effects.applyTo(this);
         for ( const [i, c] of this.chars.entries() ) {
             const charY = this.y - i * this.charHeight;
             if (charY > -this.charHeight && charY < this.canvasHeight) {
                 const fill = (i === 0 ? [213,255,213] : [0,255,0]);
-                Effects.glowingChar(ctx, c, Point(this.x, charY), fill, this.alphas[i]);
+                if ( this.cfg.isGhost === true ) {
+                    ctx.fillStyle = "rgba(0,255,0," + this.alphas[i] + ")"; 
+                    ctx.fillText(c, this.x, charY);
+                }
+                else 
+                    GlowingChar.draw(ctx, c, Point(this.x, charY), fill, this.alphas[i]);
             }
         }
     }
     isOffscreen() {
         return this.y - (this.chars.length * this.charHeight) > this.canvasHeight;
     }
-    generateAlphas() {
+    generateAlphas(range) {
         let result = [];
         const brightCount = mt_rand(1,3); // keep first n bright
         const fadeLength = Math.max(1, this.chars.length - brightCount);
         const decayRate = 5; // higher = faster drop
-        const { headAlpha, tailMinAlpha } = this.cfg.mainAlphas;
+        const { headAlpha, tailAlpha } = range;
 
         for (let i = 0; i < this.chars.length; i++) {
             if (i < brightCount) {
@@ -97,7 +58,7 @@ export default class Drop {
                 const t = (i - brightCount) / fadeLength; // 0 → 1
                 // Exponential falloff
                 const eased = Math.exp(-decayRate * t);
-                const alpha = tailMinAlpha + eased * (headAlpha - tailMinAlpha);
+                const alpha = tailAlpha + eased * (headAlpha - tailAlpha);
                 result.push(alpha);                
             }
         }

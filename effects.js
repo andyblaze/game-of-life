@@ -1,9 +1,24 @@
 import { mt_rand } from "./functions.js";
 
-export default class Effects {
+export class Effects {
+    static applyTo(drop) {
+        this.swapHead(drop.chars, drop.alphas);
+        this.swapChars(drop.chars, drop.alphas);
+        this.flipChars(drop.chars);
+        //this.flashChar(drop);
+    }
     static swapHead(chars, alphas) { charSwapper.swapHead(chars, alphas); }
     static swapChars(chars, alphas) { charSwapper.swapChars(chars, alphas); }
-    static glowingChar(ctx, txt, point, fill, alpha) { GlowingChar.draw(ctx, txt, point, fill, alpha); }
+    static flipChars(chars) { charFlipper.flip(chars); }
+    //static flashChar(drop) { charLighter.flashRandomChar(drop, 60); }
+}
+
+class charFlipper {
+    static flip(chars) {
+        if ( Math.random() < 0.01 ) { // 1% chance per frame
+            chars.reverse();
+        }
+    }
 }
 
 class charSwapper {    
@@ -31,41 +46,44 @@ class charSwapper {
         }            
     }
 }
-class charFlasher {
+class charLighter {
     // Spotlight effect states
     static flashIndex = null;     // index of the char being lit
     static flashFramesLeft = 0;   // countdown until it stops  
     static lightedCharOriginalAlpha = null;
-    static flashAlpha = null;
+    static alphas = [];
+    static drop = null;
     
-    static flashRandomChar(chars, alphas, duration) {
-        if (chars.length === 0) return;
+    static flashRandomChar(drop, duration) {
+        if (drop.chars.length === 0) return;
+        if ( this.drop === null ) this.drop = drop; else return;
+        if ( this.isRunning() ) return;
 
-        if ( this.lightedCharIsRunning() ) return;
         
-        if ( Math.random() < 0.05 ) {
-            this.flashIndex = Math.floor(Math.random() * chars.length);
-            this.lightedCharOriginalAlpha = alphas[this.flashIndex];
-            alphas[this.flashIndex] = 1;  // set to full brightness
-            this.flashAlpha = alphas[this.flashIndex];
+        if ( Math.random() < 0.05 ) { console.log(9);
+            this.flashIndex = Math.floor(Math.random() * this.drop.chars.length);
+            this.lightedCharOriginalAlpha = this.drop.alphas[this.flashIndex];
+            this.drop.alphas[this.flashIndex] = 1;  // set to full brightness
+            this.alphas = drop.alphas;
             this.flashFramesLeft = duration;
         }
     }
-    static flashCharIsRunning() {
+    static isRunning() {
         if ( this.flashFramesLeft > 0 ) {
             this.flashFramesLeft--;
             if ( this.flashFramesLeft === 0 && this.flashIndex !== null ) {
                 // Restore original alpha when done
-                this.alphas[this.flashIndex] = this.lightedCharOriginalAlpha;
+                this.drop.alphas[this.flashIndex] = this.lightedCharOriginalAlpha;
                 this.flashIndex = null;
                 this.lightedCharOriginalAlpha = null;
+                this.drop = null;
             }
         }
         return (this.flashIndex !== null && this.lightedCharOriginalAlpha !== null);
     }
 }
 
-class GlowingChar {
+export class GlowingChar {
     static layers = 11;
     static layerAlphas = this.precomputeAlphas();
     
@@ -82,13 +100,12 @@ class GlowingChar {
         }
         return result;
     }
-    static draw(ctx, txt, point, fill, alpha) {
+    static draw(ctx, txt, point, fill, alpha) {        
         const {x, y} = point;
         const half = Math.floor(this.layers / 2); // middle index
         for ( let i = 1; i <= half; i++ ) {
             const layerAlpha = this.layerAlphas[i] * alpha;   
             ctx.fillStyle = "rgba(0,255,0," + layerAlpha + ")"; 
-            
             const offset = i * 0.5; 
             ctx.fillText(txt, x + offset, y);
             ctx.fillText(txt, x - offset, y);
