@@ -1,5 +1,5 @@
 import { MainEffects, GhostEffects, GlowingChar } from "./effects.js";
-import { Point, mt_rand, getRandomChars } from "./functions.js";
+import { Point, mt_rand, getRandomChars, generateId } from "./functions.js";
 
 export default class Drop {
     constructor(chars, point, cfg) { //console.log(cfg);
@@ -11,6 +11,7 @@ export default class Drop {
         this.cfg = cfg;
         this.charHeight = cfg.charHeight;
         this.canvasHeight = 0;
+        this.id = generateId();
     }
     getSpeed(cfg) {
         return mt_rand(cfg.min, cfg.max) / 10;
@@ -31,7 +32,7 @@ export default class Drop {
     computeCharY(i) {
         return this.y - i * this.charHeight;
     }
-    isVisible(charY) {
+    isOnScreen(charY) {
         return (charY > -this.charHeight && charY < this.canvasHeight);
     }
     drawChar(ctx, c, i, charY) {
@@ -46,10 +47,9 @@ export default class Drop {
     draw(ctx) {
         this.ensureCanvasHeight(ctx);
         this.applyEffects();
-
         for ( const [i, c] of this.chars.entries() ) {            
             const charY = this.computeCharY(i);
-            if ( this.isVisible(charY) === false ) continue;
+            if ( this.isOnScreen(charY) === false ) continue;
             this.drawChar(ctx, c, i, charY);
         }
     }
@@ -58,13 +58,13 @@ export default class Drop {
     }
     generateAlphas(range) {
         let result = [];
-        const brightCount = mt_rand(1,3); // keep first n bright
+        const brightCount = 1;//mt_rand(1,3); // keep first n bright
         const fadeLength = Math.max(1, this.chars.length - brightCount);
         const decayRate = 5; // higher = faster drop
         const { headAlpha, tailAlpha } = range;
 
         for (let i = 0; i < this.chars.length; i++) {
-            if (i < brightCount) {
+            if ( i < brightCount ) {
                 result.push(headAlpha);
             } else {
                 const t = (i - brightCount) / fadeLength; // 0 → 1

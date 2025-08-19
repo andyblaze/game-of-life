@@ -19,13 +19,19 @@ export function getRandomChar(charPool, allowSpace=true) {
     return charPool[i];
 }
 export function getRandomChars(charPool, num) {
+    const initialNum = (charPool.length < 6 ? 1 : (charPool.length > 9 ? 3 : 2));
     let chars = [];
-    chars[0] = getRandomChar(charPool, false);
-    chars[1] = getRandomChar(charPool, false);
-    chars[2] = getRandomChar(charPool, false);
+    for ( let i = 0; i < initialNum; i++ )
+        chars[i] = getRandomChar(charPool, false);
     
-    const end = Array.from({ length: num - 3 }, () =>
+    const end = Array.from({ length: num - initialNum }, () =>
         charPool[mt_rand(0, charPool.length - 1)]
     );
     return chars.concat(end);
+}
+
+export function generateId() {
+    const now = Date.now(); // ms precision
+    const rand = mt_rand(1000000, 9999999);
+    return (now.toString(36) + rand.toString(36));
 }

@@ -2,34 +2,34 @@ import { mt_rand } from "./functions.js";
 
 export class MainEffects {
     static applyTo(drop) {
-        this.swapHead(drop.chars, drop.alphas);
-        this.swapChars(drop.chars, drop.alphas);
-        this.flipChars(drop.chars);
-        //this.flashChar(drop);
+        //this.swapHead(drop.chars, drop.alphas);
+        //this.swapChars(drop.chars, drop.alphas);
+        //this.flipChars(drop.chars);
+        this.flashChar(drop);
     }
     static swapHead(chars, alphas) { charSwapper.swapHead(chars, alphas); }
     static swapChars(chars, alphas) { charSwapper.swapChars(chars, alphas); }
     static flipChars(chars) { charFlipper.flip(chars); }
-    //static flashChar(drop) { charLighter.flashRandomChar(drop, 60); }
+    static flashChar(drop) { charLighter.run(drop, 60); }
 }
 
 export class GhostEffects {
     static applyTo(drop) {
-        this.upAlpha(drop.alphas);
-        this.downAlpha(drop.alphas);
+        //this.upAlpha(drop.alphas);
+        //this.downAlpha(drop.alphas);
     }
     static upAlpha(alphas) { charAlpha.up(alphas); }
     static downAlpha(alphas) { charAlpha.down(alphas); }
 }
 class charAlpha {
     static up(alphas) {
-        if ( Math.random() < 0.01 ) { // 5% chance per frame
+        if ( Math.random() < 0.01 ) { // 1% chance per frame
             const idx = mt_rand(0, alphas.length -1);
             alphas[idx] = 1;
         }
     }
     static down(alphas) {
-        if ( Math.random() < 0.1 ) { // 5% chance per frame
+        if ( Math.random() < 0.1 ) { // 10% chance per frame
             const idx = mt_rand(0, alphas.length -1);
             alphas[idx] = 0.4;
         }
@@ -68,42 +68,105 @@ class charSwapper {
         }            
     }
 }
-class charLighter {
-    // Spotlight effect states
-    static flashIndex = null;     // index of the char being lit
-    static flashFramesLeft = 0;   // countdown until it stops  
-    static lightedCharOriginalAlpha = null;
-    static alphas = [];
-    static drop = null;
-    
-    static flashRandomChar(drop, duration) {
-        if (drop.chars.length === 0) return;
-        if ( this.drop === null ) this.drop = drop; else return;
-        if ( this.isRunning() ) return;
 
-        
-        if ( Math.random() < 0.05 ) { console.log(9);
-            this.flashIndex = Math.floor(Math.random() * this.drop.chars.length);
-            this.lightedCharOriginalAlpha = this.drop.alphas[this.flashIndex];
-            this.drop.alphas[this.flashIndex] = 1;  // set to full brightness
-            this.alphas = drop.alphas;
-            this.flashFramesLeft = duration;
+class EffectState {
+    static enter(context, ...args) {}
+    static update(context, drop, duration) {}
+    static exit(context) {}
+}
+class IdleState extends EffectState {
+    static update(context, drop, duration) {
+        if ( Math.random() < 0.05 && drop && !drop.isOffscreen() ) { context.clog("start");
+            context.transition(ActiveState, drop, duration);
         }
-    }
-    static isRunning() {
-        if ( this.flashFramesLeft > 0 ) {
-            this.flashFramesLeft--;
-            if ( this.flashFramesLeft === 0 && this.flashIndex !== null ) {
-                // Restore original alpha when done
-                this.drop.alphas[this.flashIndex] = this.lightedCharOriginalAlpha;
-                this.flashIndex = null;
-                this.lightedCharOriginalAlpha = null;
-                this.drop = null;
-            }
-        }
-        return (this.flashIndex !== null && this.lightedCharOriginalAlpha !== null);
     }
 }
+class ActiveState extends EffectState {
+    static enter(context, drop, duration) {
+        context.drop = drop;
+        context.flashFramesLeft = duration;
+        context.flashIndex = mt_rand(0, drop.chars.length - 1);
+        context.originalAlpha = drop.alphas[context.flashIndex];
+        drop.alphas[context.flashIndex] = 1;
+    }
+    static update(context) {
+        if ( !context.drop || context.drop.isOffscreen() ) {
+            context.transition(IdleState);
+            return;
+        }
+        context.flashFramesLeft--;
+        if (context.flashFramesLeft <= 0) {
+            context.transition(IdleState);
+        } else {
+            context.drop.alphas[context.flashIndex] = 1;
+        }
+    }
+    static exit(context) {
+        if ( context.drop ) {
+            context.drop.alphas[context.flashIndex] = context.originalAlpha;
+        }
+        context.drop = null;
+        context.flashIndex = 0;
+        context.originalAlpha = 0;
+        context.flashFramesLeft = 0;
+    }
+}
+class charLighter {
+    static state = IdleState;
+    // Spotlight effect states
+    static flashIndex = 0;     // index of the char being lit
+    static flashFramesLeft = 0;   // countdown until it stops  
+    static originalAlpha = 0;
+    static drop = null;
+    static nums = {start:0, run:0, stop:0, reset:0};
+    
+    static run(drop, duration) {
+        this.state.update(this, drop, duration);
+    }
+    static transition(newState, ...args) {
+        this.state.exit(this);
+        this.state = newState;
+        this.state.enter(this, ...args);
+    } 
+    static reset() {
+        this.flashIndex = 0;
+        this.originalAlpha = 0;
+        this.started = false;
+        this.flashFramesLeft = 0;
+        this.clog("reset");
+    }
+    static clog(method) {
+        if ( this.flashFramesLeft === 0 || this.flashFramesLeft === 60 ) {
+            this.nums[method]++;
+            const d = new Date();
+            const n = d.toLocaleTimeString();
+            const alpha = (this.drop === null ? "expired" : this.drop.alphas[this.flashIndex]);
+            const id = (this.drop === null ? "expired" : this.drop.id);
+            console.log(method, "frame", id, this.flashFramesLeft, "alpha =", alpha, "time=", n, "started=", this.started, "nums=", this.nums);
+        }
+    }
+    static start(drop, duration) {    
+        this.flashFramesLeft = duration;
+        this.setDrop(drop);
+        this.started = true;
+        this.flashIndex = mt_rand(0, this.drop.chars.length -1);
+        this.originalAlpha = this.drop.alphas[this.flashIndex];
+        this.drop.alphas[this.flashIndex] = 1;  // set to full brightness
+        this.clog("start");
+    }
+    /*static validDrop() { //console.log(typeof this.drop);//, (! this.drop.isOffscreen()));
+        return ((this.drop !== null) && (typeof this.drop === "object") && (! this.drop.isOffscreen()));
+    }*/
+    static stop() {
+        if ( this.started === false ) return;
+        // Restore original alpha when done
+        this.drop.alphas[this.flashIndex] = this.originalAlpha;
+        this.setDrop(null);
+        this.clog("stop");
+    }
+}
+
+
 
 export class GlowingChar {
     static layers = 11;
