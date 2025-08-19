@@ -1,18 +1,18 @@
 import { mt_rand } from "./functions.js";
 import { StateMachine, EffectIdleState, EffectActiveState } from "./state-machine.js";
 
-class IdleState extends EffectIdleState {
-    static runUpdate(context, drop, duration) {
+class WaveLightIdleState extends EffectIdleState {
+    static update(context, drop, duration) {
         // e.g. 5% chance per frame to start
         if (Math.random() < 1 && drop && !drop.isOffscreen()) {
             if ( drop.alphas.length > 8 )
-                context.transition(ActiveState, drop, duration);
+                context.transition(WaveLightActiveState, drop, duration);
         }
     }
 }
 
-class ActiveState extends EffectActiveState {
-    static runEnter(context, drop, duration) {
+class WaveLightActiveState extends EffectActiveState {
+    static enter(context, drop, duration) {
         context.drop = drop;
         context.duration = duration * 90;
         context.flashIndex = 0;               // start at head
@@ -22,9 +22,9 @@ class ActiveState extends EffectActiveState {
         drop.alphas[0] = 1;                   // light the first char
     }
 
-    static runUpdate(context) {
+    static update(context) {
         if (!context.drop || context.drop.isOffscreen()) {
-            context.transition(IdleState);
+            context.transition(WaveLightIdleState);
             return;
         }
 
@@ -36,7 +36,7 @@ class ActiveState extends EffectActiveState {
 
             context.flashIndex++;
             if (context.flashIndex >= context.drop.chars.length) {
-                context.transition(IdleState);
+                context.transition(WaveLightIdleState);
                 return;
             }
 
@@ -46,7 +46,7 @@ class ActiveState extends EffectActiveState {
         }
     }
 
-    static runExit(context) {
+    static exit(context) {
         if (context.drop) {
             // restore any char that might still be lit
             context.drop.alphas[context.flashIndex] = context.originalAlphas[context.flashIndex];
@@ -59,7 +59,7 @@ class ActiveState extends EffectActiveState {
 }
 
 export default class waveLighter extends StateMachine {
-    static state = IdleState;
+    static state = WaveLightIdleState;
     static drop = null;
     static flashIndex = 0;
     static framesLeft = 0;

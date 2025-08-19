@@ -1,13 +1,13 @@
 
 class EffectState {
-    static enter(context, ...args) {
-        if ( this.runEnter ) this.runEnter(context, ...args);
+    static onEnter(context, ...args) {
+        if ( this.enter ) this.enter(context, ...args);
     }
-    static update(context, drop, duration) {
-        this.runUpdate(context, drop, duration);
+    static onUpdate(context, drop, duration) {
+        this.update(context, drop, duration);
     }
-    static exit(context) {
-        if ( this.runExit ) this.runExit(context);
+    static onExit(context) {
+        if ( this.exit ) this.exit(context);
     }
 }
 export class EffectIdleState extends EffectState {
@@ -19,11 +19,11 @@ export class EffectActiveState extends EffectState {
 
 export class StateMachine {
     static run(drop, duration) {
-        this.state.update(this, drop, duration);
+        this.state.onUpdate(this, drop, duration);
     }
     static transition(newState, ...args) {
-        this.state.exit(this);
+        this.state.onExit(this);
         this.state = newState;
-        this.state.enter(this, ...args);
+        this.state.onEnter(this, ...args);
     }
 }

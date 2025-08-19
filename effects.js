@@ -97,14 +97,14 @@ export class GlowingChar {
         const half = Math.floor(this.layers / 2); // middle index
         for ( let i = 1; i <= half; i++ ) {
             const layerAlpha = this.layerAlphas[i] * alpha;   
-            ctx.fillStyle = "rgba(0,255,0," + layerAlpha + ")"; 
+            ctx.fillStyle = "hsla(120,100%,50%," + layerAlpha + ")"; 
             const offset = i * 0.5; 
             ctx.fillText(txt, x + offset, y);
             ctx.fillText(txt, x - offset, y);
             ctx.fillText(txt, x, y + offset);
             ctx.fillText(txt, x, y - offset);
         }
-        ctx.fillStyle = "rgba(" + fill.join(",") + ",1)"; // final color
+        ctx.fillStyle = "hsla(" + fill.join(",") + ",1)"; // final color
         ctx.fillText(txt, x, y);
         ctx.fillText(txt, x, y);
     }

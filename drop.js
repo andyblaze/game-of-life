@@ -36,9 +36,9 @@ export default class Drop {
         return (charY > -this.charHeight && charY < this.canvasHeight);
     }
     drawChar(ctx, c, i, charY) {
-        const fill = (i === 0 ? [213,255,213] : [0,255,0]);
+        const fill = (i === 0 ? ["120", "100%", "92%"] : ["120","100%","50%"]);
         if ( this.cfg.isGhost === true ) {
-            ctx.fillStyle = "rgba(0,255,0," + this.alphas[i] + ")"; 
+            ctx.fillStyle = "hsla(120,100%,50%," + this.alphas[i] + ")"; 
             ctx.fillText(c, this.x, charY);
         }
         else 

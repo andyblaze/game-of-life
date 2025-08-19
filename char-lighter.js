@@ -1,34 +1,34 @@
 import { mt_rand } from "./functions.js";
 import { StateMachine, EffectIdleState, EffectActiveState } from "./state-machine.js";
 
-class IdleState extends EffectIdleState {
-    static runUpdate(context, drop, duration) {
+class CharLightIdleState extends EffectIdleState {
+    static update(context, drop, duration) {
         if ( Math.random() < 0.5 && drop && !drop.isOffscreen() ) {
-            context.transition(ActiveState, drop, duration);
+            context.transition(CharLightActiveState, drop, duration);
         }
     }
 }
-class ActiveState extends EffectActiveState {
-    static runEnter(context, drop, duration) {
+class CharLightActiveState extends EffectActiveState {
+    static enter(context, drop, duration) {
         context.drop = drop;
         context.flashFramesLeft = duration * duration; // * duration is 60 if we're at 60fps.  tweak if needed
         context.flashIndex = mt_rand(3, drop.chars.length - 1);
         context.originalAlpha = drop.alphas[context.flashIndex];
         drop.alphas[context.flashIndex] = 1;
     }
-    static runUpdate(context) {
+    static update(context) {
         if ( !context.drop || context.drop.isOffscreen() ) {
-            context.transition(IdleState);
+            context.transition(CharLightIdleState);
             return;
         }
         context.flashFramesLeft--;
         if (context.flashFramesLeft <= 0) { 
-            context.transition(IdleState);
+            context.transition(CharLightIdleState);
         } else {
             context.drop.alphas[context.flashIndex] = 1;
         }
     }
-    static runExit(context) {
+    static exit(context) {
         if ( context.drop ) {
             context.drop.alphas[context.flashIndex] = context.originalAlpha;
         }
@@ -39,7 +39,7 @@ class ActiveState extends EffectActiveState {
     }
 }
 export default class charLighter extends StateMachine {
-    static state = IdleState;
+    static state = CharLightIdleState;
     // Spotlight effect states
     static flashIndex = 0;     // index of the char being lit
     static flashFramesLeft = 0;   // countdown until it stops  
