@@ -22,7 +22,7 @@ const config = {
         alphaRange: {headAlpha: 0.4, tailAlpha: 0.01},
         charHeight:24,
         isGhost: true,
-        charPool: Array.from(",.`'・\"+*^≠±×÷∑∆π√─┐└┘┌•◦●○◉◎" + "        ")
+        charPool: Array.from(",.`'・\"+*^≠±×÷∑∆π√─┐└┘┌•◦●○" + "        ")
                     //"日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                ")
     },
     //charPool: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンヴー・" +

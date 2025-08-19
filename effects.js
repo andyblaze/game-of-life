@@ -2,9 +2,9 @@ import { mt_rand } from "./functions.js";
 
 export class MainEffects {
     static applyTo(drop) {
-        //this.swapHead(drop.chars, drop.alphas);
-        //this.swapChars(drop.chars, drop.alphas);
-        //this.flipChars(drop.chars);
+        this.swapHead(drop.chars, drop.alphas);
+        this.swapChars(drop.chars, drop.alphas);
+        this.flipChars(drop.chars);
         this.flashChar(drop);
     }
     static swapHead(chars, alphas) { charSwapper.swapHead(chars, alphas); }
@@ -15,8 +15,8 @@ export class MainEffects {
 
 export class GhostEffects {
     static applyTo(drop) {
-        //this.upAlpha(drop.alphas);
-        //this.downAlpha(drop.alphas);
+        this.upAlpha(drop.alphas);
+        this.downAlpha(drop.alphas);
     }
     static upAlpha(alphas) { charAlpha.up(alphas); }
     static downAlpha(alphas) { charAlpha.down(alphas); }
@@ -37,7 +37,7 @@ class charAlpha {
 }
 class charFlipper {
     static flip(chars) {
-        if ( Math.random() < 0.01 ) { // 1% chance per frame
+        if ( Math.random() < 0.001 ) { 
             chars.reverse();
         }
     }
@@ -55,14 +55,15 @@ class charSwapper {
         alphas[idx2] = tmp;
     }
     static swapHead(chars, alphas) {
-        if ( Math.random() < 0.05 ) { // 5% chance per frame
+        if ( Math.random() < 0.03 ) {
             this.doSwap(chars, 0, 1, alphas);
         }            
     }
     static swapChars(chars, alphas) {
         if ( Math.random() < 0.05 ) { // 5% chance per frame
-            const idx1 = mt_rand(1, chars.length -1);
-            const idx2 = mt_rand(1, chars.length -1);
+            const idx1 = mt_rand(3, chars.length -1);
+            const idx2 = mt_rand(3, chars.length -1);
+            if ( idx1 === idx2 ) return;
             const param = Math.random() < 0.05 ? alphas : false;
             this.doSwap(chars, idx1, idx2, param);
         }            
@@ -76,7 +77,7 @@ class EffectState {
 }
 class IdleState extends EffectState {
     static update(context, drop, duration) {
-        if ( Math.random() < 0.05 && drop && !drop.isOffscreen() ) { context.clog("start");
+        if ( Math.random() < 0.5 && drop && !drop.isOffscreen() ) {
             context.transition(ActiveState, drop, duration);
         }
     }
@@ -84,8 +85,8 @@ class IdleState extends EffectState {
 class ActiveState extends EffectState {
     static enter(context, drop, duration) {
         context.drop = drop;
-        context.flashFramesLeft = duration;
-        context.flashIndex = mt_rand(0, drop.chars.length - 1);
+        context.flashFramesLeft = duration * duration; // * duration is 60 if we're at 60fps.  tweak if needed
+        context.flashIndex = mt_rand(3, drop.chars.length - 1);
         context.originalAlpha = drop.alphas[context.flashIndex];
         drop.alphas[context.flashIndex] = 1;
     }
@@ -95,7 +96,7 @@ class ActiveState extends EffectState {
             return;
         }
         context.flashFramesLeft--;
-        if (context.flashFramesLeft <= 0) {
+        if (context.flashFramesLeft <= 0) { 
             context.transition(IdleState);
         } else {
             context.drop.alphas[context.flashIndex] = 1;
@@ -118,7 +119,7 @@ class charLighter {
     static flashFramesLeft = 0;   // countdown until it stops  
     static originalAlpha = 0;
     static drop = null;
-    static nums = {start:0, run:0, stop:0, reset:0};
+    static nums = {stt:0, run:0, stp:0, rst:0};
     
     static run(drop, duration) {
         this.state.update(this, drop, duration);
@@ -142,7 +143,7 @@ class charLighter {
             const n = d.toLocaleTimeString();
             const alpha = (this.drop === null ? "expired" : this.drop.alphas[this.flashIndex]);
             const id = (this.drop === null ? "expired" : this.drop.id);
-            console.log(method, "frame", id, this.flashFramesLeft, "alpha =", alpha, "time=", n, "started=", this.started, "nums=", this.nums);
+            console.log(method, "frame", id, this.flashFramesLeft, "alpha =", alpha, "time=", n, "nums=", this.nums);
         }
     }
     static start(drop, duration) {    
