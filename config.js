@@ -29,6 +29,6 @@ const config = {
     //          "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),
     mainSpawnChance: 0.01,    
     ghostSpawnChance: 0.01,
-    ghostsPerLane: 3    
+    ghostsPerLane: 6    
 }
 export default config;
