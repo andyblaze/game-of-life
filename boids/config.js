@@ -1,7 +1,7 @@
 const config = {
   width: window.innerWidth,   // canvas width
   height: window.innerHeight, // canvas height
-  numBoids: 500,             // number of boids to simulate
+  numBoids: 600,             // number of boids to simulate
   framesPerTick: 1,           // update frequency (higher = slower updates, lower CPU)
 
   // --- perception ---
@@ -30,7 +30,7 @@ const config = {
                               // bigger → flock moves faster, more energetic
                               // smaller → slower, gentler motion
 
-  maxForce: 0.1,               // maximum steering adjustment per frame
+  maxForce: 0.001,               // maximum steering adjustment per frame
                               // bigger → boids can make sharp, agile turns
                               // smaller → smooth but less responsive turns
 // --- environment ---
