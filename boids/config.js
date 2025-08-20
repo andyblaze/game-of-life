@@ -5,23 +5,23 @@ const config = {
   framesPerTick: 1,           // update frequency (higher = slower updates, lower CPU)
 
   // --- perception ---
-  neighborRadius: 50,        // how far a boid "sees" others
+  neighborRadius: 250,        // how far a boid "sees" others
                               // bigger → flock acts more coherently
                               // smaller → more local chaos & splintering
 
-  separationDistance: 40,     // minimum comfortable distance
+  separationDistance: 30,     // minimum comfortable distance
                               // if neighbors are closer than this, boid steers away
 
   // --- weights / strengths ---
-  separationStrength: 0.1,   // how strongly a boid avoids crowding
+  separationStrength: 0.2,   // how strongly a boid avoids crowding
                               // bigger → flock looks looser, more "pushy"
                               // smaller → boids overlap more
 
-  alignmentStrength: 0.1,     // how strongly a boid matches neighbor direction
+  alignmentStrength: 0.0001,     // how strongly a boid matches neighbor direction
                               // bigger → flock aligns quickly, straighter flight
                               // smaller → flock looks messy / scattered
 
-  cohesionStrength: 0.01,     // how strongly a boid moves toward neighbor center
+  cohesionStrength: 0.001,     // how strongly a boid moves toward neighbor center
                               // bigger → flock clumps tighter, denser formations
                               // smaller → flock drifts apart
 
@@ -34,7 +34,7 @@ const config = {
                               // bigger → boids can make sharp, agile turns
                               // smaller → smooth but less responsive turns
 // --- environment ---
-noiseStrength: 0.21   // how strong the "gusts of wind" are
+noiseStrength: 0.2   // how strong the "gusts of wind" are
                         // bigger → more chaotic ripples
                         // smaller → subtle, natural undulations                            
 };

@@ -31,16 +31,28 @@ this.offCtx.fillStyle = "rgba(0,0,0,0.5)";
         const halfBase = 4;   // half of the width
 
         this.offCtx.save();
+        
         this.offCtx.translate(x, y);
         this.offCtx.rotate(angle);
+        
+        //this.offCtx.beginPath();
+const scale = 2.8;
 
-        this.offCtx.beginPath();
+this.offCtx.beginPath();
+this.offCtx.moveTo(0, 0);     
+this.offCtx.lineTo(-5 * scale, -2 * scale);  
+this.offCtx.lineTo(-3 * scale, 0);    
+this.offCtx.lineTo(-5 * scale, 2 * scale);    
+this.offCtx.closePath();
+this.offCtx.fill();
+
+        /*this.offCtx.beginPath();
         this.offCtx.moveTo(size, 0);             // tip
         this.offCtx.lineTo(-size, halfBase);     // back right
         this.offCtx.lineTo(-size, -halfBase);    // back left
         this.offCtx.closePath();
-
-        this.offCtx.fill();
+        this.offCtx.fill();*/
+        
         this.offCtx.restore();
     });
         this.blit();
