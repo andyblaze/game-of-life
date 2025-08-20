@@ -10,6 +10,7 @@ const config = {
     main: {
         speed: {baseRate:0.05, min:7, max:10},
         dropLengths: {min: 5, max:13}, // min / max characters in a drop
+        color: ["120","100%","50%"], // hsl
         alphaRange: {headAlpha: 1, tailAlpha: 0.01},
         charHeight:24,
         isGhost: false,
@@ -18,7 +19,8 @@ const config = {
     },
     ghost: {
         speed: {baseRate:0.05, min:4, max:9},
-        dropLengths: {min: 4, max:13}, // min / max characters in a drop
+        dropLengths: {min: 4, max:13},
+        color: ["120","100%","50%"],
         alphaRange: {headAlpha: 0.4, tailAlpha: 0.01},
         charHeight:24,
         isGhost: true,
@@ -29,6 +31,6 @@ const config = {
     //          "日月火水木金土年時分秒上下左右中大小入口出口本人力十百千万" + "                "),
     mainSpawnChance: 0.01,    
     ghostSpawnChance: 0.01,
-    ghostsPerLane: 6    
+    ghostsPerLane: 7    
 }
 export default config;

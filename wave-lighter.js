@@ -1,4 +1,3 @@
-import { mt_rand } from "./functions.js";
 import { StateMachine, EffectIdleState, EffectActiveState } from "./state-machine.js";
 
 class WaveLightIdleState extends EffectIdleState {

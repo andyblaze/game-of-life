@@ -17,12 +17,16 @@ export class MainEffects {
 
 export class GhostEffects {
     static applyTo(drop) {
-        this.upAlpha(drop.alphas);
-        this.downAlpha(drop.alphas);
+        //this.upAlpha(drop.alphas);
+        //this.downAlpha(drop.alphas);
+        this.upColor(drop.colors);
+        this.downColor(drop.colors);
         this.waveLight(drop);
     }
     static upAlpha(alphas) { charAlpha.up(alphas); }
     static downAlpha(alphas) { charAlpha.down(alphas); }
+    static upColor(colors) { charColor.up(colors); }
+    static downColor(colors) { charColor.down(colors); }
     static waveLight(drop) { waveLighter.run(drop, 60); }
 }
 class charAlpha {
@@ -36,6 +40,45 @@ class charAlpha {
         if ( Math.random() < 0.1 ) { // 10% chance per frame
             const idx = mt_rand(0, alphas.length -1);
             alphas[idx] = 0.4;
+        }
+    }
+}
+class charColor {
+    static palette = [
+        "hsla(125,95%,45%,",
+        "hsla(115,90%,55%,",
+        "hsla(130,100%,40%,",
+        "hsla(110,80%,60%,",
+        "hsla(135,85%,50%,",
+        "hsla(105,90%,50%,",
+        "hsla(120,70%,70%,",
+        "hsla(125,80%,60%,",
+        "hsla(115,100%,40%,",
+        "hsla(140,80%,50%,",  // cyan-ish green
+        "hsla(100,85%,55%,",
+        "hsla(150,75%,60%,",  // pale cyan
+        "hsla(95,90%,65%,",
+        "hsla(160,70%,50%,",  // teal-ish
+        "hsla(120,60%,80%,",  // very light green
+        "hsla(130,50%,75%,"
+        //"hsla(125,65%,85%,",  // almost white
+        //"hsla(115,70%,90%,",
+        //"hsla(135,55%,80%,"
+    ];
+
+    static up(colors) {
+        if ( Math.random() < 0.01 ) { // 1% chance per frame
+            const idx = mt_rand(0, colors.length -1);
+            const shade = this.palette[mt_rand(0, this.palette.length - 1)];
+            const alpha = mt_rand(6, 8) / 10;
+            colors[idx] = shade + alpha + ")";
+        }
+    }
+    static down(colors) {
+        if ( Math.random() < 0.1 ) { // 10% chance per frame
+            const idx = mt_rand(0, colors.length -1);
+            const alpha = Math.random() * (0.4 - 0.01) + 0.01;
+            colors[idx] = "hsla(120,100%,50%," + alpha + ")";
         }
     }
 }

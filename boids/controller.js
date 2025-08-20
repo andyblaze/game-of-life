@@ -23,7 +23,7 @@ export default class Controller {
             if ( this.frameReady() ) {
                 const data = this.model.tick();
                 this.view.draw(data);
-                //DeltaReport.log(timestamp);
+                DeltaReport.log(timestamp);
             }
         }
         requestAnimationFrame(this.loop.bind(this)); 

@@ -5,7 +5,7 @@ export default class Drop {
     constructor(chars, point, cfg) { //console.log(cfg);
         this.chars = chars; //this.getChars(cfg.dropLengths);
         this.speed = this.getSpeed(cfg.speed);
-        this.alphas = this.generateAlphas(cfg.alphaRange);
+        this.prefillColorsAndAlphas(cfg.color, cfg.alphaRange);
         this.x = point.x;
         this.y = point.y;
         this.cfg = cfg;
@@ -37,8 +37,8 @@ export default class Drop {
     }
     drawChar(ctx, c, i, charY) {
         const fill = (i === 0 ? ["120", "100%", "92%"] : ["120","100%","50%"]);
-        if ( this.cfg.isGhost === true ) {
-            ctx.fillStyle = "hsla(120,100%,50%," + this.alphas[i] + ")"; 
+        if ( this.cfg.isGhost === true ) {            
+            ctx.fillStyle = this.colors[i];//"hsla(120,100%,50%," + this.alphas[i] + ")"; 
             ctx.fillText(c, this.x, charY);
         }
         else 
@@ -56,24 +56,27 @@ export default class Drop {
     isOffscreen() {
         return this.y - (this.chars.length * this.charHeight) > this.canvasHeight;
     }
-    generateAlphas(range) {
-        let result = [];
+    prefillColorsAndAlphas(color, alphaRange) {
+        this.colors = [];
+        this.alphas = [];
+        const baseColor = "hsla(" + color.join(",") + ",";
         const brightCount = 1;//mt_rand(1,3); // keep first n bright
         const fadeLength = Math.max(1, this.chars.length - brightCount);
         const decayRate = 5; // higher = faster drop
-        const { headAlpha, tailAlpha } = range;
+        const { headAlpha, tailAlpha } = alphaRange;
 
         for (let i = 0; i < this.chars.length; i++) {
             if ( i < brightCount ) {
-                result.push(headAlpha);
+                this.alphas.push(headAlpha);
+                this.colors.push(baseColor + headAlpha + ")");
             } else {
                 const t = (i - brightCount) / fadeLength; // 0 → 1
                 // Exponential falloff
                 const eased = Math.exp(-decayRate * t);
                 const alpha = tailAlpha + eased * (headAlpha - tailAlpha);
-                result.push(alpha);                
+                this.colors.push(baseColor + alpha + ")");
+                this.alphas.push(alpha);                
             }
         }
-        return result;
     }
 }
