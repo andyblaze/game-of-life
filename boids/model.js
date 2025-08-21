@@ -2,6 +2,10 @@ export default class Model {
     constructor(cfg) {
         this.cfg = cfg;
         this.boids = [];
+        this.resetSAC();
+        this.initBoids(cfg);
+    }
+    initBoids(cfg) {
         for (let i = 0; i < cfg.numBoids; i++) {
             this.boids.push({
                 position: { x: Math.random() * cfg.width, y: Math.random() * cfg.height },
@@ -9,7 +13,11 @@ export default class Model {
             });
         }
     }
-
+    resetSAC() {
+        this.separation = { x: 0, y: 0 };
+        this.alignment = { x: 0, y: 0 };
+        this.cohesion = { x: 0, y: 0 };
+    }
     tick() {
         // Compute new velocities & positions
         for (const boid of this.boids) {
@@ -28,76 +36,88 @@ export default class Model {
         }
         return this.boids;
     }
+    computeNoise(boid) {
+        // Example using a simple sin/cos drift
+        const t = Date.now() * 0.001; // seconds
+        const noise = {
+            x: Math.sin(t + boid.position.y * 0.01) * this.cfg.noiseStrength,
+            y: Math.cos(t + boid.position.x * 0.01) * this.cfg.noiseStrength
+        };
+        return noise;
+    }
+    limitSpeed(vx, vy) {
+        const speed = Math.sqrt(vx * vx + vy * vy);
+        if (speed > this.cfg.maxSpeed) {
+            vx = (vx / speed) * this.cfg.maxSpeed;
+            vy = (vy / speed) * this.cfg.maxSpeed;
+        }
+        return [ vx, vy ];
+    }
+    weightedVelocity(idx, velocity) {
+        // Weighted sum
+        let vx = velocity[idx]
+            + this.separation[idx] * this.cfg.separationStrength
+            + this.alignment[idx] * this.cfg.alignmentStrength
+            + this.cohesion[idx] * this.cfg.cohesionStrength;
+        return vx;
+    }
+    getDistance(pos1, pos2) {
+        const dx = pos1.x - pos2.x;
+        const dy = pos1.y - pos2.y;
+        return [dx, dy, Math.sqrt(dx * dx + dy * dy)];        
+    }
+    setSeparation(dist, dx, dy) {
+        if (dist < this.cfg.separationDistance && dist > 0) {
+            this.separation.x -= dx / dist;
+            this.separation.y -= dy / dist;
+        }    
+    }
+    setAlignment(velocity) {
+        this.alignment.x += velocity.x;
+        this.alignment.y += velocity.y;    
+    }
+    setCohesion(position) {
+        this.cohesion.x += position.x;
+        this.cohesion.y += position.y; 
+    }
+    checkOnNeighbors(neighbors, position) {
+        if ( neighbors > 0 ) {
+            this.alignment.x /= neighbors;
+            this.alignment.y /= neighbors;
 
-computeVelocity(boid) {
-    let separation = { x: 0, y: 0 };
-    let alignment = { x: 0, y: 0 };
-    let cohesion = { x: 0, y: 0 };
-
-    let neighbors = 0;
-
-    for (const other of this.boids) {
-        if (other === boid) continue;
-
-        const dx = other.position.x - boid.position.x;
-        const dy = other.position.y - boid.position.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < this.cfg.neighborRadius) {
-            neighbors++;
-
-            // Separation
-            if (dist < this.cfg.separationDistance && dist > 0) {
-                separation.x -= dx / dist;
-                separation.y -= dy / dist;
-            }
-
-            // Alignment
-            alignment.x += other.velocity.x;
-            alignment.y += other.velocity.y;
-
-            // Cohesion
-            cohesion.x += other.position.x;
-            cohesion.y += other.position.y;
+            this.cohesion.x = (this.cohesion.x / neighbors) - position.x;
+            this.cohesion.y = (this.cohesion.y / neighbors) - position.y;
         }
     }
+    computeVelocity(boid) {
+        this.resetSAC();
 
-    if (neighbors > 0) {
-        alignment.x /= neighbors;
-        alignment.y /= neighbors;
+        let neighbors = 0;
 
-        cohesion.x = (cohesion.x / neighbors) - boid.position.x;
-        cohesion.y = (cohesion.y / neighbors) - boid.position.y;
+        for ( const other of this.boids ) {
+            if ( other === boid ) continue;
+
+            const [dx, dy, dist] = this.getDistance(other.position, boid.position);
+
+            if ( dist < this.cfg.neighborRadius ) {
+                neighbors++;
+                this.setSeparation(dist, dx, dy);
+                this.setAlignment(other.velocity);
+                this.setCohesion(other.position);
+            }
+        }
+
+        this.checkOnNeighbors(neighbors, boid.position);
+
+        let vx = this.weightedVelocity("x", boid.velocity);
+        let vy = this.weightedVelocity("y", boid.velocity);
+
+        const noise = this.computeNoise(boid);
+
+        vx += noise.x;
+        vy += noise.y;
+
+        [ vx, vy ] = this.limitSpeed(vx, vy);
+        return { x: vx, y: vy };
     }
-
-    // Weighted sum
-    let vx = boid.velocity.x
-        + separation.x * this.cfg.separationStrength
-        + alignment.x * this.cfg.alignmentStrength
-        + cohesion.x * this.cfg.cohesionStrength;
-
-    let vy = boid.velocity.y
-        + separation.y * this.cfg.separationStrength
-        + alignment.y * this.cfg.alignmentStrength
-        + cohesion.y * this.cfg.cohesionStrength;
-
-// Example using a simple sin/cos drift
-const t = Date.now() * 0.001; // seconds
-const noise = {
-    x: Math.sin(t + boid.position.y * 0.01) * this.cfg.noiseStrength,
-    y: Math.cos(t + boid.position.x * 0.01) * this.cfg.noiseStrength
-};
-
-vx += noise.x;
-vy += noise.y;
-
-    // Limit speed
-    const speed = Math.sqrt(vx * vx + vy * vy);
-    if (speed > this.cfg.maxSpeed) {
-        vx = (vx / speed) * this.cfg.maxSpeed;
-        vy = (vy / speed) * this.cfg.maxSpeed;
-    }
-
-    return { x: vx, y: vy };
-}
 }
