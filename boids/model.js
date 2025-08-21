@@ -9,7 +9,8 @@ export default class Model {
         for (let i = 0; i < cfg.numBoids; i++) {
             this.boids.push({
                 position: { x: Math.random() * cfg.width, y: Math.random() * cfg.height },
-                velocity: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 }
+                velocity: { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 },
+                opacity:0.2
             });
         }
     }
@@ -18,21 +19,40 @@ export default class Model {
         this.alignment = { x: 0, y: 0 };
         this.cohesion = { x: 0, y: 0 };
     }
+    getTurnAngle(oldVel, newVel) {
+        const dot = oldVel.x * newVel.x + oldVel.y * newVel.y;
+        const magA = Math.sqrt(oldVel.x * oldVel.x + oldVel.y * oldVel.y);
+        const magB = Math.sqrt(newVel.x * newVel.x + newVel.y * newVel.y);
+        const cosTheta = dot / (magA * magB + 1e-6); 
+        return Math.acos(Math.max(-1, Math.min(1, cosTheta))); // radians
+    }
+    wrapAroundEdges(boid) {
+        if (boid.position.x < 0) boid.position.x += this.cfg.width;
+        if (boid.position.x > this.cfg.width) boid.position.x -= this.cfg.width;
+        if (boid.position.y < 0) boid.position.y += this.cfg.height;
+        if (boid.position.y > this.cfg.height) boid.position.y -= this.cfg.height;
+    }
     tick() {
         // Compute new velocities & positions
         for (const boid of this.boids) {
+            const oldVel = { ...boid.velocity };
             const { x, y } = this.computeVelocity(boid);
             boid.velocity.x = x;
             boid.velocity.y = y;
 
             boid.position.x += boid.velocity.x;
             boid.position.y += boid.velocity.y;
+            
+            const turnAngle = this.getTurnAngle(oldVel, boid.velocity);
+            // If sharp turn, bump opacity
+            if (turnAngle > 0.1) {  // tweak threshold
+                boid.opacity = Math.min(0.4, boid.opacity + 0.3);
+            } else {
+                // slowly fade back to normal
+                boid.opacity = Math.max(0.2, boid.opacity - 0.02);
+            }
 
-            // wrap-around edges
-            if (boid.position.x < 0) boid.position.x += this.cfg.width;
-            if (boid.position.x > this.cfg.width) boid.position.x -= this.cfg.width;
-            if (boid.position.y < 0) boid.position.y += this.cfg.height;
-            if (boid.position.y > this.cfg.height) boid.position.y -= this.cfg.height;
+            this.wrapAroundEdges(boid);
         }
         return this.boids;
     }

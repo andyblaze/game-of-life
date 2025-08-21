@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D-ish Boids</title>
+  <style>
+    body { margin: 0; background: #fff; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<canvas id="boids"></canvas>
+<script>
+class Boid {
+  constructor(width, height, minZ, maxZ) {
+    this.position = {
+      x: Math.random() * width,
+      y: Math.random() * height,
+      z: Math.random() * (maxZ - minZ) + minZ
+    };
+    this.velocity = {
+      x: (Math.random() - 0.5) * 2,
+      y: (Math.random() - 0.5) * 2,
+      z: (Math.random() - 0.5) * 0.2
+    };
+  }
+}
+
+class Boids {
+  constructor(cfg) {
+    this.cfg = cfg;
+    this.boids = Array.from({ length: cfg.count },
+      () => new Boid(cfg.width, cfg.height, cfg.minZ, cfg.maxZ)
+    );
+  }
+
+  getDistance(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    const dz = a.z - b.z;
+    return [dx, dy, dz, Math.sqrt(dx*dx + dy*dy + dz*dz)];
+  }
+
+  computeVelocity(boid) {
+    let sep = {x:0,y:0,z:0};
+    let ali = {x:0,y:0,z:0};
+    let coh = {x:0,y:0,z:0};
+    let neighbors = 0;
+
+    for (const other of this.boids) {
+      if (other === boid) continue;
+      const [dx, dy, dz, dist] = this.getDistance(boid.position, other.position);
+      if (dist < this.cfg.neighborRadius) {
+        neighbors++;
+        if (dist < this.cfg.separationDistance && dist > 0) {
+          sep.x -= dx / dist;
+          sep.y -= dy / dist;
+          sep.z -= dz / dist;
+        }
+        ali.x += other.velocity.x;
+        ali.y += other.velocity.y;
+        ali.z += other.velocity.z;
+        coh.x += other.position.x;
+        coh.y += other.position.y;
+        coh.z += other.position.z;
+      }
+    }
+
+    if (neighbors > 0) {
+      ali.x /= neighbors; ali.y /= neighbors; ali.z /= neighbors;
+      coh.x = (coh.x / neighbors) - boid.position.x;
+      coh.y = (coh.y / neighbors) - boid.position.y;
+      coh.z = (coh.z / neighbors) - boid.position.z;
+    }
+
+    let vx = boid.velocity.x
+      + sep.x * this.cfg.separationStrength
+      + ali.x * this.cfg.alignmentStrength
+      + coh.x * this.cfg.cohesionStrength;
+
+    let vy = boid.velocity.y
+      + sep.y * this.cfg.separationStrength
+      + ali.y * this.cfg.alignmentStrength
+      + coh.y * this.cfg.cohesionStrength;
+
+    let vz = boid.velocity.z
+      + sep.z * this.cfg.separationStrength
+      + ali.z * this.cfg.alignmentStrength
+      + coh.z * this.cfg.cohesionStrength;
+
+    const speed = Math.sqrt(vx*vx + vy*vy + vz*vz);
+    if (speed > this.cfg.maxSpeed) {
+      vx = (vx / speed) * this.cfg.maxSpeed;
+      vy = (vy / speed) * this.cfg.maxSpeed;
+      vz = (vz / speed) * this.cfg.maxSpeed;
+    }
+    return {x:vx, y:vy, z:vz};
+  }
+
+  tick() {
+    for (const boid of this.boids) {
+      const {x, y, z} = this.computeVelocity(boid);
+      boid.velocity.x = x;
+      boid.velocity.y = y;
+      boid.velocity.z = z;
+
+      boid.position.x += boid.velocity.x;
+      boid.position.y += boid.velocity.y;
+      boid.position.z += boid.velocity.z;
+
+      // Wrap XY
+      if (boid.position.x < 0) boid.position.x += this.cfg.width;
+      if (boid.position.x > this.cfg.width) boid.position.x -= this.cfg.width;
+      if (boid.position.y < 0) boid.position.y += this.cfg.height;
+      if (boid.position.y > this.cfg.height) boid.position.y -= this.cfg.height;
+
+      // Clamp Z
+      if (boid.position.z < this.cfg.minZ) {
+        boid.position.z = this.cfg.minZ;
+        boid.velocity.z *= -0.5;
+      }
+      if (boid.position.z > this.cfg.maxZ) {
+        boid.position.z = this.cfg.maxZ;
+        boid.velocity.z *= -0.5;
+      }
+    }
+  }
+}
+
+const canvas = document.getElementById("boids");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const cfg = {
+  width: canvas.width,
+  height: canvas.height,
+  count: 400,
+  neighborRadius: 120,
+  separationDistance: 40,
+  maxSpeed: 3,
+  separationStrength: 0.005,
+  alignmentStrength: 0.001,
+  cohesionStrength: 0.05,
+  minZ: 0.5,
+  maxZ: 2.0
+};
+
+const system = new Boids(cfg);
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const boid of system.boids) {
+    const scale = boid.position.z;           // depth -> size
+    const opacity = 1.5 - boid.position.z;   // closer = darker
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(0,0,0,${opacity})`;
+    ctx.arc(boid.position.x, boid.position.y, 2*scale, 0, 2*Math.PI);
+    ctx.fill();
+  }
+}
+
+function loop() {
+  system.tick();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+</script>
+</body>
+</html>

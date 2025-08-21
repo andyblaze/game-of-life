@@ -1,11 +1,12 @@
 export default class View {
-    constructor(id) {
+    constructor(id, config) {
         this.onscreen = document.getElementById(id);
         this.onCtx = this.onscreen.getContext("2d");
         this.offscreen = document.createElement("canvas");
         this.offCtx = this.offscreen.getContext("2d");
         this.skyImage = new Image();
         this.skyImage.src = "sky.jpg";
+        this.cfg = config;
     }
     resize(w, h) {
         this.onscreen.width = w;
@@ -13,22 +14,19 @@ export default class View {
         this.offscreen.width = w;
         this.offscreen.height = h;
     }
-    drawBoid(scale) {
+    drawBoid(scale) { 
         this.offCtx.beginPath();
         this.offCtx.moveTo(0, 0);     
         this.offCtx.lineTo(-5 * scale, -2 * scale);  
         this.offCtx.lineTo(-3 * scale, 0);    
         this.offCtx.lineTo(-5 * scale, 2 * scale);    
         this.offCtx.closePath();
-        this.offCtx.fill();    
+        this.offCtx.fill(); 
     }
     draw(boids) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
-        this.offCtx.fillStyle = "rgba(0,0,0,0.2)";
+        this.offCtx.fillStyle = "rgba(0,0,0,0.7)";
         boids.forEach(boid => {
-
-            //const size = 8;       // length of the boid
-            //const halfBase = 4;   // half of the width
 
             this.offCtx.save();
             
@@ -37,12 +35,20 @@ export default class View {
             this.offCtx.translate(x, y);
             this.offCtx.rotate(angle);
             
-            const scale = 2.8; // more = bigger boid on screen
-
+            const scale = 3.8; // more = bigger boid on screen
+            this.offCtx.globalAlpha = boid.opacity;
             this.drawBoid(scale);
             
             this.offCtx.restore();
         });
+        // --- Layered fog overlay ---
+        const gradient = this.offCtx.createLinearGradient(
+            0, this.cfg.height - 300, 0, this.cfg.height
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
+        this.offCtx.fillStyle = gradient;
+        this.offCtx.fillRect(0, this.cfg.height - 300, this.cfg.width, 300);
         this.blit();
     }
     blit() {

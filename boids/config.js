@@ -1,7 +1,7 @@
 const config = {
   width: window.innerWidth,   // canvas width
   height: window.innerHeight, // canvas height
-  numBoids: 600,             // number of boids to simulate
+  numBoids: 450,             // number of boids to simulate
   framesPerTick: 1,           // update frequency (higher = slower updates, lower CPU)
 
   // --- perception ---
@@ -30,12 +30,15 @@ const config = {
                               // bigger → flock moves faster, more energetic
                               // smaller → slower, gentler motion
 
-  maxForce: 0.001,               // maximum steering adjustment per frame
+  maxForce: 0.0001,               // maximum steering adjustment per frame
                               // bigger → boids can make sharp, agile turns
                               // smaller → smooth but less responsive turns
 // --- environment ---
-noiseStrength: 0.2   // how strong the "gusts of wind" are
+noiseStrength: 0.2,   // how strong the "gusts of wind" are
                         // bigger → more chaotic ripples
-                        // smaller → subtle, natural undulations                            
+                        // smaller → subtle, natural undulations  
+    driftSpeed: 0.002, // How much far away boids drift around
+    minZ:0.5,
+    maxZ: 2
 };
 export default config;
