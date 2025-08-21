@@ -23,6 +23,16 @@ export default class View {
         this.offCtx.closePath();
         this.offCtx.fill(); 
     }
+    overlayFog(height) {
+        // --- Layered fog overlay ---
+        const gradient = this.offCtx.createLinearGradient(
+            0, this.cfg.height - height, 0, this.cfg.height
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+        gradient.addColorStop(1, 'rgba(215, 215, 215, 1)');
+        this.offCtx.fillStyle = gradient;
+        this.offCtx.fillRect(0, this.cfg.height - height, this.cfg.width, height);
+    }
     draw(boids) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
         this.offCtx.fillStyle = "rgba(0,0,0,0.7)";
@@ -41,14 +51,7 @@ export default class View {
             
             this.offCtx.restore();
         });
-        // --- Layered fog overlay ---
-        const gradient = this.offCtx.createLinearGradient(
-            0, this.cfg.height - 300, 0, this.cfg.height
-        );
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-        gradient.addColorStop(1, 'rgba(255, 255, 255, 0.8)');
-        this.offCtx.fillStyle = gradient;
-        this.offCtx.fillRect(0, this.cfg.height - 300, this.cfg.width, 300);
+        this.overlayFog(300);
         this.blit();
     }
     blit() {

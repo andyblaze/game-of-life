@@ -1,7 +1,7 @@
 const config = {
   width: window.innerWidth,   // canvas width
   height: window.innerHeight, // canvas height
-  numBoids: 450,             // number of boids to simulate
+  numBoids: 475,             // number of boids to simulate
   framesPerTick: 1,           // update frequency (higher = slower updates, lower CPU)
 
   // --- perception ---
