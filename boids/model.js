@@ -26,6 +26,25 @@ export default class Model {
         const cosTheta = dot / (magA * magB + 1e-6); 
         return Math.acos(Math.max(-1, Math.min(1, cosTheta))); // radians
     }
+    nudgeTowardCenter(boid) {
+        const centerX = this.cfg.width / 2;
+        const centerY = this.cfg.height / 2;
+
+        // Vector from boid to center
+        const toCenterX = centerX - boid.position.x;
+        const toCenterY = centerY - boid.position.y;
+
+        // Option 1: Random chance to apply nudge
+        if (Math.random() < this.cfg.edgeNudgeChance) {
+            boid.velocity.x += toCenterX * this.cfg.edgeNudgeStrength;
+            boid.velocity.y += toCenterY * this.cfg.edgeNudgeStrength;
+        }
+
+        // Option 2: Always apply, but with random factor
+        // const factor = Math.random();
+        // boid.velocity.x += toCenterX * nudgeStrength * factor;
+        // boid.velocity.y += toCenterY * nudgeStrength * factor;
+    }
     wrapAroundEdges(boid) {
         if (boid.position.x < 0) boid.position.x += this.cfg.width;
         if (boid.position.x > this.cfg.width) boid.position.x -= this.cfg.width;
@@ -51,7 +70,7 @@ export default class Model {
                 // slowly fade back to normal
                 boid.opacity = Math.max(0.2, boid.opacity - 0.02);
             }
-
+            this.nudgeTowardCenter(boid);
             this.wrapAroundEdges(boid);
         }
         return this.boids;

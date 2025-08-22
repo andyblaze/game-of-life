@@ -1,7 +1,7 @@
 const config = {
   width: window.innerWidth,   // canvas width
   height: window.innerHeight, // canvas height
-  numBoids: 475,             // number of boids to simulate
+  numBoids: 425,             // number of boids to simulate
   framesPerTick: 1,           // update frequency (higher = slower updates, lower CPU)
 
   // --- perception ---
@@ -38,7 +38,9 @@ noiseStrength: 0.2,   // how strong the "gusts of wind" are
                         // bigger → more chaotic ripples
                         // smaller → subtle, natural undulations  
     driftSpeed: 0.002, // How much far away boids drift around
-    minZ:0.5,
-    maxZ: 2
+
+    edgeNudgeStrength: 0.001, // how much boids will avoid edges - bigger number is more avoidance
+    
+    edgeNudgeChance: 0.02 // Random chance to apply edge nudge
 };
 export default config;
