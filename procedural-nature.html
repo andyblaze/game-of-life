@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Procedural Nature — L-systems, Flower, Coral</title>
+<style>
+  html,body{height:100%;margin:0;background:#071119;color:#dfe9ee;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+  canvas{display:block;width:100%;height:100%;}
+  .hud{
+    position:fixed; left:12px; top:10px; z-index:10;
+    background: rgba(0,0,0,0.35); padding:10px 12px; border-radius:8px;
+    color:#dfe9ee; font-size:13px; line-height:1.4; pointer-events:none;
+    text-shadow:0 1px 0 rgba(0,0,0,0.6);
+  }
+  .hint{opacity:.85;color:#a9c4dd; display:block; margin-top:6px; font-size:12px}
+  .small{font-size:11px;color:#9bb0c9; display:block; margin-top:6px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <strong>Procedural Nature</strong><br>
+  1: L-System Tree • 2: Flower • 3: Coral<br>
+  <span class="hint">Space: pause • R: reset • Click: seed / nudge</span>
+  <span class="small">Try switching modes while running — growth continues from seed.</span>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: true });
+  const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  function resize(){ canvas.width = Math.floor(canvas.clientWidth * DPR); canvas.height = Math.floor(canvas.clientHeight * DPR); let cx = canvas.width/2; let cy = canvas.height/2; }
+  window.addEventListener('resize', resize);
+  resize();
+  let cx=canvas.width/2, cy=canvas.height/2;
+
+  // State and controls
+  let mode = 'lsystem'; // 'lsystem' | 'flower' | 'coral'
+  let paused = false;
+  let last = performance.now();
+
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') paused = !paused;
+    else if (e.key === '1') startMode('lsystem');
+    else if (e.key === '2') startMode('flower');
+    else if (e.key === '3') startMode('coral');
+    else if (e.key.toLowerCase() === 'r') reset();
+  });
+
+  // click to seed or nudge
+  canvas.addEventListener('pointerdown', (ev) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (ev.clientX - rect.left) * DPR;
+    const y = (ev.clientY - rect.top) * DPR;
+    if (mode === 'lsystem') {
+      // set a different trunk base x position
+      lsys.originX = x;
+      resetLS();
+    } else if (mode === 'flower') {
+      flower.cx = x; flower.cy = y;
+      resetFlower();
+    } else if (mode === 'coral') {
+      coral.seedX = x; coral.seedY = y;
+      resetCoral();
+    }
+  });
+
+  // ---------------- L-System Tree ----------------
+  const lsys = {
+    originX: cx,
+    originY: canvas.height - 40 * DPR,
+    axiom: 'F',
+    rules: { 'F': 'F[+F]F[-F]F' }, // classic bushy tree
+    angle: 22 * Math.PI/180,
+    iterations: 0,
+    maxIterations: 6,
+    genString: '',
+    drawIndex: 0,
+    stepLength: 14 * DPR,
+    stack: []
+  };
+
+  function resetLS() {
+    lsys.iterations = 0;
+    lsys.genString = lsys.axiom;
+    lsys.drawIndex = 0;
+    lsys.stepLength = 14 * DPR;
+    // start with a fresh canvas
+    ctx.fillStyle = 'rgba(7,17,25,1)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  function generateLS(iter) {
+    let s = lsys.axiom;
+    for (let i=0;i<iter;i++){
+      let ns = '';
+      for (let ch of s) {
+        ns += (lsys.rules[ch] || ch);
+      }
+      s = ns;
+    }
+    return s;
+  }
+
+  // We'll progressively draw the L-system over time to animate growth
+  function stepLS(dt) {
+    if (lsys.genString === '') {
+      lsys.genString = generateLS(lsys.maxIterations);
+      // reset draw index
+      lsys.drawIndex = 0;
+    }
+
+    // draw a budget of symbols per frame
+    const budget = 200 + Math.floor(dt * 0.06); // adjustable
+    ctx.save();
+    ctx.translate(lsys.originX, lsys.originY);
+    ctx.strokeStyle = '#bfe6b0';
+    ctx.lineCap = 'round';
+
+    // We need to replay from start up to drawIndex each frame (simple approach)
+    // For performance, we clear and draw up to current index.
+    ctx.fillStyle = 'rgba(7,17,25,0.06)';
+    ctx.fillRect(0,0,canvas.width,canvas.height); // slow fade instead of full clear
+    // Full redraw: faster to clear and re-draw entire generated prefix.
+    ctx.restore();
+    ctx.save();
+    ctx.translate(lsys.originX, lsys.originY);
+    let x=0,y=0, ang = -Math.PI/2; // point up
+    const stack = [];
+    ctx.lineWidth = Math.max(1, lsys.stepLength * 0.14);
+    let maxIndex = Math.min(lsys.drawIndex + budget, lsys.genString.length);
+    for (let i=0;i<maxIndex;i++){
+      const ch = lsys.genString[i];
+      if (ch === 'F') {
+        const nx = x + Math.cos(ang) * lsys.stepLength;
+        const ny = y + Math.sin(ang) * lsys.stepLength;
+        // stroke segment
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(nx, ny);
+        // thickness gradient: thicker near base
+        const t = Math.max(0, 1 - Math.hypot(x,y)/(canvas.height*0.8));
+        ctx.strokeStyle = `rgba(${110 + 80*t | 0}, ${140 + 100*t | 0}, ${90 + 60*t | 0}, 1)`;
+        ctx.lineWidth = Math.max(1.0, (lsys.stepLength * (0.18 + 0.7*t)));
+        ctx.stroke();
+
+        x = nx; y = ny;
+      } else if (ch === '+') {
+        ang += lsys.angle;
+      } else if (ch === '-') {
+        ang -= lsys.angle;
+      } else if (ch === '[') {
+        stack.push([x,y,ang]);
+      } else if (ch === ']') {
+        const s = stack.pop();
+        if (s) { x = s[0]; y = s[1]; ang = s[2]; }
+      }
+    }
+    lsys.drawIndex = maxIndex;
+    ctx.restore();
+
+    // when done, slowly reduce step length a bit for nicer look on reruns
+    if (lsys.drawIndex >= lsys.genString.length) {
+      // finished tree — do a slow gentle sway by redrawing trunk offset (optional)
+      // no-op for now
+    }
+  }
+
+  // ---------------- Flower (radial petals) ----------------
+  const flower = {
+    cx: cx,
+    cy: cy,
+    petals: 12,
+    petalLength: 80 * DPR,
+    petalWidth: 28 * DPR,
+    progress: 0, // 0..1 bloom
+    speed: 0.45, // bloom seconds
+    colors: ['#ffd29b','#ffb3a7','#ffd6e0','#ffe07a']
+  };
+
+  function resetFlower() {
+    flower.cx = flower.cx || cx;
+    flower.cy = flower.cy || cy;
+    flower.progress = 0;
+    ctx.fillStyle = 'rgba(7,17,25,1)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  function stepFlower(dt) {
+    // progress bloom
+    flower.progress += dt * 0.001 / Math.max(0.25, flower.speed);
+    if (flower.progress > 1) flower.progress = 1;
+
+    // backdrop fade (slow)
+    ctx.fillStyle = 'rgba(7,17,25,0.02)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // draw petals
+    ctx.save();
+    ctx.translate(flower.cx, flower.cy);
+    const petalCount = flower.petals;
+    for (let i=0;i<petalCount;i++){
+      const a = (i / petalCount) * Math.PI * 2;
+      const bloom = easeOutCubic(flower.progress);
+      // petal control points: start near center, bulge outwards
+      const L = flower.petalLength * (0.5 + 0.5 * bloom);
+      const W = flower.petalWidth * (0.2 + 0.8 * bloom);
+      const gx = Math.cos(a), gy = Math.sin(a);
+      // build Bezier petal with quadratic approximations using path
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      // outer tip:
+      const tipX = gx * L;
+      const tipY = gy * L;
+      // left control
+      const lx = Math.cos(a - 0.18) * (L * 0.45);
+      const ly = Math.sin(a - 0.18) * (L * 0.45);
+      // right control
+      const rx = Math.cos(a + 0.18) * (L * 0.45);
+      const ry = Math.sin(a + 0.18) * (L * 0.45);
+
+      ctx.moveTo(0,0);
+      ctx.quadraticCurveTo(lx, ly, tipX, tipY);
+      ctx.quadraticCurveTo(rx, ry, 0,0);
+
+      // color gradient
+      const col = flower.colors[i % flower.colors.length];
+      ctx.fillStyle = colorWithAlpha(col, 0.9 * (0.4 + 0.6*bloom));
+      ctx.fill();
+      // slight outline
+      ctx.strokeStyle = colorWithAlpha('#000000', 0.06);
+      ctx.lineWidth = Math.max(0.5, 2 * DPR * (1 - bloom));
+      ctx.stroke();
+    }
+
+    // center disk
+    ctx.beginPath();
+    ctx.arc(0,0, 10 * DPR * (0.5 + 0.7 * flower.progress), 0, Math.PI*2);
+    ctx.fillStyle = '#33251a';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ---------------- Coral-like growth ----------------
+  const coral = {
+    branches: [],
+    seedX: cx,
+    seedY: cy + 100 * DPR,
+    maxBranches: 800,
+    spawnRate: 2, // per frame
+    jitter: 0.34
+  };
+
+  function resetCoral() {
+    coral.branches = [];
+    coral.seedX = coral.seedX || cx;
+    coral.seedY = coral.seedY || (canvas.height - 80 * DPR);
+    // seed initial trunk
+    coral.branches.push({
+      x: coral.seedX, y: coral.seedY,
+      dir: -Math.PI/2 - 0.05 + (Math.random()-0.5)*0.1,
+      len: 2 + Math.random()*2,
+      life: 1.0
+    });
+    ctx.fillStyle = 'rgba(7,17,25,1)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  function stepCoral(dt) {
+    // fade slightly to show growth trails
+    ctx.fillStyle = 'rgba(7,17,25,0.02)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.lineCap = 'round';
+    // spawn new branches from random existing branches
+    const spawn = Math.min(coral.spawnRate + Math.floor(dt*0.002), 12);
+    for (let s=0; s<spawn; s++){
+      if (coral.branches.length > coral.maxBranches) break;
+      const parent = coral.branches[Math.floor(Math.random() * coral.branches.length)];
+      if (!parent) continue;
+      // chance to branch
+      const branchChance = 0.35;
+      if (Math.random() < branchChance) {
+        const dir = parent.dir + (Math.random()-0.5) * coral.jitter * 2;
+        const len = parent.len * (0.7 + Math.random()*0.6);
+        const nx = parent.x + Math.cos(dir) * parent.len * 3.2;
+        const ny = parent.y + Math.sin(dir) * parent.len * 3.2;
+        coral.branches.push({ x: nx, y: ny, dir, len, life: 1.0 });
+      }
+    }
+
+    // step existing branches: grow them a bit and draw
+    for (let i = coral.branches.length - 1; i >= 0; i--) {
+      const b = coral.branches[i];
+      // move forward slightly
+      const nx = b.x + Math.cos(b.dir) * b.len;
+      const ny = b.y + Math.sin(b.dir) * b.len;
+      // color by depth: warmer near base
+      const t = Math.min(1, (canvas.height - b.y) / canvas.height);
+      ctx.strokeStyle = `rgba(${150 + (100*(1-t))|0}, ${80 + (80*t)|0}, ${120 - (60*t)|0}, 0.85)`;
+      ctx.lineWidth = Math.max(0.6*DPR, b.len * 0.4);
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+
+      // small chance to die out or shorten
+      if (Math.random() < 0.008) {
+        coral.branches.splice(i,1);
+      } else {
+        // continue branch
+        b.x = nx; b.y = ny;
+        b.len *= (0.99 + Math.random()*0.02);
+        b.dir += (Math.random()-0.5) * 0.045 * (1 - (b.len*0.05));
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // ---------------- Utilities & helpers ----------------
+  function colorWithAlpha(hex, a) {
+    // simple hex -> rgba for #rrggbb
+    const c = hex.replace('#','');
+    const r = parseInt(c.substring(0,2),16);
+    const g = parseInt(c.substring(2,4),16);
+    const b = parseInt(c.substring(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+  // Mode management
+  function startMode(m) {
+    mode = m;
+    if (m === 'lsystem') resetLS();
+    else if (m === 'flower') resetFlower();
+    else if (m === 'coral') resetCoral();
+  }
+  function reset() {
+    if (mode === 'lsystem') resetLS();
+    else if (mode === 'flower') resetFlower();
+    else if (mode === 'coral') resetCoral();
+  }
+
+  // initial seeds
+  resetLS();
+  resetFlower();
+  resetCoral();
+
+  // ---------------- Main loop ----------------
+  let raf = null;
+  function loop(t) {
+    const now = t || performance.now();
+    const dt = Math.min(40, now - last);
+    last = now;
+    if (!paused) {
+      if (mode === 'lsystem') stepLS(dt);
+      else if (mode === 'flower') stepFlower(dt);
+      else if (mode === 'coral') stepCoral(dt);
+    }
+    raf = requestAnimationFrame(loop);
+  }
+  raf = requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
