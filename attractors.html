@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Strange Attractors — Lorenz / Clifford / Rössler</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  html,body{height:100%;margin:0;background:#000;color:#ddd;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+  canvas{display:block;width:100%;height:100%;}
+  .hud{
+    position:fixed;left:14px;top:10px;z-index:10;
+    background:rgba(0,0,0,0.35);padding:8px 12px;border-radius:8px;
+    color:#e6eef8;font-size:13px;line-height:1.4;pointer-events:none;
+    text-shadow:0 1px 0 rgba(0,0,0,0.6);
+  }
+  .keys{opacity:.85;color:#ffd;display:inline-block;margin-top:6px}
+  small{color:#9fb0d8;display:block;margin-top:6px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud" id="hud">
+  <strong>Strange Attractors</strong><br>
+  1: Lorenz • 2: Clifford • 3: Rössler<br>
+  <span class="keys">Space: pause • R: reset • C: clear trails</span>
+  <small id="info">Press 1/2/3 to pick an attractor</small>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  // HiDPI setup
+  const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  function resize() {
+    canvas.width  = Math.floor(canvas.clientWidth  * DPR);
+    canvas.height = Math.floor(canvas.clientHeight * DPR);
+    cx = canvas.width / 2;
+    cy = canvas.height / 2;
+  }
+  let cx = 0, cy = 0;
+  addEventListener('resize', resize);
+  resize();
+
+  // State
+  let paused = false;
+  let selected = 'lorenz'; // 'lorenz', 'clifford', 'rossler'
+  const info = document.getElementById('info');
+
+  // RK4 integrator
+  function rk4Step(state, deriv, dt) {
+    // state: array [x,y,z], deriv: function(state) -> [dx,dy,dz]
+    const k1 = deriv(state);
+    const s2 = [state[0] + k1[0]*dt*0.5, state[1] + k1[1]*dt*0.5, state[2] + k1[2]*dt*0.5];
+    const k2 = deriv(s2);
+    const s3 = [state[0] + k2[0]*dt*0.5, state[1] + k2[1]*dt*0.5, state[2] + k2[2]*dt*0.5];
+    const k3 = deriv(s3);
+    const s4 = [state[0] + k3[0]*dt, state[1] + k3[1]*dt, state[2] + k3[2]*dt];
+    const k4 = deriv(s4);
+    return [
+      state[0] + (dt/6) * (k1[0] + 2*k2[0] + 2*k3[0] + k4[0]),
+      state[1] + (dt/6) * (k1[1] + 2*k2[1] + 2*k3[1] + k4[1]),
+      state[2] + (dt/6) * (k1[2] + 2*k2[2] + 2*k3[2] + k4[2]),
+    ];
+  }
+
+  // Attractor definitions (return derivative [dx,dy,dz])
+  function lorenzDerivFactory(sigma=10, rho=28, beta=8/3) {
+    return ([x,y,z]) => {
+      return [
+        sigma * (y - x),
+        x * (rho - z) - y,
+        x * y - beta * z
+      ];
+    };
+  }
+
+  function cliffordDerivFactory(a=-1.7, b=-1.8, c=-0.1, d=-1.9) {
+    // Clifford is 2D: x_{n+1} = sin(a*y) + c*cos(a*x) etc.
+    // We'll emulate as a pseudo-continuous system by returning dx,dy,0
+    return ([x,y,z]) => {
+      const nx = Math.sin(a*y) + c * Math.cos(a*x);
+      const ny = Math.sin(b*x) + d * Math.cos(b*y);
+      // treat derivative as the delta per step
+      return [nx - x, ny - y, 0];
+    };
+  }
+
+  function rosslerDerivFactory(a=0.2, b=0.2, c=5.7) {
+    return ([x,y,z]) => {
+      return [
+        -y - z,
+        x + a * y,
+        b + z * (x - c)
+      ];
+    };
+  }
+
+  // Parameters & drawing config per attractor
+  const configs = {
+    lorenz: {
+      deriv: lorenzDerivFactory(10, 28, 8/3),
+      state: [0.1, 0, 0],
+      dt: 0.008,
+      stepsPerFrame: 300,
+      scale: 8 * DPR, // multiply to fit canvas
+      centerOffset: [0, 0],
+      color: (t) => `hsl(${200 + (t*120)|0}, 80%, 60%)`
+    },
+    clifford: {
+      deriv: cliffordDerivFactory(-1.7, -1.8, -0.1, -1.9),
+      state: [0.1, 0.1, 0],
+      dt: 1.0, // Clifford is iteration-like
+      stepsPerFrame: 5000,
+      scale: 130 * DPR,
+      centerOffset: [0, 0],
+      color: (t) => `hsl(${(t*360)|0}, 70%, 55%)`
+    },
+    rossler: {
+      deriv: rosslerDerivFactory(0.2, 0.2, 5.7),
+      state: [0.1, 0, 0],
+      dt: 0.02,
+      stepsPerFrame: 400,
+      scale: 20 * DPR,
+      centerOffset: [0, 0],
+      color: (t) => `hsl(${200 + (t*100)|0}, 80%, 60%)`
+    }
+  };
+
+  // Current sim state (we'll reset as needed)
+  let sim = null;
+  function resetSim(which) {
+    const cfg = configs[which];
+    // deep copy starting state
+    sim = {
+      name: which,
+      deriv: cfg.deriv,
+      state: cfg.state.slice(),
+      dt: cfg.dt,
+      steps: cfg.stepsPerFrame,
+      scale: cfg.scale,
+      cxOff: cfg.centerOffset[0],
+      cyOff: cfg.centerOffset[1],
+      colorFn: cfg.color,
+      iter: 0
+    };
+    // clear canvas (black)
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    updateHUD();
+  }
+  resetSim(selected);
+
+  // Thin fade for trails (alpha small)
+  const trailAlpha = 0.06;
+
+  // Draw helpers
+  function plotPoint(x,y, col, size=1.2) {
+    ctx.fillStyle = col;
+    // draw a tiny rect for speed
+    ctx.fillRect(x - size*0.5, y - size*0.5, size, size);
+  }
+
+  // Main loop
+  let last = performance.now();
+  function frame(t) {
+    if (paused) {
+      last = t;
+      requestAnimationFrame(frame);
+      return;
+    }
+    // Ensure canvas size in pixels is up-to-date
+    if (canvas.width !== Math.floor(canvas.clientWidth*DPR) ||
+        canvas.height !== Math.floor(canvas.clientHeight*DPR)) {
+      resize();
+      // clear when resizing
+      ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    }
+
+    // Fade a bit to create trails (we use source-over with small alpha)
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = `rgba(0,0,0,${trailAlpha})`;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Draw points using additive composite for glow-like look
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Integrate many steps per frame
+    const s = sim;
+    for (let k = 0; k < s.steps; k++) {
+      // step once with RK4 (for Clifford the dt may be large; deriv returns delta-like)
+      s.state = rk4Step(s.state, s.deriv, s.dt);
+
+      // map to screen
+      const x = cx + s.cxOff + s.state[0]*s.scale;
+      const y = cy + s.cyOff - s.state[1]*s.scale; // invert y for screen
+
+      // color by iteration fraction (wrap)
+      const tnorm = (s.iter % 1000) / 1000;
+      const col = s.colorFn(tnorm);
+      plotPoint(x, y, col, (s.name === 'clifford' ? 1.2*DPR : 1.1*DPR));
+
+      s.iter++;
+    }
+
+    // Reset composite to default
+    ctx.globalCompositeOperation = 'source-over';
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+
+  // Controls
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      paused = !paused;
+      updateHUD();
+      e.preventDefault();
+    } else if (e.key === '1') {
+      selected = 'lorenz'; resetSim(selected);
+    } else if (e.key === '2') {
+      selected = 'clifford'; resetSim(selected);
+    } else if (e.key === '3') {
+      selected = 'rossler'; resetSim(selected);
+    } else if (e.key.toLowerCase() === 'r') {
+      resetSim(selected);
+    } else if (e.key.toLowerCase() === 'c') {
+      // clear trails
+      ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    }
+  });
+
+  // Click to nudge initial conditions (adds some variation)
+  canvas.addEventListener('pointerdown', (ev) => {
+    // small random perturbation to the state
+    sim.state[0] += (Math.random()-0.5) * 0.5;
+    sim.state[1] += (Math.random()-0.5) * 0.5;
+    sim.state[2] += (Math.random()-0.5) * 0.5;
+  });
+
+  function updateHUD() {
+    info.textContent = `${sim.name.toUpperCase()} — steps/frame ${sim.steps}, dt ${sim.dt}`;
+  }
+
+  // initial HUD
+  updateHUD();
+
+})();
+</script>
+</body>
+</html>

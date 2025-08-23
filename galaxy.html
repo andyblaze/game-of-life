@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>One-Page Galaxy Particles</title>
+<style>
+  html, body { margin: 0; height: 100%; background:#000; }
+  canvas { display:block; width:100%; height:100%; }
+  .hud {
+    position: fixed; left: 12px; top: 10px; color:#cfd8ff; font: 13px/1.3 system-ui, Segoe UI, Roboto, Helvetica, Arial;
+    opacity:.75; user-select:none; pointer-events:none; text-shadow:0 1px 2px #000;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">Galaxy • click/drag to add a gravity well • [space] pause</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  // Hi-DPI canvas setup
+  const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  let W = 0, H = 0, CX = 0, CY = 0;
+  function resize() {
+    W = Math.floor(canvas.clientWidth * DPR);
+    H = Math.floor(canvas.clientHeight * DPR);
+    canvas.width = W; canvas.height = H;
+    CX = W * 0.5; CY = H * 0.5;
+  }
+  addEventListener('resize', resize, { passive:true });
+  resize();
+
+  // ------- Parameters (tweakables) -------
+  const N = 1400;            // particles
+  const TRAIL = 0.08;        // 0..1  lower = longer trails
+  const BASE_SPEED = 0.4;    // particle initial speed
+  const G = 1800;            // gravity strength
+  const SOFTEN = 12;         // gravitational softening (px)
+  const MAX_V = 2.4;         // speed clamp (in pixels per ms at DPR=1)
+  const STAR_SIZE = 1.2 * DPR;
+  const COLOR_A = { r: 160, g: 200, b: 255 }; // outer arms (blue)
+  const COLOR_B = { r: 255, g: 160, b: 200 }; // core/alt (rose)
+
+  // ------- Gravity wells (two orbiting, plus user wells) -------
+  const wells = [
+    { x: CX - 90*DPR, y: CY, m: 1.0, phase: 0,     radius: 180*DPR },
+    { x: CX + 90*DPR, y: CY, m: 1.0, phase: Math.PI, radius: 180*DPR },
+  ];
+  // user wells (temporary pulses)
+  const pulses = [];
+
+  // ------- Particles -------
+  const rng = mulberry32(0xC0FFEE);
+  const P = new Array(N).fill(0).map(() => {
+    // place particles in a disc with a slight gap in the core
+    const r = (Math.sqrt(rng()) * 0.9 + 0.1) * Math.min(W, H) * 0.48;
+    const th = rng()*Math.PI*2;
+    const x = CX + Math.cos(th)*r;
+    const y = CY + Math.sin(th)*r;
+
+    // give tangential initial velocity
+    const tangent = th + Math.PI/2;
+    const speed = BASE_SPEED * (0.6 + 0.8*rng());
+    const vx = Math.cos(tangent) * speed * DPR;
+    const vy = Math.sin(tangent) * speed * DPR;
+
+    return { x, y, vx, vy, hueMix: rng() };
+  });
+
+  // ------- Animation -------
+  let last = performance.now(), paused = false;
+
+  // Mouse: add a soft temporary pulse well while dragging/clicking
+  let dragging = false;
+  canvas.addEventListener('pointerdown', e => { dragging = true; addPulse(e); });
+  canvas.addEventListener('pointermove', e => { if (dragging) addPulse(e); });
+  addEventListener('pointerup',   () => dragging = false);
+  addEventListener('pointerleave',() => dragging = false);
+  addEventListener('keydown', e => { if (e.code === 'Space') paused = !paused; });
+
+  function addPulse(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * DPR;
+    const y = (e.clientY - rect.top)  * DPR;
+    pulses.push({ x, y, m: 2.0, life: 900 }); // fades in ~0.9s
+  }
+
+  function step(t) {
+    const now = t || performance.now();
+    const dt = Math.min(32, now - last); // clamp large frame gaps
+    last = now;
+    if (paused) { requestAnimationFrame(step); return; }
+
+    // Move orbiting wells (slow precession)
+    wells[0].phase += 0.00025 * dt;
+    wells[1].phase += 0.00025 * dt;
+    const r0 = wells[0].radius, r1 = wells[1].radius;
+    wells[0].x = CX + Math.cos(wells[0].phase) * r0 * 0.3;
+    wells[0].y = CY + Math.sin(wells[0].phase) * r0 * 0.15;
+    wells[1].x = CX + Math.cos(wells[1].phase) * r1 * -0.3;
+    wells[1].y = CY + Math.sin(wells[1].phase) * r1 * -0.15;
+
+    // Fade pulses
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      pulses[i].life -= dt;
+      if (pulses[i].life <= 0) pulses.splice(i,1);
+    }
+
+    // Motion blur / trails
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = `rgba(0,0,0,${TRAIL})`;
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw additive glow
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Update & render particles
+    for (let i = 0; i < N; i++) {
+      const p = P[i];
+
+      // Acceleration from wells + pulses
+      let ax = 0, ay = 0;
+
+      for (let k = 0; k < wells.length; k++) {
+        const w = wells[k];
+        const dx = w.x - p.x, dy = w.y - p.y;
+        const rsq = dx*dx + dy*dy + SOFTEN*SOFTEN;
+        const inv = 1 / Math.sqrt(rsq);
+        const force = (G * w.m) / rsq;
+        ax += dx * inv * force;
+        ay += dy * inv * force;
+      }
+      for (let k = 0; k < pulses.length; k++) {
+        const w = pulses[k];
+        const fade = Math.max(0, w.life / 900);
+        const dx = w.x - p.x, dy = w.y - p.y;
+        const rsq = dx*dx + dy*dy + SOFTEN*SOFTEN;
+        const inv = 1 / Math.sqrt(rsq);
+        const force = (G * w.m * fade) / rsq;
+        ax += dx * inv * force;
+        ay += dy * inv * force;
+      }
+
+      // Integrate velocity (basic explicit Euler, clamped)
+      p.vx += ax * dt * 0.001;
+      p.vy += ay * dt * 0.001;
+      const v = Math.hypot(p.vx, p.vy);
+      if (v > MAX_V * DPR) {
+        const s = (MAX_V * DPR) / v;
+        p.vx *= s; p.vy *= s;
+      }
+
+      // Integrate position
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+
+      // Wrap around edges
+      if (p.x < 0) p.x += W; else if (p.x >= W) p.x -= W;
+      if (p.y < 0) p.y += H; else if (p.y >= H) p.y -= H;
+
+      // Color mix (cool outer, warm inner)
+      const c = mixColor(COLOR_A, COLOR_B, p.hueMix);
+      ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.7)`;
+
+      // Draw star (tiny square for speed; circles are fine too)
+      ctx.fillRect(p.x, p.y, STAR_SIZE, STAR_SIZE);
+    }
+
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // ------- Utilities -------
+  function mixColor(a, b, t) {
+    return {
+      r: (a.r + (b.r - a.r) * t) | 0,
+      g: (a.g + (b.g - a.g) * t) | 0,
+      b: (a.b + (b.b - a.b) * t) | 0,
+    };
+  }
+  function mulberry32(seed) {
+    return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+})();
+</script>
+</body>
+</html>
