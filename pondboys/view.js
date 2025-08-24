@@ -20,7 +20,7 @@ export default class View {
         // draw critters
         data.critters.forEach(c => {
             this.offCtx.beginPath();
-            this.offCtx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+            this.offCtx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
             // energy -> alpha mapping
             const alpha = Math.min(c.energy / 100, 1); // cap at 1
             this.offCtx.fillStyle = c.color.replace(/[\d\.]+\)$/g, `${alpha})`);
@@ -29,7 +29,7 @@ export default class View {
         });
         data.food.forEach(f => {
             this.offCtx.beginPath();
-            this.offCtx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+            this.offCtx.arc(f.x, f.y, f.radius, 0, Math.PI*2);
             this.offCtx.fillStyle = f.color;
             this.offCtx.fill();
         });

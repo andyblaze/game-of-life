@@ -27,7 +27,7 @@ export default class Critter {
         this.y = mt_rand(0, cfg.height);
         this.vx = (Math.random() - 0.5) * cfg.maxSpeed;
         this.vy = (Math.random() - 0.5) * cfg.maxSpeed;
-        this.r = mt_rand(4, cfg.maxRadius);
+        this.radius = 4;//mt_rand(4, cfg.maxRadius);
     }
     wraparoundEdges() {
         if (this.x < 0) this.x += this.cfg.width;
@@ -35,7 +35,27 @@ export default class Critter {
         if (this.y < 0) this.y += this.cfg.height;
         if (this.y > this.cfg.height) this.y -= this.cfg.height;
     }
+    update() {
+        // grow based on energy surplus or a fixed rate
+        const growthRate = 0.02 * (this.energy / this.energyCap);
+        this.radius = Math.min(this.radius + growthRate, this.cfg.maxRadius);
+    }
+    canSpawn() {
+        const handicap = (this.type === "predator" && Math.random() < 0.1 ? false : true);
+        return (handicap && this.energy >= this.typeCfg.reproductionThreshold && this.radius === this.cfg.maxRadius);
+    }
+    spawn(cfg, type) {
+        const baby = new Critter(cfg, type);
+        // optionally mutate traits here
+        baby.x = this.x + (Math.random() - 0.5) * 10;
+        baby.y = this.y + (Math.random() - 0.5) * 10;
+        baby.energy = this.typeCfg.reproductionCost;
+        this.energy = clamp(this.energy - this.typeCfg.reproductionCost, 0, this.energyCap);
+        this.radius = 4;
+        return baby;
+    }
     move() {
+        this.update();
         this.x += this.vx;
         this.y += this.vy;
         
@@ -46,7 +66,7 @@ export default class Critter {
     }
     draw(ctx) {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
         // energy -> alpha
         const alpha = Math.min(this.energy / 100, 1);
         ctx.fillStyle = this.color.replace(/[\d\.]+\)$/g, `${alpha})`);

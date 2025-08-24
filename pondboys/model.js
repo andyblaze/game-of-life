@@ -1,5 +1,5 @@
 import Critter from "./critter.js";
-import { clamp } from "./functions.js";
+import { clamp, distance } from "./functions.js";
 
 export default class Model {
     constructor(cfg) {
@@ -33,10 +33,8 @@ export default class Model {
             for (let j = i + 1; j < this.critters.length; j++) {
                 const a = this.critters[i];
                 const b = this.critters[j];
-                const dx = b.x - a.x;
-                const dy = b.y - a.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const minDist = a.r + b.r;
+                const { dx, dy, dist } = distance(a, b);
+                const minDist = a.radius + b.radius;
 
                 if (dist < minDist && dist > 0) {
                     // push each away proportionally
@@ -67,10 +65,8 @@ export default class Model {
             if (c.type === 'predator') continue;
             for (let j = this.food.length - 1; j >= 0; j--) {
                 const f = this.food[j];
-                const dx = c.x - f.x;
-                const dy = c.y - f.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < c.r + f.r) {
+                const { dist } = distance(c, f);
+                if (dist < c.radius + f.radius) {
                     // eat food
                     c.energy = clamp(c.energy + this.cfg.foodEnergy, 0, c.energyCap);
                     this.food.splice(j, 1);
@@ -85,7 +81,7 @@ export default class Model {
             this.food.push({
                 x: Math.random() * this.cfg.width,
                 y: Math.random() * this.cfg.height,
-                r: 3,
+                radius: 3,
                 color: "limegreen"
             });
         }
@@ -95,21 +91,12 @@ export default class Model {
     } 
     handleReproduction() {
         const newCritters = [];
-
         this.critters.forEach(c => {
-            if (c.energy >= c.typeCfg.reproductionThreshold) {
-                // create offspring
-                const baby = new Critter(this.cfg, c.type);
-                // optionally mutate traits here
-                baby.x = c.x + (Math.random() - 0.5) * 10;
-                baby.y = c.y + (Math.random() - 0.5) * 10;
-                baby.energy = c.typeCfg.reproductionCost;
-                this.critters.push(baby);
-                c.energy = clamp(c.energy - c.typeCfg.reproductionCost, 0, c.energyCap);
+            if ( c.canSpawn() ) {
+                const baby = c.spawn(this.cfg, c.type);
+                newCritters.push(baby);
             }
         });
-
-        // add offspring to population
         this.critters.push(...newCritters);
     }    
     tick() {

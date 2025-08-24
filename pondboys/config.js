@@ -7,8 +7,8 @@ const config = {
   maxSpeed:2.5,
   minSpeed:1,
   maxRadius:10,
-  numFood:380,
-  foodEnergy:5,
+  numFood:480,
+  foodEnergy:6,
   predator: { energyCap: 250, reproductionCost: 180, reproductionThreshold: 200, movementCost:0.04 },
   prey:     { energyCap: 150, reproductionCost: 50, reproductionThreshold: 50, movementCost:0.025 },
   reproductionThreshold: 200

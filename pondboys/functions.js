@@ -12,6 +12,19 @@ export function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
+export function distance(a, b, squared=false) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dist = dx * dx + dy * dy;
+
+    if (squared) {
+        // no sqrt, cheaper
+        return { dx, dy, dist };
+    } else {
+        return { dx, dy, dist: Math.sqrt(dist) };
+    }
+}
+
 export function generateId() {
     const now = Date.now(); // ms precision
     const rand = mt_rand(1000000, 9999999);
