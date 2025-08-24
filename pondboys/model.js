@@ -68,7 +68,7 @@ export default class Model {
                 const { dist } = distance(c, f);
                 if (dist < c.radius + f.radius) {
                     // eat food
-                    c.energy = clamp(c.energy + this.cfg.foodEnergy, 0, c.energyCap);
+                    c.eat(this.cfg.foodEnergy);
                     this.food.splice(j, 1);
                     // optional: spawn a new food somewhere
                     this.spawnFood();
