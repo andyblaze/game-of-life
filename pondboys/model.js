@@ -11,7 +11,7 @@ export default class Model {
         this.spawnFood(this.global.numFood);
     }
     initCritters(cfg) {
-        for (let i = 0; i < this.global.numCritters; i++) {
+        for (let i = 0; i < this.global.numCritters; i++) { 
             const type = Math.random() < this.global.predatorPercentage ? "predator" : "prey";
             this.critters.push(new Critter(cfg, type));
         }

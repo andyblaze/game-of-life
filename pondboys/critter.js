@@ -65,11 +65,24 @@ export default class Critter {
         return (chance && this.energy >= this.dna.reproductionThreshold && this.radius === this.dna.maxRadius);
     }
     spawn(dna, type) {
-        const baby = new Critter(dna, type);
-        // optionally mutate traits here
+        // Deep copy parent DNA
+        const babyDNA = JSON.parse(JSON.stringify(dna));
+
+        // Apply mutation
+        const mutationRate = 0.1;   // 10% chance a given trait mutates
+        const mutationStrength = 0.3; // ±10% variation
+
+        for (let key in babyDNA) {
+            if (typeof babyDNA[key] === "number" && Math.random() < mutationRate) {
+                const change = 1 + (Math.random() * 2 - 1) * mutationStrength;
+                babyDNA[key] = Math.max(0, babyDNA[key] * change); // no negatives
+            }
+        }
+        const baby = new Critter(babyDNA, type);
         baby.x = this.x + (Math.random() - 0.5) * 10;
         baby.y = this.y + (Math.random() - 0.5) * 10;
         baby.energy = this.dna.reproductionCost;
+        // Parent pays the cost
         this.energy = clamp(this.energy - this.dna.reproductionCost, 0, this.energyCap);
         this.radius = 4;
         return baby;
