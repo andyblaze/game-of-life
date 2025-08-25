@@ -82,7 +82,7 @@ export default class Model {
                 x: Math.random() * this.cfg.width,
                 y: Math.random() * this.cfg.height,
                 radius: 3,
-                color: "limegreen"
+                color: "hsla(280,80%,70%,0.6)"
             });
         }
     }
@@ -101,7 +101,7 @@ export default class Model {
     }    
     tick() {
         this.handleDeath();
-        this.critters.forEach(c => c.move());
+        this.critters.forEach(c => c.update());
         this.handleCollisions();
         this.handleFood();
         this.handleReproduction();

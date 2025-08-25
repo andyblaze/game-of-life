@@ -10,17 +10,19 @@ export default class Critter {
     }
     initProperties() {
         this.age = 0;
-        this.lifespan = this.typeCfg.lifespan;
+        const {min, max} = this.typeCfg.lifespan;
+        this.lifespan = mt_rand(min * 3600, max * 3600);
         this.energy = this.typeCfg.energyCap / 2; // start at half cap
         this.energyCap = this.typeCfg.energyCap;
         this.reproductionCost = this.typeCfg.reproductionCost;
+        this.movementCost = this.typeCfg.movementCost;
         // assign color based on type
         if (this.type === 'predator') {
-            const hue = Math.random() * 40; // red/orange: 0°–40°
-            this.color = `hsla(${hue}, 80%, 50%, 1)`;
+            const hue = 0;  // red
+            this.color = `hsla(${hue}, 80%, 50%, 0.5)`; // 0.5 alpha due to energy at 1/2 cap
         } else {
-            const hue = 180 + Math.random() * 80; // blue-ish: 180°–260°
-            this.color = `hsla(${hue}, 70%, 60%, 1)`;
+            const hue = 180 + Math.random();  //blue-ish
+            this.color = `hsla(${hue}, 70%, 60%, 0.5)`;
         }
         this.maxSpeed = this.typeCfg.maxSpeed;
     }
@@ -29,7 +31,7 @@ export default class Critter {
         this.y = mt_rand(0, cfg.height);
         this.vx = (Math.random() - 0.5) * this.typeCfg.maxSpeed;
         this.vy = (Math.random() - 0.5) * this.typeCfg.maxSpeed;
-        this.radius = 4;//mt_rand(4, cfg.maxRadius);
+        this.radius = 4;
     }
     wraparoundEdges() {
         if (this.x < 0) this.x += this.cfg.width;
@@ -46,11 +48,17 @@ export default class Critter {
     update() {
         this.age++;
         if (this.age >= this.lifespan) {
-            this.energy = 20; // trigger death
+            this.energy -= 0.5;
+            const t = (this.age - this.lifespan) / 120; // 120 frames = about 2 seconds
+            const alpha = Math.max(1 - t, 0);
+            this.color = "hsla(120, 100%, 40%, 0.9)";
         }
-        // grow based on energy surplus or a fixed rate
-        const growthRate = 0.02 * (this.energy / this.energyCap);
-        this.radius = Math.min(this.radius + growthRate, this.typeCfg.maxRadius);
+        else {
+            // grow based on energy surplus or a fixed rate
+            const growthRate = 0.02 * (this.energy / this.energyCap);
+            this.radius = Math.min(this.radius + growthRate, this.typeCfg.maxRadius);
+        }
+        this.move();
     }
     canSpawn() {
         let chance = Math.random() > this.typeCfg.spawnChance; 
@@ -67,19 +75,22 @@ export default class Critter {
         return baby;
     }
     move() {
-        this.update();
         this.x += this.vx;
         this.y += this.vy;
         
         this.wraparoundEdges();
         
-        // energy cost proportional to speed
-        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        const lostEnergy = this.typeCfg.movementCost + speed * speed * this.typeCfg.speedEnergyCost; // quadratic
-        //const lostEnergy = this.typeCfg.movementCost + speed * this.typeCfg.speedEnergyCost;
         
-        //const lostEnergy = this.typeCfg.movementCost;
-        this.energy = clamp(this.energy - lostEnergy, 0, this.energyCap) // moving costs energy
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > this.typeCfg.maxSpeed) {
+            const scale = this.typeCfg.maxSpeed / speed;
+            this.vx *= scale;
+            this.vy *= scale;
+        }
+        
+        // energy cost proportional to speed
+        const lostEnergy = this.typeCfg.movementCost + speed * speed * this.typeCfg.speedEnergyCost; // quadratic
+        this.energy = clamp(this.energy - lostEnergy, 0, this.energyCap) 
     }
     draw(ctx) {
         ctx.beginPath();

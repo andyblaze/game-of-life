@@ -12,26 +12,40 @@ export default class View {
         this.offscreen.width = w;
         this.offscreen.height = h;
     }
+    drawFood(f) {
+        const ctx = this.offCtx;
+        const spikes = 5; // number of star points
+        const outerRadius = 4;
+        const innerRadius = 2;
 
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(f.x, f.y);
+        ctx.moveTo(0, -outerRadius);
+        for (let i = 0; i < spikes; i++) {
+            ctx.rotate(Math.PI / spikes);
+            ctx.lineTo(0, -innerRadius);
+            ctx.rotate(Math.PI / spikes);
+            ctx.lineTo(0, -outerRadius);
+        }
+        ctx.closePath();
+
+        ctx.fillStyle = "yellow";
+        ctx.shadowColor = "orange";
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.restore();
+    }
     draw(data) {
         // background water
         this.offCtx.fillStyle = "rgba(20, 40, 60, 1)";
         this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
         // draw critters
         data.critters.forEach(c => {
-            this.offCtx.beginPath();
-            this.offCtx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
-            // energy -> alpha mapping
-            const alpha = Math.min(c.energy / 100, 1); // cap at 1
-            this.offCtx.fillStyle = c.color.replace(/[\d\.]+\)$/g, `${alpha})`);
-            //this.offCtx.fillStyle = c.color;
-            this.offCtx.fill();
+            c.draw(this.offCtx);
         });
         data.food.forEach(f => {
-            this.offCtx.beginPath();
-            this.offCtx.arc(f.x, f.y, f.radius, 0, Math.PI*2);
-            this.offCtx.fillStyle = f.color;
-            this.offCtx.fill();
+            this.drawFood(f);
         });
         this.blit();
     }
