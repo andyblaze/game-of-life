@@ -1,13 +1,15 @@
 import { mt_rand } from "./functions.js";
 
 const config = {
-  width: window.innerWidth,   // canvas width
-  height: window.innerHeight, // canvas height
-  framesPerTick: 1,          // update frequency (higher = slower updates, lower CPU)
-  numCritters:80,
-  predatorPercentage: 0.05,
-  numFood:200,
-  foodEnergy:6,
+  global: {
+    width: window.innerWidth,   // canvas width
+    height: window.innerHeight, // canvas height
+    framesPerTick: 1,          // update frequency (higher = slower updates, lower CPU)
+    numCritters:80,
+    predatorPercentage: 0.05,
+    numFood:200,
+    foodEnergy:6
+  },
   predator: {   energyCap: 250, reproductionCost: 180, 
                 reproductionThreshold: 200, movementCost:0.04,
                 speedEnergyCost:0.003, spawnChance: 0.999,
@@ -21,4 +23,5 @@ const config = {
                 lifespan:{min:2, max:4}
             }
 };
+
 export default config;

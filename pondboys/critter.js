@@ -1,43 +1,43 @@
 import { clamp, mt_rand } from "./functions.js";
 
 export default class Critter {
-    constructor(cfg, type='prey') {
-        this.cfg = cfg;
+    constructor(config, type="prey") {
+        this.globalCfg = config.global; 
         this.type = type;
-        this.typeCfg = cfg[type];
-        this.initPostition(cfg);
-        this.initProperties();
+        this.dna = config[type];
+        this.initPosition(this.dna.maxSpeed);
+        this.initProperties(this.dna);
     }
-    initProperties() {
+    initProperties(dna) {
         this.age = 0;
-        const {min, max} = this.typeCfg.lifespan;
+        const {min, max} = dna.lifespan;
         this.lifespan = mt_rand(min * 3600, max * 3600);
-        this.energy = this.typeCfg.energyCap / 2; // start at half cap
-        this.energyCap = this.typeCfg.energyCap;
-        this.reproductionCost = this.typeCfg.reproductionCost;
-        this.movementCost = this.typeCfg.movementCost;
+        this.energy = dna.energyCap / 2; // start at half cap
+        this.energyCap = dna.energyCap;
+        this.reproductionCost = dna.reproductionCost;
+        this.movementCost = dna.movementCost;
         // assign color based on type
-        if (this.type === 'predator') {
+        if (this.type === "predator") {
             const hue = 0;  // red
             this.color = `hsla(${hue}, 80%, 50%, 0.5)`; // 0.5 alpha due to energy at 1/2 cap
         } else {
             const hue = 180 + Math.random();  //blue-ish
             this.color = `hsla(${hue}, 70%, 60%, 0.5)`;
         }
-        this.maxSpeed = this.typeCfg.maxSpeed;
+        this.maxSpeed = dna.maxSpeed;
     }
-    initPostition(cfg) {
-        this.x = mt_rand(0, cfg.width);
-        this.y = mt_rand(0, cfg.height);
-        this.vx = (Math.random() - 0.5) * this.typeCfg.maxSpeed;
-        this.vy = (Math.random() - 0.5) * this.typeCfg.maxSpeed;
+    initPosition(maxSpeed) {
+        this.x = mt_rand(0, this.globalCfg.width);
+        this.y = mt_rand(0, this.globalCfg.height);
+        this.vx = (Math.random() - 0.5) * maxSpeed;
+        this.vy = (Math.random() - 0.5) * maxSpeed;
         this.radius = 4;
     }
     wraparoundEdges() {
-        if (this.x < 0) this.x += this.cfg.width;
-        if (this.x > this.cfg.width) this.x -= this.cfg.width;
-        if (this.y < 0) this.y += this.cfg.height;
-        if (this.y > this.cfg.height) this.y -= this.cfg.height;
+        if (this.x < 0) this.x += this.globalCfg.width;
+        if (this.x > this.globalCfg.width) this.x -= this.globalCfg.width;
+        if (this.y < 0) this.y += this.globalCfg.height;
+        if (this.y > this.globalCfg.height) this.y -= this.globalCfg.height;
     }
     eat(foodEnergy) {
         // Scale energy gain by age fraction (older = weaker digestion)
@@ -56,21 +56,21 @@ export default class Critter {
         else {
             // grow based on energy surplus or a fixed rate
             const growthRate = 0.02 * (this.energy / this.energyCap);
-            this.radius = Math.min(this.radius + growthRate, this.typeCfg.maxRadius);
+            this.radius = Math.min(this.radius + growthRate, this.dna.maxRadius);
         }
         this.move();
     }
     canSpawn() {
-        let chance = Math.random() > this.typeCfg.spawnChance; 
-        return (chance && this.energy >= this.typeCfg.reproductionThreshold && this.radius === this.typeCfg.maxRadius);
+        let chance = Math.random() > this.dna.spawnChance; 
+        return (chance && this.energy >= this.dna.reproductionThreshold && this.radius === this.dna.maxRadius);
     }
-    spawn(cfg, type) {
-        const baby = new Critter(cfg, type);
+    spawn(dna, type) {
+        const baby = new Critter(dna, type);
         // optionally mutate traits here
         baby.x = this.x + (Math.random() - 0.5) * 10;
         baby.y = this.y + (Math.random() - 0.5) * 10;
-        baby.energy = this.typeCfg.reproductionCost;
-        this.energy = clamp(this.energy - this.typeCfg.reproductionCost, 0, this.energyCap);
+        baby.energy = this.dna.reproductionCost;
+        this.energy = clamp(this.energy - this.dna.reproductionCost, 0, this.energyCap);
         this.radius = 4;
         return baby;
     }
@@ -82,14 +82,21 @@ export default class Critter {
         
         
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-        if (speed > this.typeCfg.maxSpeed) {
-            const scale = this.typeCfg.maxSpeed / speed;
+        // clamp to maxSpeed
+        if (speed > this.dna.maxSpeed) {
+            const scale = this.dna.maxSpeed / speed;
+            this.vx *= scale;
+            this.vy *= scale;
+        }
+        // clamp to minSpeed (only if nonzero)
+        if (speed < this.dna.minSpeed && speed > 0) {
+            const scale = this.dna.minSpeed / speed;
             this.vx *= scale;
             this.vy *= scale;
         }
         
         // energy cost proportional to speed
-        const lostEnergy = this.typeCfg.movementCost + speed * speed * this.typeCfg.speedEnergyCost; // quadratic
+        const lostEnergy = this.dna.movementCost + speed * speed * this.dna.speedEnergyCost; // quadratic
         this.energy = clamp(this.energy - lostEnergy, 0, this.energyCap) 
     }
     draw(ctx) {

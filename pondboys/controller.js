@@ -15,8 +15,8 @@ export default class Controller {
     }
     // fps throttling
     frameReady() {
-        this.frameCount = (this.frameCount + 1) % this.cfg.framesPerTick;
-        return this.frameCount % this.cfg.framesPerTick === 0;
+        this.frameCount = (this.frameCount + 1) % this.cfg.global.framesPerTick;
+        return this.frameCount % this.cfg.global.framesPerTick === 0;
     }
     loop(timestamp) {
         if ( this.paused === false ) {            

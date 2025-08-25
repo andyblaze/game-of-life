@@ -3,15 +3,16 @@ import { clamp, distance } from "./functions.js";
 
 export default class Model {
     constructor(cfg) {
+        this.global = cfg.global;
         this.cfg = cfg;
         this.critters = [];
         this.food = [];
         this.initCritters(cfg);
-        this.spawnFood(cfg.numFood);
+        this.spawnFood(this.global.numFood);
     }
     initCritters(cfg) {
-        for (let i = 0; i < cfg.numCritters; i++) {
-            const type = Math.random() < cfg.predatorPercentage ? 'predator' : 'prey';
+        for (let i = 0; i < this.global.numCritters; i++) {
+            const type = Math.random() < this.global.predatorPercentage ? "predator" : "prey";
             this.critters.push(new Critter(cfg, type));
         }
     }
@@ -68,7 +69,7 @@ export default class Model {
                 const { dist } = distance(c, f);
                 if (dist < c.radius + f.radius) {
                     // eat food
-                    c.eat(this.cfg.foodEnergy);
+                    c.eat(this.global.foodEnergy);
                     this.food.splice(j, 1);
                     // optional: spawn a new food somewhere
                     this.spawnFood();
@@ -79,8 +80,8 @@ export default class Model {
     spawnFood(n=1) {
         for (let i = 0; i < n; i++) {
             this.food.push({
-                x: Math.random() * this.cfg.width,
-                y: Math.random() * this.cfg.height,
+                x: Math.random() * this.global.width,
+                y: Math.random() * this.global.height,
                 radius: 3,
                 color: "hsla(280,80%,70%,0.6)"
             });
