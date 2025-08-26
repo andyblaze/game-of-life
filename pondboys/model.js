@@ -3,7 +3,7 @@ import { clamp, distance } from "./functions.js";
 
 export default class Model {
     constructor(cfg) {
-        this.global = cfg.global;
+        this.global = cfg.global();
         this.cfg = cfg;
         this.critters = [];
         this.food = [];
@@ -19,13 +19,13 @@ export default class Model {
     handlePredation(a, b) {
         if ( a.type === "predator" && b.type === "prey") {
             const stolen = Math.min(b.energy * 0.3, 2);
-            a.energy = clamp(a.energy + stolen, 0, a.energyCap);
-            b.energy = clamp(b.energy - stolen, 0, b.energyCap);
+            a.energy = clamp(a.energy + stolen, 0, a.dna.energyCap);
+            b.energy = clamp(b.energy - stolen, 0, b.dna.energyCap);
         }
         if ( b.type === "predator" && a.type === "prey" ) {
             const stolen = Math.min(a.energy * 0.3, 2);
-            b.energy = clamp(b.energy + stolen, 0, b.energyCap);
-            a.energy = clamp(a.energy - stolen, 0, a.energyCap);
+            b.energy = clamp(b.energy + stolen, 0, b.dna.energyCap);
+            a.energy = clamp(a.energy - stolen, 0, a.dna.energyCap);
         }
     }
     handleCollisions() {

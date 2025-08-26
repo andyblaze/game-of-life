@@ -1,10 +1,10 @@
 import DeltaReport from "./delta-report.js";
 
 export default class Controller {
-    constructor(m, v, c) {
+    constructor(m, v, cfg) {
         this.model = m;
         this.view = v;
-        this.cfg = c;
+        this.framesPerTick = cfg.global("framesPerTick");
         this.paused = false;
         this.frameCount = 0;
     }
@@ -15,8 +15,8 @@ export default class Controller {
     }
     // fps throttling
     frameReady() {
-        this.frameCount = (this.frameCount + 1) % this.cfg.global.framesPerTick;
-        return this.frameCount % this.cfg.global.framesPerTick === 0;
+        this.frameCount = (this.frameCount + 1) % this.framesPerTick;
+        return this.frameCount % this.framesPerTick === 0;
     }
     loop(timestamp) {
         if ( this.paused === false ) {            
