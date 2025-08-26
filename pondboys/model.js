@@ -91,6 +91,7 @@ export default class Model {
         this.critters = this.critters.filter(c => c.energy > 0);
     } 
     handleReproduction() {
+        if ( this.critters.length > 300 ) return;
         const newCritters = [];
         this.critters.forEach(c => {
             if ( c.canSpawn() ) {

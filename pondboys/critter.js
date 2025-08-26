@@ -84,30 +84,59 @@ export default class Critter {
         this.radius = 4;
         return baby;
     }
+    propel() {
+        // compute current speed
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+
+        // threshold below which we consider the critter "stationary"
+        //const threshold = 0.6;
+
+        if (speed < this.global.isStationary && this.energy > this.dna.propulsionThreshold) {
+            // choose a random direction
+            const angle = Math.random() * 2 * Math.PI;
+
+            // choose a small propulsion magnitude
+            //const propulsion = 0.5; // tweak for how strong the "kick" is
+
+            // apply it to velocity
+            this.vx += Math.cos(angle) * this.global.propulsionKick;
+            this.vy += Math.sin(angle) * this.global.propulsionKick;
+            this.energy -= this.dna.propulsionCost;
+        }
+    }
     move() {
         this.x += this.vx;
         this.y += this.vy;
         
         this.wraparoundEdges();
         
+        // if velocity is tiny, stop completely (avoid endless drifting)
+    // ------------------        
         
         const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
         // clamp to maxSpeed
         if (speed > this.dna.maxSpeed) {
-            const scale = this.dna.maxSpeed / speed;
-            this.vx *= scale;
-            this.vy *= scale;
+            //const scale = this.dna.maxSpeed / speed;
+            //this.vx *= scale;
+            //this.vy *= scale;
         }
         // clamp to minSpeed (only if nonzero)
         if (speed < this.dna.minSpeed && speed > 0) {
-            const scale = this.dna.minSpeed / speed;
-            this.vx *= scale;
-            this.vy *= scale;
+            //const scale = this.dna.minSpeed / speed;
+            //this.vx *= scale;
+            //this.vy *= scale;
         }
+        // --- APPLY DRAG ---
+        this.vx -= this.vx * Math.abs(this.vx) * this.global.dragCoefficient;
+        this.vy -= this.vy * Math.abs(this.vy) * this.global.dragCoefficient;
+        if (Math.abs(this.vx) < 0.001) this.vx = 0;
+        if (Math.abs(this.vy) < 0.001) this.vy = 0;
+        // ------------------  
         
         // energy cost proportional to speed
         const lostEnergy = this.dna.movementCost + speed * speed * this.dna.speedEnergyCost; // quadratic
-        this.energy = clamp(this.energy - lostEnergy, 0, this.dna.energyCap) 
+        this.energy = clamp(this.energy - lostEnergy, 0, this.dna.energyCap);
+        this.propel();
     }
     draw(ctx) {
         ctx.beginPath();
