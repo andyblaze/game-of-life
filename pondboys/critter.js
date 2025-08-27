@@ -10,6 +10,7 @@ export default class Critter {
         this.initProperties(this.dna);
     }
     initProperties(dna) {
+        this.id = Math.random();
         this.age = 0;
         this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);
         this.energy = dna.energyCap / 2; // start at half cap
@@ -42,16 +43,28 @@ export default class Critter {
     }
     update() {
         this.age++;
-        if (this.age >= this.lifespan) {
-            this.energy -= 0.5;
-            const t = (this.age - this.lifespan) / 120; // 120 frames = about 2 seconds
-            //const alpha = Math.max(1 - t, 0);
-            //this.dna.color = [0, 204, 0, 0.9];
-            const healthyColor = this.dna.healthyColor; // e.g. [r,g,b,a]
-            const agingColor     = [0, 204, 0, 0.5];      // greenish old-age color
+    if (this.age >= this.lifespan) {
+        this.energy -= 0.5;
 
+        const agingDuration = 120; // frames to tint
+        const fadeDuration  = 120; // frames to fade
+
+        const ageOver = this.age - this.lifespan;
+
+        const healthyColor = this.dna.healthyColor;     // [r,g,b,a]
+        const agingColor   = [0, 204, 0, 0.9];          // target tint
+
+        if (ageOver <= agingDuration) {
+            // Phase 1: lerp healthy → old color
+            const t = ageOver / agingDuration;
             this.dna.color = lerpColor(healthyColor, agingColor, t);
+        } else {
+            // Phase 2: fade alpha only
+            const fadeT = Math.min((ageOver - agingDuration) / fadeDuration, 1);
+            const [r,g,b,a] = agingColor;
+            this.dna.color = [r, g, b, a * (1 - fadeT)];
         }
+    }
         else {
             // grow based on energy surplus or a fixed rate
             const growthRate = 0.02 * (this.energy / this.dna.energyCap);

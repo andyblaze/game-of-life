@@ -34,7 +34,9 @@ class PredatorDraw extends CritterDraw {
     draw(ctx, critter) {
         const c = critter;
         // orbit nucleus slowly
+        const phase = critter.id * 0.1; // or Math.random() seeded per critter
         this.nucleusAngle += 0.01; // try 0.005 for slower, 0.02 for faster
+        const angle = this.nucleusAngle + phase;
         // body
         ctx.beginPath();
         ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
@@ -46,8 +48,8 @@ class PredatorDraw extends CritterDraw {
         const nucleusOffset = c.radius * 0.3;
         ctx.beginPath();
         ctx.arc(
-            c.x + nucleusOffset * Math.cos(this.nucleusAngle),
-            c.y + nucleusOffset * Math.sin(this.nucleusAngle),
+            c.x + nucleusOffset * Math.cos(angle),
+            c.y + nucleusOffset * Math.sin(angle),
             c.radius * 0.2, 0, Math.PI * 2
         );
         ctx.fillStyle = this.nucleusColor;
