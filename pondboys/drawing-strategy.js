@@ -1,0 +1,82 @@
+class CritterDraw {
+    fixAlpha(c) {
+        const alpha = Math.min(c.energy / 100, 1);
+        c.dna.color[3] = alpha;
+        return "rgba(" + c.dna.color.join(",") + ")";
+    }
+}
+class PreyDraw extends CritterDraw {
+    draw(ctx, critter) {
+        const c = critter;
+
+        // create radial gradient: lighter in center, darker at edges
+        const grad = ctx.createRadialGradient(c.x, c.y, c.radius * 0.1, c.x, c.y, c.radius);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${Math.min(c.energy / 100, 1)})`); // bright center
+        grad.addColorStop(1, this.fixAlpha(c));   // darker edge
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+class PredatorDraw extends CritterDraw {
+    constructor() {
+        super();
+        this.init();
+    }
+    init() {
+        this.nucleusAngle = Math.random() * Math.PI * 2;
+        this.nucleusColor = "rgba(255,255,255,0.3)";
+        this.organellePhase = Math.random() * Math.PI * 2;
+        this.organelleColor = "rgba(0,0,0,0.4)";    
+    }
+    draw(ctx, critter) {
+        const c = critter;
+        // orbit nucleus slowly
+        this.nucleusAngle += 0.01; // try 0.005 for slower, 0.02 for faster
+        // body
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.fixAlpha(c);
+        ctx.fill(); 
+        // === DNA signature bits ===
+
+        // nucleus (a dot offset from center)
+        const nucleusOffset = c.radius * 0.3;
+        ctx.beginPath();
+        ctx.arc(
+            c.x + nucleusOffset * Math.cos(this.nucleusAngle),
+            c.y + nucleusOffset * Math.sin(this.nucleusAngle),
+            c.radius * 0.2, 0, Math.PI * 2
+        );
+        ctx.fillStyle = this.nucleusColor;
+        ctx.fill();
+
+        // organelles (curved squiggles inside body)
+        const organelleCount = 2;
+        for ( let i = 0; i < organelleCount; i++ ) {
+            const angle = (i / organelleCount) * Math.PI * 2 + this.organellePhase;
+            const r = c.radius * 0.5;
+            const cx = c.x + r * Math.cos(angle);
+            const cy = c.y + r * Math.sin(angle);
+
+            ctx.beginPath();
+            ctx.strokeStyle = this.organelleColor;
+            ctx.lineWidth = 3;
+            ctx.moveTo(cx - 3, cy - 2);
+            ctx.quadraticCurveTo(cx, cy + 3, cx + 3, cy - 2); // simple bent line
+            ctx.stroke();
+        }     
+    }
+}
+
+export default class DrawingStrategy {
+    static types = {
+        "predator": new PredatorDraw(),
+        "prey": new PreyDraw()
+    };
+    static forType(t) { 
+        return this.types[t];
+    }
+}

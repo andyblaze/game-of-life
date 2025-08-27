@@ -24,14 +24,16 @@ export default class Config {
                 speedEnergyCost:0.006, spawnChance: 0.999,
                 maxRadius:30, maxSpeed:3.5, minSpeed:1.5,
                 minLifespan:1, maxLifespan:2, // minutes
-                propulsionThreshold:100, propulsionCost:20
+                propulsionThreshold:100, propulsionCost:20,
+                color:[230, 25, 25, 0.5]
         },
         prey: { energyCap: 150, reproductionCost: 50, 
                 reproductionThreshold: 90, movementCost:0.025,
                 speedEnergyCost:0.002, spawnChance:0.999,
                 maxRadius:20, maxSpeed:2.5, minSpeed:1,
                 minLifespan:1, maxLifespan:1.5, // minutes
-                propulsionThreshold:80, propulsionCost:10
+                propulsionThreshold:80, propulsionCost:10,
+                color:[46, 178, 178, 0.5]
         }
     }
 }

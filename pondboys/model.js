@@ -83,7 +83,7 @@ export default class Model {
                 x: Math.random() * this.global.width,
                 y: Math.random() * this.global.height,
                 radius: 3,
-                color: "hsla(280,80%,70%,0.6)"
+                color: "rgba(204, 102, 255, 0.6)"
             });
         }
     }

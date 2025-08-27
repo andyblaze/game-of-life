@@ -1,4 +1,5 @@
-import { clamp, mt_rand } from "./functions.js";
+import { clamp, mt_rand, lerpColor } from "./functions.js";
+import DrawingStrategy from "./drawing-strategy.js";
 
 export default class Critter {
     constructor(config, type="prey", newDNA=false) {
@@ -12,14 +13,13 @@ export default class Critter {
         this.age = 0;
         this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);
         this.energy = dna.energyCap / 2; // start at half cap
+        dna.healthyColor = [...dna.color];
         // assign color based on type
-        if (this.type === "predator") {
-            const hue = 0;  // red
-            this.color = `hsla(${hue}, 80%, 50%, 0.5)`; // 0.5 alpha due to energy at 1/2 cap
-        } else {
-            const hue = 180 + Math.random();  //blue-ish
-            this.color = `hsla(${hue}, 70%, 60%, 0.5)`;
-        }
+        //if (this.type === "predator") {
+            this.color = "rgba(" + dna.color.join(",") + ")";//230, 25, 25, 0.5)"; // 0.5 alpha due to energy at 1/2 cap
+        //} else {
+        //    this.color = "rgba(46, 178, 178, 0.5)";
+        //}
     }
     initPosition(maxSpeed) {
         this.x = mt_rand(0, this.global.width);
@@ -29,10 +29,10 @@ export default class Critter {
         this.radius = 4;
     }
     wraparoundEdges() {
-        if (this.x < 0) this.x += this.global.width;
-        if (this.x > this.global.width) this.x -= this.global.width;
-        if (this.y < 0) this.y += this.global.height;
-        if (this.y > this.global.height) this.y -= this.global.height;
+        if (this.x < -this.radius) this.x += this.global.width + this.radius * 2;
+        if (this.x > this.global.width + this.radius) this.x -= this.global.width + this.radius * 2;
+        if (this.y < -this.radius) this.y += this.global.height + this.radius * 2;
+        if (this.y > this.global.height + this.radius) this.y -= this.global.height + this.radius * 2;
     }
     eat(foodEnergy) {
         // Scale energy gain by age fraction (older = weaker digestion)
@@ -45,8 +45,12 @@ export default class Critter {
         if (this.age >= this.lifespan) {
             this.energy -= 0.5;
             const t = (this.age - this.lifespan) / 120; // 120 frames = about 2 seconds
-            const alpha = Math.max(1 - t, 0);
-            this.color = "hsla(120, 100%, 40%, 0.9)";
+            //const alpha = Math.max(1 - t, 0);
+            //this.dna.color = [0, 204, 0, 0.9];
+            const healthyColor = this.dna.healthyColor; // e.g. [r,g,b,a]
+            const agingColor     = [0, 204, 0, 0.5];      // greenish old-age color
+
+            this.dna.color = lerpColor(healthyColor, agingColor, t);
         }
         else {
             // grow based on energy surplus or a fixed rate
@@ -138,56 +142,8 @@ export default class Critter {
         this.energy = clamp(this.energy - lostEnergy, 0, this.dna.energyCap);
         this.propel();
     }
-    draw2(ctx) {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-        // energy -> alpha
-        const alpha = Math.min(this.energy / 100, 1);
-        ctx.fillStyle = this.color.replace(/[\d\.]+\)$/g, `${alpha})`);
-        ctx.fill();      
-    }
     draw(ctx) {
-  // body
-  const alpha = Math.min(this.energy / 100, 1);
-  ctx.beginPath();
-  ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-  ctx.fillStyle = this.color.replace(/[\d\.]+\)$/g, `${alpha})`);
-  ctx.globalAlpha = this.energy / this.dna.energyCap; // fading with energy
-  ctx.fill();
-  ctx.globalAlpha = 1; // reset
-
-  // === DNA signature bits ===
-  
-const nucleusAngle = Math.random() * Math.PI * 2;
-const nucleusColor = "rgba(255,255,255,0.6)";
-const organellePhase = Math.random() * Math.PI * 2;
-const organelleColor = "rgba(0,0,0,0.4)";
-
-  // nucleus (a dot offset from center)
-  const nucleusOffset = this.radius * 0.3;
-  ctx.beginPath();
-  ctx.arc(
-    this.x + nucleusOffset * Math.cos(nucleusAngle),
-    this.y + nucleusOffset * Math.sin(nucleusAngle),
-    this.radius * 0.2, 0, Math.PI * 2
-  );
-  ctx.fillStyle = nucleusColor || "rgba(0,0,0,0.5)";
-  ctx.fill();
-
-  // organelles (curved squiggles inside body)
-  const organelleCount = 2;
-  for (let i = 0; i < organelleCount; i++) {
-    const angle = (i / organelleCount) * Math.PI * 2 + organellePhase;
-    const r = this.radius * 0.5;
-    const cx = this.x + r * Math.cos(angle);
-    const cy = this.y + r * Math.sin(angle);
-
-    ctx.beginPath();
-    ctx.strokeStyle = organelleColor || "rgba(50,50,50,0.4)";
-    ctx.lineWidth = 1;
-    ctx.moveTo(cx - 3, cy - 2);
-    ctx.quadraticCurveTo(cx, cy + 3, cx + 3, cy - 2); // simple bent line
-    ctx.stroke();
-  }
-}
+        const artist = DrawingStrategy.forType(this.type);
+        artist.draw(ctx, this);   
+    }
 }
