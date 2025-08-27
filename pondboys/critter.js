@@ -10,7 +10,7 @@ export default class Critter {
     }
     initProperties(dna) {
         this.age = 0;
-        this.lifespan = mt_rand(this.dna.minLifespan * 3600, this.dna.maxLifespan * 3600);
+        this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);
         this.energy = dna.energyCap / 2; // start at half cap
         // assign color based on type
         if (this.type === "predator") {
@@ -138,12 +138,56 @@ export default class Critter {
         this.energy = clamp(this.energy - lostEnergy, 0, this.dna.energyCap);
         this.propel();
     }
-    draw(ctx) {
+    draw2(ctx) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
         // energy -> alpha
         const alpha = Math.min(this.energy / 100, 1);
         ctx.fillStyle = this.color.replace(/[\d\.]+\)$/g, `${alpha})`);
-        ctx.fill();
+        ctx.fill();      
     }
+    draw(ctx) {
+  // body
+  const alpha = Math.min(this.energy / 100, 1);
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+  ctx.fillStyle = this.color.replace(/[\d\.]+\)$/g, `${alpha})`);
+  ctx.globalAlpha = this.energy / this.dna.energyCap; // fading with energy
+  ctx.fill();
+  ctx.globalAlpha = 1; // reset
+
+  // === DNA signature bits ===
+  
+const nucleusAngle = Math.random() * Math.PI * 2;
+const nucleusColor = "rgba(255,255,255,0.6)";
+const organellePhase = Math.random() * Math.PI * 2;
+const organelleColor = "rgba(0,0,0,0.4)";
+
+  // nucleus (a dot offset from center)
+  const nucleusOffset = this.radius * 0.3;
+  ctx.beginPath();
+  ctx.arc(
+    this.x + nucleusOffset * Math.cos(nucleusAngle),
+    this.y + nucleusOffset * Math.sin(nucleusAngle),
+    this.radius * 0.2, 0, Math.PI * 2
+  );
+  ctx.fillStyle = nucleusColor || "rgba(0,0,0,0.5)";
+  ctx.fill();
+
+  // organelles (curved squiggles inside body)
+  const organelleCount = 2;
+  for (let i = 0; i < organelleCount; i++) {
+    const angle = (i / organelleCount) * Math.PI * 2 + organellePhase;
+    const r = this.radius * 0.5;
+    const cx = this.x + r * Math.cos(angle);
+    const cy = this.y + r * Math.sin(angle);
+
+    ctx.beginPath();
+    ctx.strokeStyle = organelleColor || "rgba(50,50,50,0.4)";
+    ctx.lineWidth = 1;
+    ctx.moveTo(cx - 3, cy - 2);
+    ctx.quadraticCurveTo(cx, cy + 3, cx + 3, cy - 2); // simple bent line
+    ctx.stroke();
+  }
+}
 }
