@@ -25,12 +25,6 @@ export default class Critter {
         this.vy = (Math.random() - 0.5) * maxSpeed;
         this.radius = 4;
     }
-    wraparoundEdges() {
-        if (this.x < -this.radius) this.x += this.global.width + this.radius * 2;
-        if (this.x > this.global.width + this.radius) this.x -= this.global.width + this.radius * 2;
-        if (this.y < -this.radius) this.y += this.global.height + this.radius * 2;
-        if (this.y > this.global.height + this.radius) this.y -= this.global.height + this.radius * 2;
-    }
     eat(foodEnergy) {
         // Scale energy gain by age fraction (older = weaker digestion)
         const ageFactor = 1 - (this.age / this.lifespan); 

@@ -1,4 +1,4 @@
-import { clamp, lerpColor } from "./functions.js";
+import { lerpColor } from "./functions.js";
 
 class CritterLifespan {
     update(critter) {

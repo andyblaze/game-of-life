@@ -7,10 +7,9 @@ export default class Model {
         this.global = cfg.global();
         this.cfg = cfg;
         this.critters = [];
-        this.food = [];
         this.initCritters(cfg);
         this.foodHandler = new FoodHandler(this.global);
-        this.foodHandler.spawnFood(this.food, this.global.numFood);
+        this.foodHandler.spawnFood(this.global.numFood);
     }
     initCritters(cfg) {
         for (let i = 0; i < this.global.numCritters; i++) { 
@@ -45,11 +44,14 @@ export default class Model {
                     b.vx += (Math.random() - 0.5) * nudge;
                     b.vy += (Math.random() - 0.5) * nudge;
                     
-                    a.archetype.interact(a, b);
-                    b.archetype.interact(b, a); // optional if prey reacts
+                    this.resolveInteraction(a, b);
                 }
             }
         }
+    }
+    resolveInteraction(a, b) {
+        a.archetype.interact(a, b);
+        b.archetype.interact(b, a); // optional if prey reacts
     }
     handleDeath() {
         this.critters = this.critters.filter(c => c.energy > 0);
@@ -69,8 +71,8 @@ export default class Model {
         this.handleDeath();
         this.critters.forEach(c => c.update());
         this.handleCollisions();
-        this.foodHandler.handleFood(this.critters, this.food);
+        const food = this.foodHandler.update(this.critters);
         this.handleReproduction();
-        return {"critters":this.critters, "food":this.food};
+        return {"critters":this.critters, "food":food};
     }
 }

@@ -1,12 +1,18 @@
 import { clamp } from "./functions.js";
 
 class CritterMovement {
+    wraparoundEdges(c) {
+        if (c.x < -c.radius) c.x += c.global.width + c.radius * 2;
+        if (c.x > c.global.width + c.radius) c.x -= c.global.width + c.radius * 2;
+        if (c.y < -c.radius) c.y += c.global.height + c.radius * 2;
+        if (c.y > c.global.height + c.radius) c.y -= c.global.height + c.radius * 2;
+    }
     move(critter) {
         const c = critter;
         c.x += c.vx;
         c.y += c.vy;
         
-        c.wraparoundEdges();
+        this.wraparoundEdges(c);
         
         // if velocity is tiny, stop completely (avoid endless drifting)
     // ------------------        
