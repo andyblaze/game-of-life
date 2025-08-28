@@ -55,7 +55,8 @@ export default class Model {
                     b.vx += (Math.random() - 0.5) * nudge;
                     b.vy += (Math.random() - 0.5) * nudge;
                     
-                    this.handlePredation(a, b);
+                    a.archetype.interact(a, b);
+                    b.archetype.interact(b, a); // optional if prey reacts
                 }
             }
         }
@@ -95,7 +96,7 @@ export default class Model {
         const newCritters = [];
         this.critters.forEach(c => {
             if ( c.canSpawn() ) {
-                const baby = c.spawn(this.cfg, c.type);
+                const baby = c.archetype.spawn(c, this.cfg);
                 newCritters.push(baby);
             }
         });

@@ -1,11 +1,15 @@
-class CritterDraw {
+class CritterDrawing {
+    constructor() {}
     fixAlpha(c) {
         const alpha = Math.min(c.energy / 100, 1);
         c.dna.color[3] = alpha;
         return "rgba(" + c.dna.color.join(",") + ")";
     }
 }
-class PreyDraw extends CritterDraw {
+export class PreyDrawing extends CritterDrawing {
+    constructor() {
+        super();
+    }
     draw(ctx, critter) {
         const c = critter;
 
@@ -20,7 +24,7 @@ class PreyDraw extends CritterDraw {
         ctx.fill();
     }
 }
-class PredatorDraw extends CritterDraw {
+export class PredatorDrawing extends CritterDrawing {
     constructor() {
         super();
         this.init();
@@ -70,15 +74,5 @@ class PredatorDraw extends CritterDraw {
             ctx.quadraticCurveTo(cx, cy + 3, cx + 3, cy - 2); // simple bent line
             ctx.stroke();
         }     
-    }
-}
-
-export default class DrawingStrategy {
-    static types = {
-        "predator": new PredatorDraw(),
-        "prey": new PreyDraw()
-    };
-    static forType(t) { 
-        return this.types[t];
     }
 }

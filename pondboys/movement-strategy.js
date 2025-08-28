@@ -1,0 +1,29 @@
+import { clamp } from "./functions.js";
+
+class CritterMovement {
+    move(critter) {
+        const c = critter;
+        c.x += c.vx;
+        c.y += c.vy;
+        
+        c.wraparoundEdges();
+        
+        // if velocity is tiny, stop completely (avoid endless drifting)
+    // ------------------        
+        
+
+        // --- APPLY DRAG ---
+        c.vx -= c.vx * Math.abs(c.vx) * c.global.dragCoefficient;
+        c.vy -= c.vy * Math.abs(c.vy) * c.global.dragCoefficient;
+        if (Math.abs(c.vx) < 0.001) c.vx = 0;
+        if (Math.abs(c.vy) < 0.001) c.vy = 0;
+        // ------------------  
+        
+        const speed = Math.sqrt(c.vx * c.vx + c.vy * c.vy);
+        // energy cost proportional to speed
+        const lostEnergy = c.dna.movementCost + speed * speed * c.dna.speedEnergyCost; // quadratic
+        c.energy = clamp(c.energy - lostEnergy, 0, c.dna.energyCap);
+    }
+}
+export class PreyMovement extends CritterMovement {}
+export class PredatorMovement extends CritterMovement {}
