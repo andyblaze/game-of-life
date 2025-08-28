@@ -1,5 +1,6 @@
 import Critter from "./critter.js";
-import { clamp, distance } from "./functions.js";
+import FoodHandler from "./food-handler.js";
+import { distance } from "./functions.js";
 
 export default class Model {
     constructor(cfg) {
@@ -8,24 +9,13 @@ export default class Model {
         this.critters = [];
         this.food = [];
         this.initCritters(cfg);
-        this.spawnFood(this.global.numFood);
+        this.foodHandler = new FoodHandler(this.global);
+        this.foodHandler.spawnFood(this.food, this.global.numFood);
     }
     initCritters(cfg) {
         for (let i = 0; i < this.global.numCritters; i++) { 
             const type = Math.random() < this.global.predatorPercentage ? "predator" : "prey";
             this.critters.push(new Critter(cfg, type));
-        }
-    }
-    handlePredation(a, b) {
-        if ( a.type === "predator" && b.type === "prey") {
-            const stolen = Math.min(b.energy * 0.3, 2);
-            a.energy = clamp(a.energy + stolen, 0, a.dna.energyCap);
-            b.energy = clamp(b.energy - stolen, 0, b.dna.energyCap);
-        }
-        if ( b.type === "predator" && a.type === "prey" ) {
-            const stolen = Math.min(a.energy * 0.3, 2);
-            b.energy = clamp(b.energy + stolen, 0, b.dna.energyCap);
-            a.energy = clamp(a.energy - stolen, 0, a.dna.energyCap);
         }
     }
     handleCollisions() {
@@ -61,33 +51,6 @@ export default class Model {
             }
         }
     }
-    handleFood() {
-        for (let i = this.critters.length - 1; i >= 0; i--) {
-            const c = this.critters[i];
-            if (c.type === 'predator') continue;
-            for (let j = this.food.length - 1; j >= 0; j--) {
-                const f = this.food[j];
-                const { dist } = distance(c, f);
-                if (dist < c.radius + f.radius) {
-                    // eat food
-                    c.eat(this.global.foodEnergy);
-                    this.food.splice(j, 1);
-                    // optional: spawn a new food somewhere
-                    this.spawnFood();
-                }
-            }
-        }
-    }
-    spawnFood(n=1) {
-        for (let i = 0; i < n; i++) {
-            this.food.push({
-                x: Math.random() * this.global.width,
-                y: Math.random() * this.global.height,
-                radius: 3,
-                color: "rgba(204, 102, 255, 0.6)"
-            });
-        }
-    }
     handleDeath() {
         this.critters = this.critters.filter(c => c.energy > 0);
     } 
@@ -106,7 +69,7 @@ export default class Model {
         this.handleDeath();
         this.critters.forEach(c => c.update());
         this.handleCollisions();
-        this.handleFood();
+        this.foodHandler.handleFood(this.critters, this.food);
         this.handleReproduction();
         return {"critters":this.critters, "food":this.food};
     }
