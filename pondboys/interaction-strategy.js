@@ -6,7 +6,7 @@ class InteractionStrategy {
 
 export class PredatorInteraction extends InteractionStrategy {
     interact(self, other) {
-        if (other.type === "prey") {
+        if (other.isPrey()) {
             const stolen = Math.min(other.energy * 0.3, 2);
             self.energy = clamp(self.energy + stolen, 0, self.dna.energyCap);
             other.energy = clamp(other.energy - stolen, 0, other.dna.energyCap);

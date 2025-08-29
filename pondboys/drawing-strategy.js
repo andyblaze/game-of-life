@@ -2,7 +2,7 @@ class CritterDrawing {
     constructor() {}
     fixAlpha(c) {
         const alpha = Math.min(c.energy / 100, 1);
-        c.dna.color[3] = alpha;
+        c.color[3] = alpha;
         return "rgba(" + c.color.join(",") + ")";
     }
 }
@@ -31,7 +31,7 @@ export class PredatorDrawing extends CritterDrawing {
     }
     init() {
         this.nucleusAngle = Math.random() * Math.PI * 2;
-        this.nucleusColor = "rgba(255,255,255,0.3)";
+        this.nucleusColor = [255,255,255,1];
         this.organellePhase = Math.random() * Math.PI * 2;
         this.organelleColor = "rgba(0,0,0,0.4)";    
     }
@@ -56,6 +56,7 @@ export class PredatorDrawing extends CritterDrawing {
             c.y + nucleusOffset * Math.sin(angle),
             c.radius * 0.2, 0, Math.PI * 2
         );
+        this.nucleusColor[3] = c.color[3];
         ctx.fillStyle = this.nucleusColor;
         ctx.fill();
 

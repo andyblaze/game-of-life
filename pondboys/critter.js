@@ -5,9 +5,15 @@ export default class Critter {
     constructor(config, type="prey", newDNA=false) {
         this.global = config.global(); 
         this.type = type;
-        this.dna = (newDNA === false ? config.item(type) : newDNA);
+        this.dna = (newDNA === false ? config.getRandom(type) : newDNA);
         this.initPosition(this.dna.maxSpeed);
         this.initProperties(this.dna);
+    }
+    isPredator() {
+        return (this.type === "predator");
+    }
+    isPrey() {
+        return (this.type === "prey");
     }
     initProperties(dna) {
         this.archetype = CritterArchetypes.get(this.type);
@@ -15,7 +21,6 @@ export default class Critter {
         this.age = 0;
         this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);
         this.energy = dna.energyCap / 2; // start at half cap
-        //dna.healthyColor = [...dna.color];
         this.color = dna.color;
     }
     initPosition(maxSpeed) {
