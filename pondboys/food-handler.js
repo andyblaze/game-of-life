@@ -30,7 +30,7 @@ export default class FoodHandler {
                 x: Math.random() * this.global.width,
                 y: Math.random() * this.global.height,
                 radius: 3,
-                color: "rgba(204, 102, 255, 0.6)"
+                color: "rgba(0, 128, 0, 0.8)"
             });
         }
     }

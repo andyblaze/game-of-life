@@ -6,53 +6,40 @@ import { PredatorSpawn, PreySpawn } from "./spawning-strategy.js";
 import { PredatorInteraction, PreyInteraction } from "./interaction-strategy.js";
 
 function makePredatorArchetype() {
-    const draw = new PredatorDrawing();
-    const move = new PredatorMovement();
-    const propel = new PredatorPropulsion();
-    const update = new PredatorLifespan();
-    const spawn = new PredatorSpawn();
-    const interact = new PredatorInteraction();
+    const pen = new PredatorDrawing();
+    const mover = new PredatorMovement();
+    const propeller = new PredatorPropulsion();
+    const lifespan = new PredatorLifespan();
+    const spawner = new PredatorSpawn();
+    const interaction = new PredatorInteraction();
 
     return {
-        draw: draw.draw.bind(draw),
-        move: move.move.bind(move),
-        propel: propel.propel.bind(propel),
-        update: update.update.bind(update),
-        spawn: spawn.spawn.bind(spawn),
-        interact: interact.interact.bind(interact)
+        draw: pen.draw.bind(pen),
+        move: mover.move.bind(mover),
+        propel: propeller.propel.bind(propeller),
+        update: lifespan.update.bind(lifespan),
+        spawn: spawner.spawn.bind(spawner),
+        interact: interaction.interact.bind(interaction)
     };
 }
 
 function makePreyArchetype() {
-    const draw = new PreyDrawing();
-    const move = new PreyMovement();
-    const propel = new PreyPropulsion();
-    const update = new PreyLifespan();
-    const spawn = new PreySpawn();
-    const interact = new PreyInteraction();
+    const pen = new PreyDrawing();
+    const mover = new PreyMovement();
+    const propeller = new PreyPropulsion();
+    const lifespan = new PreyLifespan();
+    const spawner = new PreySpawn();
+    const interaction = new PreyInteraction();
 
     return {
-        draw: draw.draw.bind(draw),
-        move: move.move.bind(move),
-        propel: propel.propel.bind(propel),
-        update: update.update.bind(update),
-        spawn: spawn.spawn.bind(spawn),
-        interact: interact.interact.bind(interact)
+        draw: pen.draw.bind(pen),
+        move: mover.move.bind(mover),
+        propel: propeller.propel.bind(propeller),
+        update: lifespan.update.bind(lifespan),
+        spawn: spawner.spawn.bind(spawner),
+        interact: interaction.interact.bind(interaction)
     };
 }
-
-/*const predatorDrawing = new PredatorDrawing();
-const preyDrawing = new PreyDrawing();
-const predatorMovement = new PredatorMovement();
-const preyMovement = new PreyMovement();
-const predatorPropulsion = new PredatorPropulsion();
-const preyPropulsion = new PreyPropulsion();
-const predatorLifespan = new PredatorLifespan();
-const preyLifespan = new PreyLifespan();
-const predatorSpawn = new PredatorSpawn();
-const preySpawn = new PreySpawn();
-const predatorInteraction = new PredatorInteraction();
-const preyInteraction = new PreyInteraction();*/
 
 export default class CritterArchetypes {
     static types = {

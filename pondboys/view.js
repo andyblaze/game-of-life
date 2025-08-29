@@ -30,8 +30,8 @@ export default class View {
         }
         ctx.closePath();
 
-        ctx.fillStyle = "yellow";
-        ctx.shadowColor = "orange";
+        ctx.fillStyle = f.color;
+        ctx.shadowColor = "rgba(0,255,0,1)";
         ctx.shadowBlur = 6;
         ctx.fill();
         ctx.restore();
