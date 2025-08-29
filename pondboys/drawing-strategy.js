@@ -3,7 +3,7 @@ class CritterDrawing {
     fixAlpha(c) {
         const alpha = Math.min(c.energy / 100, 1);
         c.dna.color[3] = alpha;
-        return "rgba(" + c.dna.color.join(",") + ")";
+        return "rgba(" + c.color.join(",") + ")";
     }
 }
 export class PreyDrawing extends CritterDrawing {

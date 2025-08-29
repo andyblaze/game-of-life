@@ -15,8 +15,8 @@ export default class Critter {
         this.age = 0;
         this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);
         this.energy = dna.energyCap / 2; // start at half cap
-        dna.healthyColor = [...dna.color];
-        this.color = "rgba(" + dna.color.join(",") + ")";
+        //dna.healthyColor = [...dna.color];
+        this.color = dna.color;
     }
     initPosition(maxSpeed) {
         this.x = mt_rand(0, this.global.width);

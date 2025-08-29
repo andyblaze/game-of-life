@@ -12,18 +12,18 @@ class CritterLifespan {
 
             const ageOver = c.age - c.lifespan;
 
-            const healthyColor = c.dna.healthyColor;     // [r,g,b,a]
-            const agingColor   = [0, 204, 0, 0.9];          // target tint
+            let agingColor   = [0, 128, 0, 1];          // target tint
+            agingColor[3] = c.color[3];
 
             if (ageOver <= agingDuration) {
                 // Phase 1: lerp healthy → old color
                 const t = ageOver / agingDuration;
-                c.dna.color = lerpColor(healthyColor, agingColor, t);
+                c.color = lerpColor(c.dna.color, agingColor, t);
             } else {
                 // Phase 2: fade alpha only
                 const fadeT = Math.min((ageOver - agingDuration) / fadeDuration, 1);
                 const [r,g,b,a] = agingColor;
-                c.dna.color = [r, g, b, a * (1 - fadeT)];
+                c.color = lerpColor(c.color, agingColor, (1 - fadeT));
             }
         }
         else {
