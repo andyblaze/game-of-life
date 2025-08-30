@@ -13,14 +13,11 @@ class CritterMovement {
         c.y += c.vy;
         
         this.wraparoundEdges(c);
-        
-        // if velocity is tiny, stop completely (avoid endless drifting)
-    // ------------------        
-        
 
-        // --- APPLY DRAG ---
-        c.vx -= c.vx * Math.abs(c.vx) * c.global.dragCoefficient;
-        c.vy -= c.vy * Math.abs(c.vy) * c.global.dragCoefficient;
+       // --- APPLY DRAG ---
+        c.vx -= c.vx * Math.abs(c.vx) * c.dna.dragCoefficient;
+        c.vy -= c.vy * Math.abs(c.vy) * c.dna.dragCoefficient;
+        // if velocity is tiny, stop completely (avoid endless drifting)
         if (Math.abs(c.vx) < 0.001) c.vx = 0;
         if (Math.abs(c.vy) < 0.001) c.vy = 0;
         // ------------------  
@@ -32,4 +29,5 @@ class CritterMovement {
     }
 }
 export class PreyMovement extends CritterMovement {}
-export class PredatorMovement extends CritterMovement {}
+export class VampireMovement extends CritterMovement {}
+export class BasherMovement extends CritterMovement {}

@@ -24,14 +24,14 @@ export class PreyDrawing extends CritterDrawing {
         ctx.fill();
     }
 }
-export class PredatorDrawing extends CritterDrawing {
+class PredatorDrawing extends CritterDrawing {
     constructor() {
         super();
         this.init();
     }
     init() {
         this.nucleusAngle = Math.random() * Math.PI * 2;
-        this.nucleusColor = [255,255,255,1];
+        this.nucleusColor = [255,255,255,0.3];
         this.organellePhase = Math.random() * Math.PI * 2;
         this.organelleColor = "rgba(0,0,0,0.4)";    
     }
@@ -56,8 +56,8 @@ export class PredatorDrawing extends CritterDrawing {
             c.y + nucleusOffset * Math.sin(angle),
             c.radius * 0.2, 0, Math.PI * 2
         );
-        this.nucleusColor[3] = c.color[3];
-        ctx.fillStyle = this.nucleusColor;
+        //this.nucleusColor[3] = c.color[3];
+        ctx.fillStyle = "rgba(" + this.nucleusColor.join(",") + ")";
         ctx.fill();
 
         // organelles (curved squiggles inside body)
@@ -75,5 +75,29 @@ export class PredatorDrawing extends CritterDrawing {
             ctx.quadraticCurveTo(cx, cy + 3, cx + 3, cy - 2); // simple bent line
             ctx.stroke();
         }     
+    }
+}
+
+export class VampireDrawing extends PredatorDrawing {}
+export class BasherDrawing extends PredatorDrawing {
+    draw(ctx, critter) {
+        const c = critter;
+        const outer = c.radius;
+        const thickness = outer * 0.4; // ring thickness, tweakable
+        const inner = outer - thickness;
+
+        // outer gradient ring
+        const grad = ctx.createRadialGradient(c.x, c.y, inner, c.x, c.y, outer);
+        grad.addColorStop(0, this.fixAlpha(c));              // inner edge
+        grad.addColorStop(1, `rgba(255, 255, 255, 0)`);      // fade outward
+
+        ctx.fillStyle = grad;
+
+        // draw donut
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, outer, 0, Math.PI * 2);
+        ctx.arc(c.x, c.y, inner, 0, Math.PI * 2, true); // cut out center
+        ctx.closePath();
+        ctx.fill();
     }
 }

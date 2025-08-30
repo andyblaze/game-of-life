@@ -4,7 +4,7 @@ class InteractionStrategy {
     interact(self, other) { } 
 }
 
-export class PredatorInteraction extends InteractionStrategy {
+class PredatorInteraction extends InteractionStrategy {
     interact(self, other) {
         if (other.isPrey()) {
             const stolen = Math.min(other.energy * 0.3, 2);
@@ -13,6 +13,9 @@ export class PredatorInteraction extends InteractionStrategy {
         }
     }
 }
+
+export class VampireInteraction extends PredatorInteraction {}
+export class BasherInteraction extends PredatorInteraction {}
 
 export class PreyInteraction extends InteractionStrategy {
     interact(self, other) {

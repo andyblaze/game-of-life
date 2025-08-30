@@ -15,7 +15,7 @@ export default class Critter {
         return (this.dna.type === "Prey");
     }
     initProperties(dna) {
-        this.archetype = CritterArchetypes.get(this.dna.type);
+        this.archetype = CritterArchetypes.get(this.dna.name);
         this.id = Math.random();
         this.age = 0;
         this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);
