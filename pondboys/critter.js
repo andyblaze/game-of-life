@@ -1,22 +1,21 @@
-import { clamp, mt_rand, lerpColor } from "./functions.js";
+import { clamp, mt_rand } from "./functions.js";
 import CritterArchetypes from "./critter-archetypes.js";
 
 export default class Critter {
-    constructor(config, type="prey", newDNA=false) {
+    constructor(config, type, newDNA=false) {
         this.global = config.global(); 
-        this.type = type;
         this.dna = (newDNA === false ? config.getRandom(type) : newDNA);
         this.initPosition(this.dna.maxSpeed);
         this.initProperties(this.dna);
     }
     isPredator() {
-        return (this.type === "predator");
+        return (this.dna.type === "Predator");
     }
     isPrey() {
-        return (this.type === "prey");
+        return (this.dna.type === "Prey");
     }
     initProperties(dna) {
-        this.archetype = CritterArchetypes.get(this.type);
+        this.archetype = CritterArchetypes.get(this.dna.type);
         this.id = Math.random();
         this.age = 0;
         this.lifespan = mt_rand(dna.minLifespan * 3600, dna.maxLifespan * 3600);

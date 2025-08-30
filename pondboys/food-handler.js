@@ -9,7 +9,7 @@ export default class FoodHandler {
     update(critters) {
         for (let i = critters.length - 1; i >= 0; i--) {
             const c = critters[i];
-            if (c.type === 'predator') continue;
+            if ( c.isPredator() ) continue;
 
             for (let j = this.food.length - 1; j >= 0; j--) {
                 const f = this.food[j];

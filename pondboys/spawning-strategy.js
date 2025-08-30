@@ -19,7 +19,7 @@ class CritterSpawn {
         const mutationStrength = 0.6; // % variation
         const babyDNA = this.mutateDNA(c.dna, mutationRate, mutationStrength);
         
-        const baby = new Critter(config, c.type, babyDNA);
+        const baby = new Critter(config, babyDNA.type, babyDNA);
         baby.x = c.x + (Math.random() - 0.5) * 10;
         baby.y = c.y + (Math.random() - 0.5) * 10;
         baby.energy = c.dna.reproductionCost;

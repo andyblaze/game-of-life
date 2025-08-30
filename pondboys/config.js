@@ -31,7 +31,7 @@ export default class Config {
                 maxRadius:30, maxSpeed:3.5, minSpeed:1.5,
                 minLifespan:1, maxLifespan:1.5, // minutes
                 propulsionThreshold:100, propulsionCost:20,
-                color:[230, 25, 25, 0.5], type:"predator"
+                color:[230, 25, 25, 0.5], type:"Predator"
             },
             { energyCap: 250, reproductionCost: 180, 
                 reproductionThreshold: 200, movementCost:0.04,
@@ -39,7 +39,7 @@ export default class Config {
                 maxRadius:30, maxSpeed:3.5, minSpeed:1.5,
                 minLifespan:1, maxLifespan:1.5, // minutes
                 propulsionThreshold:100, propulsionCost:20,
-                color:[230, 25, 255, 0.5], type:"predator"
+                color:[230, 25, 255, 0.5], type:"Predator"
             }
         ],
         prey: [ 
@@ -49,7 +49,7 @@ export default class Config {
                 maxRadius:20, maxSpeed:2.5, minSpeed:1,
                 minLifespan:1, maxLifespan:1.5, // minutes
                 propulsionThreshold:80, propulsionCost:10,
-                color:[46, 178, 178, 0.5], type:"prey"
+                color:[46, 178, 178, 0.5], type:"Prey"
             },
             { energyCap: 150, reproductionCost: 50, 
                 reproductionThreshold: 90, movementCost:0.025,
@@ -57,7 +57,7 @@ export default class Config {
                 maxRadius:20, maxSpeed:2.5, minSpeed:1,
                 minLifespan:1, maxLifespan:1.5, // minutes
                 propulsionThreshold:80, propulsionCost:10,
-                color:[46, 18, 178, 0.5], type:"prey"
+                color:[46, 18, 178, 0.5], type:"Prey"
             }
         ]
     }
