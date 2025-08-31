@@ -31,4 +31,4 @@ class CritterSpawn {
 }
 export class PreySpawn extends CritterSpawn {}
 export class VampireSpawn extends CritterSpawn {}
-export class BasherSpawn extends CritterSpawn {}
+export class TrapperSpawn extends CritterSpawn {}

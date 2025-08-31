@@ -30,4 +30,4 @@ class CritterMovement {
 }
 export class PreyMovement extends CritterMovement {}
 export class VampireMovement extends CritterMovement {}
-export class BasherMovement extends CritterMovement {}
+export class TrapperMovement extends CritterMovement {}

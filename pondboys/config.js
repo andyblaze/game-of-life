@@ -33,14 +33,15 @@ export default class Config {
                 color:[230, 25, 25, 0.5], type:"Predator",
                 name:"Vampire", dragCoefficient:0.0006
             },
-            { energyCap: 250, reproductionCost: 180, 
-                reproductionThreshold: 200, movementCost:0.04,
-                speedEnergyCost:0.006, spawnChance: 0.999,
-                maxRadius:30, maxSpeed:3.5, minSpeed:1.5,
-                minLifespan:1, maxLifespan:1.5, // minutes
-                propulsionThreshold:100, propulsionCost:20,
+            { energyCap: 450, reproductionCost: 500, 
+                reproductionThreshold: 200, movementCost:0.02,
+                speedEnergyCost:0.003, spawnChance: 0.999,
+                maxRadius:34, maxSpeed:0.5, minSpeed:1.5,
+                minLifespan:3, maxLifespan:3.5, // minutes
+                propulsionThreshold:100, propulsionCost:10,
                 color:[230, 25, 255, 0.5], type:"Predator",
-                name:"Basher", dragCoefficient:0.0006
+                name:"Trapper", dragCoefficient:0.0006,
+                state:{trapping: false, mode: "idle", captive: null}
             }
         ],
         prey: [ 
@@ -53,14 +54,14 @@ export default class Config {
                 color:[46, 178, 178, 0.5], type:"Prey",
                 name:"Prey", dragCoefficient:0.0006
             },
-            { energyCap: 150, reproductionCost: 50, 
-                reproductionThreshold: 90, movementCost:0.025,
-                speedEnergyCost:0.002, spawnChance:0.999,
-                maxRadius:20, maxSpeed:2.5, minSpeed:1,
-                minLifespan:1, maxLifespan:1.5, // minutes
-                propulsionThreshold:80, propulsionCost:10,
+            { energyCap: 250, reproductionCost: 50, 
+                reproductionThreshold: 990, movementCost:0,
+                speedEnergyCost:0, spawnChance:0.999,
+                maxRadius:10, maxSpeed:0.05, minSpeed:0.05,
+                minLifespan:4, maxLifespan:4.5, // minutes
+                propulsionThreshold:2, propulsionCost:0.1,
                 color:[46, 18, 178, 0.5], type:"Prey",
-                name:"Prey", dragCoefficient:0.0006
+                name:"Prey", dragCoefficient:0.03
             }
         ]
     }

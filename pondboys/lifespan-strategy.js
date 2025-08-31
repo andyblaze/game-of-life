@@ -40,4 +40,4 @@ class CritterLifespan {
 }
 export class PreyLifespan extends CritterLifespan {}
 export class VampireLifespan extends CritterLifespan {}
-export class BasherLifespan extends CritterLifespan {}
+export class TrapperLifespan extends CritterLifespan {}

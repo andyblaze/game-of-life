@@ -24,5 +24,5 @@ class CritterPropulsion {
 }
 export class PreyPropulsion extends CritterPropulsion {}
 export class VampirePropulsion extends CritterPropulsion {}
-export class BasherPropulsion extends CritterPropulsion {}
+export class TrapperPropulsion extends CritterPropulsion {}
 

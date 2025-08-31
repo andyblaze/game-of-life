@@ -79,7 +79,7 @@ class PredatorDrawing extends CritterDrawing {
 }
 
 export class VampireDrawing extends PredatorDrawing {}
-export class BasherDrawing extends PredatorDrawing {
+export class TrapperDrawing extends PredatorDrawing {
     draw(ctx, critter) {
         const c = critter;
         const outer = c.radius;

@@ -14,6 +14,9 @@ export default class Critter {
     isPrey() {
         return (this.dna.type === "Prey");
     }
+    isMature() {
+        return (this.radius === this.dna.maxRadius);
+    }
     initProperties(dna) {
         this.archetype = CritterArchetypes.get(this.dna.name);
         this.id = Math.random();
@@ -42,7 +45,7 @@ export default class Critter {
     }
     canSpawn() {
         let chance = Math.random() > this.dna.spawnChance; 
-        return (chance && this.energy >= this.dna.reproductionThreshold && this.radius === this.dna.maxRadius);
+        return (chance && this.energy >= this.dna.reproductionThreshold && this.isMature());
     }
     draw(ctx) {
         this.archetype.draw(ctx, this);   
