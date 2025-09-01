@@ -35,7 +35,7 @@ export default class View {
         data.forEach(a => {
             a.draw(this.offCtx);
         });
-        this.overlayFog(350);
+        //this.overlayFog(350);
         this.blit();
     }
     blit() {
