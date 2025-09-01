@@ -52,7 +52,6 @@ ctx.moveTo(rectX, rectTop);                 // top-left
 ctx.lineTo(rectX + rectWidth, rectTop);     // top-right
 ctx.lineTo(bottomPoints[bottomPoints.length-1].x, bottomPoints[bottomPoints.length-1].y); // bottom-right
 
-ctx.
 // draw curves along all points
 for (let i = bottomPoints.length - 1; i > 0; i--) {
   const p0 = bottomPoints[i];
