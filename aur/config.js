@@ -16,17 +16,17 @@ export default class Config {
             width: window.innerWidth,   // canvas width
             height: window.innerHeight, // canvas height
             framesPerTick: 1,          // update frequency (higher = slower updates, lower CPU)
-            numLights:1,
+            numLights:3,
         },
         types: [
             { 
                 color:[0, 255, 100], name: "Type1"
             },
             {   
-                color:[0, 100, 255], name: "Type2"
+                color:[0, 255, 100], name: "Type2"
             },
             {   
-                color:[0, 255, 100], name: "Type3"
+                color:[0,255,  100], name: "Type3"
             }
         ]
     }

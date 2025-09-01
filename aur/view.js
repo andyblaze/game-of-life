@@ -25,12 +25,23 @@ export default class View {
         this.offCtx.fillStyle = gradient;
         this.offCtx.fillRect(0, this.offscreen.height - height, this.offscreen.width, height);
     }
+    drawSkyOverlay() {
+        // Keep time as a property of the View so it persists across frames
+        if (this._overlayTime === undefined) this._overlayTime = 0;
+        if (this._overlayDirection === undefined) this._overlayDirection = 1;
 
+        this._overlayTime += 0.005 * this._overlayDirection;
+        if (this._overlayTime > 0.7 || this._overlayTime < 0.3) this._overlayDirection *= -1;
+
+        this.offCtx.fillStyle = `rgba(255, 0, 0,${this._overlayTime})`;
+        this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
+    }
     draw(data) {
         // background water
         //this.offCtx.fillStyle = "rgba(20, 40, 60, 1)";
         //this.offCtx.fillRect(0, 0, this.offscreen.width, this.offscreen.height);
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
+        this.drawSkyOverlay();
         // draw auroras
         data.forEach(a => {
             a.draw(this.offCtx);

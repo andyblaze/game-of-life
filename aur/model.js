@@ -9,7 +9,7 @@ export default class Model {
     }
     initAuroras(cfg) {
         for (let i = 0; i < this.global.numLights; i++) { 
-            const t = cfg.getRandom();
+            const t = cfg.data.types[i];
             this.auroras.push(new Aurora(cfg, t));
         }
     }
