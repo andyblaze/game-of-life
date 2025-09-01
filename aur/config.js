@@ -20,13 +20,13 @@ export default class Config {
         },
         types: [
             { 
-                color:[230, 25, 255, 0.5], name: "Type1"
+                color:[0, 255, 100], name: "Type1"
             },
             {   
-                color:[46, 178, 178, 0.5], name: "Type2"
+                color:[0, 100, 255], name: "Type2"
             },
             {   
-                color:[46, 18, 178, 0.5], name: "Type3"
+                color:[0, 255, 100], name: "Type3"
             }
         ]
     }
