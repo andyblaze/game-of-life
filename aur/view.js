@@ -1,5 +1,5 @@
-import { WavyMask, FullScreenOverlay } from "./overlays.js";
-function applyWaveClip(ctx, width = 1920, height = 980, waveY = 50, phase = 0) {
+import { FullScreenOverlay } from "./overlays.js";
+function applyWaveClip(ctx, width, height, waveY, phase = 0) {
     ctx.save();
     ctx.beginPath();
 
@@ -17,10 +17,10 @@ function applyWaveClip(ctx, width = 1920, height = 980, waveY = 50, phase = 0) {
     const waveLength = width / waveCount;
     const waveHeight = 20;
 
-for (let x = 0; x <= width; x += 10) {       // step in pixels
-    const y = waveY + Math.sin((x / waveLength) * 2 * Math.PI + phase) * waveHeight;
-    ctx.lineTo(x, y);
-}
+    for (let x = 0; x <= width; x += 10) {       // step in pixels
+        const y = waveY + Math.sin((x / waveLength) * 2 * Math.PI + phase) * waveHeight;
+        ctx.lineTo(x, y);
+    }
 
     ctx.closePath();
 
@@ -40,7 +40,6 @@ export default class View {
         this.skyImage = new Image();
         this.skyImage.src = "sky.jpg";
         this.overlay = new FullScreenOverlay(); 
-        this.mask = new WavyMask();//this.onscreen.width, this.onscreen.height);
         this.cfg = config;
     }
     resize(w, h) {
@@ -63,19 +62,13 @@ export default class View {
     draw(data) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
         this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
-// clip to below wavy line
-    applyWaveClip(this.offCtx, this.offscreen.width, this.offscreen.height, 520);
+        // clip to below wavy line
+        applyWaveClip(this.offCtx, this.offscreen.width, this.offscreen.height, 520);
         // draw auroras
         data.forEach(a => {
             a.draw(this.offCtx);
         });
-        this.offCtx.restore(); // restore after clip
-        //if (this.mask) {
-            // apply mask as a destination-in so lights get clipped
-           // this.offCtx.globalCompositeOperation = "source-atop";
-            //this.mask.draw(this.offCtx);
-            //this.offCtx.globalCompositeOperation = "source-over"; // reset
-        //}        
+        this.offCtx.restore(); // restore after clip     
         this.blit();
     }
     blit() {
