@@ -1,6 +1,6 @@
 
 export class WavyMask {
-    constructor({ canvasWidth, canvasHeight, topY = 400, waveAmplitude = 40, waveLength = 150, softEdge = 50 } = {}) {
+    constructor({ canvasWidth=1920, canvasHeight=1080, topY = 600, waveAmplitude = 40, waveLength = 130, softEdge = 0.1 } = {}) {
         this.width = canvasWidth;
         this.height = canvasHeight;
         this.topY = topY;
@@ -44,11 +44,12 @@ export class WavyMask {
         // soft vertical gradient at top
         const grad = ctx.createLinearGradient(0, this.topY, 0, this.topY + this.softEdge);
         grad.addColorStop(0, "rgba(255,255,255,0)");
-        grad.addColorStop(1, "rgba(255,255,255,1)");
-        ctx.globalCompositeOperation = "destination-in";
+        grad.addColorStop(0.5, "rgba(255,255,255,1)");
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+        //ctx.globalCompositeOperation = "source-atop";
         ctx.fillStyle = grad;
-        ctx.fillRect(0, this.topY, this.width, this.height - this.topY);
-        ctx.globalCompositeOperation = "source-over";
+        ctx.fillRect(0, 0, this.width, this.height - this.topY);
+        //ctx.globalCompositeOperation = "source-over";
     }
 
     update(phaseDelta = 0) {

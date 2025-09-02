@@ -33,12 +33,12 @@ class AuroraDrawing {
         // gradient fill
         const grad = ctx.createLinearGradient(0, rectTop, 0, rectBottom + waveHeight);
         grad.addColorStop(0, "rgba(" + aurora.color.join(",") + ",0)");   // top transparent
-        grad.addColorStop(0.6, "rgba(" + aurora.color.join(",") + ",0.04)");
-        grad.addColorStop(1, "rgba(" + aurora.color.join(",") + ",0.05)");
+        grad.addColorStop(0.6, "rgba(" + aurora.color.join(",") + ",0.1)");
+        grad.addColorStop(1, "rgba(" + aurora.color.join(",") + ",0.25)");
         ctx.fillStyle = grad;
 
         // parameters
-        const pointsCount =39;// mt_rand(10,80); // number of points along the bottom
+        const pointsCount =1;// mt_rand(10,80); // number of points along the bottom
         const minY = rectBottom - 25;
         const maxY = rectBottom + 40;
         if ( this.bottomPoints.length === 0)
@@ -48,7 +48,7 @@ class AuroraDrawing {
         ctx.moveTo(rectX, rectTop);                 // top-left
         ctx.lineTo(rectX + rectWidth, rectTop);     // top-right
         ctx.lineTo(this.bottomPoints[this.bottomPoints.length-1].x, this.bottomPoints[this.bottomPoints.length-1].y); // bottom-right
-
+        //ctx.lineTo(0, 600);
         // draw curves along all points
         for (let i = this.bottomPoints.length - 1; i > 0; i--) {
             const p0 = this.bottomPoints[i];
