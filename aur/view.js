@@ -1,29 +1,34 @@
 import { WavyMask, FullScreenOverlay } from "./overlays.js";
-function applyWaveClip(ctx, width = 1920, height = 680, waveY = 250, phase = 1, offsets = []) {
+function applyWaveClip(ctx, width = 1920, height = 980, waveY = 50, phase = 0) {
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(0, 0);
+
+    // start bottom-right
+    ctx.moveTo(width, height);
+    // top-right
     ctx.lineTo(width, 0);
-    ctx.lineTo(width, waveY);
+    // top-left
+    ctx.lineTo(0, 0);
+    // bottom-left
+    ctx.lineTo(0, height);
 
-    const waveCount = 6;             // number of full sine waves across the screen
+    // wavy line along the bottom, back to bottom-right
+    const waveCount = 20;
     const waveLength = width / waveCount;
-    const waveHeight = 40;           // amplitude of the wave
+    const waveHeight = 20;
 
-    // Wavy bottom line using sine
-    for (let x = width; x >= 0; x -= 10) {  // step in pixels
-        const y = waveY + Math.sin((x / waveLength) * 2 * Math.PI + phase) * waveHeight;
-        ctx.lineTo(x, y);
-    }
+for (let x = 0; x <= width; x += 10) {       // step in pixels
+    const y = waveY + Math.sin((x / waveLength) * 2 * Math.PI + phase) * waveHeight;
+    ctx.lineTo(x, y);
+}
 
-    ctx.lineTo(0, waveY);
     ctx.closePath();
 
-    // Soft debug fill (remove later)
-    ctx.fillStyle = "rgba(0,200,0,0.1)";
+    // temporary fill to see the mask
+    ctx.fillStyle = "rgba(0, 200, 0, 0.01)";
     ctx.fill();
 
-    // Clip everything to below this path
+    // now clip to this region
     ctx.clip();
 }
 export default class View {
@@ -59,7 +64,7 @@ export default class View {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
         this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
 // clip to below wavy line
-    applyWaveClip(this.offCtx, this.offscreen.width, this.offscreen.height, 600);
+    applyWaveClip(this.offCtx, this.offscreen.width, this.offscreen.height, 520);
         // draw auroras
         data.forEach(a => {
             a.draw(this.offCtx);
