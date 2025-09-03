@@ -1,4 +1,4 @@
-import { mt_rand } from "./functions.js";
+import { mt_rand, skyHeight } from "./functions.js";
 
 class AuroraDrawing {
     constructor() {
@@ -9,22 +9,17 @@ class AuroraDrawing {
         const a = aurora;
         // dimensions
         const w = ctx.canvas.width;
-        const h = ctx.canvas.height-220;
-        // rectangle parameters
-        const rectX = 0;//w* 0.1;
-        const rectWidth = w;// * 0.8;
-        const rectTop = h * 0.1;
-        const rectBottom = 590;//h * 0.6;
-
+        const h = skyHeight(ctx.canvas.height);
         // gradient fill
-        const grad = ctx.createLinearGradient(0, 0, 0, rectBottom);
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
         grad.addColorStop(0, "rgba(" + a.color.join(",") + ",0)");   // top transparent
-        grad.addColorStop(0.6, "rgba(" + a.color.join(",") + ",0.1)");
+        grad.addColorStop(0.6, "rgba(" + a.color.join(",") + ",0.2)");
         grad.addColorStop(0.8, "rgba(" + a.color.join(",") + ",0.3)");
         grad.addColorStop(1, "rgba(" + a.color.join(",") + ",0.75)");
         
         ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, rectBottom);
+        ctx.fillRect(0, 0, w, h);
+        this.offset--;
     }
 }
 export class Type1Drawing extends AuroraDrawing {

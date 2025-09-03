@@ -21,6 +21,10 @@ export function lerpColor(c1, c2, t) {
   ];
 }
 
+export function skyHeight(canvasHeight, imgHeight = 1080, cutoffPx = 712) {
+    return canvasHeight * (cutoffPx / imgHeight);
+}
+
 export function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }

@@ -1,4 +1,4 @@
-
+import { skyHeight } from "./functions.js";
 export class WavyMask {
     constructor(width = 1920, height = 1080, waveY = 520) {
         this.width = width;
@@ -28,6 +28,7 @@ export class WavyMask {
     }
     apply(ctx, deltaPhase) {
         this.update(deltaPhase);
+        this.waveY = skyHeight(ctx.canvas.height) - this.waveHeight;
         ctx.save();
         ctx.beginPath();
 
