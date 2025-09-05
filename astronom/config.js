@@ -73,7 +73,8 @@ export default class Config {
         },
         types: [
             { 
-                color:[0, 255, 100], name: "Type1"
+                color:[14,186,225], name: "Type1",
+                size:5
             },
             {   
                 color:[0, 255, 100], name: "Type2"

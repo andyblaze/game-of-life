@@ -36,9 +36,9 @@ export default class View {
         this.stars.update(this.offCtx);
         this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
 
-        /*data.forEach(item => {
+        data.forEach(item => {
             item.draw(this.offCtx);
-        });*/
+        });
         this.blit();
     }
     blit() {
