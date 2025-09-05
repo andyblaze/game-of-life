@@ -76,45 +76,6 @@ while(stars.length < totalStars){
     });
 }
 
-// ------------------ Shooting Stars ------------------
-const shootingStars = [];
-function createShootingStar(){
-    shootingStars.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*canvas.height/2,
-        length: Math.random()*200+100,
-        speed: Math.random()*10+5,
-        angle: Math.random()*0.4+0.2
-    });
-}
-
-// ------------------ Satellites ------------------
-const satellites = [];
-function createSatellite(){
-    satellites.push({
-        x:0,
-        y:Math.random()*canvas.height/2,
-        speed: Math.random()*2+1
-    });
-}
-
-// ------------------ Planets ------------------
-const planets=[];
-const planetColors=['white','white','white'];
-function createPlanet(){
-    const startY = Math.random()*canvas.height/2 + 50;
-    const amplitude = Math.random()*100+50;
-    const speed = Math.random()*0.1+0.003;
-    const color = planetColors[Math.floor(Math.random()*planetColors.length)];
-    planets.push({
-        x:-10,
-        y:startY,
-        startY:startY,
-        amplitude:amplitude,
-        speed:speed,
-        color: color
-    });
-}
 
 // ------------------ Drawing ------------------
 function drawStars(){
@@ -129,46 +90,6 @@ function drawStars(){
     });
 }
 
-function drawShootingStars(){
-    ctx.strokeStyle='white';
-    ctx.lineWidth=2;
-    for(let i=shootingStars.length-1;i>=0;i--){
-        const s=shootingStars[i];
-        ctx.beginPath();
-        ctx.moveTo(s.x,s.y);
-        ctx.lineTo(s.x - s.length*Math.cos(s.angle), s.y - s.length*Math.sin(s.angle));
-        ctx.stroke();
-        s.x += s.speed*Math.cos(s.angle);
-        s.y += s.speed*Math.sin(s.angle);
-        if(s.x>canvas.width || s.y>canvas.height) shootingStars.splice(i,1);
-    }
-}
-
-function drawSatellites(){
-    ctx.fillStyle='lightgreen';
-    for(let i=satellites.length-1;i>=0;i--){
-        const sat=satellites[i];
-        ctx.beginPath();
-        ctx.arc(sat.x,sat.y,2,0,Math.PI*2);
-        ctx.fill();
-        sat.x += sat.speed;
-        if(sat.x>canvas.width) satellites.splice(i,1);
-    }
-}
-
-function drawPlanets(){
-    for(let i=planets.length-1;i>=0;i--){
-        const p=planets[i];
-        const progress = p.x/canvas.width;
-        p.y = p.startY - Math.sin(progress*Math.PI)*p.amplitude;
-        ctx.fillStyle=p.color;
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,6,0,Math.PI*2);
-        ctx.fill();
-        p.x += p.speed;
-        if(p.x-6>canvas.width) planets.splice(i,1);
-    }
-}
 
 // ------------------ Animation ------------------
 const bg = new Image();

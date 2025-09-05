@@ -1,22 +1,18 @@
-import Plant from "./plant.js";
+import Item from "./item.js";
 
 export default class Model {
     constructor(cfg) {
         this.global = cfg.global();
         this.cfg = cfg;
         this.items = [];
-        //this.initPlants(cfg);
+        this.initItems(cfg);
     }
-    /*initPlants(cfg) {
-        for (let i = 0; i < this.global.numPlants; i++) { 
+    initItems(cfg) {
+        for (let i = 0; i < this.global.numItems; i++) { 
             const t = cfg.data.types[i];
-            this.plants.push(new Plant(cfg, t));
+            this.items.push(new Item(cfg, t));
         }
-    }*/
-    /*resolveInteraction(a, b) {
-        a.archetype.interact(a, b);
-        b.archetype.interact(b, a); 
-    }*/   
+    } 
     tick() {
         this.items.forEach(i => i.update());
         return this.items;

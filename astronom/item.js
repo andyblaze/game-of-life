@@ -1,7 +1,7 @@
-import { clamp, mt_rand } from "./functions.js";
-import AuroraArchetypes from "./aurora-archetypes.js";
+import { mt_rand } from "./functions.js";
+import Archetypes from "./archetypes.js";
 
-export default class Aurora {
+export default class Item {
     constructor(config, type) {
         this.global = config.global(); 
         this.initPosition();
@@ -9,7 +9,7 @@ export default class Aurora {
         this.cfg = config;
     }
     initProperties(type) {
-        this.archetype = AuroraArchetypes.get(type.name);
+        this.archetype = Archetypes.get(type.name);
         this.color = type.color;
     }
     initPosition() {

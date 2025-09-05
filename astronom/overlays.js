@@ -1,6 +1,6 @@
 
 export class FullScreenOverlay {
-    constructor({ color = "255, 0, 0", min = 0.05, max = 0.2, speed = 0.025, scale = 0.25 } = {}) {
+    constructor({ color = "255, 0, 0", min = 0.05, max = 0.2, speed = 0.005, scale = 0.25 } = {}) {
         this.color = color;
         this.min = min;
         this.max = max;

@@ -24,7 +24,7 @@ function makeArchetype(t) {
 }
 
 
-export default class AuroraArchetypes {
+export default class Archetypes {
     static types = {};
     static get(type) {
         if ( ! (type in this.types) )

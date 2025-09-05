@@ -1,36 +1,10 @@
-import { mt_rand, skyHeight, lerpColor } from "./functions.js";
-
-// Recursive plant drawing (static)
-function drawCoralBranch(ctx, x, y, length, angle, depth, width) {
-  if (depth === 0 || length < 2) return;
-
-  const x2 = x + Math.cos(angle) * length;
-  const y2 = y + Math.sin(angle) * length;
-
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x2, y2);
-  ctx.lineWidth = width;
-  ctx.stroke();
-
-  // Slight upward bias so coral "reaches up"
-  const baseAngle = angle - 0.2 + Math.random() * 0.4;
-
-  // Number of child branches (2–4)
-  const branches = 2 + Math.floor(Math.random() * 3);
-
-  for (let i = 0; i < branches; i++) {
-    const newLength = length * (0.5 + Math.random() * 0.4); // shorter, irregular
-    const newAngle = baseAngle + (Math.random() - 0.5) * 1.2; // wide spread
-    drawCoralBranch(ctx, x2, y2, newLength, newAngle, depth - 1, width * 0.7);
-  }
-}
+import { mt_rand, lerpColor } from "./functions.js";
 
 class PlantDrawing {
     constructor() {
 
     }
-    draw(ctx, plant) {
+    draw(ctx, plant) { return;
         const p = plant;
         const w = ctx.canvas.width;
         const h = skyHeight(ctx.canvas.height);
