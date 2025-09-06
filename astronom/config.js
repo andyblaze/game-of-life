@@ -69,6 +69,34 @@ export default class Config {
             pleiades: [
                 {x:180, y:-150}, {x:190, y:-140}, {x:200, y:-145},
                 {x:210, y:-135}, {x:220, y:-140}, {x:215, y:-150}, {x:205, y:-155}
+            ],
+            binaries: [
+                {
+                    systemRadius: 200,       // distance from Polaris
+                    systemAngle: Math.random() * Math.PI * 2,  // starting sky angle
+                    localRadius: 8,         // half the distance between the two stars
+                    localAngle: 0,           // phase of the orbit
+                    localSpeed: 0.03,        // how fast they orbit each other
+                    size: 1.5,                 // star radius for drawing
+                    color: "rgba(255,255,200,1)" // pale yellow-white, like real binaries
+                }
+            ],
+            trinaries: [
+              {
+                systemRadius: 300,           // distance from Polaris
+                systemAngle: Math.random() * Math.PI*2, // starting global angle
+                size: 1.5,                     // star radius for drawing
+                colors: [                     // array for the three stars
+                  [255,230,200,1],
+                  [255,250,180,1],
+                  [255,200,180,1]
+                ],
+                localRadii: [20, 30],        // first = radius of binary, second = radius of third star
+                localAngles: [0, 0],         // starting phase for local orbits
+                localSpeeds: [0.02, 0.015],  // speed for each local orbit
+                eccentricities: [0.2,0.1],   // optional for push/pull effect
+                pulsePeriods: [200, 300]     // optional, frames per pulse cycle
+              }
             ]
         },
         types: [
