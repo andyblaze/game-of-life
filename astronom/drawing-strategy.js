@@ -54,13 +54,37 @@ class ItemDrawing {
 export class Type1Drawing extends ItemDrawing {
     constructor() {
         super();
+        this.dustParticles = []; // → array of current specks.
+        this.charge = 0; // 0..1 → how “ready” the nursery is (fraction of buildTime).
+        this.lastUpdate = 0; // → timestamp for time-based growth.
+        this.startTime = performance.now();
+    }
+    update(obj) {
+        this.charge = Math.min(1, (performance.now() - this.startTime) / obj.cfg.buildTime); //console.log(this.charge);
+        if (Math.random() < obj.cfg.dustDensity * this.charge) { //console.log(this.dustParticles.length);
+            const angle = Math.random() * Math.PI * 2;
+            const r = (Math.random() - 0.9) * obj.cfg.patchRadius;
+            this.dustParticles.push({
+                x: obj.cfg.pos.x + (obj.global.width / 2) + Math.cos(angle) * r,
+                y: obj.cfg.pos.y + (obj.global.height / 2) + Math.sin(angle) * r,
+                alpha: Math.random() * 0.5 + 0.2
+            });
+        }
     }
     draw(ctx, obj) {
-        const {x, y} = obj.cfg.pos;
-        ctx.fillStyle = "rgba(0,255,0,1)";
+        this.update(obj);
+        let {x, y} = obj.cfg.pos;
+        x = x + (obj.global.width / 2);
+        y = y + (obj.global.height / 2);
+        ctx.fillStyle = "rgba(0,255,0,0)";
         ctx.beginPath();
         ctx.arc(x, y, obj.cfg.patchRadius, 0, Math.PI*2);
         ctx.fill();
+        this.dustParticles.forEach(p=>{
+            ctx.fillStyle = `rgba(5,5,5,${p.alpha})`;
+            ctx.arc(p.x, p.y, 1, 0, Math.PI*2);
+            ctx.fill();
+        });
     }
 }
 export class Type2Drawing extends ItemDrawing {

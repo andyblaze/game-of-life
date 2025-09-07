@@ -102,10 +102,10 @@ export default class Config {
         types: [
             { 
                 name: "Type1", color:[0,0,0],
-                pos: { x: 180, y: 100 },
+                pos: { x: 224, y: 90 },
                 patchRadius: 20,      // how big the dusty patch looks
                 dustColor: "rgba(200,180,255,0.2)", 
-                dustDensity: 0.02,    // dust speck chance per frame
+                dustDensity: 0.1,    // dust speck chance per frame
                 buildTime: 30000,     // ms to fully “charge”
                 birthChance: 0.1,     // probability (when charged) of birthing a star per second
                 launchSpeed: 2.0,     // px/frame initial speed of newborn star
