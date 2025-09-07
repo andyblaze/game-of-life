@@ -8,6 +8,13 @@ export function randomFrom(arr) {
     return arr[mt_rand(0, arr.length - 1)];
 }
 
+export function polarToScreen(radius, angle, centerX, centerY) {
+    return {
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle)
+    };
+}
+
 export function Point(x, y) {
     return {"x": x, "y": y};
 }

@@ -1,5 +1,4 @@
 import { FullScreenOverlay } from "./overlays.js";
-import Stars from "./stars.js";
 
 export default class View {
     constructor(id, config) {
@@ -10,7 +9,6 @@ export default class View {
         this.skyImage = new Image();
         this.skyImage.src = "sky.jpg";
         this.overlay = new FullScreenOverlay(); 
-        this.stars = new Stars(config.global());
         this.cfg = config;
     }
     resize(w, h) {
@@ -33,10 +31,10 @@ export default class View {
     draw(data) {
         this.offCtx.clearRect(0, 0, this.offscreen.width, this.offscreen.height);
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
-        this.stars.update(this.offCtx);
+        data.stars.update(this.offCtx);
         this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
 
-        data.forEach(item => {
+        data.items.forEach(item => {
             item.draw(this.offCtx);
         });
         this.blit();

@@ -54,30 +54,12 @@ class ItemDrawing {
 export class Type1Drawing extends ItemDrawing {
     constructor() {
         super();
-        this.phase = 0; // pulse phase
-        this.timer = 0;
-        this.cycle = 6000; // ms
-        this.rings = [];
-        this.wasOn = false;
-        this.rings.push(new PulseRing(80, 80));
     }
     draw(ctx, obj) {
-        const baseColor = obj.cfg.item("types")[0].color.join(","); // r,g,b
-        const size = obj.cfg.item("types")[0].size;
-
-        this.timer += 16.67; // tick time
-        if ( this.timer > this.cycle ) this.timer = 0;
-        const alpha = pulsar(this.timer, this.cycle);
-        
-        if ( alpha > 0.999 ) {
-            
-            //this.rings[0].draw(ctx, performance.now());
-        }
-        //this.wasOn = (alpha === 1);
-        
-        ctx.fillStyle = `rgba(${baseColor},${alpha.toFixed(2)})`;
+        const {x, y} = obj.cfg.pos;
+        ctx.fillStyle = "rgba(0,255,0,1)";
         ctx.beginPath();
-        ctx.arc(80, 80, obj.cfg.item("types")[0].size, 0, Math.PI*2);
+        ctx.arc(x, y, obj.cfg.patchRadius, 0, Math.PI*2);
         ctx.fill();
     }
 }

@@ -2,11 +2,11 @@ import { mt_rand } from "./functions.js";
 import Archetypes from "./archetypes.js";
 
 export default class Item {
-    constructor(config, type) {
+    constructor(config, type, typeIndex) {
         this.global = config.global(); 
         this.initPosition();
         this.initProperties(type);
-        this.cfg = config;
+        this.cfg = config.data.types[typeIndex];
     }
     initProperties(type) {
         this.archetype = Archetypes.get(type.name);
