@@ -16,7 +16,10 @@ export default class Model {
         }
     } 
     tick() {
-        this.items.forEach(i => i.update());
+        this.items.forEach(i => {
+            i.update();
+            i.interact(i, this.stars);
+        });
         return {stars: this.stars, items: this.items};
     }
 }

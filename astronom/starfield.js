@@ -46,6 +46,9 @@ export default class StarField {
             });
         });
     }
+    addStar(s) {
+        this.stars.push(s);
+    }
     addStars(cfg) {
         while(this.stars.length < cfg.totalStars){
             const radius = Math.random()*Math.sqrt(this.centerX*this.centerX + this.centerY*this.centerY);

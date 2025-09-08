@@ -18,8 +18,11 @@ export default class Item {
     }
     update() {
         this.archetype.update(this);
-        this.archetype.move(this);
-        this.archetype.propel(this);
+        //this.archetype.move(this);
+        //this.archetype.propel(this);
+    }
+    interact(self, other) {
+        this.archetype.interact(self, other);
     }
     draw(ctx) {
         this.archetype.draw(ctx, this);   

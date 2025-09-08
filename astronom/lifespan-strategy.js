@@ -1,18 +1,17 @@
-import { lerpColor } from "./functions.js";
+//import { lerpColor } from "./functions.js";
 
-class PlantLifespan {
-    update(aurora) {
-        const a =  aurora;
-        a.age++;
-        if (a.age >= a.lifespan) {
-            // if we're doing age related stuff
-        }
-        else {
-            // do other stuff
-        }
+class Lifespan {
+    constructor() {}
+    update(item) {}
+}
+export class Type1Lifespan extends Lifespan {
+    constructor() {
+        super();
+    }
+    update(item) {
+        
     }
 }
-export class Type1Lifespan extends PlantLifespan {}
-export class Type2Lifespan extends PlantLifespan {}
-export class Type3Lifespan extends PlantLifespan {}
+export class Type2Lifespan extends Lifespan {}
+export class Type3Lifespan extends Lifespan {}
 
