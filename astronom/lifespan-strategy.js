@@ -32,7 +32,7 @@ class NewbornStar {
     }
 
     update() {
-        if (!this.settled) {
+        if ( this.settled === false ) {
             this.x += this.vx;
             this.y += this.vy;
             this.vx *= this.slowdown;
@@ -78,20 +78,23 @@ export class Type1Lifespan extends Lifespan {
         this.starBorn = false;
         this.newborn = null;
     }
+    createColor() {
+        const hue = 280 - 200 * this.charge;     // magenta → blue → cyan range
+        const saturation = 70 + 30 * this.charge; // more intense with charge
+        const lightness = 40 + 40 * this.charge;  // brighter near full charge
+        const alpha = 0.2 + (0.6 * this.charge);    // fade in
+        return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+    }
     update(cfg, global) {
         this.charge = Math.min(1, (performance.now() - this.startTime) / cfg.buildTime);
         if (Math.random() < cfg.dustDensity * this.charge) {
             const angle = Math.random() * Math.PI * 2;
             const maxR = cfg.patchRadius * (1 - this.charge); // shrink inward
             const r = Math.random() * maxR;
-            const hue = 280 - 200 * this.charge;     // magenta → blue → cyan range
-            const saturation = 70 + 30 * this.charge; // more intense with charge
-            const lightness = 40 + 40 * this.charge;  // brighter near full charge
-            const alpha = 0.2 + (0.6 * this.charge);    // fade in
             this.dustParticles.push({
                 x: cfg.pos.x + (global.width / 2) + Math.cos(angle) * r,
                 y: cfg.pos.y + (global.height / 2) + Math.sin(angle) * r,
-                color: `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`
+                color: this.createColor()
             });
         }
         //When fully charged → spawn a newborn star
