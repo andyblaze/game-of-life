@@ -17,8 +17,8 @@ export default class Model {
     } 
     tick() {
         this.items.forEach(i => {
-            i.update();
-            i.archetype.interact(i, this.stars);
+            const newStar = i.update();
+            i.archetype.interact(newStar, this.stars);
         });
         return {stars: this.stars, items: this.items};
     }

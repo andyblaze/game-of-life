@@ -75,11 +75,10 @@ export class Type1Drawing extends ItemDrawing {
         ctx.fill();
         this.drawStardust(ctx, dust);
         // Draw newborn star
-        if (newborn) {
-            this.drawStardust(ctx, dust, "rgba(0,0,0,0)");
-            //this.dustParticles = [];
+        if ( newborn ) {
             newborn.draw(ctx);
         }
+        return newborn;
     }
 }
 export class Type2Drawing extends ItemDrawing {

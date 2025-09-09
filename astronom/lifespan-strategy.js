@@ -15,7 +15,7 @@ class NewbornStar {
         const angle = baseAngle + (Math.random() - 0.5) * cfg.launchArc;
 
         // Launch speed with a tiny random variation
-        const speed = cfg.launchSpeed * (0.8 + Math.random() * 0.4);
+        const speed = cfg.launchSpeed * (0.8 + Math.random() * 0.4) + 5;
 
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
@@ -77,6 +77,7 @@ export class Type1Lifespan extends Lifespan {
         this.startTime = performance.now();
         this.starBorn = false;
         this.newborn = null;
+        this.settled = false;
     }
     createColor() {
         const hue = 280 - 200 * this.charge;     // magenta → blue → cyan range
@@ -85,7 +86,15 @@ export class Type1Lifespan extends Lifespan {
         const alpha = 0.2 + (0.6 * this.charge);    // fade in
         return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
     }
-    update(cfg, global) {
+    resetState() {
+        this.starBorn = false;
+        this.newborn = null;
+        this.settled = false;  
+        this.charge = 0;
+        this.dustParticles = [];
+        this.startTime = performance.now();
+    }    
+    update(cfg, global) {        
         this.charge = Math.min(1, (performance.now() - this.startTime) / cfg.buildTime);
         if (Math.random() < cfg.dustDensity * this.charge) {
             const angle = Math.random() * Math.PI * 2;
@@ -110,7 +119,8 @@ export class Type1Lifespan extends Lifespan {
                 angle,
                 cfg
             );
-            this.starBorn = true;        // mark that the star has been launched
+            //this.starBorn = true;        // mark that the star has been launched
+            this.dustParticles = [];
             this.startTime = performance.now(); // reset for dust fade / next cycle
         }
         return {dust: this.dustParticles, newborn: this.newborn };

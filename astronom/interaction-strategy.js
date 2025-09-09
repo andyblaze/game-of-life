@@ -7,10 +7,11 @@ class InteractionStrategy {
 
 export class Type1Interaction extends InteractionStrategy {
     interact(self, other) { //console.log(self);
+        if ( self === null ) return;
         //let l = other.stars.length;
         if ( self.settled === true ) {
             other.addStar(self.toStar(Config.global()));
-            //console.log(self.toStar(Config.global()), other.stars[0]);
+            //self.resetState();
         }
         
     }

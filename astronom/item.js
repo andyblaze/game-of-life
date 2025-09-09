@@ -7,6 +7,7 @@ export default class Item {
         this.initPosition();
         this.initProperties(type);
         this.cfg = config.data.types[typeIndex];
+        this.newStar = null;
     }
     initProperties(type) {
         this.archetype = Archetypes.get(type.name);
@@ -18,13 +19,14 @@ export default class Item {
     }
     update() {
         this.archetype.update(this);
+        return this.newStar;
         //this.archetype.move(this);
-        //this.archetype.propel(this);
+        ///this.archetype.propel(this);
     }
     interact(self, other) {
         this.archetype.interact(self, other);
     }
     draw(ctx) {
-        this.archetype.draw(ctx, this);   
+        this.newStar = this.archetype.draw(ctx, this);
     }
 }
