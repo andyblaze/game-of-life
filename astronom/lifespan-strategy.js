@@ -6,19 +6,30 @@ class Lifespan {
 }
 
 class NewbornStar {
-    constructor(x, y, baseAngle, cfg) {
+    constructor(x, y, baseAngle, cfg, global) {
         // Base position
         this.x = x;
         this.y = y;
 
         // Launch angle with random variance
-        const angle = baseAngle + (Math.random() - 0.5) * cfg.launchArc;
+        const angle = baseAngle + (Math.random() - 0);//.5);// * cfg.launchArc;
+        
+        const endpoint = this.findEdgeIntersection(x, y, angle, global.width, global.height);
+        const minTravel = endpoint.dist / 3;
+        this.slowdown = 0.98;  // velocity decay per frame
+        const requiredSpeed = minTravel * (1 - this.slowdown);
+        // Back-calculate required initial speed so that
+        // total distance (with exponential decay) ≥ minTravel
+        // Total travel distance = initialSpeed / (1 - decayFactor)
+        const decayFactor = 0.98;
+        const speed = Math.max(cfg.launchSpeed, minTravel * (1 - decayFactor));
 
         // Launch speed with a tiny random variation
-        const speed = cfg.launchSpeed * (0.8 + Math.random() * 0.4) + 5;
-
-        this.vx = Math.cos(angle) * speed;
-        this.vy = Math.sin(angle) * speed;
+        // const speed = cfg.launchSpeed * (0.8 + Math.random() * 0.4) + 5;
+        this.vx = Math.cos(angle) * Math.max(cfg.launchSpeed, requiredSpeed);
+        this.vy = Math.sin(angle) * Math.max(cfg.launchSpeed, requiredSpeed);
+        // this.vx = Math.cos(angle) * speed;
+        // this.vy = Math.sin(angle) * speed;
 
         // Appearance
         const col = cfg.starColors[Math.floor(Math.random() * cfg.starColors.length)];
@@ -26,11 +37,29 @@ class NewbornStar {
         this.size = Math.round(cfg.starSize[0] + Math.random() * (cfg.starSize[1] - cfg.starSize[0]));
 
         // Movement / lifecycle
-        this.slowdown = 0.98;  // velocity decay per frame
         this.minSpeed = 0.05;  // below this, star is considered settled
         this.settled = false;
+        this.state = "moving";
+        this.added = false;
     }
+    findEdgeIntersection(x, y, angle, width, height) {
+      const dx = Math.cos(angle);
+      const dy = Math.sin(angle);
 
+      let tMax = Infinity;
+
+      // Check each boundary intersection (parametric line: x + t*dx, y + t*dy)
+      if (dx > 0) tMax = Math.min(tMax, (width - x) / dx);
+      if (dx < 0) tMax = Math.min(tMax, (0 - x) / dx);
+      if (dy > 0) tMax = Math.min(tMax, (height - y) / dy);
+      if (dy < 0) tMax = Math.min(tMax, (0 - y) / dy);
+
+      return {
+        x: x + dx * tMax,
+        y: y + dy * tMax,
+        dist: Math.sqrt((dx * tMax) ** 2 + (dy * tMax) ** 2)
+      };
+    }
     update() {
         if ( this.settled === false ) {
             this.x += this.vx;
@@ -40,16 +69,19 @@ class NewbornStar {
 
             if (Math.hypot(this.vx, this.vy) < this.minSpeed) {
                 this.settled = true;
+                this.state = "stopped";
             }
         }
     }
-
+    isSettled() {
+        return ( this.settled === true && this.state === "stopped" );
+    }
     draw(ctx) {
-        this.update();
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        this.update();
     }
 
     // Convert to polar coords for starfield
@@ -78,6 +110,7 @@ export class Type1Lifespan extends Lifespan {
         this.starBorn = false;
         this.newborn = null;
         this.settled = false;
+        this.state = "buildup";
     }
     createColor() {
         const hue = 280 - 200 * this.charge;     // magenta → blue → cyan range
@@ -87,6 +120,7 @@ export class Type1Lifespan extends Lifespan {
         return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
     }
     resetState() {
+        this.state = "buildup";
         this.starBorn = false;
         this.newborn = null;
         this.settled = false;  
@@ -94,7 +128,7 @@ export class Type1Lifespan extends Lifespan {
         this.dustParticles = [];
         this.startTime = performance.now();
     }    
-    update(cfg, global) {        
+    update(cfg, global) {   
         this.charge = Math.min(1, (performance.now() - this.startTime) / cfg.buildTime);
         if (Math.random() < cfg.dustDensity * this.charge) {
             const angle = Math.random() * Math.PI * 2;
@@ -108,6 +142,7 @@ export class Type1Lifespan extends Lifespan {
         }
         //When fully charged → spawn a newborn star
         if (this.charge >= 1 && this.starBorn === false) {
+            this.state = "launching";
             // 0 = to the right, Math.PI/2 = down, etc.
             const baseAngle = Math.random() * Math.PI * 2; // launch in any direction
             // small scatter
@@ -117,13 +152,15 @@ export class Type1Lifespan extends Lifespan {
                 cfg.pos.x + global.width / 2,
                 cfg.pos.y + global.height / 2,
                 angle,
-                cfg
+                cfg, global
             );
+            if ( this.newborn !== null && this.newborn.settled === true )
+                this.newborn = null;
             //this.starBorn = true;        // mark that the star has been launched
             this.dustParticles = [];
             this.startTime = performance.now(); // reset for dust fade / next cycle
         }
-        return {dust: this.dustParticles, newborn: this.newborn };
+        return {"dust": this.dustParticles, "newborn": this.newborn };
     }
 }
 export class Type2Lifespan extends Lifespan {}

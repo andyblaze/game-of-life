@@ -75,7 +75,7 @@ export class Type1Drawing extends ItemDrawing {
         ctx.fill();
         this.drawStardust(ctx, dust);
         // Draw newborn star
-        if ( newborn ) {
+        if ( newborn !== null ) {
             newborn.draw(ctx);
         }
         return newborn;

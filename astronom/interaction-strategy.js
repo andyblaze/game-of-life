@@ -9,8 +9,9 @@ export class Type1Interaction extends InteractionStrategy {
     interact(self, other) { //console.log(self);
         if ( self === null ) return;
         //let l = other.stars.length;
-        if ( self.settled === true ) {
+        if ( self.isSettled() === true && self.added === false ) {
             other.addStar(self.toStar(Config.global()));
+            self.added = true;
             //self.resetState();
         }
         
