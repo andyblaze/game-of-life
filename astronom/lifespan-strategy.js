@@ -15,7 +15,7 @@ class NewbornStar {
         const angle = baseAngle + (Math.random() - 0);//.5);// * cfg.launchArc;
         
         const endpoint = this.findEdgeIntersection(x, y, angle, global.width, global.height);
-        const minTravel = endpoint.dist / 3;
+        const minTravel = endpoint.dist / 1.5;
         this.slowdown = 0.98;  // velocity decay per frame
         const requiredSpeed = minTravel * (1 - this.slowdown);
         // Back-calculate required initial speed so that
