@@ -2,112 +2,127 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Realistic Stair Flight Tuner</title>
+<title>3D Flight Stair Tuner - Full CAD-style Rotation</title>
 <style>
   body { margin:0; background:#222; color:#eee; font-family:sans-serif; }
-  #controls { position:fixed; top:0; left:0; right:0; background:#333; padding:8px; display:flex; flex-wrap:wrap; }
+  #controls { position:fixed; top:0; left:0; right:0; background:#333; padding:8px; display:flex; flex-wrap:wrap; align-items:center; z-index:10; }
   label { margin:4px 8px; font-size:13px; }
   input { vertical-align:middle; }
-  canvas { display:block; margin-top:80px; background:#f4f4f4; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
+  #report { margin-left:16px; font-family:monospace; }
+  canvas { display:block; margin-top:180px; background:#f4f4f4; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
+  .flight-selector { margin-right:16px; }
 </style>
 </head>
 <body>
 <div id="controls">
+  <div class="flight-selector">
+    Flight: 
+    <label><input type="radio" name="flight" value="0" checked> Top/Left</label>
+    <label><input type="radio" name="flight" value="1"> Top/Right</label>
+    <label><input type="radio" name="flight" value="2"> Bottom/Right</label>
+    <label><input type="radio" name="flight" value="3"> Bottom/Left</label>
+  </div>
   <label>Steps <input type="range" id="steps" min="3" max="30" value="12"></label>
   <label>Tread Depth <input type="range" id="tread" min="20" max="80" value="40"></label>
   <label>Riser Height <input type="range" id="riser" min="5" max="30" value="10"></label>
   <label>Step Width <input type="range" id="width" min="40" max="200" value="80"></label>
   <label>Camera Rotation <input type="range" id="camRot" min="-180" max="180" value="-30"></label>
   <label>Camera Tilt <input type="range" id="camTilt" min="0" max="80" value="30"></label>
+  <label>Flight X <input type="range" id="offsetX" min="0" max="1400" value="200"></label>
+  <label>Flight Y <input type="range" id="offsetY" min="0" max="700" value="400"></label>
+  <label>Flight Z <input type="range" id="offsetZ" min="-200" max="200" value="0"></label>
+  <label>Rotation X <input type="range" id="rotX" min="0" max="360" value="0"></label>
+  <label>Rotation Y <input type="range" id="rotY" min="0" max="360" value="0"></label>
+  <label>Rotation Z <input type="range" id="rotZ" min="0" max="360" value="0"></label>
+  <div id="report"></div>
 </div>
-<canvas id="c" width="800" height="600"></canvas>
+<canvas id="c" width="1600" height="900"></canvas>
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 
-// Project 3D to 2D
+function deg2rad(d){ return d*Math.PI/180; }
+function rotateX(x,y,z,angle){ const rad=deg2rad(angle); return [x, y*Math.cos(rad)-z*Math.sin(rad), y*Math.sin(rad)+z*Math.cos(rad)];}
+function rotateY(x,y,z,angle){ const rad=deg2rad(angle); return [x*Math.cos(rad)+z*Math.sin(rad), y, -x*Math.sin(rad)+z*Math.cos(rad)];}
+function rotateZ(x,y,z,angle){ const rad=deg2rad(angle); return [x*Math.cos(rad)-y*Math.sin(rad), x*Math.sin(rad)+y*Math.cos(rad), z];}
+
 function project3D(x,y,z, camRot, camTilt) {
-  const radRot = camRot * Math.PI/180;
-  const radTilt = camTilt * Math.PI/180;
+  const radRot = deg2rad(camRot);
+  const radTilt = deg2rad(camTilt);
   const cx = Math.cos(radRot)*x - Math.sin(radRot)*z;
   const cz = Math.sin(radRot)*x + Math.cos(radRot)*z;
   const cy = y;
-  const sx = 400 + cx;
-  const sy = 400 - (cy*Math.cos(radTilt) + cz*Math.sin(radTilt));
+  const sx = cx;
+  const sy = - (cy*Math.cos(radTilt) + cz*Math.sin(radTilt));
   return [sx, sy];
 }
 
 function drawStep(x0,y0,z0,tread,riser,width, camRot, camTilt) {
-  // corners of step in 3D
   const corners = [
-    [x0, y0, z0],
-    [x0+width, y0, z0],
-    [x0+width, y0, z0+tread],
-    [x0, y0, z0+tread],
-    [x0, y0-riser, z0],
-    [x0+width, y0-riser, z0],
-    [x0+width, y0-riser, z0+tread],
-    [x0, y0-riser, z0+tread]
+    [x0, y0, z0], [x0+width, y0, z0], [x0+width, y0, z0+tread], [x0, y0, z0+tread],
+    [x0, y0-riser, z0], [x0+width, y0-riser, z0], [x0+width, y0-riser, z0+tread], [x0, y0-riser, z0+tread]
   ];
-  // project
   const p = corners.map(c=>project3D(c[0],c[1],c[2], camRot, camTilt));
-  // draw top
-  ctx.fillStyle="#eee";
-  ctx.beginPath();
-  ctx.moveTo(p[0][0],p[0][1]);
-  ctx.lineTo(p[1][0],p[1][1]);
-  ctx.lineTo(p[2][0],p[2][1]);
-  ctx.lineTo(p[3][0],p[3][1]);
-  ctx.closePath();
-  ctx.fill();
-  // draw riser front
-  ctx.fillStyle="#bbb";
-  ctx.beginPath();
-  ctx.moveTo(p[0][0],p[0][1]);
-  ctx.lineTo(p[1][0],p[1][1]);
-  ctx.lineTo(p[5][0],p[5][1]);
-  ctx.lineTo(p[4][0],p[4][1]);
-  ctx.closePath();
-  ctx.fill();
-  // draw side
-  ctx.fillStyle="#ccc";
-  ctx.beginPath();
-  ctx.moveTo(p[1][0],p[1][1]);
-  ctx.lineTo(p[2][0],p[2][1]);
-  ctx.lineTo(p[6][0],p[6][1]);
-  ctx.lineTo(p[5][0],p[5][1]);
-  ctx.closePath();
-  ctx.fill();
+
+  ctx.fillStyle="#eee"; ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); ctx.lineTo(p[1][0],p[1][1]); ctx.lineTo(p[2][0],p[2][1]); ctx.lineTo(p[3][0],p[3][1]); ctx.closePath(); ctx.fill();
+  ctx.fillStyle="#bbb"; ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); ctx.lineTo(p[1][0],p[1][1]); ctx.lineTo(p[5][0],p[5][1]); ctx.lineTo(p[4][0],p[4][1]); ctx.closePath(); ctx.fill();
+  ctx.fillStyle="#ccc"; ctx.beginPath(); ctx.moveTo(p[1][0],p[1][1]); ctx.lineTo(p[2][0],p[2][1]); ctx.lineTo(p[6][0],p[6][1]); ctx.lineTo(p[5][0],p[5][1]); ctx.closePath(); ctx.fill();
 }
 
-function drawFlight(opts) {
-  const {steps,tread,riser,width,camRot,camTilt} = opts;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  for (let i=0;i<steps;i++) {
-    drawStep(0,0,-i*tread, tread, riser, width, camRot, camTilt);
+const flights = [
+  {steps:12, tread:40, riser:10, width:80, camRot:-30, camTilt:30, offsetX:200, offsetY:400, offsetZ:0, rotX:0, rotY:0, rotZ:0},
+  {steps:12, tread:40, riser:10, width:80, camRot:-30, camTilt:30, offsetX:1000, offsetY:400, offsetZ:0, rotX:0, rotY:0, rotZ:0},
+  {steps:12, tread:40, riser:10, width:80, camRot:-30, camTilt:30, offsetX:1000, offsetY:600, offsetZ:0, rotX:0, rotY:0, rotZ:0},
+  {steps:12, tread:40, riser:10, width:80, camRot:-30, camTilt:30, offsetX:200, offsetY:600, offsetZ:0, rotX:0, rotY:0, rotZ:0}
+];
+
+let currentFlight=0;
+
+function drawFlight(f){
+  ctx.save();
+  const stepsInt = parseInt(f.steps,10);
+  const centerX = f.width/2;
+  const centerY = -(stepsInt*f.riser)/2;
+  const centerZ = -(stepsInt*f.tread)/2;
+  ctx.translate(f.offsetX + centerX, f.offsetY + centerY);
+
+  for(let i=0;i<stepsInt;i++){
+    let x=0, y=-i*f.riser, z=-i*f.tread;
+    [x,y,z] = rotateX(x-centerX, y-centerY, z-centerZ, f.rotX);
+    [x,y,z] = rotateY(x,y,z, f.rotY);
+    [x,y,z] = rotateZ(x,y,z, f.rotZ);
+    x += centerX; y += centerY; z += centerZ + f.offsetZ;
+    drawStep(x,y,z, f.tread, f.riser, f.width, f.camRot, f.camTilt);
   }
+  ctx.restore();
 }
 
-// UI binding
-const controls = {
-  steps: document.getElementById('steps'),
-  tread: document.getElementById('tread'),
-  riser: document.getElementById('riser'),
-  width: document.getElementById('width'),
-  camRot: document.getElementById('camRot'),
-  camTilt: document.getElementById('camTilt')
+const controls={
+  steps: document.getElementById('steps'), tread: document.getElementById('tread'), riser: document.getElementById('riser'), width: document.getElementById('width'),
+  camRot: document.getElementById('camRot'), camTilt: document.getElementById('camTilt'),
+  offsetX: document.getElementById('offsetX'), offsetY: document.getElementById('offsetY'), offsetZ: document.getElementById('offsetZ'),
+  rotX: document.getElementById('rotX'), rotY: document.getElementById('rotY'), rotZ: document.getElementById('rotZ')
 };
+const report = document.getElementById('report');
 
-function render() {
-  const opts = {
-    steps: parseInt(controls.steps.value),
-    tread: parseInt(controls.tread.value),
-    riser: parseInt(controls.riser.value),
-    width: parseInt(controls.width.value),
-    camRot: parseInt(controls.camRot.value),
-    camTilt: parseInt(controls.camTilt.value)
-  };
-  drawFlight(opts);
+document.querySelectorAll('input[name="flight"]').forEach(rb=>{
+  rb.addEventListener('change',()=>{
+    currentFlight=parseInt(rb.value,10);
+    const f = flights[currentFlight];
+    for(let key in controls) controls[key].value=f[key];
+  });
+});
+
+for(let key in controls){
+  controls[key].addEventListener('input',()=>{
+    flights[currentFlight][key]=parseInt(controls[key].value,10);
+  });
+}
+
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  flights.forEach(f=>drawFlight(f));
+  report.textContent=JSON.stringify(flights,null,2);
   requestAnimationFrame(render);
 }
 render();

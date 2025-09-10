@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Penrose Stairs Editor</title>
+<style>
+  body { margin:0; background:#222; color:#eee; font-family:sans-serif; }
+  #controls { position:fixed; top:0; left:0; right:0; background:#333; padding:8px; display:flex; flex-wrap:wrap; align-items:center; z-index:10; }
+  label { margin:4px 8px; font-size:13px; }
+  input { vertical-align:middle; }
+  #report { margin-left:16px; font-family:monospace; }
+  canvas { display:block; margin-top:180px; background:#f4f4f4; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
+  .flight-selector { margin-right:16px; }
+</style>
+</head>
+<body>
+<div id="controls">
+  <div class="flight-selector">
+    Flight: 
+    <label><input type="radio" name="flight" value="0" checked> Flight 1</label>
+    <label><input type="radio" name="flight" value="1"> Flight 2</label>
+    <label><input type="radio" name="flight" value="2"> Flight 3</label>
+    <label><input type="radio" name="flight" value="3"> Flight 4</label>
+  </div>
+  <label>Steps <input type="range" id="steps" min="3" max="30" value="10"></label>
+  <label>Tread Depth <input type="range" id="tread" min="20" max="80" value="40"></label>
+  <label>Riser Height <input type="range" id="riser" min="5" max="30" value="10"></label>
+  <label>Step Width <input type="range" id="width" min="40" max="200" value="80"></label>
+  <label>Flight X <input type="range" id="offsetX" min="0" max="1400" value="400"></label>
+  <label>Flight Y <input type="range" id="offsetY" min="0" max="700" value="400"></label>
+  <label>Flight Z <input type="range" id="offsetZ" min="-200" max="200" value="0"></label>
+  <label>Rotation X <input type="range" id="rotX" min="0" max="360" value="0"></label>
+  <label>Rotation Y <input type="range" id="rotY" min="0" max="360" value="0"></label>
+  <label>Rotation Z <input type="range" id="rotZ" min="0" max="360" value="0"></label>
+  <div id="report"></div>
+</div>
+<canvas id="c" width="1600" height="900"></canvas>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+
+function deg2rad(d){return d*Math.PI/180;}
+function rotateX(x,y,z,a){const r=deg2rad(a);return [x,y*Math.cos(r)-z*Math.sin(r),y*Math.sin(r)+z*Math.cos(r)];}
+function rotateY(x,y,z,a){const r=deg2rad(a);return [x*Math.cos(r)+z*Math.sin(r),y,-x*Math.sin(r)+z*Math.cos(r)];}
+function rotateZ(x,y,z,a){const r=deg2rad(a);return [x*Math.cos(r)-y*Math.sin(r),x*Math.sin(r)+y*Math.cos(r),z];}
+
+function project3D(x,y,z){
+  const scale=1;
+  return [x*scale+canvas.width/2, -y*scale+canvas.height/2];
+}
+
+function drawStep(x0,y0,z0,tread,riser,width){
+  const corners=[
+    [x0,y0,z0],[x0+width,y0,z0],[x0+width,y0,z0+tread],[x0,y0,z0+tread],
+    [x0,y0-riser,z0],[x0+width,y0-riser,z0],[x0+width,y0-riser,z0+tread],[x0,y0-riser,z0+tread]
+  ];
+  const p=corners.map(c=>project3D(c[0],c[1],c[2]));
+  ctx.fillStyle='#eee'; ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); ctx.lineTo(p[1][0],p[1][1]); ctx.lineTo(p[2][0],p[2][1]); ctx.lineTo(p[3][0],p[3][1]); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#bbb'; ctx.beginPath(); ctx.moveTo(p[0][0],p[0][1]); ctx.lineTo(p[1][0],p[1][1]); ctx.lineTo(p[5][0],p[5][1]); ctx.lineTo(p[4][0],p[4][1]); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(p[1][0],p[1][1]); ctx.lineTo(p[2][0],p[2][1]); ctx.lineTo(p[6][0],p[6][1]); ctx.lineTo(p[5][0],p[5][1]); ctx.closePath(); ctx.fill();
+}
+
+const flights=[
+  {steps:10,tread:40,riser:10,width:80,offsetX:400,offsetY:400,offsetZ:0,rotX:0,rotY:0,rotZ:0},
+  {steps:10,tread:40,riser:10,width:80,offsetX:700,offsetY:400,offsetZ:0,rotX:0,rotY:0,rotZ:0},
+  {steps:10,tread:40,riser:10,width:80,offsetX:700,offsetY:600,offsetZ:0,rotX:0,rotY:0,rotZ:0},
+  {steps:10,tread:40,riser:10,width:80,offsetX:400,offsetY:600,offsetZ:0,rotX:0,rotY:0,rotZ:0}
+];
+
+let currentFlight=0;
+
+function drawFlight(f){
+  ctx.save();
+  const stepsInt=parseInt(f.steps,10);
+  const cx=f.width/2, cy=-(stepsInt*f.riser)/2, cz=-(stepsInt*f.tread)/2;
+  ctx.translate(f.offsetX+cx,f.offsetY+cy);
+  for(let i=0;i<stepsInt;i++){
+    let x=0,y=-i*f.riser,z=-i*f.tread;
+    [x,y,z]=rotateX(x-cx,y-cy,z-cz,f.rotX);
+    [x,y,z]=rotateY(x,y,z,f.rotY);
+    [x,y,z]=rotateZ(x,y,z,f.rotZ);
+    x+=cx; y+=cy; z+=cz+f.offsetZ;
+    drawStep(x,y,z,f.tread,f.riser,f.width);
+  }
+  ctx.restore();
+}
+
+const controls={
+  steps:document.getElementById('steps'),tread:document.getElementById('tread'),riser:document.getElementById('riser'),width:document.getElementById('width'),
+  offsetX:document.getElementById('offsetX'),offsetY:document.getElementById('offsetY'),offsetZ:document.getElementById('offsetZ'),
+  rotX:document.getElementById('rotX'),rotY:document.getElementById('rotY'),rotZ:document.getElementById('rotZ')
+};
+const report=document.getElementById('report');
+
+document.querySelectorAll('input[name="flight"]').forEach(rb=>{
+  rb.addEventListener('change',()=>{
+    currentFlight=parseInt(rb.value,10);
+    const f=flights[currentFlight];
+    for(let key in controls) controls[key].value=f[key];
+  });
+});
+
+for(let key in controls){
+  controls[key].addEventListener('input',()=>{
+    flights[currentFlight][key]=parseInt(controls[key].value,10);
+  });
+}
+
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  flights.forEach(f=>drawFlight(f));
+  report.textContent=JSON.stringify(flights,null,2);
+  requestAnimationFrame(render);
+}
+render();
+</script>
+</body>
+</html>
