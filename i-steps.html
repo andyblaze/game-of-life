@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Realistic Stair Flight Tuner</title>
+<style>
+  body { margin:0; background:#222; color:#eee; font-family:sans-serif; }
+  #controls { position:fixed; top:0; left:0; right:0; background:#333; padding:8px; display:flex; flex-wrap:wrap; }
+  label { margin:4px 8px; font-size:13px; }
+  input { vertical-align:middle; }
+  canvas { display:block; margin-top:80px; background:#f4f4f4; box-shadow:0 4px 20px rgba(0,0,0,0.6); }
+</style>
+</head>
+<body>
+<div id="controls">
+  <label>Steps <input type="range" id="steps" min="3" max="30" value="12"></label>
+  <label>Tread Depth <input type="range" id="tread" min="20" max="80" value="40"></label>
+  <label>Riser Height <input type="range" id="riser" min="5" max="30" value="10"></label>
+  <label>Step Width <input type="range" id="width" min="40" max="200" value="80"></label>
+  <label>Camera Rotation <input type="range" id="camRot" min="-180" max="180" value="-30"></label>
+  <label>Camera Tilt <input type="range" id="camTilt" min="0" max="80" value="30"></label>
+</div>
+<canvas id="c" width="800" height="600"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// Project 3D to 2D
+function project3D(x,y,z, camRot, camTilt) {
+  const radRot = camRot * Math.PI/180;
+  const radTilt = camTilt * Math.PI/180;
+  const cx = Math.cos(radRot)*x - Math.sin(radRot)*z;
+  const cz = Math.sin(radRot)*x + Math.cos(radRot)*z;
+  const cy = y;
+  const sx = 400 + cx;
+  const sy = 400 - (cy*Math.cos(radTilt) + cz*Math.sin(radTilt));
+  return [sx, sy];
+}
+
+function drawStep(x0,y0,z0,tread,riser,width, camRot, camTilt) {
+  // corners of step in 3D
+  const corners = [
+    [x0, y0, z0],
+    [x0+width, y0, z0],
+    [x0+width, y0, z0+tread],
+    [x0, y0, z0+tread],
+    [x0, y0-riser, z0],
+    [x0+width, y0-riser, z0],
+    [x0+width, y0-riser, z0+tread],
+    [x0, y0-riser, z0+tread]
+  ];
+  // project
+  const p = corners.map(c=>project3D(c[0],c[1],c[2], camRot, camTilt));
+  // draw top
+  ctx.fillStyle="#eee";
+  ctx.beginPath();
+  ctx.moveTo(p[0][0],p[0][1]);
+  ctx.lineTo(p[1][0],p[1][1]);
+  ctx.lineTo(p[2][0],p[2][1]);
+  ctx.lineTo(p[3][0],p[3][1]);
+  ctx.closePath();
+  ctx.fill();
+  // draw riser front
+  ctx.fillStyle="#bbb";
+  ctx.beginPath();
+  ctx.moveTo(p[0][0],p[0][1]);
+  ctx.lineTo(p[1][0],p[1][1]);
+  ctx.lineTo(p[5][0],p[5][1]);
+  ctx.lineTo(p[4][0],p[4][1]);
+  ctx.closePath();
+  ctx.fill();
+  // draw side
+  ctx.fillStyle="#ccc";
+  ctx.beginPath();
+  ctx.moveTo(p[1][0],p[1][1]);
+  ctx.lineTo(p[2][0],p[2][1]);
+  ctx.lineTo(p[6][0],p[6][1]);
+  ctx.lineTo(p[5][0],p[5][1]);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawFlight(opts) {
+  const {steps,tread,riser,width,camRot,camTilt} = opts;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (let i=0;i<steps;i++) {
+    drawStep(0,0,-i*tread, tread, riser, width, camRot, camTilt);
+  }
+}
+
+// UI binding
+const controls = {
+  steps: document.getElementById('steps'),
+  tread: document.getElementById('tread'),
+  riser: document.getElementById('riser'),
+  width: document.getElementById('width'),
+  camRot: document.getElementById('camRot'),
+  camTilt: document.getElementById('camTilt')
+};
+
+function render() {
+  const opts = {
+    steps: parseInt(controls.steps.value),
+    tread: parseInt(controls.tread.value),
+    riser: parseInt(controls.riser.value),
+    width: parseInt(controls.width.value),
+    camRot: parseInt(controls.camRot.value),
+    camTilt: parseInt(controls.camTilt.value)
+  };
+  drawFlight(opts);
+  requestAnimationFrame(render);
+}
+render();
+</script>
+</body>
+</html>
