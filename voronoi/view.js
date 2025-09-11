@@ -29,6 +29,11 @@ export default class View {
         this.offCtx.fillStyle = gradient;
         this.offCtx.fillRect(0, this.offscreen.height - height, this.offscreen.width, height);
     }
+    gradient(ctx, site, hue) {
+        const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, 80); console.log(hue);
+        g.addColorStop(0, `hsla(${hue},80%,70%,0.7)`);
+        g.addColorStop(1, `hsla(${hue},80%,30%,0.1)`);
+    }
     draw(data) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
         //ctx.clearRect(0, 0, width, height);
@@ -40,8 +45,9 @@ export default class View {
             for ( let j = 1; j < cell.length; j++ ) 
                 this.offCtx.lineTo(cell[j].x, cell[j].y);
             this.offCtx.closePath();
-            let hue=(data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
-            this.offCtx.fillStyle = `hsla(${hue},70%,40%,0.3)`;
+            let hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;  console.log(hue);
+            this.gradient(this.offCtx, data.sites[i], hue);
+            //this.offCtx.fillStyle = `hsla(${hue},70%,40%,0.3)`;
             this.offCtx.strokeStyle = `hsla(${hue},80%,70%,0.5)`;
             this.offCtx.fill();
             this.offCtx.stroke();
