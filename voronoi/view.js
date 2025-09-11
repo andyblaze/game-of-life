@@ -9,8 +9,7 @@ export default class View {
         this.offCtx = this.offscreen.getContext("2d");
         this.skyImage = new Image();
         this.skyImage.src = "sky.jpg";
-        this.overlay = new FullScreenOverlay(); 
-        this.wavyMask = new WavyMask();
+        //this.overlay = new FullScreenOverlay(); 
         this.cfg = config;
     }
     resize(w, h) {
@@ -32,14 +31,22 @@ export default class View {
     }
     draw(data) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
-        this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
-        // clip to below wavy line
-        this.wavyMask.apply(this.offCtx, 0.025);
-        // draw auroras
-        data.forEach(a => {
-            a.draw(this.offCtx);
-        });
-        this.wavyMask.unapply(this.offCtx)   
+        //ctx.clearRect(0, 0, width, height);
+        for ( let i = 0; i < data.cells.length; i++ ) {
+            const cell = data.cells[i];
+            if ( cell.length < 3 ) continue;
+            this.offCtx.beginPath();
+            this.offCtx.moveTo(cell[0].x, cell[0].y);
+            for ( let j = 1; j < cell.length; j++ ) 
+                this.offCtx.lineTo(cell[j].x, cell[j].y);
+            this.offCtx.closePath();
+            let hue=(data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
+            this.offCtx.fillStyle = `hsla(${hue},70%,40%,0.3)`;
+            this.offCtx.strokeStyle = `hsla(${hue},80%,70%,0.5)`;
+            this.offCtx.fill();
+            this.offCtx.stroke();
+        }
+        //this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
         this.blit();
     }
     blit() {

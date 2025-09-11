@@ -1,10 +1,12 @@
-import Perlin from "./perlin-noise.js";
 import Voronoi from "./voronoi.js";
+import Perlin from "./perlin-noise.js";
 
 export default class Model {
     constructor(cfg) {
         this.global = cfg.global();
         this.cfg = cfg;
+        this.perlin = new Perlin();
+        this.voronoi = new Voronoi(this.global.width, this.global.height);
         this.sites = [];
         this.init(this.global);
     }
@@ -17,9 +19,18 @@ export default class Model {
                 ny:Math.random() * global.noiseSeedRange
             });
         }
-    }  
-    tick() {
-        this.sites.forEach(s => s.update());
-        return this.sites;
+    } 
+    move(global) {
+        this.sites.forEach(s=>{
+            s.nx+= 0.0002; 
+            s.ny+= 0.0002;
+            s.x = (this.perlin.noise(s.nx, 0) + 1) * 0.5 * global.width;
+            s.y = (this.perlin.noise(0, s.ny) + 1) * 0.5 * global.height;
+        });
+    }
+    tick(timestamp) {
+        this.move(this.global);
+        const cells = this.voronoi.update(this.sites);
+        return { "cells": cells, "sites": this.sites, "timestamp": timestamp };
     }
 }

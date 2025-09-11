@@ -21,7 +21,7 @@ export default class Controller {
     loop(timestamp) {
         if ( this.paused === false ) {            
             if ( this.frameReady() ) {
-                const data = this.model.tick();
+                const data = this.model.tick(timestamp);
                 this.view.draw(data);
                 DeltaReport.log(timestamp); // comment in & out for fps in console
             }

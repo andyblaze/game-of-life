@@ -2,20 +2,24 @@
 // Lightweight Voronoi (naive polygon clipping)
 // ---------------------
 export default class Voronoi {
-    compute(sites, width, height) {
-      const cells = [];
-      for ( let i = 0; i < sites.length; i++ ) {
-        let cell = [
-          {x:0,y:0}, {x:width,y:0}, {x:width,y:height}, {x:0,y:height}
-        ];
-        for ( let j = 0; j < sites.length; j++ ) {
-          if ( i === j ) continue;
-          cell = this.initNewCell(cell, sites[i], sites[j]);
-          if ( ! cell.length ) break;
+    constructor(w, h) {
+        this.screenW = w;
+        this.screenH = h;
+    }
+    update(sites) {
+        const cells = [];
+        for ( let i = 0; i < sites.length; i++ ) {
+            let cell = [
+                {x:0,y:0}, {x:this.screenW, y:0}, {x:this.screenW, y:this.screenH}, {x:0, y:this.screenH}
+            ];
+            for ( let j = 0; j < sites.length; j++ ) {
+                if ( i === j ) continue;
+                cell = this.initNewCell(cell, sites[i], sites[j]);
+                if ( ! cell.length ) break;
+            }
+            cells.push(cell);
         }
-        cells.push(cell);
-      }
-      return cells;
+        return cells;
     }
     initNewCell(cell, site1, site2) {
         let sx = (site1.x + site2.x)/2;
