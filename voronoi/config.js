@@ -16,7 +16,7 @@ export default class Config {
             width: window.innerWidth,   // canvas width
             height: window.innerHeight, // canvas height
             framesPerTick: 1,          // update frequency (higher = slower updates, lower CPU)
-            numSites:80,
+            numSites:20,
             noiseSeedRange: 1000, // tweak this if you want slower/faster initial offsets
             
             lava:{ 

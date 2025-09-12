@@ -28,7 +28,7 @@ export default class View {
         this.offCtx.fillStyle = gradient;
         this.offCtx.fillRect(0, this.offscreen.height - height, this.offscreen.width, height);
     }
-    radialGradientFill(ctx, site, hue) { hue = parseInt(hue); if ( isNaN(hue) ) hue = 180;
+    radialGradientFill(ctx, site, hue) {
         const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, 180);
         g.addColorStop(0, `hsla(${hue},80%,70%,0.4)`);
         g.addColorStop(0.7, `hsla(${hue},80%,30%,0.01)`);
@@ -181,7 +181,12 @@ g.addColorStop(1.0, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
             //this.noiseDrivenFill(this.offCtx, data.sites[i], cell, data.perlin, data.timestamp, this.cfg.global("cool"));
             //this.cellSizeDependentFill(this.offCtx, data.sites[i], data.sites);
             //this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:130});
-            const hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
+            //const hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
+            
+const base = 170;      // start at cyan
+const range = 70;      // covers 170 → 240
+const speed = 0.001;   // slow cycle
+const hue = base + Math.sin(data.timestamp * speed + data.sites[i].x * 0.01) * (range / 2);
             this.radialGradientFill(this.offCtx, data.sites[i], hue);
             const alpha = this.shimmer(data.timestamp, i);
             // this.facetFill(this.offCtx, data.sites[i], cell, this.cfg.global("facet"));
