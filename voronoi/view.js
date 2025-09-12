@@ -7,8 +7,8 @@ export default class View {
         this.offscreen = document.createElement("canvas");
         this.offCtx = this.offscreen.getContext("2d");
         this.skyImage = new Image();
-        this.skyImage.src = "sky.jpg";
-        //this.overlay = new FullScreenOverlay(); 
+        this.skyImage.src = "sky1.jpg";
+        this.overlay = new FullScreenOverlay(); 
         this.cfg = config;
     }
     resize(w, h) {
@@ -30,8 +30,9 @@ export default class View {
     }
     radialGradientFill(ctx, site, hue) { hue = parseInt(hue); if ( isNaN(hue) ) hue = 180;
         const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, 180);
-        g.addColorStop(0, `hsla(${hue},80%,70%,0.8)`);
-        g.addColorStop(1, `hsla(${hue},80%,30%,0.1)`);
+        g.addColorStop(0, `hsla(${hue},80%,70%,0.4)`);
+        g.addColorStop(0.7, `hsla(${hue},80%,30%,0.01)`);
+        g.addColorStop(1, `hsla(${hue},80%,30%,0)`);
         ctx.fillStyle = g;
         ctx.fill();        
     }
@@ -52,16 +53,16 @@ export default class View {
 
         // gradient: bright center -> darker edges
         const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, radius);
-        g.addColorStop(0, `hsla(${config.hue}, 60%, 75%, 0.8)`); // bright
-        g.addColorStop(1, `hsla(${config.hue}, 60%, 25%, 0.8)`); // dark edges
+        g.addColorStop(0, `hsla(${config.hue}, 60%, 75%, 0.5)`); // bright
+        g.addColorStop(1, `hsla(${config.hue}, 60%, 25%, 0.08)`); // dark edges
 
         ctx.fillStyle = g;
         ctx.fill();
 
         // optional darker edge stroke
-        ctx.strokeStyle = `hsla(${config.hue}, 60%, 15%, 0.9)`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+        //ctx.strokeStyle = `hsla(${config.hue}, 60%, 15%, 0.9)`;
+        //ctx.lineWidth = 1.5;
+        //ctx.stroke();
     }
     floodFill(ctx, hue, alpha) {
         ctx.fillStyle = `hsla(${hue},70%,40%,0.3)`;
@@ -84,12 +85,12 @@ export default class View {
         const hue = (config.baseHue + n * config.hueRange) % 360;
         const light = 50 + n * config.lightRange;
 
-        ctx.fillStyle = `hsla(${hue}, 70%, ${light}%, 0.8)`;
+        ctx.fillStyle = `hsla(${hue}, 70%, ${light}%, 0.2)`;
         ctx.fill();
 
-        ctx.strokeStyle = `hsla(${hue}, 70%, 20%, 0.9)`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        //ctx.strokeStyle = `hsla(${hue}, 70%, 20%, 0.9)`;
+        //ctx.lineWidth = 1;
+        //ctx.stroke();
     }
     cellSizeDependentFill(ctx, site, sites) {
         function nearestNeighborDistance(site, sites) {
@@ -179,7 +180,7 @@ g.addColorStop(1.0, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
             this.offCtx.closePath();
             //this.noiseDrivenFill(this.offCtx, data.sites[i], cell, data.perlin, data.timestamp, this.cfg.global("cool"));
             //this.cellSizeDependentFill(this.offCtx, data.sites[i], data.sites);
-            //this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:230});
+            //this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:130});
             const hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
             this.radialGradientFill(this.offCtx, data.sites[i], hue);
             const alpha = this.shimmer(data.timestamp, i);
