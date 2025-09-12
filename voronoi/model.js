@@ -31,6 +31,6 @@ export default class Model {
     tick(timestamp) {
         this.move(this.global);
         const cells = this.voronoi.update(this.sites);
-        return { "cells": cells, "sites": this.sites, "timestamp": timestamp };
+        return { "cells": cells, "sites": this.sites, "timestamp": timestamp, "perlin": this.perlin };
     }
 }

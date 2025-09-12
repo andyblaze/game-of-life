@@ -30,10 +30,10 @@ export default class View {
     }
     radialGradientFill(ctx, site, hue) { hue = parseInt(hue); if ( isNaN(hue) ) hue = 180;
         const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, 180);
-        g.addColorStop(0, `hsla(${hue},80%,70%,0.7)`);
+        g.addColorStop(0, `hsla(${hue},80%,70%,0.8)`);
         g.addColorStop(1, `hsla(${hue},80%,30%,0.1)`);
         ctx.fillStyle = g;
-        ctx.fill();  
+        ctx.fill();        
     }
     shimmer(t, i) {
         return 0.3 + 0.2 * Math.sin(t * 0.002 + i);
@@ -69,7 +69,7 @@ export default class View {
         ctx.fill();
         ctx.stroke();
     }
-    noiseDrivenFill(ctx, site, cell, perlin, time, config) {
+    noiseDrivenFill(ctx, site, cell, perlin, time, config) { 
         ctx.beginPath();
         cell.forEach((p, i) => {
             if ( i === 0 ) ctx.moveTo(p.x, p.y);
@@ -78,7 +78,7 @@ export default class View {
         ctx.closePath();
 
         // sample noise (smooth value between -1 and 1)
-        const n = perlin.noise(site.nx + time*0.0005, site.ny + time*0.0005);
+        const n = perlin.noise(site.nx + time * 0.0005, site.ny + time * 0.0005);
 
         // map noise to hue and lightness
         const hue = (config.baseHue + n * config.hueRange) % 360;
@@ -91,7 +91,7 @@ export default class View {
         ctx.lineWidth = 1;
         ctx.stroke();
     }
-    /*cellSizeDependentFill() {
+    cellSizeDependentFill(ctx, site, sites) {
         function nearestNeighborDistance(site, sites) {
           let minDist = Infinity;
           for (let other of sites) {
@@ -104,14 +104,67 @@ export default class View {
           return minDist;
         }
         const nn = nearestNeighborDistance(site, sites);
-        const radius = nn * 0.8; // tweak multiplier in config
-
+        const radius = nn * 0.4; // tweak multiplier in config
+        const hue = 70;
         const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, radius);
         g.addColorStop(0, `hsla(${hue}, 70%, 75%, 0.9)`);
         g.addColorStop(1, `hsla(${hue}, 70%, 25%, 0.4)`);
         ctx.fillStyle = g;
         ctx.fill();        
-    }*/
+    }
+facetFill(ctx, site, cell, config) {
+    // --- 1. Compute centroid of the cell ---
+    let cx = 0, cy = 0;
+    for (let i = 0; i < cell.length; i++) {
+        cx += cell[i].x;
+        cy += cell[i].y;
+    }
+    cx /= cell.length;
+    cy /= cell.length;
+
+    // --- 2. Light direction (choose a consistent vector) ---
+    const lx = -1, ly = -1; // top-left light
+    const angle = Math.atan2(ly, lx);
+
+    // --- 3. Gradient across the cell ---
+    const radius = Math.max(ctx.canvas.width, ctx.canvas.height);
+    const g = ctx.createLinearGradient(
+        cx - Math.cos(angle) * radius,
+        cy - Math.sin(angle) * radius,
+        cx + Math.cos(angle) * radius,
+        cy + Math.sin(angle) * radius
+    );
+
+    // --- 4. Map centroid to hue/brightness ---
+    const hue = (config.baseHue + (cx + cy) * 0.05) % 360;
+
+    // Jewel effect: hard tonal bands
+g.addColorStop(0.0, `hsl(${hue}, ${config.sat || 70}%, 80%)`);
+g.addColorStop(0.1, `hsl(${hue}, ${config.sat || 70}%, 80%)`); // repeat to create hard edge
+g.addColorStop(0.1, `hsl(${hue}, ${config.sat || 70}%, 55%)`);
+g.addColorStop(0.3, `hsl(${hue}, ${config.sat || 70}%, 55%)`);
+g.addColorStop(0.3, `hsl(${hue}, ${config.sat || 70}%, 35%)`);
+g.addColorStop(0.6, `hsl(${hue}, ${config.sat || 70}%, 35%)`);
+g.addColorStop(0.6, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
+g.addColorStop(1.0, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
+
+    // --- 5. Draw polygon with gradient fill ---
+    ctx.beginPath();
+    ctx.moveTo(cell[0].x, cell[0].y);
+    for (let j = 1; j < cell.length; j++) {
+        ctx.lineTo(cell[j].x, cell[j].y);
+    }
+    ctx.closePath();
+
+    ctx.fillStyle = g;
+    ctx.fill();
+
+    // Optional: subtle dark stroke to outline facets
+    ctx.strokeStyle = `hsla(${hue}, ${config.sat || 70}%, 10%, 0.8)`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+}
+
     draw(data) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
         //ctx.clearRect(0, 0, width, height);
@@ -124,11 +177,13 @@ export default class View {
                 this.offCtx.lineTo(cell[j].x, cell[j].y);
             }
             this.offCtx.closePath();
-            // this.noiseDrivenFill(ctx, site, cell, perlin, time, config);
-            // this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:230});
+            //this.noiseDrivenFill(this.offCtx, data.sites[i], cell, data.perlin, data.timestamp, this.cfg.global("cool"));
+            //this.cellSizeDependentFill(this.offCtx, data.sites[i], data.sites);
+            //this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:230});
             const hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
             this.radialGradientFill(this.offCtx, data.sites[i], hue);
             const alpha = this.shimmer(data.timestamp, i);
+            // this.facetFill(this.offCtx, data.sites[i], cell, this.cfg.global("facet"));
             //this.floodFill(this.offCtx, hue, alpha);
         }
         //this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
