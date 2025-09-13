@@ -202,7 +202,7 @@ export default class View {
             // this.facetFill(this.offCtx, data.sites[i], cell, this.cfg.global("facet"));
             // this.floodFill(this.offCtx, hue, alpha);
         }
-        this.godRay.update(data.timestamp);
+        this.godRay.update(data.timestamp, data.perlin);
         this.godRay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
         //this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
         this.blit();

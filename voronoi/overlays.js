@@ -49,27 +49,37 @@ export class GodRay {
 this.plankton.push({
     x: Math.random() * cfg.canvasWidth,
     y: Math.random() * cfg.canvasHeight,
-    speed: 0.1 + Math.random() * 0.3,   // vertical speed
-    drift: (Math.random() - 0.5) * 0.05 // horizontal drift speed
+    seedX: Math.random() * 1000,
+    seedY: Math.random() * 1000,
+    // fixed appearance
+    size: 0.5 + Math.random() * 1.5,               // 0.5–2px
+    hue: [60, 180, 200, 220, 260][Math.floor(Math.random() * 4)], // aqua → indigo
+    light: 70 + Math.random() * 20,                // 70–90%
+    alpha: 0.3 + Math.random() * 0.4               // 0.3–0.7
 });
         }
     }
 
-    update(deltaTime) {
+    update(deltaTime, perlin) {
         this.time += deltaTime;
 
         // Move plankton
 this.plankton.forEach(p => {
-    p.y += p.speed;
-    p.x += p.drift;
+    const nx = perlin.noise(this.time * 0.0001, p.seedX, 0);
+    const ny = perlin.noise(this.time * 0.0001, p.seedY, 0);
 
-    // wrap around
-    if (p.y > this.cfg.canvasHeight) {
-        p.y = 0;
-        p.x = Math.random() * this.cfg.canvasWidth;
-    }
+    // Map noise [-1,1] → small drift
+    const dx = (nx - 0.5) * 0.5; // adjust multiplier for strength
+    const dy = (ny - 0.5) * 0.2;
+
+    p.x += dx;
+    p.y += dy;
+
+    // wrap around edges
     if (p.x < 0) p.x = this.cfg.canvasWidth;
     if (p.x > this.cfg.canvasWidth) p.x = 0;
+    if (p.y < 0) p.y = this.cfg.canvasHeight;
+    if (p.y > this.cfg.canvasHeight) p.y = 0;
 });
     }
 
@@ -89,18 +99,10 @@ this.plankton.forEach(p => {
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
         // === Plankton ===
-        this.plankton.forEach(p => {
-            let px = p.x;
-            let py = p.y;
-
-            if (this.cfg.planktonDrift) {
-                // Drift horizontally with water "currents"
-                //px += Math.sin(this.time * p.driftSpeed + p.driftPhase) * p.driftAmp;
-            }
-
-            ctx.fillStyle = 'hsla(60, 80%, 90%, 0.9)';
-            ctx.fillRect(px, py, 3, 3);
-        });
+this.plankton.forEach(p => {
+    ctx.fillStyle = `hsla(${p.hue}, 80%, ${p.light}%, ${p.alpha})`;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+});
     }
 }
 
