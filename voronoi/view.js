@@ -1,4 +1,4 @@
-import { FullScreenOverlay } from "./overlays.js";
+import { FullScreenOverlay, GodRay } from "./overlays.js";
 
 export default class View {
     constructor(id, config) {
@@ -9,6 +9,13 @@ export default class View {
         this.skyImage = new Image();
         this.skyImage.src = "sky1.jpg";
         this.overlay = new FullScreenOverlay(); 
+        this.godRay = new GodRay({
+    canvasWidth: window.innerWidth,
+    canvasHeight: window.innerHeight,
+    baseHue: 200,           // start in blue range
+    planktonCount: 150,
+    planktonDrift: true
+        });
         this.cfg = config;
     }
     resize(w, h) {
@@ -28,13 +35,18 @@ export default class View {
         this.offCtx.fillStyle = gradient;
         this.offCtx.fillRect(0, this.offscreen.height - height, this.offscreen.width, height);
     }
-    radialGradientFill(ctx, site, hue) {
+    radialGradientFill(ctx, site, hue, alpha) {
+        if ( alpha < 0.2 ) alpha = 0.2;
         const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, 180);
-        g.addColorStop(0, `hsla(${hue},80%,70%,0.4)`);
-        g.addColorStop(0.7, `hsla(${hue},80%,30%,0.01)`);
+        g.addColorStop(0, `hsla(${hue},80%,70%,${alpha})`);
+        g.addColorStop(0.4, `hsla(${hue},80%,30%,0.01)`);
         g.addColorStop(1, `hsla(${hue},80%,30%,0)`);
         ctx.fillStyle = g;
         ctx.fill();        
+        // Optional:  stroke to outline facets
+        //ctx.strokeStyle = "rgba(0,0,255,0.01)";
+        //ctx.lineWidth = 0.5;
+        //ctx.stroke();    
     }
     shimmer(t, i) {
         return 0.3 + 0.2 * Math.sin(t * 0.002 + i);
@@ -113,58 +125,58 @@ export default class View {
         ctx.fillStyle = g;
         ctx.fill();        
     }
-facetFill(ctx, site, cell, config) {
-    // --- 1. Compute centroid of the cell ---
-    let cx = 0, cy = 0;
-    for (let i = 0; i < cell.length; i++) {
-        cx += cell[i].x;
-        cy += cell[i].y;
+    facetFill(ctx, site, cell, config) {
+        // --- 1. Compute centroid of the cell ---
+        let cx = 0, cy = 0;
+        for (let i = 0; i < cell.length; i++) {
+            cx += cell[i].x;
+            cy += cell[i].y;
+        }
+        cx /= cell.length;
+        cy /= cell.length;
+
+        // --- 2. Light direction (choose a consistent vector) ---
+        const lx = -1, ly = -1; // top-left light
+        const angle = Math.atan2(ly, lx);
+
+        // --- 3. Gradient across the cell ---
+        const radius = Math.max(ctx.canvas.width, ctx.canvas.height);
+        const g = ctx.createLinearGradient(
+            cx - Math.cos(angle) * radius,
+            cy - Math.sin(angle) * radius,
+            cx + Math.cos(angle) * radius,
+            cy + Math.sin(angle) * radius
+        );
+
+        // --- 4. Map centroid to hue/brightness ---
+        const hue = (config.baseHue + (cx + cy) * 0.05) % 360;
+
+            // Jewel effect: hard tonal bands
+        g.addColorStop(0.0, `hsl(${hue}, ${config.sat || 70}%, 80%)`);
+        g.addColorStop(0.1, `hsl(${hue}, ${config.sat || 70}%, 80%)`); // repeat to create hard edge
+        g.addColorStop(0.1, `hsl(${hue}, ${config.sat || 70}%, 55%)`);
+        g.addColorStop(0.3, `hsl(${hue}, ${config.sat || 70}%, 55%)`);
+        g.addColorStop(0.3, `hsl(${hue}, ${config.sat || 70}%, 35%)`);
+        g.addColorStop(0.6, `hsl(${hue}, ${config.sat || 70}%, 35%)`);
+        g.addColorStop(0.6, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
+        g.addColorStop(1.0, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
+
+        // --- 5. Draw polygon with gradient fill ---
+        ctx.beginPath();
+        ctx.moveTo(cell[0].x, cell[0].y);
+        for (let j = 1; j < cell.length; j++) {
+            ctx.lineTo(cell[j].x, cell[j].y);
+        }
+        ctx.closePath();
+
+        ctx.fillStyle = g;
+        ctx.fill();
+
+        // Optional: subtle dark stroke to outline facets
+        ctx.strokeStyle = `hsla(${hue}, ${config.sat || 70}%, 10%, 0.8)`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
     }
-    cx /= cell.length;
-    cy /= cell.length;
-
-    // --- 2. Light direction (choose a consistent vector) ---
-    const lx = -1, ly = -1; // top-left light
-    const angle = Math.atan2(ly, lx);
-
-    // --- 3. Gradient across the cell ---
-    const radius = Math.max(ctx.canvas.width, ctx.canvas.height);
-    const g = ctx.createLinearGradient(
-        cx - Math.cos(angle) * radius,
-        cy - Math.sin(angle) * radius,
-        cx + Math.cos(angle) * radius,
-        cy + Math.sin(angle) * radius
-    );
-
-    // --- 4. Map centroid to hue/brightness ---
-    const hue = (config.baseHue + (cx + cy) * 0.05) % 360;
-
-    // Jewel effect: hard tonal bands
-g.addColorStop(0.0, `hsl(${hue}, ${config.sat || 70}%, 80%)`);
-g.addColorStop(0.1, `hsl(${hue}, ${config.sat || 70}%, 80%)`); // repeat to create hard edge
-g.addColorStop(0.1, `hsl(${hue}, ${config.sat || 70}%, 55%)`);
-g.addColorStop(0.3, `hsl(${hue}, ${config.sat || 70}%, 55%)`);
-g.addColorStop(0.3, `hsl(${hue}, ${config.sat || 70}%, 35%)`);
-g.addColorStop(0.6, `hsl(${hue}, ${config.sat || 70}%, 35%)`);
-g.addColorStop(0.6, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
-g.addColorStop(1.0, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
-
-    // --- 5. Draw polygon with gradient fill ---
-    ctx.beginPath();
-    ctx.moveTo(cell[0].x, cell[0].y);
-    for (let j = 1; j < cell.length; j++) {
-        ctx.lineTo(cell[j].x, cell[j].y);
-    }
-    ctx.closePath();
-
-    ctx.fillStyle = g;
-    ctx.fill();
-
-    // Optional: subtle dark stroke to outline facets
-    ctx.strokeStyle = `hsla(${hue}, ${config.sat || 70}%, 10%, 0.8)`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-}
 
     draw(data) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
@@ -183,15 +195,15 @@ g.addColorStop(1.0, `hsl(${hue}, ${config.sat || 70}%, 20%)`);
             //this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:130});
             //const hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
             
-const base = 170;      // start at cyan
-const range = 70;      // covers 170 → 240
-const speed = 0.001;   // slow cycle
-const hue = base + Math.sin(data.timestamp * speed + data.sites[i].x * 0.01) * (range / 2);
-            this.radialGradientFill(this.offCtx, data.sites[i], hue);
+            const { base, range, speed } = this.cfg.global("ocean");
+            const hue = base + Math.sin(data.timestamp * speed + data.sites[i].x * 0.01) * (range / 2);
             const alpha = this.shimmer(data.timestamp, i);
+            this.radialGradientFill(this.offCtx, data.sites[i], hue, alpha);
             // this.facetFill(this.offCtx, data.sites[i], cell, this.cfg.global("facet"));
-            //this.floodFill(this.offCtx, hue, alpha);
+            // this.floodFill(this.offCtx, hue, alpha);
         }
+        this.godRay.update(data.timestamp);
+        this.godRay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
         //this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
         this.blit();
     }

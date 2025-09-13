@@ -27,7 +27,7 @@ export default class Voronoi {
         let dx = site2.x - site1.x;
         let dy = site2.y - site1.y;
         let nx = -dx, ny = -dy; // perpendicular
-        nx *= 1.8; ny *= 1.2;
+        //nx *= 1.8; ny *= 1.2;
         let newCell=[];
         for ( let k = 0; k < cell.length; k++ ) {
             let a = cell[k], b = cell[(k + 1) % cell.length];

@@ -48,6 +48,11 @@ export default class Config {
               hueRange: 120,   // how much hue swings
               lightRange: 40,  // brightness swing
               sat: 70          // saturation
+            },
+            ocean: {
+                base: 190,      // start at cyan
+                range: 30,      
+                speed: 0.002
             }
         },
         types: [
