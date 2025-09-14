@@ -56,7 +56,7 @@ export default class Config {
             }
         },
         boids: {
-            numBoids: 10,             // number of boids to simulate
+            numBoids: 20,             // number of boids to simulate
             // --- perception ---
             neighborRadius: 1150,        // how far a boid "sees" others
                                       // bigger → flock acts more coherently
@@ -74,7 +74,7 @@ export default class Config {
                                       // bigger → flock clumps tighter, denser formations
                                       // smaller → flock drifts apart
             // --- motion limits ---
-            maxSpeed: 1.2,              // maximum boid speed
+            maxSpeed: 0.8,              // maximum boid speed
                                       // bigger → flock moves faster, more energetic
                                       // smaller → slower, gentler motion
             maxForce: 0.000001,               // maximum steering adjustment per frame
@@ -85,9 +85,9 @@ export default class Config {
                                 // bigger → more chaotic ripples
                                 // smaller → subtle, natural undulations  
             driftSpeed: 0.00002, // How much far away boids drift around
-            edgeNudgeStrength: 0.00015, // how much boids will avoid edges - bigger number is more avoidance
+            edgeNudgeStrength: 0.0002, // how much boids will avoid edges - bigger number is more avoidance
             edgeNudgeChance: 1.1, // Random chance to apply edge nudge
-            color: {h:10, s:100, l:35, a:0.1}
+            color: {h:10, s:100, l:25, a:0.09}
         },
         types: [
             { 

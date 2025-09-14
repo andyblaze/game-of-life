@@ -66,13 +66,13 @@ export default class FishBoids {
             
             const turnAngle = this.getTurnAngle(oldVel, boid.velocity);
             // If sharp turn, bump opacity
-            if (turnAngle > 1.8) {  // tweak threshold
-                boid.color.l += 40;
-                //boid.color.a = Math.min(0.9, boid.color.a + 0.3);
+            if (turnAngle > 1.1) {  // tweak threshold
+                boid.color.l += 60;
+                boid.color.a = Math.min(0.2, boid.color.a + 0.04);
             } else {
                 // slowly fade back to normal
-                boid.color.l = Math.max(35, boid.color.l - 0.2);
-                //boid.color.a = Math.max(0.5, boid.color.a - 0.02);
+                boid.color.l = Math.max(35, boid.color.l - 9);
+                boid.color.a = Math.max(0.09, boid.color.a - 0.002);
             }
             this.nudgeTowardCenter(boid);
             this.wrapAroundEdges(boid);
@@ -163,17 +163,22 @@ export default class FishBoids {
         [ vx, vy ] = this.limitSpeed(vx, vy);
         return { x: vx, y: vy };
     }
-    drawBoid(ctx, scale, boid) { 
-        ctx.beginPath();
-        ctx.moveTo(0, 0);     
-        ctx.lineTo(-5 * scale, -2 * scale);  
-        ctx.lineTo(-3 * scale, 0);    
-        ctx.lineTo(-5 * scale, 2 * scale);    
-        ctx.closePath();
-        const { h, s, l, a } = boid.color;
+    drawBoid(ctx, scale, color) {
+        const { h, s, l, a } = color;
         ctx.fillStyle = `hsla(${h}, ${s}%, ${l}%, ${a})`;
-        ctx.fill(); 
-    }    
+
+        ctx.beginPath();
+        // Body (oval-ish)
+        ctx.ellipse(0, 0, 5 * scale, 2 * scale, 0, 0, Math.PI * 2);
+
+        // Tail (forked)
+        ctx.moveTo(-5 * scale, -2 * scale);
+        ctx.lineTo(-7 * scale, 0);
+        ctx.lineTo(-5 * scale, 2 * scale);
+        ctx.closePath();
+
+        ctx.fill();
+    }   
     draw(ctx) {
         this.update();
         this.boids.forEach(boid => {
@@ -182,9 +187,9 @@ export default class FishBoids {
             const angle = Math.atan2(boid.velocity.y, boid.velocity.x);
             ctx.translate(x, y);
             ctx.rotate(angle);            
-            const scale = 2.8; // more = bigger boid on screen
+            const scale = 1.4; // more = bigger boid on screen
             ctx.globalAlpha = boid.opacity;
-            this.drawBoid(ctx, scale, boid);            
+            this.drawBoid(ctx, scale, boid.color);            
             ctx.restore();
         });
     }
