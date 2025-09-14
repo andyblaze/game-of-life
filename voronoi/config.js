@@ -55,6 +55,40 @@ export default class Config {
                 speed: 0.002
             }
         },
+        boids: {
+            numBoids: 30,             // number of boids to simulate
+            // --- perception ---
+            neighborRadius: 1150,        // how far a boid "sees" others
+                                      // bigger → flock acts more coherently
+                                      // smaller → more local chaos & splintering
+            separationDistance: 34,     // minimum comfortable distance
+                                      // if neighbors are closer than this, boid steers away
+            // --- weights / strengths ---
+            separationStrength: 0.9,   // how strongly a boid avoids crowding
+                                      // bigger → flock looks looser, more "pushy"
+                                      // smaller → boids overlap more
+            alignmentStrength: 0.0001,     // how strongly a boid matches neighbor direction
+                                      // bigger → flock aligns quickly, straighter flight
+                                      // smaller → flock looks messy / scattered
+            cohesionStrength: 0.00001,     // how strongly a boid moves toward neighbor center
+                                      // bigger → flock clumps tighter, denser formations
+                                      // smaller → flock drifts apart
+            // --- motion limits ---
+            maxSpeed: 1.9,              // maximum boid speed
+                                      // bigger → flock moves faster, more energetic
+                                      // smaller → slower, gentler motion
+            maxForce: 0.001,               // maximum steering adjustment per frame
+                                      // bigger → boids can make sharp, agile turns
+                                      // smaller → smooth but less responsive turns
+            // --- environment ---
+            noiseStrength: 0.02,   // how strong the "gusts of wind" are
+                                // bigger → more chaotic ripples
+                                // smaller → subtle, natural undulations  
+            driftSpeed: 0.00002, // How much far away boids drift around
+            edgeNudgeStrength: 0.0005, // how much boids will avoid edges - bigger number is more avoidance
+            edgeNudgeChance: 1.1, // Random chance to apply edge nudge
+            color: {h:10, s:100, l:35, a:0.3}
+        },
         types: [
             { 
                 color:[0, 255, 100], name: "Type1"

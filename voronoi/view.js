@@ -1,4 +1,5 @@
 import { FullScreenOverlay, GodRay } from "./overlays.js";
+import FishBoids from "./fish-boids.js";
 
 export default class View {
     constructor(id, config) {
@@ -8,14 +9,14 @@ export default class View {
         this.offCtx = this.offscreen.getContext("2d");
         this.skyImage = new Image();
         this.skyImage.src = "sky1.jpg";
-        this.overlay = new FullScreenOverlay(); 
         this.godRay = new GodRay({
-    canvasWidth: window.innerWidth,
-    canvasHeight: window.innerHeight,
-    baseHue: 200,           // start in blue range
-    planktonCount: 150,
-    planktonDrift: true
+            canvasWidth: window.innerWidth,
+            canvasHeight: window.innerHeight,
+            baseHue: 200,           // start in blue range
+            planktonCount: 150,
+            planktonDrift: true
         });
+        this.shoal = new FishBoids(config);
         this.cfg = config;
     }
     resize(w, h) {
@@ -23,17 +24,6 @@ export default class View {
         this.onscreen.height = h;
         this.offscreen.width = w;
         this.offscreen.height = h;
-    }
-    overlayFog(height) {
-        // --- Layered fog overlay ---
-        const gradient = this.offCtx.createLinearGradient(
-            0, this.offscreen.height - height, 0, this.offscreen.height
-        );
-        gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
-        gradient.addColorStop(0.5, 'rgba(215, 215, 215, 0.5)');
-        gradient.addColorStop(1, 'rgba(215, 215, 215, 0)');
-        this.offCtx.fillStyle = gradient;
-        this.offCtx.fillRect(0, this.offscreen.height - height, this.offscreen.width, height);
     }
     radialGradientFill(ctx, site, hue, alpha) {
         if ( alpha < 0.2 ) alpha = 0.2;
@@ -180,7 +170,9 @@ export default class View {
 
     draw(data) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
-        //ctx.clearRect(0, 0, width, height);
+        this.shoal.update();
+        this.shoal.draw(this.offCtx);
+
         for ( let i = 0; i < data.cells.length; i++ ) {
             const cell = data.cells[i];
             if ( cell.length < 3 ) continue;
@@ -190,10 +182,6 @@ export default class View {
                 this.offCtx.lineTo(cell[j].x, cell[j].y);
             }
             this.offCtx.closePath();
-            //this.noiseDrivenFill(this.offCtx, data.sites[i], cell, data.perlin, data.timestamp, this.cfg.global("cool"));
-            //this.cellSizeDependentFill(this.offCtx, data.sites[i], data.sites);
-            //this.InnerShadowFill(this.offCtx, data.sites[i], cell, {hue:130});
-            //const hue = (data.sites[i].x / this.offscreen.width * 360 + data.timestamp * 0.02) % 360;
             
             const { base, range, speed } = this.cfg.global("ocean");
             const hue = base + Math.sin(data.timestamp * speed + data.sites[i].x * 0.01) * (range / 2);
@@ -204,7 +192,6 @@ export default class View {
         }
         this.godRay.update(data.timestamp, data.perlin);
         this.godRay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
-        //this.overlay.draw(this.offCtx, this.offscreen.width, this.offscreen.height);
         this.blit();
     }
     blit() {

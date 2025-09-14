@@ -46,7 +46,7 @@ export default class View {
     }
     draw(boids) {
         this.offCtx.drawImage(this.skyImage, 0, 0, this.offscreen.width, this.offscreen.height);
-         this.drawSkyOverlay();
+        this.drawSkyOverlay();
         this.offCtx.fillStyle = "rgba(0,0,0,0.7)";
         boids.forEach(boid => {
 
