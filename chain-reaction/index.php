@@ -113,7 +113,7 @@ let shapes = [];
 let particles = [];
 
 // Initial seeds
-for(let i=0;i<5;i++){
+for(let i=0;i<25;i++){
   const x = Math.random()*canvas.width;
   const y = Math.random()*canvas.height;
   const radius = 20 + Math.random()*20;
@@ -161,7 +161,7 @@ function animate() {
   }
 
   // Auto-seed new shapes
-  if(shapes.length<5){
+  if(shapes.length<20){
     const x = Math.random()*canvas.width;
     const y = Math.random()*canvas.height;
     const radius = 20 + Math.random()*20;
