@@ -7,7 +7,7 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: #d8c9a6; /* parchment-like color */
+    background: #d8c9a6; /* parchment-like */
   }
   canvas { display: block; }
 </style>
@@ -15,6 +15,20 @@
 <body>
 <canvas id="canvas"></canvas>
 <script>
+/* === CONFIGURATION === */
+const CONFIG = {
+  NUM_PARTICLES: 2000,       // background dust
+  WORD_PARTICLE_COUNT: 500,  // how many dust join the word
+  FORM_STEPS: 400,           // frames to form word (higher = slower formation)
+  FORMATION_SPEED: 0.01, // smaller = slower drift into word
+  HOLD_STEPS: 240,           // frames to hold word
+  DISPERSAL_STEPS: 440,      // frames before next word starts
+  FREE_TIME: 300,            // idle dust frames between words
+  WORDS: ["MAGIC", "LIVING", "DUST", "ALIVE", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAME"],
+  FONT: "bold 120px serif"
+};
+/* ====================== */
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
@@ -26,14 +40,14 @@ class Particle {
     this.y = y;
     this.vx = (Math.random() - 0.5) * 0.5;
     this.vy = (Math.random() - 0.5) * 0.5;
-    this.tx = null; // target x
-    this.ty = null; // target y
+    this.tx = null;
+    this.ty = null;
     this.inWord = false;
   }
   update() {
     if (this.inWord && this.tx !== null && this.ty !== null) {
-      this.x += (this.tx - this.x) * 0.1;
-      this.y += (this.ty - this.y) * 0.1;
+      this.x += (this.tx - this.x) * CONFIG.FORMATION_SPEED;
+      this.y += (this.ty - this.y) * CONFIG.FORMATION_SPEED;
     } else {
       this.x += this.vx;
       this.y += this.vy;
@@ -50,16 +64,13 @@ class Particle {
 }
 
 const particles = [];
-const NUM_PARTICLES = 2000;
-for (let i = 0; i < NUM_PARTICLES; i++) {
+for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
   particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
 }
 
 let wordPhase = 0; // 0=free,1=form,2=hold,3=disperse
 let wordTimer = 0;
 let wordTargets = [];
-const words = ["MAGIC", "LIVING", "DUST", "ALIVE", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAME"];
-
 let currentWord = 0;
 
 function createWordTargets(text) {
@@ -70,7 +81,7 @@ function createWordTargets(text) {
   octx.fillStyle = "black";
   octx.textAlign = "center";
   octx.textBaseline = "middle";
-  octx.font = "bold 120px serif";
+  octx.font = CONFIG.FONT;
   octx.fillText(text, off.width/2, off.height/2);
 
   const data = octx.getImageData(0, 0, off.width, off.height);
@@ -89,13 +100,11 @@ function createWordTargets(text) {
 function assignWordTargets(text) {
   const targets = createWordTargets(text);
   wordTargets = [];
-  // pick a random subset of targets
-  const sampleSize = Math.min(500, targets.length);
+  const sampleSize = Math.min(CONFIG.WORD_PARTICLE_COUNT, targets.length);
   for (let i = 0; i < sampleSize; i++) {
     const t = targets[Math.floor(Math.random() * targets.length)];
     wordTargets.push(t);
   }
-  // randomly pick particles to assign
   const chosen = [];
   while (chosen.length < sampleSize) {
     const p = particles[Math.floor(Math.random() * particles.length)];
@@ -128,18 +137,18 @@ function animate(time) {
     p.draw();
   }
 
-  // Word lifecycle
+  // Word lifecycle with config params
   wordTimer++;
-  if (wordPhase === 0 && wordTimer > 300) {
-    assignWordTargets(words[currentWord]);
+  if (wordPhase === 0 && wordTimer > CONFIG.FREE_TIME) {
+    assignWordTargets(CONFIG.WORDS[currentWord]);
     wordPhase = 1; wordTimer = 0;
-  } else if (wordPhase === 1 && wordTimer > 150) {
+  } else if (wordPhase === 1 && wordTimer > CONFIG.FORM_STEPS) {
     wordPhase = 2; wordTimer = 0;
-  } else if (wordPhase === 2 && wordTimer > 200) {
+  } else if (wordPhase === 2 && wordTimer > CONFIG.HOLD_STEPS) {
     releaseParticles();
     wordPhase = 3; wordTimer = 0;
-  } else if (wordPhase === 3 && wordTimer > 200) {
-    currentWord = (currentWord + 1) % words.length;
+  } else if (wordPhase === 3 && wordTimer > CONFIG.DISPERSAL_STEPS) {
+    currentWord = (currentWord + 1) % CONFIG.WORDS.length;
     wordPhase = 0; wordTimer = 0;
   }
 
