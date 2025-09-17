@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dusty Words</title>
+<title>Dusty Words with Perlin Drift</title>
 <style>
   body {
     margin: 0;
@@ -17,15 +17,18 @@
 <script>
 /* === CONFIGURATION === */
 const CONFIG = {
-  NUM_PARTICLES: 2000,       // background dust
-  WORD_PARTICLE_COUNT: 500,  // how many dust join the word
-  FORM_STEPS: 400,           // frames to form word (higher = slower formation)
-  FORMATION_SPEED: 0.01, // smaller = slower drift into word
+  NUM_PARTICLES: 2000,       // total dust particles
+  WORD_PARTICLE_COUNT: 500,  // how many join the word
+  FORM_STEPS: 480,           // frames to form word
   HOLD_STEPS: 240,           // frames to hold word
-  DISPERSAL_STEPS: 440,      // frames before next word starts
-  FREE_TIME: 300,            // idle dust frames between words
+  DISPERSAL_STEPS: 240,      // frames for dispersal
+  FREE_TIME: 300,            // idle frames between words
   WORDS: ["MAGIC", "LIVING", "DUST", "ALIVE", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAME"],
-  FONT: "bold 120px serif"
+  FONT: "bold 120px serif",
+  FORMATION_SPEED: 0.008,     // smaller = slower
+  NOISE_SPEED: 0.3,          // speed of perlin drift
+  DUST_DIRECTION: 270,       // degrees: 0=right, 90=down, etc
+  NOISE_SCALE: 0.002         // scaling for smooth noise
 };
 /* ====================== */
 
@@ -44,23 +47,40 @@ class Particle {
     this.ty = null;
     this.inWord = false;
   }
+
   update() {
     if (this.inWord && this.tx !== null && this.ty !== null) {
+      // move toward target
       this.x += (this.tx - this.x) * CONFIG.FORMATION_SPEED;
       this.y += (this.ty - this.y) * CONFIG.FORMATION_SPEED;
     } else {
-      this.x += this.vx;
-      this.y += this.vy;
+      // Brownian motion + perlin drift
+      let rad = CONFIG.DUST_DIRECTION * Math.PI / 180;
+      let dx = Math.cos(rad) * CONFIG.NOISE_SPEED;
+      let dy = Math.sin(rad) * CONFIG.NOISE_SPEED;
+      let n = perlin(this.x * CONFIG.NOISE_SCALE, this.y * CONFIG.NOISE_SCALE);
+      dx += (n - 0.5) * CONFIG.NOISE_SPEED;
+      dy += (n - 0.5) * CONFIG.NOISE_SPEED;
+
+      this.x += this.vx + dx;
+      this.y += this.vy + dy;
+
       if (this.x < 0) this.x = canvas.width;
       if (this.x > canvas.width) this.x = 0;
       if (this.y < 0) this.y = canvas.height;
       if (this.y > canvas.height) this.y = 0;
     }
   }
+
   draw() {
     ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(this.x, this.y, 1.5, 1.5);
   }
+}
+
+// Simple 2D Perlin-like function
+function perlin(x, y){
+  return (Math.sin(x*12.9898 + y*78.233) * 43758.5453 % 1 + 1) % 1;
 }
 
 const particles = [];
@@ -89,9 +109,7 @@ function createWordTargets(text) {
   for (let y = 0; y < off.height; y += 4) {
     for (let x = 0; x < off.width; x += 4) {
       const idx = (y * off.width + x) * 4;
-      if (data.data[idx+3] > 128) {
-        pts.push({x, y});
-      }
+      if (data.data[idx+3] > 128) pts.push({x,y});
     }
   }
   return pts;
@@ -137,7 +155,7 @@ function animate(time) {
     p.draw();
   }
 
-  // Word lifecycle with config params
+  // Word lifecycle
   wordTimer++;
   if (wordPhase === 0 && wordTimer > CONFIG.FREE_TIME) {
     assignWordTargets(CONFIG.WORDS[currentWord]);
