@@ -7,7 +7,7 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: #d8c9a6; /* parchment-like */
+    background: #000; /* parchment-like */
   }
   canvas { display: block; }
 </style>
@@ -34,7 +34,8 @@ const CONFIG = {
     MAX_X: window.innerWidth - 150,
     MIN_Y: 150,
     MAX_Y: window.innerHeight - 150
-  }
+  },
+  NEON_COLORS: ["#00ffff","#ff00ff","#00ff00","#ff0000","#ffff00","#ff8800"]
 };
 /* ====================== */
 
@@ -52,6 +53,7 @@ class Particle {
     this.tx = null;
     this.ty = null;
     this.inWord = false;
+    this.color = CONFIG.NEON_COLORS[Math.floor(Math.random() * CONFIG.NEON_COLORS.length)];
   }
 
   update() {
@@ -78,7 +80,7 @@ class Particle {
   }
 
   draw() {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, 1.5, 1.5);
   }
 }
