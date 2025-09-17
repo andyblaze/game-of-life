@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dusty Words with Perlin Drift</title>
+<title>Dusty Words - Random Placement</title>
 <style>
   body {
     margin: 0;
@@ -17,18 +17,24 @@
 <script>
 /* === CONFIGURATION === */
 const CONFIG = {
-  NUM_PARTICLES: 2000,       // total dust particles
-  WORD_PARTICLE_COUNT: 500,  // how many join the word
-  FORM_STEPS: 480,           // frames to form word
-  HOLD_STEPS: 240,           // frames to hold word
-  DISPERSAL_STEPS: 240,      // frames for dispersal
-  FREE_TIME: 300,            // idle frames between words
+  NUM_PARTICLES: 2000,
+  WORD_PARTICLE_COUNT: 500,
+  FORM_STEPS: 480,
+  HOLD_STEPS: 240,
+  DISPERSAL_STEPS: 240,
+  FREE_TIME: 300,
   WORDS: ["MAGIC", "LIVING", "DUST", "ALIVE", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAME"],
   FONT: "bold 120px serif",
-  FORMATION_SPEED: 0.008,     // smaller = slower
-  NOISE_SPEED: 0.3,          // speed of perlin drift
-  DUST_DIRECTION: 270,       // degrees: 0=right, 90=down, etc
-  NOISE_SCALE: 0.002         // scaling for smooth noise
+  FORMATION_SPEED: 0.01,
+  NOISE_SPEED: 0.3,
+  DUST_DIRECTION: 270,
+  NOISE_SCALE: 0.002,
+  WORD_AREA: {           // configurable placement zone
+    MIN_X: 150,
+    MAX_X: window.innerWidth - 150,
+    MIN_Y: 150,
+    MAX_Y: window.innerHeight - 150
+  }
 };
 /* ====================== */
 
@@ -50,7 +56,6 @@ class Particle {
 
   update() {
     if (this.inWord && this.tx !== null && this.ty !== null) {
-      // move toward target
       this.x += (this.tx - this.x) * CONFIG.FORMATION_SPEED;
       this.y += (this.ty - this.y) * CONFIG.FORMATION_SPEED;
     } else {
@@ -78,7 +83,7 @@ class Particle {
   }
 }
 
-// Simple 2D Perlin-like function
+// Simple pseudo-perlin
 function perlin(x, y){
   return (Math.sin(x*12.9898 + y*78.233) * 43758.5453 % 1 + 1) % 1;
 }
@@ -88,7 +93,7 @@ for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
   particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
 }
 
-let wordPhase = 0; // 0=free,1=form,2=hold,3=disperse
+let wordPhase = 0;
 let wordTimer = 0;
 let wordTargets = [];
 let currentWord = 0;
@@ -117,12 +122,22 @@ function createWordTargets(text) {
 
 function assignWordTargets(text) {
   const targets = createWordTargets(text);
-  wordTargets = [];
   const sampleSize = Math.min(CONFIG.WORD_PARTICLE_COUNT, targets.length);
+
+  // Random center position within WORD_AREA
+  const centerX = CONFIG.WORD_AREA.MIN_X + Math.random() * (CONFIG.WORD_AREA.MAX_X - CONFIG.WORD_AREA.MIN_X);
+  const centerY = CONFIG.WORD_AREA.MIN_Y + Math.random() * (CONFIG.WORD_AREA.MAX_Y - CONFIG.WORD_AREA.MIN_Y);
+
+  wordTargets = [];
   for (let i = 0; i < sampleSize; i++) {
     const t = targets[Math.floor(Math.random() * targets.length)];
-    wordTargets.push(t);
+    wordTargets.push({
+      x: t.x - canvas.width/2 + centerX,
+      y: t.y - canvas.height/2 + centerY
+    });
   }
+
+  // assign particles
   const chosen = [];
   while (chosen.length < sampleSize) {
     const p = particles[Math.floor(Math.random() * particles.length)];
@@ -170,7 +185,7 @@ function animate(time) {
     wordPhase = 0; wordTimer = 0;
   }
 
-  // FPS counter
+  // FPS
   frames++;
   if (time - lastTime >= 1000) {
     console.log("FPS:", frames);
