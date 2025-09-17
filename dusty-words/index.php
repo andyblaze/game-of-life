@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Interactive Dust - Smooth Word Formation</title>
+<title>Interactive Dust - Smooth Dispersal</title>
 <style>
   body { margin:0; overflow:hidden; background:#f5e3c4; }
   canvas { display:block; }
@@ -16,29 +16,32 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const dustCount = 300;
-let particles = [];
+// PARAMETERS
+const dustCount = 800;
+let dustParticles = [];
 let wordParticles = [];
 let showWord = false;
 const words = ["MAGIC", "LIVING", "DUST", "ALIVE"];
-let currentWord = words[Math.floor(Math.random()*words.length)];
+let currentWord = "";
 let wordTimer = 0;
-const wordLife = 600; // 10 seconds to fully form
+const wordLife = 600; // 10 seconds to form
+const lingerTime = 180; // 3 seconds linger
 
+// MAIN PARTICLE CLASS
 class Particle {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.vx = (Math.random()-0.5)*0.2;
-    this.vy = (Math.random()-0.5)*0.2;
+    this.vx = (Math.random()-0.5)*0.5;
+    this.vy = (Math.random()-0.5)*0.5;
     this.radius = Math.random()*1.5+0.5;
     this.alpha = Math.random()*0.5 + 0.3;
   }
   update() {
     this.x += this.vx;
     this.y += this.vy;
-
-    // Wraparound
+    this.vx += (Math.random()-0.5)*0.01;
+    this.vy += (Math.random()-0.5)*0.01;
     if(this.x<0) this.x=canvas.width;
     if(this.x>canvas.width) this.x=0;
     if(this.y<0) this.y=canvas.height;
@@ -52,48 +55,69 @@ class Particle {
   }
 }
 
-// Word particle
-class WordParticle {
+// WORD PARTICLE
+class WordParticle extends Particle {
   constructor(x, y) {
-    this.x = Math.random()*canvas.width;
-    this.y = Math.random()*canvas.height;
+    super(Math.random()*canvas.width, Math.random()*canvas.height);
     this.targetX = x;
     this.targetY = y;
-    this.radius = Math.random()*1.5+0.5;
     this.alpha = 0;
+    this.released = false;
   }
   update(progress){
-    // Move toward target gradually
-    this.x += (this.targetX - this.x) * 0.02 * progress;
-    this.y += (this.targetY - this.y) * 0.02 * progress;
-
-    // Tiny random jitter
-    this.x += (Math.random()-0.5)*0.3;
-    this.y += (Math.random()-0.5)*0.3;
-
-    // Smooth alpha fade in
-    this.alpha = progress;
+    if(progress < 1){
+      // Move toward target gradually
+      this.x += (this.targetX - this.x) * 0.02 * progress;
+      this.y += (this.targetY - this.y) * 0.02 * progress;
+      this.alpha = progress;
+    } else if(progress < 1 + lingerTime/wordLife){
+      // Hold with slight jitter
+      this.x += (Math.random()-0.5)*0.3;
+      this.y += (Math.random()-0.5)*0.3;
+      this.alpha = 1;
+    } else {
+      // Release into swirling dust
+      if(!this.released){
+        const angle = Math.random()*2*Math.PI;
+        const speed = Math.random()*0.3 + 0.1;
+        this.vx = Math.cos(angle)*speed;
+        this.vy = Math.sin(angle)*speed;
+        dustParticles.push(this);
+        this.released = true;
+      }
+      // Move as free dust
+      this.x += this.vx;
+      this.y += this.vy;
+      this.vx += (Math.random()-0.5)*0.01;
+      this.vy += (Math.random()-0.5)*0.01;
+      if(this.x<0) this.x=canvas.width;
+      if(this.x>canvas.width) this.x=0;
+      if(this.y<0) this.y=canvas.height;
+      if(this.y>canvas.height) this.y=0;
+      // Keep visible in dust layer
+      this.alpha = 0.4 + Math.random()*0.1;
+    }
   }
   draw(ctx){
-    ctx.fillStyle = `rgba(80,50,30,${this.alpha})`;
-    ctx.beginPath();
-    ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
-    ctx.fill();
+    if(!this.released || this.alpha>0){
+      ctx.fillStyle = `rgba(80,50,30,${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+      ctx.fill();
+    }
   }
 }
 
-function initParticles(){
+// INIT DUST
+function initDust(){
   for(let i=0;i<dustCount;i++){
-    particles.push(new Particle(Math.random()*canvas.width, Math.random()*canvas.height));
+    dustParticles.push(new Particle(Math.random()*canvas.width, Math.random()*canvas.height));
   }
 }
 
+// CREATE WORD PARTICLES
 function createWordParticles(word){
   wordParticles = [];
-  ctx.font = "bold 120px serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
   const offCanvas = document.createElement("canvas");
   offCanvas.width = canvas.width;
   offCanvas.height = canvas.height;
@@ -113,42 +137,34 @@ function createWordParticles(word){
       }
     }
   }
+  wordTimer = 0;
+  showWord = true;
 }
 
 function animate(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // Update & draw dust
-  for(const p of particles){
-    p.update();
-    p.draw(ctx);
-  }
+  dustParticles.forEach(p => { p.update(); p.draw(ctx); });
 
-  // Occasionally trigger a word
-  if(!showWord && Math.random()<0.002){
-    showWord = true;
-    currentWord = words[Math.floor(Math.random()*words.length)];
-    createWordParticles(currentWord);
-    wordTimer = 0;
+  if(!showWord && Math.random()<0.01){
+    const word = words[Math.floor(Math.random()*words.length)];
+    createWordParticles(word);
   }
 
   if(showWord){
     wordTimer++;
-    const progress = Math.min(wordTimer / wordLife, 1);
-    for(const wp of wordParticles){
-      wp.update(progress);
-      wp.draw(ctx);
-    }
-    if(wordTimer > wordLife + 180){ // linger 3s then disappear
+    const progress = wordTimer / wordLife;
+    wordParticles.forEach(wp => { wp.update(progress); wp.draw(ctx); });
+    if(progress > 1 + lingerTime/wordLife + 0.5){
       showWord=false;
-      wordParticles=[];
+      wordParticles = [];
     }
   }
 
   requestAnimationFrame(animate);
 }
 
-initParticles();
+initDust();
 animate();
 </script>
 </body>
