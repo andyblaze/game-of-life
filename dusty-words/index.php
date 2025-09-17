@@ -162,11 +162,12 @@ function releaseParticles() {
 
 let lastTime = performance.now();
 let frames = 0;
-
+const bg = new Image();
+bg.src = "bg.jpg";
 function animate(time) {
   requestAnimationFrame(animate);
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
+  //ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
   for (const p of particles) {
     p.update();
     p.draw();
