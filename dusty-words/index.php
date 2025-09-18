@@ -22,7 +22,10 @@ canvas.height = window.innerHeight;
 /* === CONFIGURATION === */
 const CONFIG = {
   SPAWN_X: canvas.width / 2,   // center of fountain
-  SPAWN_WIDTH: 200,             // how wide the base is
+  SPAWN_WIDTH: 400,             // how wide the base is
+  SPAWN_HEIGHT: 100, // how tall the vertical band is at the bottom
+  CONE_ANGLE: 90, // spread around vertical
+  INIT_SPEED: 1.5,
   NUM_PARTICLES: 1500,
   WORD_PARTICLE_COUNT: 500,
   FORM_STEPS: 480,
@@ -109,10 +112,16 @@ const sf = CONFIG.SPEED_FACTOR.MIN + (CONFIG.SPEED_FACTOR.MAX - CONFIG.SPEED_FAC
 this.x += (bx + dx);// * sf;
 this.y += (by + dy) * sf;
 
-      if (this.x < 0) this.x = canvas.width;
-      if (this.x > canvas.width) this.x = 0;
-      if (this.y < 0) this.y = canvas.height;
-      if (this.y > canvas.height) this.y = 0;
+// Horizontal wrap stays the same
+if (this.x < 0) this.x = canvas.width;
+if (this.x > canvas.width) this.x = 0;
+
+// Vertical wrap is customized for fire motes
+if (this.y < 0) {
+  // respawn at the fire base area
+  this.x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
+  this.y = canvas.height - Math.random() * CONFIG.SPAWN_HEIGHT;
+}
     }
   }
 
@@ -129,7 +138,19 @@ function perlin(x, y){
 
 const particles = [];
 for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
-  particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+// spawn position
+let x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
+let y = canvas.height - Math.random() * CONFIG.SPAWN_HEIGHT;
+
+// initial velocity
+let angleDeg = (Math.random() - 0.5) * CONFIG.CONE_ANGLE; // spread around vertical
+let speed = CONFIG.INIT_SPEED || 1.5; // adjust as needed
+let rad = angleDeg * Math.PI / 180;
+
+let vx = Math.sin(rad) * speed; // horizontal
+let vy = -Math.cos(rad) * speed; // vertical upward
+
+particles.push(new Particle(x, y, vx, vy));
 }
 
 let wordPhase = 0;
