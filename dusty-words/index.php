@@ -17,15 +17,25 @@
 <script>
 /* === CONFIGURATION === */
 const CONFIG = {
-  NUM_PARTICLES: 2000,
+  NUM_PARTICLES: 1500,
   WORD_PARTICLE_COUNT: 500,
   FORM_STEPS: 480,
   HOLD_STEPS: 240,
-  DISPERSAL_STEPS: 240,
-  FREE_TIME: 300,
-  WORDS: ["MAGIC", "LIVING", "DUST", "ALIVE", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAME"],
+  DISPERSAL_STEPS: 300,
+  FREE_TIME: 600,
+  WORDS: [
+  "ᛗᚨᚷᛁᚲ",  // MAGIC
+  "ᛚᛁᚹᛁᚾᚷ",  // LIVING
+  "ᛞᚢᛊᛏ",    // DUST
+  "ᚨᛚᛁᚹᛖ",   // ALIVE
+  "ᚠᛁᚱᛖ",    // FIRE
+  "ᚨᛊᚺ",     // ASH
+  "ᛊᛗᚨᚲᛖ",   // SMOKE
+  "ᛖᛗᛒᛖᚱᛊ", // EMBERS
+  "ᚠᛚᚨᛗᛖ"    // FLAME
+],
   FONT: "bold 120px serif",
-  FORMATION_SPEED: 0.01,
+  FORMATION_SPEED: 0.008,
   NOISE_SPEED: 0.3,
   DUST_DIRECTION: 270,
   NOISE_SCALE: 0.002,
@@ -35,7 +45,16 @@ const CONFIG = {
     MIN_Y: 150,
     MAX_Y: window.innerHeight - 150
   },
-  NEON_COLORS: ["#00ffff","#ff00ff","#00ff00","#ff0000","#ffff00","#ff8800"]
+  NEON_COLORS: [
+  "#ff4500", // orange-red (flame core)
+  "#ff6347", // tomato orange
+  "#ffa500", // classic orange
+  "#ffd700", // golden yellow
+  "#ffff99", // pale yellow spark
+  "#ff0000", // deep red ember
+  "#800000", // smoldering dark red
+  "#444444"  // occasional ash/ember fade
+]
 };
 /* ====================== */
 
