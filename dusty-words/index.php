@@ -14,9 +14,15 @@
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<script>
+<script type="text/javascript">
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 /* === CONFIGURATION === */
 const CONFIG = {
+  SPAWN_X: canvas.width / 2,   // center of fountain
+  SPAWN_WIDTH: 200,             // how wide the base is
   NUM_PARTICLES: 1500,
   WORD_PARTICLE_COUNT: 500,
   FORM_STEPS: 480,
@@ -38,6 +44,10 @@ const CONFIG = {
   FORMATION_SPEED: 0.008,
   NOISE_SPEED: 0.3,
   DUST_DIRECTION: 270,
+  SPEED_FACTOR: {
+      MIN: 0.7,
+      MAX: 2.7
+  },
   NOISE_SCALE: 0.002,
   WORD_AREA: {           // configurable placement zone
     MIN_X: 150,
@@ -45,23 +55,20 @@ const CONFIG = {
     MIN_Y: 150,
     MAX_Y: window.innerHeight - 150
   },
-  NEON_COLORS: [
-  "#ff4500", // orange-red (flame core)
-  "#ff6347", // tomato orange
-  "#ffa500", // classic orange
-  "#ffd700", // golden yellow
-  "#ffff99", // pale yellow spark
-  "#ff0000", // deep red ember
-  "#800000", // smoldering dark red
-  "#444444"  // occasional ash/ember fade
-]
+  PARTICLE_COLORS: [
+      "hsla(16, 100%, 54%, 1)",   // #ff4500 orange-red (flame core)
+      "hsla(9, 100%, 64%, 1)",    // #ff6347 tomato orange
+      "hsla(39, 100%, 50%, 1)",   // #ffa500 classic orange
+      "hsla(51, 100%, 50%, 1)",   // #ffd700 golden yellow
+      "hsla(60, 100%, 80%, 1)",   // #ffff99 pale yellow spark
+      "hsla(0, 100%, 50%, 1)",    // #ff0000 deep red ember
+      "hsla(0, 100%, 25%, 1)",    // #800000 smoldering dark red
+      "hsla(0, 0%, 27%, 1)"       // #444444 occasional ash/ember fade
+    ]
 };
 /* ====================== */
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+
 
 class Particle {
   constructor(x, y) {
@@ -72,7 +79,7 @@ class Particle {
     this.tx = null;
     this.ty = null;
     this.inWord = false;
-    this.color = CONFIG.NEON_COLORS[Math.floor(Math.random() * CONFIG.NEON_COLORS.length)];
+    this.color = CONFIG.PARTICLE_COLORS[Math.floor(Math.random() * CONFIG.PARTICLE_COLORS.length)];
   }
 
   update() {
@@ -88,8 +95,19 @@ class Particle {
       dx += (n - 0.5) * CONFIG.NOISE_SPEED;
       dy += (n - 0.5) * CONFIG.NOISE_SPEED;
 
-      this.x += this.vx + dx;
-      this.y += this.vy + dy;
+// existing Brownian
+let bx = this.vx;
+let by = this.vy;
+
+// CORRECT mapping: normalizedBottom = 0 at top, 1 at bottom
+let normalizedBottom = Math.max(0, Math.min(1, this.y / canvas.height));
+
+// linear interpolate: bottom -> SPEED_FACTOR_MAX, top -> SPEED_FACTOR_MIN
+const sf = CONFIG.SPEED_FACTOR.MIN + (CONFIG.SPEED_FACTOR.MAX - CONFIG.SPEED_FACTOR.MIN) * normalizedBottom;
+
+// apply combined motion scaled by sf
+this.x += (bx + dx);// * sf;
+this.y += (by + dy) * sf;
 
       if (this.x < 0) this.x = canvas.width;
       if (this.x > canvas.width) this.x = 0;
