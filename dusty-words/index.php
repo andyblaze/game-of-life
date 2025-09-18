@@ -67,11 +67,115 @@ const CONFIG = {
       "hsla(0, 100%, 50%, 1)",    // #ff0000 deep red ember
       "hsla(0, 100%, 25%, 1)",    // #800000 smoldering dark red
       "hsla(0, 0%, 27%, 1)"       // #444444 occasional ash/ember fade
-    ]
+    ],
+    PARTICLE_SHAPES: ["circle", "rect", "triangle", "line"],
+    EMBER: {
+      SPAWN_X: canvas.width / 2,        // center of fire
+      SPAWN_Y: canvas.height - 50,      // approximate fire top
+      SPAWN_WIDTH: 60,                   // horizontal variation
+      SPAWN_HEIGHT: 20,                  // vertical variation
+      SPAWN_CHANCE: 0.02,
+      MIN_SPEED: 2,                      // initial velocity min
+      MAX_SPEED: 5,                      // initial velocity max
+      MIN_ANGLE: -60,                    // degrees from vertical
+      MAX_ANGLE: 60,                     // degrees from vertical
+      LIFETIME: 1200,                    // milliseconds
+      COLORS: [
+        [16, "100%", "54%", 1],          // bright yellow
+        [30, "100%", "50%", 1],          // orange
+        [0, "100%", "40%", 1]            // red ember
+      ],
+      TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
+      GRAVITY: 0.03,                     // optional downward pull
+      WIND: 0.02                          // optional horizontal drift
+    }
 };
 /* ====================== */
 
+class Ember {
+  constructor(config) {
+    this.config = config;
 
+    // Spawn position (rectangle)
+    this.x = config.SPAWN_X + (Math.random() - 0.5) * config.SPAWN_WIDTH;
+    this.y = config.SPAWN_Y - Math.random() * config.SPAWN_HEIGHT;
+
+    // Random velocity in a cone
+    const angleDeg = config.MIN_ANGLE + Math.random() * (config.MAX_ANGLE - config.MIN_ANGLE);
+    const rad = angleDeg * Math.PI / 180;
+    const speed = config.MIN_SPEED + Math.random() * (config.MAX_SPEED - config.MIN_SPEED);
+    this.vx = Math.sin(rad) * speed;
+    this.vy = -Math.cos(rad) * speed; // negative because canvas y=0 is top
+
+    // Color pick
+    const colorIndex = Math.floor(Math.random() * config.COLORS.length);
+    const [h, s, l, a] = config.COLORS[colorIndex];
+    this.h = h; this.s = s; this.l = l; this.a = a;
+
+    // Trail
+    this.trail = [];
+    this.trailLength = config.TRAIL_LENGTH;
+
+    // Lifetime
+    this.life = 0;
+    this.maxLife = config.LIFETIME1200; // ms
+  }
+
+  update(dt) {
+    // dt = time delta in ms
+    this.life += dt;
+  if (this.life >= this.maxLife) {
+    // instead of immediate respawn, only respawn based on chance
+    if (Math.random() < this.config.SPAWN_CHANCE) {
+      this.respawn();
+    }
+    return; // don't move if not respawned yet
+  }
+
+    // Add previous position to trail
+    this.trail.push({x: this.x, y: this.y});
+    if (this.trail.length > this.trailLength) this.trail.shift();
+
+    // Apply motion
+    this.vy += this.config.GRAVITY;
+    this.vx += (Math.random() - 0.5) * (this.config.WIND);
+    this.x += this.vx;
+    this.y += this.vy;
+  }
+
+  respawn() {
+    // reset position, velocity, life, trail
+    this.x = this.config.SPAWN_X + (Math.random() - 0.5) * this.config.SPAWN_WIDTH;
+    this.y = this.config.SPAWN_Y - Math.random() * this.config.SPAWN_HEIGHT;
+
+    const angleDeg = this.config.MIN_ANGLE + Math.random() * (this.config.MAX_ANGLE - this.config.MIN_ANGLE);
+    const rad = angleDeg * Math.PI / 180;
+    const speed = this.config.MIN_SPEED + Math.random() * (this.config.MAX_SPEED - this.config.MIN_SPEED);
+    this.vx = Math.sin(rad) * speed;
+    this.vy = -Math.cos(rad) * speed;
+
+    this.trail = [];
+    this.life = 0;
+  }
+
+  draw(ctx) {
+    // Draw trail
+    for (let i = 0; i < this.trail.length; i++) {
+      const p = this.trail[i];
+      const alpha = (i + 1) / this.trail.length * this.a;
+      ctx.fillStyle = `hsla(${this.h}, ${this.s}, ${this.l}, ${alpha})`;
+      ctx.fillRect(p.x, p.y, 2, 2);
+    }
+
+    // Draw current position
+    ctx.fillStyle = `hsla(${this.h}, ${this.s}, ${this.l}, ${this.a})`;
+    ctx.fillRect(this.x, this.y, 2, 2);
+  }
+}
+let embers = [];
+for (let i = 0; i < 30; i++) {
+  embers.push(new Ember(CONFIG.EMBER));
+}
 
 class Particle {
   constructor(x, y) {
@@ -83,6 +187,8 @@ class Particle {
     this.ty = null;
     this.inWord = false;
     this.color = CONFIG.PARTICLE_COLORS[Math.floor(Math.random() * CONFIG.PARTICLE_COLORS.length)];
+    this.shape = CONFIG.PARTICLE_SHAPES[Math.floor(Math.random() * CONFIG.PARTICLE_SHAPES.length)];
+    this.size = 1 + Math.random() * 2;
   }
 
   update() {
@@ -120,14 +226,37 @@ if (this.x > canvas.width) this.x = 0;
 if (this.y < 0) {
   // respawn at the fire base area
   this.x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-  this.y = canvas.height - Math.random() * CONFIG.SPAWN_HEIGHT;
+  this.y = 800 - Math.random() * CONFIG.SPAWN_HEIGHT;
 }
     }
   }
 
   draw() {
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, 1.5, 1.5);
+    switch(this.shape) {
+      case 'circle':
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size/2, 0, 2*Math.PI);
+        ctx.fill();
+        break;
+
+      case 'rect':
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+        break;
+
+      case 'triangle':
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y - this.size/2);
+        ctx.lineTo(this.x - this.size/2, this.y + this.size/2);
+        ctx.lineTo(this.x + this.size/2, this.y + this.size/2);
+        ctx.closePath();
+        ctx.fill();
+        break;
+
+      case 'line':
+        ctx.fillRect(this.x, this.y, 1, this.size); // very short vertical line
+        break;
+      }
   }
 }
 
@@ -140,7 +269,7 @@ const particles = [];
 for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
 // spawn position
 let x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-let y = canvas.height - Math.random() * CONFIG.SPAWN_HEIGHT;
+let y = (800) - Math.random() * CONFIG.SPAWN_HEIGHT;
 
 // initial velocity
 let angleDeg = (Math.random() - 0.5) * CONFIG.CONE_ANGLE; // spread around vertical
@@ -222,14 +351,21 @@ let lastTime = performance.now();
 let frames = 0;
 const bg = new Image();
 bg.src = "bg.jpg";
-function animate(time) {
+//let lastTime = performance.now();
+function animate(timestamp) { if ( isNaN(timestamp) ) timestamp = 0;
   requestAnimationFrame(animate);
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  //ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+  //ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
   for (const p of particles) {
     p.update();
     p.draw();
   }
+  const dt = timestamp - lastTime; // milliseconds since last frame
+  lastTime = timestamp;
+    embers.forEach(e => {
+    e.update(dt);
+    e.draw(ctx);
+  });
 
   // Word lifecycle
   wordTimer++;
@@ -248,10 +384,10 @@ function animate(time) {
 
   // FPS
   frames++;
-  if (time - lastTime >= 1000) {
+  if (timestamp - lastTime >= 1000) {
     console.log("FPS:", frames);
     frames = 0;
-    lastTime = time;
+    lastTime = timestamp;
   }
 }
 animate();
