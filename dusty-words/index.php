@@ -70,6 +70,7 @@ const CONFIG = {
     ],
     PARTICLE_SHAPES: ["circle", "rect", "triangle", "line"],
     EMBER: {
+      POOL_SIZE: 30,
       SPAWN_X: canvas.width / 2,        // center of fire
       SPAWN_Y: canvas.height - 50,      // approximate fire top
       SPAWN_WIDTH: 60,                   // horizontal variation
@@ -79,14 +80,14 @@ const CONFIG = {
       MAX_SPEED: 5,                      // initial velocity max
       MIN_ANGLE: -60,                    // degrees from vertical
       MAX_ANGLE: 60,                     // degrees from vertical
-      LIFETIME: 1200,                    // milliseconds
+      LIFETIME: 4000,                    // milliseconds
       COLORS: [
         [16, "100%", "54%", 1],          // bright yellow
         [30, "100%", "50%", 1],          // orange
         [0, "100%", "40%", 1]            // red ember
       ],
       TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
-      GRAVITY: 0.03,                     // optional downward pull
+      GRAVITY: 0.02,                     // optional downward pull
       WIND: 0.02                          // optional horizontal drift
     }
 };
@@ -109,8 +110,7 @@ class Ember {
 
     // Color pick
     const colorIndex = Math.floor(Math.random() * config.COLORS.length);
-    const [h, s, l, a] = config.COLORS[colorIndex];
-    this.h = h; this.s = s; this.l = l; this.a = a;
+    this.color = [...config.COLORS[colorIndex]];
 
     // Trail
     this.trail = [];
@@ -118,7 +118,8 @@ class Ember {
 
     // Lifetime
     this.life = 0;
-    this.maxLife = config.LIFETIME1200; // ms
+    this.alive = true;
+    this.maxLife = config.LIFETIME; // ms
   }
 
   update(dt) {
@@ -126,10 +127,10 @@ class Ember {
     this.life += dt;
   if (this.life >= this.maxLife) {
     // instead of immediate respawn, only respawn based on chance
-    if (Math.random() < this.config.SPAWN_CHANCE) {
+    //if (Math.random() < this.config.SPAWN_CHANCE) {
       this.respawn();
-    }
-    return; // don't move if not respawned yet
+    //}
+    //return; // don't move if not respawned yet
   }
 
     // Add previous position to trail
@@ -162,20 +163,33 @@ class Ember {
     // Draw trail
     for (let i = 0; i < this.trail.length; i++) {
       const p = this.trail[i];
-      const alpha = (i + 1) / this.trail.length * this.a;
-      ctx.fillStyle = `hsla(${this.h}, ${this.s}, ${this.l}, ${alpha})`;
+      const alpha = (i + 1) / this.trail.length * this.color[3];
+      ctx.fillStyle = "hsla(" + this.color.join(",") + ")";//${this.h}, ${this.s}, ${this.l}, ${alpha})`;
       ctx.fillRect(p.x, p.y, 2, 2);
     }
 
     // Draw current position
-    ctx.fillStyle = `hsla(${this.h}, ${this.s}, ${this.l}, ${this.a})`;
+    ctx.fillStyle = "hsla(" + this.color.join(",") + ")";//`hsla(${this.h}, ${this.s}, ${this.l}, ${this.a})`;
     ctx.fillRect(this.x, this.y, 2, 2);
   }
 }
-let embers = [];
-for (let i = 0; i < 30; i++) {
-  embers.push(new Ember(CONFIG.EMBER));
+class EmberManager {
+    constructor(config) {
+        this.embers = [];
+        for ( let i = 0; i < config.POOL_SIZE; i++ ) {
+            this.embers.push(new Ember(config));
+        }
+    }
+    spawn() {
+        const e = Math.floor(Math.random() * this.embers.length);
+        if ( Math.random() < 0.1 ) {
+            e.spawn();
+            e.update(dt);
+            e.draw(ctx)
+        }
+    }
 }
+const emberManager = new EmberManager(30, CONFIG.EMBER);
 
 class Particle {
   constructor(x, y) {
@@ -362,10 +376,8 @@ function animate(timestamp) { if ( isNaN(timestamp) ) timestamp = 0;
   }
   const dt = timestamp - lastTime; // milliseconds since last frame
   lastTime = timestamp;
-    embers.forEach(e => {
-    e.update(dt);
-    e.draw(ctx);
-  });
+  //emberManager.spawn(CONFIG.EMBER);
+
 
   // Word lifecycle
   wordTimer++;
