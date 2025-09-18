@@ -13,9 +13,9 @@
 </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
+<canvas id="onscreen"></canvas>
 <script type="text/javascript">
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("onscreen");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -32,17 +32,7 @@ const CONFIG = {
     HOLD_STEPS: 240,
     DISPERSAL_STEPS: 300,
     FREE_TIME: 600,
-    WORDS: [
-        "ᛗᚨᚷᛁᚲ",  // MAGIC
-        "ᛚᛁᚹᛁᚾᚷ",  // LIVING
-        "ᛞᚢᛊᛏ",    // DUST
-        "ᚨᛚᛁᚹᛖ",   // ALIVE
-        "ᚠᛁᚱᛖ",    // FIRE
-        "ᚨᛊᚺ",     // ASH
-        "ᛊᛗᚨᚲᛖ",   // SMOKE
-        "ᛖᛗᛒᛖᚱᛊ", // EMBERS
-        "ᚠᛚᚨᛗᛖ"    // FLAME
-    ],
+    WORDS: ["MAGIC", "LIVING", "DUST", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAMES", "SPARKS", "HEAT", "BURN", "FUEL"],
     FONT: "bold 120px serif",
     FORMATION_SPEED: 0.008,
     NOISE_SPEED: 0.3,
@@ -302,6 +292,82 @@ let wordTimer = 0;
 let wordTargets = [];
 let currentWord = 0;
 
+class WordManager {
+    constructor() {
+        this.wordPhase = 0;
+        this.wordTimer = 0;
+        this.wordTargets = [];
+        this.currentWord = 0;
+    }
+    update() {
+        // Word lifecycle
+        this.wordTimer++;
+        if (this.wordPhase === 0 && this.wordTimer > CONFIG.FREE_TIME) {
+            this.assignWordTargets(CONFIG.WORDS[currentWord]);
+            this.wordPhase = 1; this.wordTimer = 0;
+        } else if (this.wordPhase === 1 && this.wordTimer > CONFIG.FORM_STEPS) {
+            this.wordPhase = 2; this.wordTimer = 0;
+        } else if (this.wordPhase === 2 && this.wordTimer > CONFIG.HOLD_STEPS) {
+            releaseParticles();
+            this.wordPhase = 3; this.wordTimer = 0;
+        } else if (this.wordPhase === 3 && this.wordTimer > CONFIG.DISPERSAL_STEPS) {
+            this.currentWord = (this.currentWord + 1) % CONFIG.WORDS.length;
+            this.wordPhase = 0; this.wordTimer = 0;
+        }    
+    }
+    createWordTargets(text) {
+        const off = document.createElement("canvas");
+        const octx = off.getContext("2d");
+        off.width = canvas.width;
+        off.height = canvas.height;
+        octx.fillStyle = "black";
+        octx.textAlign = "center";
+        octx.textBaseline = "middle";
+        octx.font = CONFIG.FONT;
+        octx.fillText(text, off.width/2, off.height/2);
+
+        const data = octx.getImageData(0, 0, off.width, off.height);
+        const pts = [];
+        for (let y = 0; y < off.height; y += 4) {
+            for (let x = 0; x < off.width; x += 4) {
+                const idx = (y * off.width + x) * 4;
+                if (data.data[idx+3] > 128) pts.push({x,y});
+            }
+        }
+        return pts;
+    }
+    assignWordTargets(text) {
+        const targets = this.createWordTargets(text);
+        const sampleSize = Math.min(CONFIG.WORD_PARTICLE_COUNT, targets.length);
+
+        // Random center position within WORD_AREA
+        const centerX = CONFIG.WORD_AREA.MIN_X + Math.random() * (CONFIG.WORD_AREA.MAX_X - CONFIG.WORD_AREA.MIN_X);
+        const centerY = CONFIG.WORD_AREA.MIN_Y + Math.random() * (CONFIG.WORD_AREA.MAX_Y - CONFIG.WORD_AREA.MIN_Y);
+
+        wordTargets = [];
+        for (let i = 0; i < sampleSize; i++) {
+            const t = targets[Math.floor(Math.random() * targets.length)];
+            wordTargets.push({
+                x: t.x - canvas.width/2 + centerX,
+                y: t.y - canvas.height/2 + centerY
+            });
+        }
+
+        // assign particles
+        const chosen = [];
+        while (chosen.length < sampleSize) {
+            const p = particles[Math.floor(Math.random() * particles.length)];
+            if ( ! p.inWord ) {
+                p.inWord = true;
+                p.tx = wordTargets[chosen.length].x;
+                p.ty = wordTargets[chosen.length].y;
+                chosen.push(p);
+            }
+        }    
+    }
+}
+const wordManager = new WordManager();
+
 function createWordTargets(text) {
     const off = document.createElement("canvas");
     const octx = off.getContext("2d");
@@ -381,19 +447,7 @@ function animate(timestamp) {
 
 
     // Word lifecycle
-    wordTimer++;
-    if (wordPhase === 0 && wordTimer > CONFIG.FREE_TIME) {
-        assignWordTargets(CONFIG.WORDS[currentWord]);
-        wordPhase = 1; wordTimer = 0;
-    } else if (wordPhase === 1 && wordTimer > CONFIG.FORM_STEPS) {
-        wordPhase = 2; wordTimer = 0;
-    } else if (wordPhase === 2 && wordTimer > CONFIG.HOLD_STEPS) {
-        releaseParticles();
-        wordPhase = 3; wordTimer = 0;
-    } else if (wordPhase === 3 && wordTimer > CONFIG.DISPERSAL_STEPS) {
-        currentWord = (currentWord + 1) % CONFIG.WORDS.length;
-        wordPhase = 0; wordTimer = 0;
-    }
+    wordManager.update();
 
     // FPS
     frames++;
