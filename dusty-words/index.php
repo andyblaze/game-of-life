@@ -68,8 +68,8 @@ const CONFIG = {
         SPAWN_CHANCE: 0.02,
         MIN_SPEED: 2,                      // initial velocity min
         MAX_SPEED: 5,                      // initial velocity max
-        MIN_ANGLE: -60,                    // degrees from vertical
-        MAX_ANGLE: 60,                     // degrees from vertical
+        MIN_ANGLE: -30,                    // degrees from vertical
+        MAX_ANGLE: 30,                     // degrees from vertical
         LIFETIME: 4000,                    // milliseconds
             COLORS: [
             {h:16, s:"100%", l:"54%", a:1},          // bright yellow
@@ -114,9 +114,11 @@ class Ember {
     update(dt) {
         // dt = time delta in ms
         this.life += dt;
-        if (this.life >= this.maxLife) {
+        this.color.a = Math.max(0, 1 - this.life / this.maxLife);
+        if (this.life >= this.maxLife && this.color.a <= 0) {
             // instead of immediate respawn, only respawn based on chance
             //if (Math.random() < this.config.SPAWN_CHANCE) {
+            this.alive = false;
             this.respawn();
             //}
             //return; // don't move if not respawned yet
@@ -145,18 +147,20 @@ class Ember {
 
         this.trail = [];
         this.life = 0;
+        this.alive = true;
     }
     draw(ctx) {
         // Draw trail
         for (let i = 0; i < this.trail.length; i++) {
             const p = this.trail[i];
-            const alpha = (i + 1) / this.trail.length * this.color.a;
-            ctx.fillStyle = `${this.color.h}, ${this.color.s}, ${this.color.l}, ${alpha})`;
+            //const alpha = (i + 1) / this.trail.length * this.color.a;
+            
+            ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
             ctx.fillRect(p.x, p.y, 2, 2);
         }
         // Draw current position
-        ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
-        ctx.fillRect(this.x, this.y, 2, 2);
+        //ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
+        //ctx.fillRect(this.x, this.y, 2, 2);
     }
 }
 class EmberManager {
@@ -170,7 +174,7 @@ class EmberManager {
     }
     spawn() {
         //
-        if ( Math.random() < 0.9 ) {
+        if ( Math.random() < 0.1 ) {
             this.active.push(this.embers[Math.floor(Math.random() * this.embers.length)]);
             //return e;
             //e.update(dt);
@@ -183,6 +187,10 @@ class EmberManager {
         }
         else {
             for ( const e of this.active ) {
+                if ( e.alive === false ) {
+                    this.active = [];
+                    return;
+                }
                 e.update(dt);
                 e.draw(ctx);
             }
