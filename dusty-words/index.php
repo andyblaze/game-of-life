@@ -132,7 +132,6 @@ class Ember {
         this.x += this.vx;
         this.y += this.vy;
     }
-
     respawn() {
         // reset position, velocity, life, trail
         this.x = this.config.SPAWN_X + (Math.random() - 0.5) * this.config.SPAWN_WIDTH;
@@ -163,6 +162,7 @@ class Ember {
 class EmberManager {
     constructor(config) {
         this.embers = [];
+        this.animating = false;
         for ( let i = 0; i < config.POOL_SIZE; i++ ) {
             this.embers.push(new Ember(config));
         }
@@ -170,13 +170,21 @@ class EmberManager {
     spawn() {
         const e = Math.floor(Math.random() * this.embers.length);
         if ( Math.random() < 0.1 ) {
-            e.spawn();
-            e.update(dt);
-            e.draw(ctx)
+            e.respawn();
+            //e.update(dt);
+            //e.draw(ctx);
         }
     }
+    update(dt) {
+        //if ( this.animating === false ) {
+            //this.spawn();
+            for ( const e of this.embers ) {
+                e.update(dt);
+                e.draw(ctx);
+            }
+        //}
+    }
 }
-const emberManager = new EmberManager(CONFIG.EMBER);
 
 class Particle {
     constructor(x, y) {
@@ -265,26 +273,43 @@ class Particle {
     }
 }
 
+class ParticleManager {
+    constructor() {
+        this.particles = [];
+        for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
+            // spawn position
+            const x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
+            const y = (800) - Math.random() * CONFIG.SPAWN_HEIGHT;
+
+            // initial velocity
+            const angleDeg = (Math.random() - 0.5) * CONFIG.CONE_ANGLE; // spread around vertical
+            const speed = CONFIG.INIT_SPEED || 1.5; // adjust as needed
+            const rad = angleDeg * Math.PI / 180;
+
+            const vx = Math.sin(rad) * speed; // horizontal
+            const vy = -Math.cos(rad) * speed; // vertical upward
+
+            this.particles.push(new Particle(x, y, vx, vy));
+        }
+    }
+    update() {
+        for (const p of this.particles) {
+            p.update();
+            p.draw();
+        }        
+    }
+    releaseParticles() {
+        for (const p of this.particles) {
+            p.inWord = false;
+            p.tx = null;
+            p.ty = null;
+        }
+    }
+}
+
 // Simple pseudo-perlin
 function perlin(x, y){
     return (Math.sin(x*12.9898 + y*78.233) * 43758.5453 % 1 + 1) % 1;
-}
-
-const particles = [];
-for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
-    // spawn position
-    const x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-    const y = (800) - Math.random() * CONFIG.SPAWN_HEIGHT;
-
-    // initial velocity
-    const angleDeg = (Math.random() - 0.5) * CONFIG.CONE_ANGLE; // spread around vertical
-    const speed = CONFIG.INIT_SPEED || 1.5; // adjust as needed
-    const rad = angleDeg * Math.PI / 180;
-
-    const vx = Math.sin(rad) * speed; // horizontal
-    const vy = -Math.cos(rad) * speed; // vertical upward
-
-    particles.push(new Particle(x, y, vx, vy));
 }
 
 class WordManager {
@@ -294,16 +319,16 @@ class WordManager {
         this.wordTargets = [];
         this.currentWord = 0;
     }
-    update() {
+    update(particleManager) {
         // Word lifecycle
         this.wordTimer++;
         if (this.wordPhase === 0 && this.wordTimer > CONFIG.FREE_TIME) {
-            this.assignWordTargets(CONFIG.WORDS[this.currentWord]);
+            this.assignWordTargets(CONFIG.WORDS[this.currentWord], particleManager);
             this.wordPhase = 1; this.wordTimer = 0;
         } else if (this.wordPhase === 1 && this.wordTimer > CONFIG.FORM_STEPS) {
             this.wordPhase = 2; this.wordTimer = 0;
         } else if (this.wordPhase === 2 && this.wordTimer > CONFIG.HOLD_STEPS) {
-            releaseParticles();
+            particleManager.releaseParticles();
             this.wordPhase = 3; this.wordTimer = 0;
         } else if (this.wordPhase === 3 && this.wordTimer > CONFIG.DISPERSAL_STEPS) {
             this.currentWord = (this.currentWord + 1) % CONFIG.WORDS.length;
@@ -331,7 +356,7 @@ class WordManager {
         }
         return pts;
     }
-    assignWordTargets(text) {
+    assignWordTargets(text, particleManager) {
         const targets = this.createWordTargets(text);
         const sampleSize = Math.min(CONFIG.WORD_PARTICLE_COUNT, targets.length);
 
@@ -351,7 +376,7 @@ class WordManager {
         // assign particles
         const chosen = [];
         while (chosen.length < sampleSize) {
-            const p = particles[Math.floor(Math.random() * particles.length)];
+            const p = particleManager.particles[Math.floor(Math.random() * particleManager.particles.length)];
             if ( ! p.inWord ) {
                 p.inWord = true;
                 p.tx = wordTargets[chosen.length].x;
@@ -362,38 +387,23 @@ class WordManager {
     }
 }
 const wordManager = new WordManager();
-
-
-
-function releaseParticles() {
-    for (const p of particles) {
-        p.inWord = false;
-        p.tx = null;
-        p.ty = null;
-    }
-}
+const particleManager = new ParticleManager();
+const emberManager = new EmberManager(CONFIG.EMBER);
 
 let lastTime = performance.now();
 let frames = 0;
 const bg = new Image();
 bg.src = "bg.jpg";
-//let lastTime = performance.now();
 function animate(timestamp) { 
-    if ( isNaN(timestamp) ) timestamp = 0;
-    //ctx.clearRect(0,0,canvas.width,canvas.height);
+    if ( isNaN(timestamp) ) 
+        timestamp = 0;
     ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-    for (const p of particles) {
-        p.update();
-        p.draw();
-    }
+    particleManager.update();
+
     const dt = timestamp - lastTime; // milliseconds since last frame
     lastTime = timestamp;
-    //emberManager.spawn(CONFIG.EMBER);
-
-
-    // Word lifecycle
-    wordManager.update();
-
+    emberManager.update(dt);
+    wordManager.update(particleManager);
     // FPS
     frames++;
     if (timestamp - lastTime >= 1000) {
