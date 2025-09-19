@@ -13,6 +13,41 @@
 </style>
 </head>
 <body>
+<div id="loadingScreen" style="
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  font-size: 8em;
+  font-family:Arial,Helvetica,sans-serif,sans;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 2s linear;
+">
+  
+</div>
+<script>
+  let countdown = 3;
+  
+    const loadingDiv = document.getElementById('loadingScreen');
+    loadingDiv.textContent = countdown;
+  const interval = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+      loadingDiv.textContent = countdown;
+    } else {
+      clearInterval(interval);
+      // start fade-out
+      loadingDiv.style.opacity = 0;
+      // remove from DOM after fade
+      setTimeout(() => loadingDiv.style.display = 'none', 2000);
+    }
+  }, 1000);
+</script>
 <canvas id="onscreen"></canvas>
 <script type="text/javascript">
 const canvas = document.getElementById("onscreen");
@@ -93,15 +128,15 @@ const CONFIG = {
         frequency: 0.25,
         speed: 0.0014
     },
-    GROUND_FLICKER = {
+    GROUND_FLICKER: {
         enabled: true,          // turn effect on/off
         marginX: 100,           // left/right margin in pixels
         height: 100,            // height of flicker region from bottom
         numCells: 15,           // number of Voronoi-like cells
-        baseLightness: 30,      // base darkness of the cells (0–100)
-        flickerAmplitude: 5,    // how much lightness oscillates (+/-)
+        baseLightness: 28,      // base darkness of the cells (0–100)
+        flickerAmplitude: 28,    // how much lightness oscillates (+/-)
         flickerSpeed: 0.002,    // speed of flicker
-        jitter: 2,              // maximum pixel jitter for cell centers
+        jitter: 4,              // maximum pixel jitter for cell centers
         blendMode: "overlay"     // ctx.globalCompositeOperation
     }
 };
@@ -467,11 +502,72 @@ class ShimmerRegion {
   }
 }
 
+class GroundFlicker {
+    constructor(config, canvas) {
+        this.config = config;
+        //this.canvas = canvas;
+        //this.ctx = canvas.getContext("2d");
+
+        this.width = ctx.canvas.width - config.marginX * 2;
+        this.height = config.height;
+        this.x = config.marginX;
+        this.y = ctx.canvas.height - this.height;
+
+        this.cells = [];
+        this.time = 0;
+
+        // Initialize random cell centers within region
+        for (let i = 0; i < config.numCells; i++) {
+            this.cells.push({
+                x: this.x + Math.random() * this.width,
+                y: this.y + Math.random() * this.height,
+                phase: Math.random() * Math.PI * 2  // random phase for flicker
+            });
+        }
+    }
+    update(dt) {
+        this.time += dt;
+
+        // Optionally jitter cell centers slightly
+        for (let cell of this.cells) {
+            cell.x += (Math.random() - 0.5) * this.config.jitter;
+            cell.y += (Math.random() - 0.5) * this.config.jitter;
+
+            // keep cells within bounds
+            cell.x = Math.min(Math.max(cell.x, this.x), this.x + this.width);
+            cell.y = Math.min(Math.max(cell.y, this.y), this.y + this.height);
+        }
+    }
+    draw() {
+        //const ctx = this.ctx;
+        ctx.save();
+        ctx.globalCompositeOperation = this.config.blendMode;
+
+        for (let cell of this.cells) {
+            // compute flicker using sine wave
+            const flicker = Math.sin(this.time * this.config.flickerSpeed + cell.phase);
+            const lightness = this.config.baseLightness + flicker * this.config.flickerAmplitude;
+
+            // draw a soft circular cell
+            const gradient = ctx.createRadialGradient(cell.x, cell.y, 0, cell.x, cell.y, this.height / 2);
+            gradient.addColorStop(0, `hsla(40,50%,${lightness + 10}%,0.25)`);
+            gradient.addColorStop(1, `hsla(40,50%,${lightness}%,0)`);
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cell.x, cell.y, this.height / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+}
 
 const wordManager = new WordManager();
 const particleManager = new ParticleManager();
 const emberManager = new EmberManager(CONFIG.EMBER);
 const shimmer = new ShimmerRegion(CONFIG.SHIMMER);
+const groundFlicker = new GroundFlicker(CONFIG.GROUND_FLICKER);
 
 let lastTime = performance.now();
 let frames = 0;
@@ -485,6 +581,9 @@ function animate(timestamp) {
     shimmer.update(dt);
     shimmer.draw();
     particleManager.update();
+    
+      groundFlicker.update(dt);
+  groundFlicker.draw();
 
     
     lastTime = timestamp;
