@@ -72,9 +72,9 @@ const CONFIG = {
         MAX_ANGLE: 60,                     // degrees from vertical
         LIFETIME: 4000,                    // milliseconds
             COLORS: [
-            [16, "100%", "54%", 1],          // bright yellow
-            [30, "100%", "50%", 1],          // orange
-            [0, "100%", "40%", 1]            // red ember
+            {h:16, s:"100%", l:"54%", a:1},          // bright yellow
+            {h:30, s:"100%", l:"50%", a:1},          // orange
+            {h:0, s:"100%", l:"40%", a:1}            // red ember
         ],
         TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
         GRAVITY: 0.02,                     // optional downward pull
@@ -100,7 +100,7 @@ class Ember {
 
         // Color pick
         const colorIndex = Math.floor(Math.random() * config.COLORS.length);
-        this.color = [...config.COLORS[colorIndex]];
+        this.color = {...config.COLORS[colorIndex]};
 
         // Trail
         this.trail = [];
@@ -150,39 +150,43 @@ class Ember {
         // Draw trail
         for (let i = 0; i < this.trail.length; i++) {
             const p = this.trail[i];
-            const alpha = (i + 1) / this.trail.length * this.color[3];
-            ctx.fillStyle = "hsla(" + this.color.join(",") + ")";//${this.h}, ${this.s}, ${this.l}, ${alpha})`;
+            const alpha = (i + 1) / this.trail.length * this.color.a;
+            ctx.fillStyle = `${this.color.h}, ${this.color.s}, ${this.color.l}, ${alpha})`;
             ctx.fillRect(p.x, p.y, 2, 2);
         }
         // Draw current position
-        ctx.fillStyle = "hsla(" + this.color.join(",") + ")";//`hsla(${this.h}, ${this.s}, ${this.l}, ${this.a})`;
+        ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
         ctx.fillRect(this.x, this.y, 2, 2);
     }
 }
 class EmberManager {
     constructor(config) {
         this.embers = [];
+        this.active = [];
         this.animating = false;
         for ( let i = 0; i < config.POOL_SIZE; i++ ) {
             this.embers.push(new Ember(config));
         }
     }
     spawn() {
-        const e = Math.floor(Math.random() * this.embers.length);
-        if ( Math.random() < 0.1 ) {
-            e.respawn();
+        //
+        if ( Math.random() < 0.9 ) {
+            this.active.push(this.embers[Math.floor(Math.random() * this.embers.length)]);
+            //return e;
             //e.update(dt);
             //e.draw(ctx);
         }
     }
     update(dt) {
-        //if ( this.animating === false ) {
-            //this.spawn();
-            for ( const e of this.embers ) {
+        if ( this.active.length === 0 ) {
+            this.spawn();
+        }
+        else {
+            for ( const e of this.active ) {
                 e.update(dt);
                 e.draw(ctx);
             }
-        //}
+        }
     }
 }
 
