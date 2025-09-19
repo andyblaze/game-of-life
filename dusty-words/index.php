@@ -79,6 +79,30 @@ const CONFIG = {
         TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
         GRAVITY: 0.02,                     // optional downward pull
         WIND: 0.02                          // optional horizontal drift
+    },
+    SHIMMER: {
+        x: 970,
+        y: 460,
+        width: 50,
+        height: 120,
+        color: "rgba(255,200,0,0.15)",//#FF FD BF
+        shadowColor: "rgba(255,80,0,0.2)",
+        shadowBlur: 20,
+        flameWidth: 15,
+        amplitude: 10,
+        frequency: 0.25,
+        speed: 0.0014
+    },
+    GROUND_FLICKER = {
+        enabled: true,          // turn effect on/off
+        marginX: 100,           // left/right margin in pixels
+        height: 100,            // height of flicker region from bottom
+        numCells: 15,           // number of Voronoi-like cells
+        baseLightness: 30,      // base darkness of the cells (0–100)
+        flickerAmplitude: 5,    // how much lightness oscillates (+/-)
+        flickerSpeed: 0.002,    // speed of flicker
+        jitter: 2,              // maximum pixel jitter for cell centers
+        blendMode: "overlay"     // ctx.globalCompositeOperation
     }
 };
 /* ====================== */
@@ -398,9 +422,56 @@ class WordManager {
         }    
     }
 }
+
+class ShimmerRegion {
+  constructor(config) {
+    this.x = config.x;
+    this.y = config.y;
+    this.width = config.width;
+    this.height = config.height;
+    this.color = config.color || "rgba(255,200,100,0.3)";
+    this.shadowColor = config.shadowColor || "rgba(255,180,50,0.6)";
+    this.shadowBlur = config.shadowBlur || 20;
+    this.flameWidth = config.flameWidth || 30;      // thickness of flame band
+    this.amplitude = config.amplitude || 20;        // horizontal wiggle
+    this.frequency = config.frequency || 0.3;       // vertical wiggle freq
+    this.speed = config.speed || 0.005;             // animation speed
+    this.time = 0;
+  }
+
+  update(dt) {
+    this.time += dt;
+  }
+
+  draw() {
+    const flameSteps = 40;
+    const phase = this.time * this.speed;
+
+    ctx.save();
+    ctx.beginPath();
+    for (let i = 0; i <= flameSteps; i++) {
+      const y = this.y + (i / flameSteps) * this.height;
+      const x =
+        this.x +
+        this.width / 2 +
+        Math.sin(i * this.frequency + phase) * this.amplitude;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.lineWidth = this.flameWidth;
+    ctx.strokeStyle = this.color;
+    ctx.shadowColor = this.shadowColor;
+    ctx.shadowBlur = this.shadowBlur;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+
 const wordManager = new WordManager();
 const particleManager = new ParticleManager();
 const emberManager = new EmberManager(CONFIG.EMBER);
+const shimmer = new ShimmerRegion(CONFIG.SHIMMER);
 
 let lastTime = performance.now();
 let frames = 0;
@@ -409,10 +480,13 @@ bg.src = "bg.jpg";
 function animate(timestamp) { 
     if ( isNaN(timestamp) ) 
         timestamp = 0;
+    const dt = timestamp - lastTime; // milliseconds since last frame
     ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+    shimmer.update(dt);
+    shimmer.draw();
     particleManager.update();
 
-    const dt = timestamp - lastTime; // milliseconds since last frame
+    
     lastTime = timestamp;
     emberManager.update(dt);
     wordManager.update(particleManager);
