@@ -3,11 +3,11 @@ import { mt_rand } from "./functions.js";
 
 class Ember {
     constructor(config) {
-        this.config = config;
+        this.config = config;  //!!!!!!!!!!!!!!!!!!!   RESET STUFF = SAME AS respawn MOSTLY !!!!!!!!!!!!!!!!!!
 
         // Spawn position (rectangle)
         this.x = config.SPAWN_X + (Math.random() - 0.5) * config.SPAWN_WIDTH;
-        this.y = config.SPAWN_Y - Math.random() * config.SPAWN_HEIGHT;
+        this.y = config.SPAWN_Y - (Math.random() * config.SPAWN_HEIGHT);
 
         // Random velocity in a cone
         const angleDeg = config.MIN_ANGLE + Math.random() * (config.MAX_ANGLE - config.MIN_ANGLE);
@@ -83,6 +83,7 @@ class Ember {
 }
 export default class EmberManager {
     constructor(config) {
+        this.config = config;
         this.embers = [];
         this.active = [];
         this.animating = false;
@@ -96,7 +97,7 @@ export default class EmberManager {
         return mt_rand(3, 8);
     }
     spawn() {
-        if ( Math.random() > 0.1 ) return false;
+        if ( Math.random() > this.config.SPAWN_CHANCE ) return false;
         const count = mt_rand(1, 3);
         for (let i = 0; i < count; i++) {
             const ember = this.embers[mt_rand(0, this.embers.length -1)];
@@ -112,6 +113,7 @@ export default class EmberManager {
                 this.spawnTimer = 0;
                 this.nextSpawn = this.randomSpawnTime();
             }
+            else this.active = [];
         }
 
         // update/draw active embers
@@ -119,6 +121,6 @@ export default class EmberManager {
             e.update(dt);
             e.draw(ctx);
         }
-        this.active = this.active.filter(e => e.alive);
+        //this.active = this.active.filter(e => e.alive);
     }
 }

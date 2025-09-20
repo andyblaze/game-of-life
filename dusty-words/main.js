@@ -28,8 +28,8 @@ function animate(timestamp) {
     shimmerManager.update(dt, ctx);
     particleManager.update(ctx);
     
-    groundFlicker.update(dt);
-    groundFlicker.draw(ctx);
+    groundFlicker.update(dt, ctx);
+    //groundFlicker.draw(ctx);
 
     
     lastTime = timestamp;

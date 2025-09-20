@@ -21,7 +21,7 @@ export default class GroundFlicker {
             });
         }
     }
-    update(dt) {
+    update(dt, ctx) {
         this.time += dt;
 
         // Optionally jitter cell centers slightly
@@ -33,9 +33,10 @@ export default class GroundFlicker {
             cell.x = clamp(cell.x, this.x, this.x + this.width); //Math.min(Math.max(cell.x, this.x), this.x + this.width);
             cell.y = clamp(cell.y, this.y, this.y + this.height);//Math.min(Math.max(cell.y, this.y), this.y + this.height);
         }
+        this.draw(ctx);
     }
     draw(ctx) {
-        //const ctx = this.ctx;
+        //if ( Math.random() > 0.5 ) return;
         ctx.save();
         ctx.globalCompositeOperation = this.config.blendMode;
 
@@ -47,7 +48,7 @@ export default class GroundFlicker {
             const gradient = ctx.createRadialGradient(cell.x, cell.y, 0, cell.x, cell.y, this.height / 2);
             gradient.addColorStop(0, `hsla(40,80%,${lightness + 10}%,0.2)`);
             gradient.addColorStop(0.5, `hsla(40,80%,${lightness + 10}%,0.05)`);
-            gradient.addColorStop(0.51, `hsla(40,80%,${lightness + 10}%,0)`);
+            gradient.addColorStop(0.51, `hsla(40,80%,${lightness}%,0)`);
             gradient.addColorStop(1, `hsla(40,50%,${lightness}%,0)`);
 
             ctx.fillStyle = gradient;

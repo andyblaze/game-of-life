@@ -47,10 +47,10 @@ const CONFIG = {
     EMBER: {
         POOL_SIZE: 30,
         SPAWN_X: screenW / 2,        // center of fire
-        SPAWN_Y: screenH - scaleY(50),      // approximate fire top
+        SPAWN_Y: screenH - scaleY(200),      // approximate fire top
         SPAWN_WIDTH: 60,                   // horizontal variation
         SPAWN_HEIGHT: 20,                  // vertical variation
-        SPAWN_CHANCE: 0.02,
+        SPAWN_CHANCE: 0.1,
         MIN_SPEED: 2,                      // initial velocity min
         MAX_SPEED: 5,                      // initial velocity max
         MIN_ANGLE: -30,                    // degrees from vertical
