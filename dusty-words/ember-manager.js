@@ -1,4 +1,5 @@
 import CONFIG from "./config.js";
+import { mt_rand } from "./functions.js";
 
 class Ember {
     constructor(config) {
@@ -90,12 +91,8 @@ export default class EmberManager {
         }
     }
     spawn() {
-        //
         if ( Math.random() < 0.1 ) {
             this.active.push(this.embers[Math.floor(Math.random() * this.embers.length)]);
-            //return e;
-            //e.update(dt);
-            //e.draw(ctx);
         }
     }
     update(dt, ctx) {

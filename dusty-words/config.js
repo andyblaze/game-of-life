@@ -87,7 +87,7 @@ const CONFIG = {
         baseLightness: 20,      // base darkness of the cells (0–100)
         flickerAmplitude: 20,    // how much lightness oscillates (+/-)
         flickerSpeed: 0.002,    // speed of flicker
-        jitter: 4,              // maximum pixel jitter for cell centers
+        jitter: 5,              // maximum pixel jitter for cell centers
         blendMode: "overlay"     // ctx.globalCompositeOperation
     }
 };

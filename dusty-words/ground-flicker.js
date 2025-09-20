@@ -45,13 +45,14 @@ export default class GroundFlicker {
             const lightness = clamp(this.config.baseLightness + flicker * this.config.flickerAmplitude, 0, 90);
             // draw a soft circular cell
             const gradient = ctx.createRadialGradient(cell.x, cell.y, 0, cell.x, cell.y, this.height / 2);
-            gradient.addColorStop(0, `hsla(40,80%,${lightness + 10}%,0.3)`);
-            gradient.addColorStop(0.5, `hsla(40,80%,${lightness + 10}%,0.2)`);
+            gradient.addColorStop(0, `hsla(40,80%,${lightness + 10}%,0.2)`);
+            gradient.addColorStop(0.5, `hsla(40,80%,${lightness + 10}%,0.05)`);
+            gradient.addColorStop(0.51, `hsla(40,80%,${lightness + 10}%,0)`);
             gradient.addColorStop(1, `hsla(40,50%,${lightness}%,0)`);
 
             ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.arc(cell.x, cell.y, this.height / 2, 0, Math.PI * 2);
+            ctx.arc(cell.x, cell.y, this.height / 4, 0, Math.PI * 2);
             ctx.fill();
         }
 

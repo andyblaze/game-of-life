@@ -1,4 +1,4 @@
-import { perlin } from "./functions.js";
+import { perlin, scaleY } from "./functions.js";
 import CONFIG from "./config.js";
 
 class Particle {
@@ -49,7 +49,7 @@ class Particle {
             if (this.y < 0) {
                 // respawn at the fire base area
                 this.x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-                this.y = 800 - Math.random() * CONFIG.SPAWN_HEIGHT;
+                this.y = scaleY(900) - Math.random() * CONFIG.SPAWN_HEIGHT;
             }
         }
     }
@@ -94,7 +94,7 @@ export default class ParticleManager {
         for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
             // spawn position
             const x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-            const y = (800) - Math.random() * CONFIG.SPAWN_HEIGHT;
+            const y = scaleY(900) - Math.random() * CONFIG.SPAWN_HEIGHT;
 
             // initial velocity
             const angleDeg = (Math.random() - 0.5) * CONFIG.CONE_ANGLE; // spread around vertical
