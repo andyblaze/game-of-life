@@ -86,28 +86,39 @@ export default class EmberManager {
         this.embers = [];
         this.active = [];
         this.animating = false;
+        this.spawnTimer = 0; // counts down
+        this.nextSpawn = this.randomSpawnTime(); // time until next spawn (s)
         for ( let i = 0; i < config.POOL_SIZE; i++ ) {
             this.embers.push(new Ember(config));
         }
     }
+    randomSpawnTime() {
+        return mt_rand(3, 8);
+    }
     spawn() {
-        if ( Math.random() < 0.1 ) {
-            this.active.push(this.embers[Math.floor(Math.random() * this.embers.length)]);
+        if ( Math.random() > 0.1 ) return false;
+        const count = mt_rand(1, 3);
+        for (let i = 0; i < count; i++) {
+            const ember = this.embers[mt_rand(0, this.embers.length -1)];
+            this.active.push(ember);
         }
+        return true;
     }
     update(dt, ctx) {
-        if ( this.active.length === 0 ) {
-            this.spawn();
-        }
-        else {
-            for ( const e of this.active ) {
-                if ( e.alive === false ) {
-                    this.active = [];
-                    return;
-                }
-                e.update(dt);
-                e.draw(ctx);
+        const deltaSeconds = dt / 1000;
+        this.spawnTimer += deltaSeconds;
+        if (this.spawnTimer >= this.nextSpawn) {
+            if ( this.spawn() === true ) {
+                this.spawnTimer = 0;
+                this.nextSpawn = this.randomSpawnTime();
             }
         }
+
+        // update/draw active embers
+        for (const e of this.active) {
+            e.update(dt);
+            e.draw(ctx);
+        }
+        this.active = this.active.filter(e => e.alive);
     }
 }
