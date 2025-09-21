@@ -1,5 +1,5 @@
 import CONFIG from "./config.js";
-import { mt_rand } from "./functions.js";
+import { mt_rand, randomFrom } from "./functions.js";
 
 class Ember {
     constructor(config) {
@@ -21,7 +21,7 @@ class Ember {
         this.vy = -Math.cos(rad) * speed; // negative because canvas y=0 is top
 
         // Color pick
-        const colorIndex = Math.floor(Math.random() * config.COLORS.length);
+        const colorIndex = mt_rand(0, config.COLORS.length - 1);
         this.color = {...config.COLORS[colorIndex]};
 
         this.trail = [];
@@ -80,7 +80,7 @@ export default class EmberManager {
         if ( Math.random() > this.config.SPAWN_CHANCE ) return false;
         const count = mt_rand(1, 3);
         for (let i = 0; i < count; i++) {
-            const ember = this.embers[mt_rand(0, this.embers.length -1)];
+            const ember = randomFrom(this.embers);
             this.active.push(ember);
         }
         return true;
@@ -95,12 +95,10 @@ export default class EmberManager {
             }
             else this.active = [];
         }
-
         // update/draw active embers
         for (const e of this.active) {
             e.update(dt);
             e.draw(ctx);
         }
-        //this.active = this.active.filter(e => e.alive);
     }
 }

@@ -1,31 +1,32 @@
-import { perlin, scaleY } from "./functions.js";
+import { perlin, scaleY, randomFrom } from "./functions.js";
 import CONFIG from "./config.js";
 
 class Particle {
-    constructor(x, y) {
+    constructor(x, y, config) {
         this.x = x;
         this.y = y;
+        this.config = config;
         this.vx = (Math.random() - 0.5) * 0.5;
         this.vy = (Math.random() - 0.5) * 0.5;
         this.tx = null;
         this.ty = null;
         this.inWord = false;
-        this.color = CONFIG.PARTICLE_COLORS[Math.floor(Math.random() * CONFIG.PARTICLE_COLORS.length)];
-        this.shape = CONFIG.PARTICLE_SHAPES[Math.floor(Math.random() * CONFIG.PARTICLE_SHAPES.length)];
+        this.color = randomFrom(config.COLORS);
+        this.shape = randomFrom(config.SHAPES);
         this.size = 1 + Math.random() * 2;
     }
     update(ctx) {
         if (this.inWord && this.tx !== null && this.ty !== null) {
-            this.x += (this.tx - this.x) * CONFIG.FORMATION_SPEED;
-            this.y += (this.ty - this.y) * CONFIG.FORMATION_SPEED;
+            this.x += (this.tx - this.x) * this.config.FORMATION_SPEED;
+            this.y += (this.ty - this.y) * this.config.FORMATION_SPEED;
         } else {
             // Brownian motion + perlin drift
-            let rad = CONFIG.DUST_DIRECTION * Math.PI / 180;
-            let dx = Math.cos(rad) * CONFIG.NOISE_SPEED;
-            let dy = Math.sin(rad) * CONFIG.NOISE_SPEED;
-            let n = perlin(this.x * CONFIG.NOISE_SCALE, this.y * CONFIG.NOISE_SCALE);
-            dx += (n - 0.5) * CONFIG.NOISE_SPEED;
-            dy += (n - 0.5) * CONFIG.NOISE_SPEED;
+            let rad = this.config.DIRECTION * Math.PI / 180;
+            let dx = Math.cos(rad) * this.config.NOISE_SPEED;
+            let dy = Math.sin(rad) * this.config.NOISE_SPEED;
+            let n = perlin(this.x * this.config.NOISE_SCALE, this.y * this.config.NOISE_SCALE);
+            dx += (n - 0.5) * this.config.NOISE_SPEED;
+            dy += (n - 0.5) * this.config.NOISE_SPEED;
 
             // existing Brownian
             let bx = this.vx;
@@ -35,7 +36,7 @@ class Particle {
             let normalizedBottom = Math.max(0, Math.min(1, this.y / ctx.canvas.height));
 
             // linear interpolate: bottom -> SPEED_FACTOR_MAX, top -> SPEED_FACTOR_MIN
-            const sf = CONFIG.SPEED_FACTOR.MIN + (CONFIG.SPEED_FACTOR.MAX - CONFIG.SPEED_FACTOR.MIN) * normalizedBottom;
+            const sf = this.config.SPEED_FACTOR.MIN + (this.config.SPEED_FACTOR.MAX - this.config.SPEED_FACTOR.MIN) * normalizedBottom;
 
             // apply combined motion scaled by sf
             this.x += (bx + dx);// * sf;
@@ -48,8 +49,8 @@ class Particle {
             // Vertical wrap is customized for fire motes
             if (this.y < 0) {
                 // respawn at the fire base area
-                this.x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-                this.y = scaleY(900) - Math.random() * CONFIG.SPAWN_HEIGHT;
+                this.x = this.config.SPAWN_X + (Math.random() - 0.5) * this.config.SPAWN_WIDTH;
+                this.y = this.config.BASE_AREA - Math.random() * this.config.SPAWN_HEIGHT;
             }
         }
     }
@@ -89,22 +90,23 @@ class Particle {
 }
 
 export default class ParticleManager {
-    constructor() {
+    constructor(config) {
+        this.config = config;
         this.particles = [];
-        for (let i = 0; i < CONFIG.NUM_PARTICLES; i++) {
+        for (let i = 0; i < config.COUNT; i++) {
             // spawn position
-            const x = CONFIG.SPAWN_X + (Math.random() - 0.5) * CONFIG.SPAWN_WIDTH;
-            const y = scaleY(900) - Math.random() * CONFIG.SPAWN_HEIGHT;
+            const x = config.SPAWN_X + (Math.random() - 0.5) * config.SPAWN_WIDTH;
+            const y = scaleY(900) - Math.random() * config.SPAWN_HEIGHT;
 
             // initial velocity
-            const angleDeg = (Math.random() - 0.5) * CONFIG.CONE_ANGLE; // spread around vertical
-            const speed = CONFIG.INIT_SPEED || 1.5; // adjust as needed
+            const angleDeg = (Math.random() - 0.5) * config.CONE_ANGLE; // spread around vertical
+            const speed = config.INIT_SPEED; // adjust as needed
             const rad = angleDeg * Math.PI / 180;
 
             const vx = Math.sin(rad) * speed; // horizontal
             const vy = -Math.cos(rad) * speed; // vertical upward
 
-            this.particles.push(new Particle(x, y, vx, vy));
+            this.particles.push(new Particle(x, y, config));
         }
     }
     update(ctx) {

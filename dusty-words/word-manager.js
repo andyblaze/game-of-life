@@ -1,28 +1,49 @@
 import CONFIG from "./config.js";
+import { randomFrom } from "./functions.js";
 
 export default class WordManager {
-    constructor(c) {
+    constructor(c, pm, config) {
         this.canvas = c;
-        this.wordPhase = 0;
+        this.particleManager = pm;
+        this.config = config;
+        this.wordPhase = "FREE";
         this.wordTimer = 0;
         this.wordTargets = [];
         this.currentWord = 0;
+        this.states = {
+            "FREE": {
+                duration: config.FREE_TIME,
+                onEnter: () => this.assignWordTargets(config.WORDS[this.currentWord], this.particleManager),
+                next: "FORMING"
+            },
+            "FORMING": {
+                duration: config.FORM_STEPS,
+                onEnter: () => {},
+                next: "HOLDING"
+            },
+            "HOLDING": {
+                duration: config.HOLD_STEPS,
+                onEnter: () => this.particleManager.releaseParticles(),
+                next: "DISPERSING"
+            },
+            "DISPERSING": {
+                duration: config.DISPERSAL_STEPS,
+                onEnter: () => {
+                    this.currentWord = (this.currentWord + 1) % config.WORDS.length;
+                },
+                next: "FREE"
+            }
+        };
     }
-    update(particleManager) {
-        // Word lifecycle
+    update() {
         this.wordTimer++;
-        if (this.wordPhase === 0 && this.wordTimer > CONFIG.FREE_TIME) {
-            this.assignWordTargets(CONFIG.WORDS[this.currentWord], particleManager);
-            this.wordPhase = 1; this.wordTimer = 0;
-        } else if (this.wordPhase === 1 && this.wordTimer > CONFIG.FORM_STEPS) {
-            this.wordPhase = 2; this.wordTimer = 0;
-        } else if (this.wordPhase === 2 && this.wordTimer > CONFIG.HOLD_STEPS) {
-            particleManager.releaseParticles();
-            this.wordPhase = 3; this.wordTimer = 0;
-        } else if (this.wordPhase === 3 && this.wordTimer > CONFIG.DISPERSAL_STEPS) {
-            this.currentWord = (this.currentWord + 1) % CONFIG.WORDS.length;
-            this.wordPhase = 0; this.wordTimer = 0;
-        }    
+
+        const state = this.states[this.wordPhase];
+        if ( this.wordTimer > state.duration ) {
+            this.wordPhase = state.next;
+            this.wordTimer = 0;
+            this.states[this.wordPhase].onEnter();
+        }
     }
     createWordTargets(text) {
         const off = document.createElement("canvas");
@@ -32,7 +53,7 @@ export default class WordManager {
         octx.fillStyle = "black";
         octx.textAlign = "center";
         octx.textBaseline = "middle";
-        octx.font = CONFIG.FONT;
+        octx.font = this.config.FONT;
         octx.fillText(text, off.width/2, off.height/2);
 
         const data = octx.getImageData(0, 0, off.width, off.height);
@@ -47,15 +68,16 @@ export default class WordManager {
     }
     assignWordTargets(text, particleManager) {
         const targets = this.createWordTargets(text);
-        const sampleSize = Math.min(CONFIG.WORD_PARTICLE_COUNT, targets.length);
+        const sampleSize = Math.min(this.config.PARTICLE_COUNT, targets.length);
+        const wordArea = randomFrom(this.config.AREAS);
 
         // Random center position within WORD_AREA
-        const centerX = CONFIG.WORD_AREA.MIN_X + Math.random() * (CONFIG.WORD_AREA.MAX_X - CONFIG.WORD_AREA.MIN_X);
-        const centerY = CONFIG.WORD_AREA.MIN_Y + Math.random() * (CONFIG.WORD_AREA.MAX_Y - CONFIG.WORD_AREA.MIN_Y);
+        const centerX = wordArea.MIN_X + Math.random() * (wordArea.MAX_X - wordArea.MIN_X);
+        const centerY = wordArea.MIN_Y + Math.random() * (wordArea.MAX_Y - wordArea.MIN_Y);
 
         const wordTargets = [];
         for (let i = 0; i < sampleSize; i++) {
-            const t = targets[Math.floor(Math.random() * targets.length)];
+            const t = randomFrom(targets);
             wordTargets.push({
                 x: t.x - this.canvas.width/2 + centerX,
                 y: t.y - this.canvas.height/2 + centerY
@@ -65,7 +87,7 @@ export default class WordManager {
         // assign particles
         const chosen = [];
         while (chosen.length < sampleSize) {
-            const p = particleManager.particles[Math.floor(Math.random() * particleManager.particles.length)];
+            const p = randomFrom(particleManager.particles);
             if ( ! p.inWord ) {
                 p.inWord = true;
                 p.tx = wordTargets[chosen.length].x;

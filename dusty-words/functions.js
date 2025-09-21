@@ -14,6 +14,11 @@ export function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
+export function randomFrom(arr) {
+    const index = Math.floor(Math.random() * arr.length);
+    return arr[index];
+}
+
 export function mt_rand(min = 0, max = 2147483647) {
     if (min > max) [min, max] = [max, min]; // swap if min > max
     return Math.floor(Math.random() * (max - min + 1)) + min;

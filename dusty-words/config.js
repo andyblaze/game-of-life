@@ -4,35 +4,64 @@ const screenW = window.innerWidth;
 const screenH = window.innerHeight;
 
 const CONFIG = {
-    SCREEN_W: screenW,
-    SCREEN_H: screenH,
-    SPAWN_X: screenW / 2,   // center of fountain
-    SPAWN_WIDTH: scaleX(400),             // how wide the base is
-    SPAWN_HEIGHT: scaleY(100), // how tall the vertical band is at the bottom
-    CONE_ANGLE: 90, // spread around vertical
-    INIT_SPEED: 1.5,
-    NUM_PARTICLES: 1500,
-    WORD_PARTICLE_COUNT: 500,
-    FORM_STEPS: 480,
-    HOLD_STEPS: 240,
-    DISPERSAL_STEPS: 300,
-    FREE_TIME: 600,
-    WORDS: ["MAGIC", "LIVING", "DUST", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAMES", "SPARKS", "HEAT", "BURN", "FUEL"],
-    FONT: "bold 120px serif",
-    FORMATION_SPEED: 0.008,
-    NOISE_SPEED: 0.3,
-    DUST_DIRECTION: 270,
-    SPEED_FACTOR: {
-        MIN: 0.7,
-        MAX: 2.7
+    WORD: {
+        PARTICLE_COUNT: 600,
+        FORM_STEPS: 480, // in frames for this down to FREE_TIME 
+        HOLD_STEPS: 180,
+        DISPERSAL_STEPS: 300,
+        FREE_TIME: 480,
+        WORDS: ["MAGIC", "LIVING", "DUST", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAMES", "SPARKS", "HEAT", "BURN", "FUEL", "BLAZE", "CINDER", "IGNITE", "FLARE", "PYRE", "KINDLE", "GLOW"],
+        FONT: "bold 120px serif",
+        AREAS: [ // configurable placement zones
+            {           
+                MIN_X: scaleX(150),
+                MAX_X: scaleX(screenW - 150),
+                MIN_Y: scaleY(150),
+                MAX_Y: scaleY(screenH - 150)
+            },
+            {           
+                MIN_X: scaleX(150),
+                MAX_X: scaleX(600),
+                MIN_Y: scaleY(150),
+                MAX_Y: scaleY(screenH - 150)
+            } ,       
+            {           
+                MIN_X: scaleX(1220),
+                MAX_X: scaleX(screenW - 150),
+                MIN_Y: scaleY(150),
+                MAX_Y: scaleY(screenH - 150)
+            }        
+        ]
     },
-    NOISE_SCALE: 0.002,
-    WORD_AREA: {           // configurable placement zone
-        MIN_X: scaleX(150),
-        MAX_X: scaleX(screenW - 150),
-        MIN_Y: scaleY(150),
-        MAX_Y: scaleY(screenH - 150)
+    PARTICLES: {
+        COLORS: [
+            "hsla(16, 100%, 54%, 1)",   // #ff4500 orange-red (flame core)
+            "hsla(9, 100%, 64%, 1)",    // #ff6347 tomato orange
+            "hsla(39, 100%, 50%, 1)",   // #ffa500 classic orange
+            "hsla(51, 100%, 50%, 1)",   // #ffd700 golden yellow
+            "hsla(60, 100%, 80%, 1)",   // #ffff99 pale yellow spark
+            "hsla(0, 100%, 50%, 1)",    // #ff0000 deep red ember
+            "hsla(0, 100%, 25%, 1)",    // #800000 smoldering dark red
+            "hsla(0, 0%, 27%, 1)"       // #444444 occasional ash/ember fade
+        ],
+        SHAPES: ["circle", "rect", "triangle", "line"],
+        DIRECTION: 270,
+        FORMATION_SPEED: 0.008,
+        NOISE_SPEED: 0.3,
+        SPEED_FACTOR: {
+            MIN: 0.7,
+            MAX: 2.7
+        },
+        NOISE_SCALE: 0.002,
+        SPAWN_X: screenW / 2,   // center of fountain
+        SPAWN_WIDTH: scaleX(400),             // how wide the base is
+        BASE_AREA: scaleY(900), // height from top
+        SPAWN_HEIGHT: scaleY(100), // how tall the vertical band is at the bottom
+        CONE_ANGLE: 90, // spread around vertical
+        INIT_SPEED: 1.5,
+        COUNT: 1500
     },
+
     PARTICLE_COLORS: [
         "hsla(16, 100%, 54%, 1)",   // #ff4500 orange-red (flame core)
         "hsla(9, 100%, 64%, 1)",    // #ff6347 tomato orange

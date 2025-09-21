@@ -11,8 +11,8 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const wordManager = new WordManager(canvas);
-const particleManager = new ParticleManager();
+const particleManager = new ParticleManager(CONFIG.PARTICLES);
+const wordManager = new WordManager(canvas, particleManager, CONFIG.WORD);
 const emberManager = new EmberManager(CONFIG.EMBER);
 const shimmerManager = new ShimmerManager(CONFIG.SHIMMER);
 const groundFlicker = new GroundFlicker(CONFIG.GROUND_FLICKER);
@@ -29,12 +29,10 @@ function animate(timestamp) {
     particleManager.update(ctx);
     
     groundFlicker.update(dt, ctx);
-    //groundFlicker.draw(ctx);
-
     
     lastTime = timestamp;
     emberManager.update(dt, ctx);
-    wordManager.update(particleManager);
+    wordManager.update();
     DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
