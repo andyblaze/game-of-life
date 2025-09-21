@@ -3,8 +3,12 @@ import { mt_rand } from "./functions.js";
 
 class Ember {
     constructor(config) {
-        this.config = config;  //!!!!!!!!!!!!!!!!!!!   RESET STUFF = SAME AS respawn MOSTLY !!!!!!!!!!!!!!!!!!
-
+        this.config = config;
+        this.trailLength = config.TRAIL_LENGTH;
+        this.maxLife = config.LIFETIME; // ms        
+        this.init(this.config);
+    }
+    init(config) {
         // Spawn position (rectangle)
         this.x = config.SPAWN_X + (Math.random() - 0.5) * config.SPAWN_WIDTH;
         this.y = config.SPAWN_Y - (Math.random() * config.SPAWN_HEIGHT);
@@ -20,26 +24,19 @@ class Ember {
         const colorIndex = Math.floor(Math.random() * config.COLORS.length);
         this.color = {...config.COLORS[colorIndex]};
 
-        // Trail
         this.trail = [];
-        this.trailLength = config.TRAIL_LENGTH;
 
         // Lifetime
         this.life = 0;
         this.alive = true;
-        this.maxLife = config.LIFETIME; // ms
     }
     update(dt) {
         // dt = time delta in ms
         this.life += dt;
         this.color.a = Math.max(0, 1 - this.life / this.maxLife);
         if (this.life >= this.maxLife && this.color.a <= 0) {
-            // instead of immediate respawn, only respawn based on chance
-            //if (Math.random() < this.config.SPAWN_CHANCE) {
             this.alive = false;
-            this.respawn();
-            //}
-            //return; // don't move if not respawned yet
+            this.init(this.config);
         }
 
         // Add previous position to trail
@@ -52,33 +49,16 @@ class Ember {
         this.x += this.vx;
         this.y += this.vy;
     }
-    respawn() {
-        // reset position, velocity, life, trail
-        this.x = this.config.SPAWN_X + (Math.random() - 0.5) * this.config.SPAWN_WIDTH;
-        this.y = this.config.SPAWN_Y - Math.random() * this.config.SPAWN_HEIGHT;
-
-        const angleDeg = this.config.MIN_ANGLE + Math.random() * (this.config.MAX_ANGLE - this.config.MIN_ANGLE);
-        const rad = angleDeg * Math.PI / 180;
-        const speed = this.config.MIN_SPEED + Math.random() * (this.config.MAX_SPEED - this.config.MIN_SPEED);
-        this.vx = Math.sin(rad) * speed;
-        this.vy = -Math.cos(rad) * speed;
-
-        this.trail = [];
-        this.life = 0;
-        this.alive = true;
-    }
     draw(ctx) {
         // Draw trail
         for (let i = 0; i < this.trail.length; i++) {
-            const p = this.trail[i];
-            //const alpha = (i + 1) / this.trail.length * this.color.a;
-            
+            const p = this.trail[i];          
             ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
             ctx.fillRect(p.x, p.y, 2, 2);
         }
         // Draw current position
-        //ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
-        //ctx.fillRect(this.x, this.y, 2, 2);
+        ctx.fillStyle = `hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
+        ctx.fillRect(this.x, this.y, 2, 2);
     }
 }
 export default class EmberManager {
