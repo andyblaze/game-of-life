@@ -1,8 +1,4 @@
-<?php 
-require '../utils.php';
-$crud = new JsonCrud('../gallery-data/data.json');
-$page = $crud->read(pageSlug());
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">

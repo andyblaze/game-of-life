@@ -2,7 +2,7 @@ import CONFIG from "./config.js";
 import WordManager from "./word-manager.js";
 import ParticleManager from "./particle-manager.js";
 import EmberManager from "./ember-manager.js";
-import ShimmerManager from "./Shimmer-region.js";
+import ShimmerManager from "./shimmer-region.js";
 import GroundFlicker from "./ground-flicker.js";
 import DeltaReport from "./delta-report.js";
 
