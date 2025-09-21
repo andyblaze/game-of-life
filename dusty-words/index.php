@@ -1,8 +1,14 @@
-<!DOCTYPE html>
+<?php 
+require '../utils.php';
+$crud = new JsonCrud('../gallery-data/data.json');
+$page = $crud->read(pageSlug());
+?><!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dusty Words - Random Placement</title>
+<title><?=$page->data->page_title;?></title>
+<meta name="description" content="<?=$page->data->description;?>" />
+<meta name="keywords" content="<?=$page->data->keywords;?>" />
 <style>
   body {
     margin: 0;
