@@ -28,6 +28,10 @@ const cfg = [
     { h:0, s:"0%", l:"27%", a:1 }       // #444444 occasional ash/ember fade
 ];
 const shp = ["circle", "rect", "triangle", "line"];
+
+function colorToStr(c) {
+    return "hsla(" + Object.values(c).join(",") + ")";
+}
 class Particle {
   constructor(x, y, height) {
     this.originX = x;
@@ -84,8 +88,7 @@ class Particle {
         ctx.fill();
     }
   draw(ctx) {
-    const joined = Object.values(this.color).join(",");
-    ctx.fillStyle = "hsla(" + joined + ")";
+    ctx.fillStyle = colorToStr(this.color);
         switch(this.shape) {
           case 'circle':
             this.drawCircle(ctx);
