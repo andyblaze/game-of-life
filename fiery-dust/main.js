@@ -6,32 +6,33 @@ import ShimmerManager from "./shimmer-region.js";
 import GroundFlicker from "./ground-flicker.js";
 import DeltaReport from "./delta-report.js";
 
-const canvas = document.getElementById("onscreen");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const onscreen = document.getElementById("onscreen");
+const onCtx = onscreen.getContext("2d");
+onscreen.width = window.innerWidth;
+onscreen.height = window.innerHeight;
 
 const particleManager = new ParticleManager(CONFIG.PARTICLES);
-const wordManager = new WordManager(canvas, particleManager, CONFIG.WORD);
+const wordManager = new WordManager(onscreen, particleManager, CONFIG.WORD);
 const emberManager = new EmberManager(CONFIG.EMBER);
 const shimmerManager = new ShimmerManager(CONFIG.SHIMMER);
 const groundFlicker = new GroundFlicker(CONFIG.GROUND_FLICKER);
 
 let lastTime = performance.now();
+
 const bg = new Image();
 bg.src = "bg.jpg";
+
 function animate(timestamp) { 
-    if ( isNaN(timestamp) ) 
-        timestamp = 0;
+    if ( isNaN(timestamp) ) timestamp = 0;
     const dt = timestamp - lastTime; // milliseconds since last frame
-    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-    shimmerManager.update(dt, ctx);
-    particleManager.update(ctx);
+    onCtx.drawImage(bg, 0, 0, onscreen.width, onscreen.height);
+    shimmerManager.update(dt, onCtx);
+    particleManager.update(onCtx);
     
-    groundFlicker.update(dt, ctx);
+    groundFlicker.update(dt, onCtx);
     
     lastTime = timestamp;
-    emberManager.update(dt, ctx);
+    emberManager.update(dt, onCtx);
     wordManager.update();
     DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
