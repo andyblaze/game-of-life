@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Particle Fountain (Cone, Smooth Start)</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const cfg = [
+    { h:16, s:"100%", l:"54%", a:1 },   // #ff4500 orange-red (flame core)
+    { h:9, s:"100%", l:"64%", a:1 },    // #ff6347 tomato orange
+    { h:39, s:"100%", l:"50%", a:1 },   // #ffa500 classic orange
+    { h:51, s:"100%", l:"50%", a:1 },   // #ffd700 golden yellow
+    { h:60, s:"100%", l:"80%", a:1 },   // #ffff99 pale yellow spark
+    { h:0, s:"100%", l:"50%", a:1 },    // #ff0000 deep red ember
+    { h:0, s:"100%", l:"25%", a:1 },    // #800000 smoldering dark red
+    { h:0, s:"0%", l:"27%", a:1 }       // #444444 occasional ash/ember fade
+];
+const shp = ["circle", "rect", "triangle", "line"];
+class Particle {
+  constructor(x, y, height) {
+    this.originX = x;
+    this.originY = y;
+    this.height = height;
+    this.color = {...cfg[Math.floor(Math.random() * cfg.length)]};
+    this.shape = shp[Math.floor(Math.random() * shp.length)];
+    this.reset(true); // true = randomize start
+  }
+
+  reset(randomize = false) {
+    this.x = this.originX;
+    this.y = this.originY;
+    this.color.a = 1;
+
+    // Random cone spread (-20° to +20°)
+    const angle = (Math.random() * 16 - 8) * (Math.PI / 180);
+    const speed = 3 + Math.random() * 2;
+
+    this.vx = Math.sin(angle) * speed;
+    this.vy = -Math.cos(angle) * speed;
+    this.size = 2 + Math.random() * 2;
+
+    if (randomize) {
+      // start partway through the fountain’s height
+      const offset = Math.random() * this.height;
+      this.y -= offset;
+      this.color.a = 1 - (offset / this.height);
+    }
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    const progress = (this.originY - this.y) / this.height;
+    this.color.a = Math.max(1 - progress, 0);
+
+    if (this.y <= this.originY - this.height) {
+      this.reset();
+    }
+  }
+    drawCircle(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size / 2, 0, 2*Math.PI);
+        ctx.fill();
+    }
+    drawTriangle(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y - this.size/2);
+        ctx.lineTo(this.x - this.size/2, this.y + this.size/2);
+        ctx.lineTo(this.x + this.size/2, this.y + this.size/2);
+        ctx.closePath();
+        ctx.fill();
+    }
+  draw(ctx) {
+    const joined = Object.values(this.color).join(",");
+    ctx.fillStyle = "hsla(" + joined + ")";
+        switch(this.shape) {
+          case 'circle':
+            this.drawCircle(ctx);
+            break;
+
+          case 'rect':
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            break;
+
+          case 'triangle':
+            this.drawTriangle(ctx);
+            break;
+
+          case 'line':
+            ctx.fillRect(this.x, this.y, 1, this.size); // very short vertical line
+            break;
+        }
+  }
+}
+
+class Fountain {
+  constructor(x, y, height, count) {
+    this.particles = [];
+    for (let i = 0; i < count; i++) {
+      this.particles.push(new Particle(x, y, height));
+    }
+  }
+
+  updateAndDraw(ctx) {
+    for (const p of this.particles) {
+      p.update();
+      p.draw(ctx);
+    }
+  }
+}
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+resizeCanvas();
+
+const fountain = new Fountain(800, 900, 400, 200);
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  fountain.updateAndDraw(ctx);
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+window.addEventListener('resize', resizeCanvas);
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+</script>
+</body>
+</html>
