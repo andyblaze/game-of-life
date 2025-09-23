@@ -36,6 +36,10 @@ function randomFrom(arr) {
     const index = Math.floor(Math.random() * arr.length);
     return arr[index];
 }
+function mt_rand(min = 0, max = 2147483647) {
+    if (min > max) [min, max] = [max, min]; // swap if min > max
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 class Particle {
   constructor(x, y, config) {
@@ -142,7 +146,7 @@ class Firework {
     }
 }
 
-class Fountain extends Firework {
+class StarFountain extends Firework {
     constructor(position) {
         super();
         this.spawnPoint = position;
@@ -188,17 +192,144 @@ class FountainFx extends FX {
         }
     }
 }
+class Ember {
+    constructor(config) {
+        this.config = config;
+        this.trailLength = config.TRAIL_LENGTH;
+        this.maxLife = config.LIFETIME; // ms        
+        this.init(this.config);
+    }
+    init(config) {
+        // Spawn position (rectangle)
+        this.x = config.SPAWN_X;// + (Math.random() - 0.5) * config.SPAWN_WIDTH;
+        this.y = config.SPAWN_Y;// - (Math.random() * config.SPAWN_HEIGHT);
+
+        // Random velocity in a cone
+        const angleDeg = config.MIN_ANGLE + Math.random() * (config.MAX_ANGLE - config.MIN_ANGLE);
+        const rad = angleDeg * Math.PI / 180;
+        const speed = config.MIN_SPEED + Math.random() * (config.MAX_SPEED - config.MIN_SPEED);
+        this.vx = Math.sin(rad) * speed;
+        this.vy = -Math.cos(rad) * speed; // negative because canvas y=0 is top
+
+        // Color pick
+        //const colorIndex = randomFrom(config.COLORS);.length - 1);
+        this.color = {...randomFrom(config.COLORS)};
+
+        this.trail = [];
+
+        // Lifetime
+        this.life = 0;
+        this.alive = true;
+    }
+    update(dt) {
+        // dt = time delta in ms
+        this.life += dt;
+        this.color.a = Math.max(0, 1 - this.life / this.maxLife);
+        if (this.life >= this.maxLife && this.color.a <= 0) {
+            this.alive = false;
+            this.init(this.config);
+        }
+
+        // Add previous position to trail
+        this.trail.push({x: this.x, y: this.y});
+        if (this.trail.length > this.trailLength) this.trail.shift();
+
+        // Apply motion
+        this.vy += this.config.GRAVITY;
+        this.vx += (Math.random() - 0.5) * (this.config.WIND);
+        this.x += this.vx;
+        this.y += this.vy;
+    }
+    draw(ctx) {
+        // Draw trail
+        for (let i = 0; i < this.trail.length; i++) {
+            const p = this.trail[i];          
+            ctx.fillStyle = colorToStr(this.color);//.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
+            ctx.fillRect(p.x, p.y, 2, 2);
+        }
+        // Draw current position
+        ctx.fillStyle = colorToStr(this.color);//`hsla(${this.color.h}, ${this.color.s}, ${this.color.l}, ${this.color.a})`;
+        ctx.fillRect(this.x, this.y, 2, 2);
+    }
+}
+class EmberManager {
+    static defaults = {
+        POOL_SIZE: 30,
+        SPAWN_X: 400,        // center of fire
+        SPAWN_Y: 500,      // approximate fire top
+        SPAWN_WIDTH: 1,                   // horizontal variation
+        SPAWN_HEIGHT: 1,                  // vertical variation
+        SPAWN_CHANCE: 0.9,
+        MIN_SPEED: 2,                      // initial velocity min
+        MAX_SPEED: 4,                      // initial velocity max
+        MIN_ANGLE: -30,                    // degrees from vertical
+        MAX_ANGLE: 30,                     // degrees from vertical
+        LIFETIME: 4000,                    // milliseconds
+            COLORS: [
+            {h:16, s:"100%", l:"54%", a:1},          // bright yellow
+            {h:30, s:"100%", l:"50%", a:1},          // orange
+            {h:0, s:"100%", l:"40%", a:1}            // red ember
+        ],
+        TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
+        GRAVITY: 0.02,                     // optional downward pull
+        WIND: 0.02                          // optional horizontal drift
+    };
+    constructor(config) {
+        this.config = { ...EmberManager.defaults };
+        this.embers = [];
+        this.active = [];
+        this.animating = false;
+        this.spawnTimer = 0; // counts down
+        this.nextSpawn = this.randomSpawnTime(); // time until next spawn (s)
+        for ( let i = 0; i < this.config.POOL_SIZE; i++ ) {
+            this.embers.push(new Ember(this.config));
+        }
+    }
+    randomSpawnTime() {
+        return mt_rand(3, 8) * 1000;
+    }
+    spawn() {
+        if ( Math.random() > this.config.SPAWN_CHANCE ) return false;
+        const count = mt_rand(1, 3);
+        for (let i = 0; i < count; i++) {
+            const ember = randomFrom(this.embers);
+            this.active.push(ember);
+        }
+        return true;
+    }
+    updateAndDraw(dt, ctx) {
+        const deltaSeconds = dt / 1000;
+        this.spawnTimer += deltaSeconds; console.log(this.spawnTimer >= this.nextSpawn);
+        if (this.spawnTimer >= this.nextSpawn) {
+            if ( this.spawn() === true ) {
+                this.spawnTimer = 0;
+                this.nextSpawn = this.randomSpawnTime();
+            }
+            else this.active = [];
+        }
+        // update/draw active embers
+        for (const a of this.active) {
+            a.update(dt);
+            a.draw(ctx);
+        }
+    }
+}
+class LavaSprayFx extends FX {
+}
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 resizeCanvas();
 
-const fountain = new Fountain({x:800, y:500, z:1});//{x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
-
+const fountain = new StarFountain({x:800, y:500, z:1});//{x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
+const emberManager = new EmberManager();
+let lastTime = performance.now();
 function animate(timestamp) {
     if ( isNaN(timestamp) ) timestamp = 0;
+    const dt = timestamp - lastTime; // milliseconds since last frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     fountain.updateAndDraw(timestamp, ctx);
+    //emberManager.updateAndDraw(dt, ctx);
     requestAnimationFrame(animate);
 }
 

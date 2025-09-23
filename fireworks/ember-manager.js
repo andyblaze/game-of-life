@@ -62,15 +62,36 @@ class Ember {
     }
 }
 export default class EmberManager {
+    static defaults = {
+        POOL_SIZE: 30,
+        SPAWN_X: screenW / 2,        // center of fire
+        SPAWN_Y: screenH - scaleY(150),      // approximate fire top
+        SPAWN_WIDTH: 20,                   // horizontal variation
+        SPAWN_HEIGHT: 2,                  // vertical variation
+        SPAWN_CHANCE: 0.1,
+        MIN_SPEED: 2,                      // initial velocity min
+        MAX_SPEED: 5,                      // initial velocity max
+        MIN_ANGLE: -30,                    // degrees from vertical
+        MAX_ANGLE: 30,                     // degrees from vertical
+        LIFETIME: 4000,                    // milliseconds
+            COLORS: [
+            {h:16, s:"100%", l:"54%", a:1},          // bright yellow
+            {h:30, s:"100%", l:"50%", a:1},          // orange
+            {h:0, s:"100%", l:"40%", a:1}            // red ember
+        ],
+        TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
+        GRAVITY: 0.02,                     // optional downward pull
+        WIND: 0.02                          // optional horizontal drift
+    };
     constructor(config) {
-        this.config = config;
+        this.config = { ...EmberManager.defaults };
         this.embers = [];
         this.active = [];
         this.animating = false;
         this.spawnTimer = 0; // counts down
         this.nextSpawn = this.randomSpawnTime(); // time until next spawn (s)
-        for ( let i = 0; i < config.POOL_SIZE; i++ ) {
-            this.embers.push(new Ember(config));
+        for ( let i = 0; i < this.config.POOL_SIZE; i++ ) {
+            this.embers.push(new Ember(this.config));
         }
     }
     randomSpawnTime() {
