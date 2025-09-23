@@ -32,13 +32,18 @@ const shapes = ["circle", "rect", "triangle", "line"];
 function colorToStr(c) {
     return "hsla(" + Object.values(c).join(",") + ")";
 }
+function randomFrom(arr) {
+    const index = Math.floor(Math.random() * arr.length);
+    return arr[index];
+}
+
 class Particle {
   constructor(x, y, config) {
     this.originX = x;
     this.originY = y;
     this.maxHeight = config.maxHeight;
-    this.color = config.colors[Math.floor(Math.random() * config.colors.length)];
-    this.shape = config.shapes[Math.floor(Math.random() * config.shapes.length)];
+    this.color = randomFrom(config.colors);
+    this.shape = randomFrom(config.shapes);
     this.reset(true); // true = randomize start
   }
 
@@ -132,8 +137,15 @@ class Firework {
             e.updateAndDraw(dt, ctx);
         }
     }
-    spawn(position) {
+    spawnAt(position) {
         this.spawnPoint = position;
+    }
+}
+
+class Fountain extends Firework {
+    constructor() {
+        super();
+        this.effects.push(new FountainFx({x:800, y:500, z:1}, {colors, shapes, maxHeight:400}));
     }
 }
 
@@ -180,13 +192,13 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 resizeCanvas();
 
-const fountain = new FountainFx({x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
+const fountain = new Fountain();//{x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
 
 function animate(timestamp) {
     if ( isNaN(timestamp) ) timestamp = 0;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  fountain.updateAndDraw(timestamp, ctx);
-  requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    fountain.updateAndDraw(timestamp, ctx);
+    requestAnimationFrame(animate);
 }
 
 animate();
