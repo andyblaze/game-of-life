@@ -143,9 +143,10 @@ class Firework {
 }
 
 class Fountain extends Firework {
-    constructor() {
+    constructor(position) {
         super();
-        this.effects.push(new FountainFx({x:800, y:500, z:1}, {colors, shapes, maxHeight:400}));
+        this.spawnPoint = position;
+        this.effects.push(new FountainFx(position, {colors, shapes, maxHeight:400}));
     }
 }
 
@@ -192,7 +193,7 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 resizeCanvas();
 
-const fountain = new Fountain();//{x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
+const fountain = new Fountain({x:800, y:500, z:1});//{x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
 
 function animate(timestamp) {
     if ( isNaN(timestamp) ) timestamp = 0;
