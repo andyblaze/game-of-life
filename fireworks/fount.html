@@ -17,28 +17,28 @@
 <body>
 <canvas id="canvas"></canvas>
 <script>
-const cfg = [
-    { h:16, s:"100%", l:"54%", a:1 },   // #ff4500 orange-red (flame core)
-    { h:9, s:"100%", l:"64%", a:1 },    // #ff6347 tomato orange
-    { h:39, s:"100%", l:"50%", a:1 },   // #ffa500 classic orange
-    { h:51, s:"100%", l:"50%", a:1 },   // #ffd700 golden yellow
-    { h:60, s:"100%", l:"80%", a:1 },   // #ffff99 pale yellow spark
-    { h:0, s:"100%", l:"50%", a:1 },    // #ff0000 deep red ember
-    { h:0, s:"100%", l:"25%", a:1 },    // #800000 smoldering dark red
-    { h:0, s:"0%", l:"27%", a:1 }       // #444444 occasional ash/ember fade
+const colors = [
+    { h:16, s:"100%", l:"54%", a:1 },   
+    { h:9, s:"100%", l:"64%", a:1 },    
+    { h:39, s:"100%", l:"50%", a:1 },   
+    { h:51, s:"100%", l:"50%", a:1 },   
+    { h:60, s:"100%", l:"80%", a:1 },  
+    { h:0, s:"100%", l:"50%", a:1 },    
+    { h:0, s:"100%", l:"25%", a:1 },   
+    { h:0, s:"0%", l:"27%", a:1 }      
 ];
-const shp = ["circle", "rect", "triangle", "line"];
+const shapes = ["circle", "rect", "triangle", "line"];
 
 function colorToStr(c) {
     return "hsla(" + Object.values(c).join(",") + ")";
 }
 class Particle {
-  constructor(x, y, height) {
+  constructor(x, y, config) {
     this.originX = x;
     this.originY = y;
-    this.height = height;
-    this.color = {...cfg[Math.floor(Math.random() * cfg.length)]};
-    this.shape = shp[Math.floor(Math.random() * shp.length)];
+    this.maxHeight = config.maxHeight;
+    this.color = config.colors[Math.floor(Math.random() * config.colors.length)];
+    this.shape = config.shapes[Math.floor(Math.random() * config.shapes.length)];
     this.reset(true); // true = randomize start
   }
 
@@ -56,21 +56,21 @@ class Particle {
     this.size = 2 + Math.random() * 2;
 
     if (randomize) {
-      // start partway through the fountain’s height
-      const offset = Math.random() * this.height;
+      // start partway through the fountain’s maxHeight
+      const offset = Math.random() * this.maxHeight;
       this.y -= offset;
-      this.color.a = 1 - (offset / this.height);
+      this.color.a = 1 - (offset / this.maxHeight);
     }
   }
 
-  update() {
+  update(dt) {
     this.x += this.vx;
     this.y += this.vy;
 
-    const progress = (this.originY - this.y) / this.height;
+    const progress = (this.originY - this.y) / this.maxHeight;
     this.color.a = Math.max(1 - progress, 0);
 
-    if (this.y <= this.originY - this.height) {
+    if (this.y <= this.originY - this.maxHeight) {
       this.reset();
     }
   }
@@ -109,31 +109,83 @@ class Particle {
   }
 }
 
-class Fountain {
-  constructor(x, y, height, count) {
-    this.particles = [];
-    for (let i = 0; i < count; i++) {
-      this.particles.push(new Particle(x, y, height));
-    }
-  }
+class Factory {
+    static registry = {
+        //FountainFx
+        //RocketEffect
+    };
 
-  updateAndDraw(ctx) {
-    for (const p of this.particles) {
-      p.update();
-      p.draw(ctx);
+    static create(className, config) {
+        const Cls = this.registry[className];
+        if (!Cls) throw new Error(`Unknown class: ${className}`);
+        return new Cls(config);
     }
-  }
+}
+
+class Firework {
+    constructor() {
+        this.effects = [];
+        this.spawnPoint = {};
+    }
+    updateAndDraw(dt, ctx) {
+        for (const e of this.effects) {
+            e.updateAndDraw(dt, ctx);
+        }
+    }
+    spawn(position) {
+        this.spawnPoint = position;
+    }
+}
+
+class FX {
+    constructor() {
+        this.spawnPoint = {};
+        this.initialised = false;
+    }
+    doSetup() {}
+    setup() {
+        this.doSetup();
+        this.initialised = true;
+    }
+}
+
+class FountainFx extends FX {
+    static defaults = {
+        numParticles: 400,
+        maxHeight:200,
+        color: {h:0, s:"0%", l:"100%", a:1},
+        shape:"circle"
+    };
+    constructor(position, overrides={}) {
+        super();
+        this.spawnPoint = position;
+        this.config = { ...FountainFx.defaults, ...overrides };
+        this.particles = [];
+    }
+    doSetup() {
+        for (let i = 0; i < this.config.numParticles; i++) {
+            this.particles.push(new Particle(this.spawnPoint.x, this.spawnPoint.y, this.config));
+        }
+    }
+    updateAndDraw(dt, ctx) {
+        if ( false === this.initialised ) this.setup();
+        for (const p of this.particles) {
+            p.update(dt);
+            p.draw(ctx);
+        }
+    }
 }
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 resizeCanvas();
 
-const fountain = new Fountain(800, 900, 400, 200);
+const fountain = new FountainFx({x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
 
-function animate() {
+function animate(timestamp) {
+    if ( isNaN(timestamp) ) timestamp = 0;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  fountain.updateAndDraw(ctx);
+  fountain.updateAndDraw(timestamp, ctx);
   requestAnimationFrame(animate);
 }
 
