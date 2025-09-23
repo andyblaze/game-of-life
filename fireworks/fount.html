@@ -259,7 +259,7 @@ class EmberManager {
         SPAWN_Y: 500,      // approximate fire top
         SPAWN_WIDTH: 1,                   // horizontal variation
         SPAWN_HEIGHT: 1,                  // vertical variation
-        SPAWN_CHANCE: 0.9,
+        SPAWN_CHANCE: 0,
         MIN_SPEED: 2,                      // initial velocity min
         MAX_SPEED: 4,                      // initial velocity max
         MIN_ANGLE: -30,                    // degrees from vertical
@@ -286,7 +286,7 @@ class EmberManager {
         }
     }
     randomSpawnTime() {
-        return mt_rand(3, 8) * 1000;
+        return mt_rand(3, 8);
     }
     spawn() {
         if ( Math.random() > this.config.SPAWN_CHANCE ) return false;
@@ -298,8 +298,8 @@ class EmberManager {
         return true;
     }
     updateAndDraw(dt, ctx) {
-        const deltaSeconds = dt / 1000;
-        this.spawnTimer += deltaSeconds; console.log(this.spawnTimer >= this.nextSpawn);
+        const deltaSeconds = dt / 1000000;
+        this.spawnTimer += deltaSeconds; //console.log(this.spawnTimer, this.nextSpawn);
         if (this.spawnTimer >= this.nextSpawn) {
             if ( this.spawn() === true ) {
                 this.spawnTimer = 0;
@@ -329,7 +329,7 @@ function animate(timestamp) {
     const dt = timestamp - lastTime; // milliseconds since last frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     fountain.updateAndDraw(timestamp, ctx);
-    //emberManager.updateAndDraw(dt, ctx);
+    emberManager.updateAndDraw(dt, ctx);
     requestAnimationFrame(animate);
 }
 
