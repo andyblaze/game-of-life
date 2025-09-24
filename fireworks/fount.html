@@ -42,47 +42,45 @@ function mt_rand(min = 0, max = 2147483647) {
 }
 
 class Particle {
-  constructor(x, y, config) {
-    this.originX = x;
-    this.originY = y;
-    this.maxHeight = config.maxHeight;
-    this.color = randomFrom(config.colors);
-    this.shape = randomFrom(config.shapes);
-    this.reset(true); // true = randomize start
-  }
-
-  reset(randomize = false) {
-    this.x = this.originX;
-    this.y = this.originY;
-    this.color.a = 1;
-
-    // Random cone spread (-20° to +20°)
-    const angle = (Math.random() * 16 - 8) * (Math.PI / 180);
-    const speed = 3 + Math.random() * 2;
-
-    this.vx = Math.sin(angle) * speed;
-    this.vy = -Math.cos(angle) * speed;
-    this.size = 2 + Math.random() * 2;
-
-    if (randomize) {
-      // start partway through the fountain’s maxHeight
-      const offset = Math.random() * this.maxHeight;
-      this.y -= offset;
-      this.color.a = 1 - (offset / this.maxHeight);
+    constructor(x, y, config) {
+        this.originX = x;
+        this.originY = y;
+        this.maxHeight = config.maxHeight;
+        this.color = randomFrom(config.colors);
+        this.shape = randomFrom(config.shapes);
+        this.reset(true); // true = randomize start
     }
-  }
+    reset(randomize = false) {
+        this.x = this.originX;
+        this.y = this.originY;
+        this.color.a = 1;
 
-  update(dt) {
-    this.x += this.vx;
-    this.y += this.vy;
+        // Random cone spread (-20° to +20°)
+        const angle = (Math.random() * 16 - 8) * (Math.PI / 180);
+        const speed = 3 + Math.random() * 2;
 
-    const progress = (this.originY - this.y) / this.maxHeight;
-    this.color.a = Math.max(1 - progress, 0);
+        this.vx = Math.sin(angle) * speed;
+        this.vy = -Math.cos(angle) * speed;
+        this.size = 2 + Math.random() * 2;
 
-    if (this.y <= this.originY - this.maxHeight) {
-      this.reset();
+        if (randomize) {
+            // start partway through the fountain’s maxHeight
+            const offset = Math.random() * this.maxHeight;
+            this.y -= offset;
+            this.color.a = 1 - (offset / this.maxHeight);
+        }
     }
-  }
+    update(dt) {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        const progress = (this.originY - this.y) / this.maxHeight;
+        this.color.a = Math.max(1 - progress, 0);
+
+        if (this.y <= this.originY - this.maxHeight) {
+            this.reset();
+        }
+    }
     drawCircle(ctx) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size / 2, 0, 2*Math.PI);
@@ -96,7 +94,7 @@ class Particle {
         ctx.closePath();
         ctx.fill();
     }
-  draw(ctx) {
+    draw(ctx) {
     ctx.fillStyle = colorToStr(this.color);
         switch(this.shape) {
           case 'circle':
@@ -115,7 +113,7 @@ class Particle {
             ctx.fillRect(this.x, this.y, 1, this.size); // very short vertical line
             break;
         }
-  }
+    }
 }
 
 class Factory {
@@ -199,187 +197,19 @@ function colorToStr(c) {
   return `hsla(${c.h}, ${c.s}, ${c.l}, ${c.a})`;
 }
 
-/**
- * Spark - single spark with a short trail
- * config:
- *   x, y             = spawn position (px)
- *   speed            = initial speed (px/s) [default 300]
- *   angleFromVertical= degrees from vertical (0 = straight up, + = right) [default 0]
- *   lifetime         = seconds [default 4]
- *   trailLength      = number of positions to keep in trail [default 8]
- *   color            = {h,s,l,a} base color (a is starting alpha) [default white]
- *   gravity          = px/s^2 downward positive [default 600]
- *   wind             = number px/s^2 horizontal acceleration OR function(age)=>acc [default 0]
- */
-class Spark {
-  constructor(config = {}) {
-    // position
-    this.x = config.x || 0;
-    this.y = config.y || 0;
-
-    // params
-    this.speed = typeof config.speed === 'number' ? config.speed : 300;
-    this.angleDeg = typeof config.angleFromVertical === 'number' ? config.angleFromVertical : 0;
-    this.lifetime = typeof config.lifetime === 'number' ? config.lifetime : 4.0;
-    this.trailLength = typeof config.trailLength === 'number' ? config.trailLength : 8;
-
-    this.color = config.color ? { ...config.color } : { h: 0, s: '0%', l: '100%', a: 1 };
-
-    // forces
-    this.gravity = typeof config.gravity === 'number' ? config.gravity : 600; // px/s^2
-    this.wind = typeof config.wind !== 'undefined' ? config.wind : 0; // number or function(age)
-
-    // compute initial velocities from angle from vertical
-    // angleFromVertical: 0 = up, + = tilt right, - = tilt left
-    const a = (this.angleDeg * Math.PI) / 180;
-    this.vx = Math.sin(a) * this.speed;
-    this.vy = -Math.cos(a) * this.speed;
-
-    // lifetime tracking
-    this.age = 0;
-    this.dead = false;
-
-    // trail: store recent positions; initialize with current pos so trail doesn't show as empty
-    this.trail = [];
-    for (let i = 0; i < this.trailLength; i++) this.trail.push({ x: this.x, y: this.y });
-
-    // keep base alpha for color fade
-    this.baseAlpha = (typeof this.color.a === 'number') ? this.color.a : 1;
-    // particle size
-    this.size = typeof config.size === 'number' ? config.size : (1.5 + Math.random() * 2.5);
-  }
-
-  // merge/override config after creation if you want
-  apply(cfg = {}) {
-    if (typeof cfg.speed === 'number') this.speed = cfg.speed;
-    if (typeof cfg.angleFromVertical === 'number') {
-      this.angleDeg = cfg.angleFromVertical;
-      const a = (this.angleDeg * Math.PI) / 180;
-      this.vx = Math.sin(a) * this.speed;
-      this.vy = -Math.cos(a) * this.speed;
-    }
-    if (typeof cfg.lifetime === 'number') this.lifetime = cfg.lifetime;
-    if (typeof cfg.trailLength === 'number') {
-      this.trailLength = cfg.trailLength;
-      // trim/expand trail array
-      while (this.trail.length > this.trailLength) this.trail.shift();
-      while (this.trail.length < this.trailLength) this.trail.unshift({ x: this.x, y: this.y });
-    }
-    if (cfg.color) this.color = { ...this.color, ...cfg.color };
-    if (typeof cfg.gravity === 'number') this.gravity = cfg.gravity;
-    if (cfg.wind !== undefined) this.wind = cfg.wind;
-    if (typeof cfg.size === 'number') this.size = cfg.size;
-    return this;
-  }
-
-  update(dt) {
-    if (this.dead) return;
-    // dt in seconds
-    this.age += dt;
-
-    // get wind acceleration (px/s^2)
-    const windAccel = (typeof this.wind === 'function') ? this.wind(this.age) : this.wind;
-
-    // integrate velocities (semi-implicit Euler)
-    this.vx += windAccel * dt;
-    this.vy += this.gravity * dt;
-
-    // integrate position
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-
-    // push to trail (head at end)
-    this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > this.trailLength) this.trail.shift();
-
-    // die after lifetime
-    if (this.age >= this.lifetime && this.color.a <= 0) {
-      this.dead = true;
-    }
-  }
-
-  draw(ctx) {
-    // don't draw if dead
-    if (this.dead) return;
-
-    // compute alpha fading to 0 over lifetime
-    const t = Math.max(0, Math.min(1, this.age / this.lifetime)); // 0..1
-    const alpha = this.baseAlpha * (1 - t);
-
-    // draw trail: fade older segments more
-    // We'll draw small circles along trail with decreasing alpha & size
-    const trailCount = this.trail.length;
-    for (let i = 0; i < trailCount; i++) {
-      const p = this.trail[i];
-      const pT = i / (trailCount - 1 || 1); // 0..1 along trail
-      const segAlpha = alpha * pT * 0.9; // head stronger, tail weaker
-      const segSize = this.size * (0.6 + 0.6 * pT); // tail slightly smaller
-
-      const col = { ...this.color, a: segAlpha };
-      ctx.fillStyle = colorToStr(col);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, segSize, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // draw head (brighter)
-    const headCol = { ...this.color, a: Math.min(1, alpha * 1.25) };
-    ctx.fillStyle = colorToStr(headCol);
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size * 1.1, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  reset(x, y, angleFromVertical, speed) {
-    // optional reset to reuse the object
-    this.x = (typeof x === 'number') ? x : this.x;
-    this.y = (typeof y === 'number') ? y : this.y;
-    if (typeof angleFromVertical === 'number') this.angleDeg = angleFromVertical;
-    if (typeof speed === 'number') this.speed = speed;
-
-    const a = (this.angleDeg * Math.PI) / 180;
-    this.vx = Math.sin(a) * this.speed;
-    this.vy = -Math.cos(a) * this.speed;
-
-    this.age = 0;
-    this.dead = false;
-
-    // reset trail to origin
-    this.trail = [];
-    for (let i = 0; i < this.trailLength; i++) this.trail.push({ x: this.x, y: this.y });
-  }
-}
-
-
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 resizeCanvas();
 
 const fountain = new StarFountain({x:800, y:500, z:1});//{x:800, y:500, z:1}, {colors, shapes, maxHeight:400});
-const spark = new Spark({
-  x: 400, y: 500,
-  speed: 0.4,
-  angleFromVertical: 12, // degrees tilt to the right
-  lifetime: 4,
-  trailLength: 8,
-  color: { h: 50, s: "90%", l: "60%", a: 1 },
-  gravity: 0.02,
-  wind: 0.2
-});
+
 let lastTime = performance.now();
 function animate(timestamp) {
     if ( isNaN(timestamp) ) timestamp = 0;
     const dt = timestamp - lastTime; // milliseconds since last frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     fountain.updateAndDraw(timestamp, ctx);
-    spark.update(dt/1000);
-    spark.draw(ctx);
-    if (spark.dead) {
-        spark.reset(400, 500, 12, 4);
-        // maybe tweak color or other props via apply()
-        spark.apply({ color: { h: Math.random()*60, s: "90%", l: "60%", a: 1 }});
-    }
     requestAnimationFrame(animate);
 }
 
