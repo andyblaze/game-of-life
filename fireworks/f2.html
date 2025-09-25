@@ -16,62 +16,176 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let lastTime = performance.now();
+
 
 // one particle
-class pc {
-  constructor() {
-    this.lifetime = Math.floor(Math.random() * 200) + 100; // frames
-    this.reset();
+class Particle {
+    constructor(x, y) {
+        this.originalX = x;
+        this.originalY = y;
+        this.lifetime = Math.floor(Math.random() * 200) + 100; // frames
+        this.history = [];        // past positions
+        this.maxTrail = 8;       // how many to keep
+        this.reset();
+    }
+    reset() {
+        this.x = this.originalX;
+        this.y = this.originalY;
+        const baseAngle = -Math.PI / 2; // straight up
+        const spread = Math.PI / 1.3;     // cone - more number = tighter cone
+        const angle = baseAngle + (Math.random() - 0.5) * spread;
+        const speed = 2 + Math.random() * 3;         // 2–5 px/frame
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed - 3;       // bias upward
+        this.age = 0;  
+        this.alpha = 1;
+        this.history = [];
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        this.history.push({ x: this.x, y: this.y });
+        if (this.history.length > this.maxTrail) {
+            this.history.shift(); // remove oldest
+        }
+
+        this.vy += 0.05; // gravity per frame
+        this.vx += Math.random() * 0.01; // wind 
+        this.age++;
+        this.alpha = 1 - this.age / this.lifetime;
+
+        // reset when dead
+        if (this.age > this.lifetime || this.alpha <= 0) {
+            this.reset();
+        }  
+    }
+    drawArc(ctx, x, y, sz, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, sz, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    drawtrail(ctx) {
+        ctx.beginPath();
+        for (let i = 0; i < this.history.length; i++) {
+            const p = this.history[i];
+            const trailAlpha = (i / this.history.length) * this.alpha;
+            this.drawArc(ctx, p.x, p.y, 2, `rgba(255, 200, 100, ${trailAlpha})`);
+        }
+        ctx.stroke();
+    }
+    draw(ctx) {
+        this.drawtrail(ctx);
+        this.drawArc(ctx, this.x, this.y, 2, `rgba(255,200,100,${this.alpha})`);
+    }
+}
+class SprayFX {
+    constructor(x, y) {
+        this.particles = [];
+        for ( let i = 0; i < 20; i++)
+            this.particles.push(new Particle(x, y));
+    }
+    updateAndDraw(dt, ctx) {
+        for ( const p of this.particles ) {
+            p.update(dt);
+            p.draw(ctx);
+        }    
+    }
+}
+
+class Rocket {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.vx = 0;
+    this.vy = -5; // upward
+    this.color = color;
+    this.age = 0;
+    this.lifetime = 60;   // frames until explosion
+    this.exploded = false;
+    this.sparks = [];
   }
-  reset() {
-    this.x = 960;
-    this.y = 700;
-const baseAngle = -Math.PI / 2; // straight up
-const spread = Math.PI / 1.3;     // cone - more number = tighter cone
-const angle = baseAngle + (Math.random() - 0.5) * spread;
-const speed = 2 + Math.random() * 3;         // 2–5 px/frame
-this.vx = Math.cos(angle) * speed;
-this.vy = Math.sin(angle) * speed - 3;       // bias upward
-    this.age = 0;  
-    this.alpha = 1;
-  }
+
   update() {
+    if (!this.exploded) {
+      this.age++;
+      this.vy += 0.05;      // gravity
       this.x += this.vx;
       this.y += this.vy;
-      this.vy += 0.05; // gravity per frame
-      this.vx += Math.random() * 0.01; // wind 
-      this.age++;
-      this.alpha = 1 - this.age / this.lifetime;
 
-      // reset when dead
-      if (this.age > this.lifetime || this.alpha <= 0) {
-        this.reset();
-      }  
+      if (this.age >= this.lifetime) {
+        this.explode();
+      }
+    } else {
+      for (const s of this.sparks) s.update();
+      this.sparks = this.sparks.filter(s => s.alpha > 0);
+    }
   }
+
   draw(ctx) {
-      ctx.fillStyle = `rgba(255,200,100,${this.alpha})`;
+    if (!this.exploded) {
+      ctx.fillStyle = this.color;
       ctx.beginPath();
       ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    for (const s of this.sparks) s.draw(ctx);
+  }
+
+  explode() {
+    this.exploded = true;
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 2;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      this.sparks.push(new Particle(this.x, this.y, vx, vy, this.color));
+    }
   }
 }
-//const p = new pc();
-const ps = [];
-for ( let i = 0; i < 16; i++)
-    ps.push(new pc());
-
-function loop(now) {
-  requestAnimationFrame(loop);
-  const dt = now - lastTime;
-  lastTime = now;
-      ctx.fillStyle = "rgba(0,0,0,0.2)"; // translucent clear for trails
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for ( const p of ps ) {
-    p.update();
-    p.draw(ctx);
+    
+class FpsMeter {
+  constructor(interval = 2000) {
+    this.interval = interval;
+    this.lastReport = performance.now();
+    this.min = Infinity;
+    this.max = -Infinity;
   }
+
+  frame(now, dt) {
+    const fps = 1000 / dt;
+
+    this.min = Math.min(this.min, fps);
+    this.max = Math.max(this.max, fps);
+
+    if (now - this.lastReport >= this.interval) {
+      console.log(
+        `FPS → current: ${fps.toFixed(1)}, min: ${this.min.toFixed(
+          1
+        )}, max: ${this.max.toFixed(1)}`
+      );
+      this.min = Infinity;
+      this.max = -Infinity;
+      this.lastReport = now;
+    }
+  }
+}
+
+const fpsMeter = new FpsMeter();
+const spray = new SprayFX(960, 900);
+
+let lastTime = performance.now();
+function loop(now) {
+    requestAnimationFrame(loop);
+    const dt = now - lastTime;
+    lastTime = now;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    spray.updateAndDraw(dt, ctx);
+
+    fpsMeter.frame(now, dt);
 }
 
 loop(lastTime);
