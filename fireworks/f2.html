@@ -85,7 +85,7 @@ class Particle {
         ctx.beginPath();
         for (let i = 0; i < this.history.length; i++) {
             const p = this.history[i];
-            const trailAlpha = (i / this.history.length) * this.alpha;
+            this.color.a = (i / this.history.length) * this.alpha;
             this.drawArc(ctx, p.x, p.y, 2, this.color);
         }
         ctx.stroke();
@@ -116,7 +116,7 @@ class SprayFX {
 class Rocket {
     config = {
         launch: {count:1, lifetime:120, maxTrail:12, color:{h:0, s:"0%", l:"100%", a:1}},
-        explosion: {count:48, lifetime:180, spread:360, maxTrail:16, speed:1.2, color:{ h:0, s:"100%", l:"55%", a:1 }}
+        explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:0, s:"100%", l:"55%", a:1 }}
     };
     constructor(x, y) {
         this.launch = new SprayFX(x, y, this.config.launch);
@@ -168,14 +168,15 @@ class FpsMeter {
 const fpsMeter = new FpsMeter();
 //const spray = new SprayFX(960, 900);
 const rocket = new Rocket(960, 900);
-
+const bg = new Image();
+bg.src = "night-sky.jpg";
 let lastTime = performance.now();
 function loop(now) {
     requestAnimationFrame(loop);
     const dt = now - lastTime;
     lastTime = now;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+    //ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
     rocket.updateAndDraw(dt, ctx);
     //spray.updateAndDraw(dt, ctx);
 
