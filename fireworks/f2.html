@@ -102,6 +102,9 @@ class SprayFX {
             this.particles.push(new Particle(x, y, config));
         }
     }
+    getParticle(idx) {
+        return this.particles[idx];
+    }
     updateAndDraw(dt, ctx) {
         for ( const p of this.particles ) {
             p.update(dt);
@@ -111,19 +114,24 @@ class SprayFX {
 }
 
 class Rocket {
+    config = {
+        launch: {count:1, lifetime:120, maxTrail:12, color:{h:0, s:"0%", l:"100%", a:1}},
+        explosion: {count:48, lifetime:180, spread:360, maxTrail:16, speed:1.2, color:{ h:0, s:"100%", l:"55%", a:1 }}
+    };
     constructor(x, y) {
-        this.launch = new SprayFX(x, y, {count:1, lifetime:120, canReset:true, maxTrail:16, color:{h:0, s:"0%", l:"100%", a:1}});
+        this.launch = new SprayFX(x, y, this.config.launch);
         this.exploded = false;
         this.explosion = null;
     }
     updateAndDraw(dt, ctx) {
-        const x = this.launch.particles[0].x;
-        const y = this.launch.particles[0].y;
-        if ( this.launch.particles[0].isAlive() && this.exploded === false ) {
+        const p = this.launch.getParticle(0);
+        const x = p.x;
+        const y = p.y;
+        if ( p.isAlive() && this.exploded === false ) {
             this.launch.updateAndDraw(dt, ctx);
         }
         else {
-            if ( this.explosion === null ) this.explosion = new SprayFX(x, y, {lifetime:180, count:48, spread:360, maxTrail:32, speed:1.2});
+            if ( this.explosion === null ) this.explosion = new SprayFX(x, y, this.config.explosion);
             this.explosion.updateAndDraw(dt, ctx);
             this.exploded = true;
         }
