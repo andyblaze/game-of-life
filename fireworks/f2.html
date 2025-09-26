@@ -294,6 +294,7 @@ class SparkleFX {
     this.y = y;
     this.count = count;
     this.radius = radius;
+    this.color = randomFrom(colors[4]);//{h:0, s:"0%", l:"100%", a:1};
   }
 
   updateAndDraw(dt, ctx) {
@@ -304,8 +305,8 @@ class SparkleFX {
 
       const px = this.x + Math.cos(angle) * r;
       const py = this.y + Math.sin(angle) * r;
-
-      ctx.fillStyle = "white";
+      this.color.a = 0.4 + Math.random() * 0.3;
+      ctx.fillStyle = colorToStr(randomFrom(colors[4]));
       ctx.beginPath();
       ctx.arc(px, py, 1, 0, Math.PI * 2);
       ctx.fill();
@@ -321,7 +322,7 @@ for ( let i = 0; i < 12; i++ ) {
 for ( let i = 0; i < 6; i++ ) {
     display.push(new SprayFX(mt_rand(200, 1720), 900, {count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
 }
-display.push(new SparkleFX(mt_rand(200, 1720), 900, 12, 20));
+display.push(new SparkleFX(mt_rand(200, 1720), 900, 8, 8));
 
 //const rocket = new Rocket(960, 900);
 const bg = new Image();
