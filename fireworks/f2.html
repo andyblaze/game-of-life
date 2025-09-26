@@ -117,6 +117,9 @@ class SprayFX {
         }
         this.isAlive = allAlive;
     }
+    alive() {
+        return this.isAlive;
+    }
 }
 
 class Rocket {
@@ -131,14 +134,16 @@ class Rocket {
     }
     updateAndDraw(dt, ctx) {
         const p = this.launch.getParticle(0);
-        if ( p.isAlive() ) {
+        if ( this.launch.alive() ) {
             this.launch.updateAndDraw(dt, ctx);
         }
         else {
-            if ( this.explosion === null ) 
+            if ( this.explosion === null ) {
                 this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
+                this.exploded = true;
+            }
             this.explosion.updateAndDraw(dt, ctx);
-            this.exploded = true;
+            //console.log(this.explosion.alive());
         }
     }
 }
