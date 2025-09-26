@@ -222,6 +222,8 @@ class Rocket {
     constructor(x, y) {
         this.originalX = x;
         this.originalY = y;
+        this.launchTime = mt_rand(2, 7) * 60;
+        this.countdown = 0;
         this.reset(x, y);
     }
     reset(x, y) {
@@ -229,6 +231,7 @@ class Rocket {
         this.launch = new SprayFX(x, y, this.config.launch);
         this.exploded = false;
         this.explosion = null;
+        this.countdown = 0;
     }
     initExplosion() {
         const p = this.launch.getParticle(0);
@@ -242,6 +245,8 @@ class Rocket {
             this.reset(this.originalX, this.originalY);
     }
     updateAndDraw(dt, ctx) {
+        this.countdown++;
+        if ( this.countdown < this.launchTime ) return;
         if ( this.launch.active() ) {
             this.launch.updateAndDraw(dt, ctx);
         }
@@ -258,6 +263,7 @@ class FpsMeter {
   constructor(interval = 2000) {
     this.interval = interval;
     this.lastReport = performance.now();
+    this.startTime = this.lastReport;   // track start time
     this.min = Infinity;
     this.max = -Infinity;
   }
@@ -269,11 +275,16 @@ class FpsMeter {
     this.max = Math.max(this.max, fps);
 
     if (now - this.lastReport >= this.interval) {
+      const elapsedMs = now - this.startTime;
+      const minutes = Math.floor(elapsedMs / 60000);
+      const seconds = ((elapsedMs % 60000) / 1000).toFixed(1);
+
       console.log(
-        `FPS → current: ${fps.toFixed(1)}, min: ${this.min.toFixed(
+        `Time: ${minutes}m ${seconds}s → FPS: current ${fps.toFixed(
           1
-        )}, max: ${this.max.toFixed(1)}`
+        )}, min ${this.min.toFixed(1)}, max ${this.max.toFixed(1)}`
       );
+
       this.min = Infinity;
       this.max = -Infinity;
       this.lastReport = now;
@@ -282,9 +293,9 @@ class FpsMeter {
 }
 
 const fpsMeter = new FpsMeter();
-//const spray = new SprayFX(960, 900);
+const spray = new SprayFX(960, 900);
 let display = [];
-for ( i = 0; i < 10; i++ )
+for ( i = 0; i < 12; i++ )
     display.push(new Rocket(mt_rand(200, 1720), 900));
 //const rocket = new Rocket(960, 900);
 const bg = new Image();
@@ -299,7 +310,7 @@ function loop(now) {
     for ( const r of display)
         r.updateAndDraw(dt, ctx);
     //rocket.updateAndDraw(dt, ctx);
-    //spray.updateAndDraw(dt, ctx);
+    spray.updateAndDraw(dt, ctx);
 
     fpsMeter.frame(now, dt);
 }
