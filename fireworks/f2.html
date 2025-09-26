@@ -22,6 +22,10 @@ function degToRad(deg) {
 function colorToStr(c) {
     return "hsla(" + Object.values(c).join(",") + ")";
 }
+function randomFrom(arr) {
+    const index = Math.floor(Math.random() * arr.length);
+    return arr[index];
+}
 // one particle
 class Particle {
     constructor(x, y, config) {
@@ -36,7 +40,7 @@ class Particle {
         this.canReset = false;//config.canReset ?? false;
         this.reset();
     }
-    isAlive() {
+    active() {
         return this.age <= this.lifetime || this.alpha > 0;
     }
     reset() {
@@ -74,7 +78,7 @@ class Particle {
         if (this.age > this.lifetime || this.alpha <= 0) {
             if ( this.canReset ) this.reset();
         }
-        return this.isAlive();
+        return this.active();
     }
     drawArc(ctx, x, y, sz, color) {
         ctx.fillStyle = colorToStr(color);
@@ -97,7 +101,7 @@ class Particle {
 }
 class SprayFX {
     constructor(x, y, config) {
-        this.isAlive = true;
+        this.isActive = true;
         this.particles = [];
         for ( let i = 0; i < config.count; i++ ) {
             this.particles.push(new Particle(x, y, config));
@@ -107,27 +111,32 @@ class SprayFX {
         return this.particles[idx];
     }
     updateAndDraw(dt, ctx) {
-        let allAlive = true;
+        let allActive = true;
         for ( const p of this.particles ) {
-            const alive = p.update(dt);
-            if (alive) 
+            const active = p.update(dt);
+            if (active) 
                 p.draw(ctx);
             else 
-                allAlive = false;
+                allActive = false;
         }
-        this.isAlive = allAlive;
+        this.isActive = allActive;
     }
-    alive() {
-        return this.isAlive;
+    active() {
+        return this.isActive;
+    }
+    inActive() {
+        return ! this.isActive;
     }
 }
 
 class Rocket {
     config = {
         launch: {count:1, lifetime:120, maxTrail:12, color:{h:0, s:"0%", l:"100%", a:1}},
-        explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:0, s:"100%", l:"55%", a:1 }}
+        explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:120, s:"100%", l:"55%", a:1 }}
     };
     constructor(x, y) {
+        this.originalX = x;
+        this.originalY = y;
         this.reset(x, y);
     }
     reset(x, y) {
@@ -135,19 +144,25 @@ class Rocket {
         this.exploded = false;
         this.explosion = null;
     }
-    updateAndDraw(dt, ctx) {
+    initExplosion() {
         const p = this.launch.getParticle(0);
-        if ( this.launch.alive() ) {
+        this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
+        this.exploded = true;
+    }
+    explode(dt, ctx) {
+        this.explosion.updateAndDraw(dt, ctx);
+        if ( this.explosion.inActive() )
+            this.reset(this.originalX, this.originalY);
+    }
+    updateAndDraw(dt, ctx) {
+        if ( this.launch.active() ) {
             this.launch.updateAndDraw(dt, ctx);
         }
         else {
             if ( this.explosion === null ) {
-                this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
-                this.exploded = true;
+                this.initExplosion();
             }
-            this.explosion.updateAndDraw(dt, ctx);
-            if ( !this.explosion.alive() )
-                this.reset(960, 900);
+            this.explode(dt, ctx);
         }
     }
 }
