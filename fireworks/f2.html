@@ -26,19 +26,27 @@ function randomFrom(arr) {
     const index = Math.floor(Math.random() * arr.length);
     return arr[index];
 }
+function mt_rand(min = 0, max = 2147483647) {
+    if (min > max) [min, max] = [max, min]; // swap if min > max
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 // one particle
 class Particle {
     constructor(x, y, config) {
         this.originalX = x;
         this.originalY = y;
-        this.lifetime = config.lifetime ?? Math.floor(Math.random() * 200) + 100; // frames
+        this.lifetime = config.lifetime ?? mt_rand(200, 300); // frames
         this.spread = config.spread ? degToRad(config.spread) : degToRad(10);
         this.color = config.color ? {...config.color} : {h:0, s:"0%", l:"100%", a:1};
+        this.setRandomColor(config);
         this.history = [];        // past positions
         this.maxTrail = config.maxTrail ?? 8;       // how many to keep
         this.speed = config.speed ?? 3
         this.canReset = false;//config.canReset ?? false;
         this.reset();
+    }
+    setRandomColor(config) {
+        this.color = config.colors ? {...randomFrom(config.colors)} : this.color;
     }
     active() {
         return this.age <= this.lifetime || this.alpha > 0;
@@ -129,10 +137,87 @@ class SprayFX {
     }
 }
 
+/*const colors = ;*/
+const colors = [
+// Cyan / Teal
+[
+  { h:180, s:"100%", l:"55%", a:1 },
+  { h:175, s:"100%", l:"50%", a:1 },
+  { h:185, s:"95%",  l:"60%", a:1 },
+  { h:190, s:"100%", l:"58%", a:1 },
+  { h:170, s:"90%",  l:"52%", a:1 }
+],
+
+// Purple / Magenta
+[
+  { h:270, s:"100%", l:"55%", a:1 },
+  { h:275, s:"100%", l:"50%", a:1 },
+  { h:265, s:"95%",  l:"60%", a:1 },
+  { h:280, s:"100%", l:"58%", a:1 },
+  { h:260, s:"90%",  l:"52%", a:1 }
+],
+
+// Pink
+[
+  { h:330, s:"100%", l:"55%", a:1 },
+  { h:340, s:"100%", l:"50%", a:1 },
+  { h:320, s:"95%",  l:"60%", a:1 },
+  { h:335, s:"100%", l:"58%", a:1 },
+  { h:310, s:"90%",  l:"52%", a:1 }
+],
+
+// White / sparkle
+[
+  { h:0, s:"0%", l:"100%", a:1 },
+  { h:0, s:"0%", l:"95%",  a:1 },
+  { h:0, s:"0%", l:"90%",  a:1 },
+  { h:0, s:"0%", l:"85%",  a:1 },
+  { h:0, s:"0%", l:"80%",  a:1 }
+],
+[ // fiery
+    { h:16, s:"100%", l:"54%", a:1 },   
+    { h:9, s:"100%", l:"64%", a:1 },    
+    { h:39, s:"100%", l:"50%", a:1 },   
+    { h:51, s:"100%", l:"50%", a:1 },   
+    { h:60, s:"100%", l:"80%", a:1 },  
+    { h:0, s:"100%", l:"50%", a:1 },    
+    { h:0, s:"100%", l:"25%", a:1 },   
+    { h:0, s:"0%", l:"27%", a:1 }      
+], // Greens
+    [
+  { h:120, s:"100%", l:"55%", a:1 },  // base bright green
+  { h:115, s:"100%", l:"50%", a:1 },  // slightly warmer green
+  { h:125, s:"100%", l:"60%", a:1 },  // slightly cooler, lighter
+  { h:130, s:"90%",  l:"50%", a:1 },  // a touch desaturated
+  { h:110, s:"100%", l:"58%", a:1 },  // bold lime-ish
+  { h:135, s:"95%",  l:"55%", a:1 }   // teal-leaning variation
+],// Reds
+    [
+  { h:0,   s:"100%", l:"55%", a:1 },
+  { h:5,   s:"100%", l:"50%", a:1 },
+  { h:350, s:"95%",  l:"60%", a:1 },
+  { h:10,  s:"100%", l:"58%", a:1 },
+  { h:355, s:"90%",  l:"52%", a:1 }
+], // Blues
+    [
+  { h:210, s:"100%", l:"55%", a:1 },
+  { h:220, s:"100%", l:"50%", a:1 },
+  { h:200, s:"95%",  l:"60%", a:1 },
+  { h:230, s:"100%", l:"58%", a:1 },
+  { h:205, s:"90%",  l:"52%", a:1 }
+], // Golds (yellow/orange)
+    [
+  { h:45,  s:"100%", l:"55%", a:1 },
+  { h:50,  s:"100%", l:"50%", a:1 },
+  { h:40,  s:"95%",  l:"60%", a:1 },
+  { h:35,  s:"100%", l:"58%", a:1 },
+  { h:55,  s:"90%",  l:"52%", a:1 }
+]];
+
 class Rocket {
     config = {
-        launch: {count:1, lifetime:120, maxTrail:12, color:{h:0, s:"0%", l:"100%", a:1}},
-        explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:120, s:"100%", l:"55%", a:1 }}
+        launch: {count:1, lifetime:120, maxTrail:12, color:{h:0, s:"0%", l:"100%", a:1}, "colors": colors},
+        explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:120, s:"100%", l:"55%", a:1 }, "colors": colors}
     };
     constructor(x, y) {
         this.originalX = x;
@@ -140,12 +225,14 @@ class Rocket {
         this.reset(x, y);
     }
     reset(x, y) {
+        this.config.launch.colors = randomFrom(colors);
         this.launch = new SprayFX(x, y, this.config.launch);
         this.exploded = false;
         this.explosion = null;
     }
     initExplosion() {
         const p = this.launch.getParticle(0);
+        this.config.explosion.colors = randomFrom(colors);
         this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
         this.exploded = true;
     }
@@ -196,7 +283,10 @@ class FpsMeter {
 
 const fpsMeter = new FpsMeter();
 //const spray = new SprayFX(960, 900);
-const rocket = new Rocket(960, 900);
+let display = [];
+for ( i = 0; i < 10; i++ )
+    display.push(new Rocket(mt_rand(200, 1720), 900));
+//const rocket = new Rocket(960, 900);
 const bg = new Image();
 bg.src = "night-sky.jpg";
 let lastTime = performance.now();
@@ -206,7 +296,9 @@ function loop(now) {
     lastTime = now;
     //ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-    rocket.updateAndDraw(dt, ctx);
+    for ( const r of display)
+        r.updateAndDraw(dt, ctx);
+    //rocket.updateAndDraw(dt, ctx);
     //spray.updateAndDraw(dt, ctx);
 
     fpsMeter.frame(now, dt);
