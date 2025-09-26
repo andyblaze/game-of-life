@@ -73,7 +73,8 @@ class Particle {
         // reset when dead
         if (this.age > this.lifetime || this.alpha <= 0) {
             if ( this.canReset ) this.reset();
-        }  
+        }
+        return this.isAlive();
     }
     drawArc(ctx, x, y, sz, color) {
         ctx.fillStyle = colorToStr(color);
@@ -88,7 +89,6 @@ class Particle {
             this.color.a = (i / this.history.length) * this.alpha;
             this.drawArc(ctx, p.x, p.y, 2, this.color);
         }
-        ctx.stroke();
     }
     draw(ctx) {
         this.drawtrail(ctx);
@@ -97,6 +97,7 @@ class Particle {
 }
 class SprayFX {
     constructor(x, y, config) {
+        this.isAlive = true;
         this.particles = [];
         for ( let i = 0; i < config.count; i++ ) {
             this.particles.push(new Particle(x, y, config));
@@ -106,10 +107,15 @@ class SprayFX {
         return this.particles[idx];
     }
     updateAndDraw(dt, ctx) {
+        let allAlive = true;
         for ( const p of this.particles ) {
-            p.update(dt);
-            p.draw(ctx);
-        } 
+            const alive = p.update(dt);
+            if (alive) 
+                p.draw(ctx);
+            else 
+                allAlive = false;
+        }
+        this.isAlive = allAlive;
     }
 }
 
@@ -125,13 +131,12 @@ class Rocket {
     }
     updateAndDraw(dt, ctx) {
         const p = this.launch.getParticle(0);
-        const x = p.x;
-        const y = p.y;
-        if ( p.isAlive() && this.exploded === false ) {
+        if ( p.isAlive() ) {
             this.launch.updateAndDraw(dt, ctx);
         }
         else {
-            if ( this.explosion === null ) this.explosion = new SprayFX(x, y, this.config.explosion);
+            if ( this.explosion === null ) 
+                this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
             this.explosion.updateAndDraw(dt, ctx);
             this.exploded = true;
         }
