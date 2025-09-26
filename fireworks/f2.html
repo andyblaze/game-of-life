@@ -41,6 +41,7 @@ class Particle {
         this.setRandomColor(config);
         this.history = [];        // past positions
         this.maxTrail = config.maxTrail ?? 8;       // how many to keep
+        this.gravity = config.gravity ?? 0.05;
         this.speed = config.speed ?? 3
         this.canReset = config.canReset ?? false;
         this.reset();
@@ -76,7 +77,7 @@ class Particle {
             this.history.shift(); // remove oldest
         }
 
-        this.vy += 0.05; // gravity per frame
+        this.vy += this.gravity; // gravity per frame
         this.vx += Math.random() * 0.01; // wind 
         this.age++;
         this.alpha = 1 - this.age / this.lifetime;
@@ -287,6 +288,30 @@ class DeltaReport {
     }
 }
 
+class SparkleFX {
+  constructor(x, y, count = 12, radius = 30) {
+    this.x = x;
+    this.y = y;
+    this.count = count;
+    this.radius = radius;
+  }
+
+  updateAndDraw(dt, ctx) {
+    for (let i = 0; i < this.count; i++) {
+      // random offset above origin
+      const angle = Math.PI + Math.random() * Math.PI;
+      const r = Math.random() * this.radius;
+
+      const px = this.x + Math.cos(angle) * r;
+      const py = this.y + Math.sin(angle) * r;
+
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      ctx.arc(px, py, 1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
 
 //const spray = new SprayFX(mt_rand(200, 1720), 900, {count:12, canReset:true, speed:1.2, "colors":randomFrom(colors)});
 let display = [];
@@ -296,6 +321,7 @@ for ( let i = 0; i < 12; i++ ) {
 for ( let i = 0; i < 6; i++ ) {
     display.push(new SprayFX(mt_rand(200, 1720), 900, {count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
 }
+display.push(new SparkleFX(mt_rand(200, 1720), 900, 12, 20));
 
 //const rocket = new Rocket(960, 900);
 const bg = new Image();
