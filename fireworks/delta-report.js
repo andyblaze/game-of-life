@@ -5,6 +5,7 @@ export default class DeltaReport {
     static sum = 0;
     static min = 60;
     static max = 0;
+    static elapsedSeconds = 0;
     static report = document.getElementById("fps-report");
     
     static log(timestamp) {
@@ -13,10 +14,12 @@ export default class DeltaReport {
         this.sum += delta;
         this.lastTime = timestamp;
         if ( this.frameCount === 120 ) { // every 2 seconds
+            this.elapsedSeconds += 2;
+            const minutes = Math.floor(this.elapsedSeconds / 60);
             const fps = parseInt(60 / (this.sum / this.frameCount));
             if ( fps < this.min ) this.min = fps; 
             if ( fps > this.max ) this.max = fps; 
-            console.log("fps", fps, "min=", this.min, "max=", this.max);
+            console.log("time", minutes, ":", this.elapsedSeconds, " fps=", fps, " min=", this.min, " max=", this.max);
             //this.report.innerText = fps + " " + this.min + " " + this.max;
             this.frameCount = 0;
             this.sum = 0;

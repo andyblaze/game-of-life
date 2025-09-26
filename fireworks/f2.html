@@ -42,7 +42,7 @@ class Particle {
         this.history = [];        // past positions
         this.maxTrail = config.maxTrail ?? 8;       // how many to keep
         this.speed = config.speed ?? 3
-        this.canReset = false;//config.canReset ?? false;
+        this.canReset = config.canReset ?? false;
         this.reset();
     }
     setRandomColor(config) {
@@ -259,44 +259,44 @@ class Rocket {
     }
 }
     
-class FpsMeter {
-  constructor(interval = 2000) {
-    this.interval = interval;
-    this.lastReport = performance.now();
-    this.startTime = this.lastReport;   // track start time
-    this.min = Infinity;
-    this.max = -Infinity;
-  }
-
-  frame(now, dt) {
-    const fps = 1000 / dt;
-
-    this.min = Math.min(this.min, fps);
-    this.max = Math.max(this.max, fps);
-
-    if (now - this.lastReport >= this.interval) {
-      const elapsedMs = now - this.startTime;
-      const minutes = Math.floor(elapsedMs / 60000);
-      const seconds = ((elapsedMs % 60000) / 1000).toFixed(1);
-
-      console.log(
-        `Time: ${minutes}m ${seconds}s → FPS: current ${fps.toFixed(
-          1
-        )}, min ${this.min.toFixed(1)}, max ${this.max.toFixed(1)}`
-      );
-
-      this.min = Infinity;
-      this.max = -Infinity;
-      this.lastReport = now;
+class DeltaReport {
+    static lastTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static elapsedSeconds = 0;
+    static report = document.getElementById("fps-report");
+    
+    static log(timestamp) {
+        this.frameCount++;
+        const delta = (timestamp - this.lastTime) / 16.67;
+        this.sum += delta;
+        this.lastTime = timestamp;
+        if ( this.frameCount === 120 ) { // every 2 seconds
+            this.elapsedSeconds += 2;
+            const minutes = Math.floor(this.elapsedSeconds / 60);
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if ( fps < this.min ) this.min = fps; 
+            if ( fps > this.max ) this.max = fps; 
+            console.log("time", minutes, ":", this.elapsedSeconds % 60, " fps=", fps, " min=", this.min, " max=", this.max);
+            //this.report.innerText = fps + " " + this.min + " " + this.max;
+            this.frameCount = 0;
+            this.sum = 0;
+        }
     }
-  }
 }
 
-const fpsMeter = new FpsMeter();
-const spray = new SprayFX(960, 900);
+
+//const spray = new SprayFX(mt_rand(200, 1720), 900, {count:12, canReset:true, speed:1.2, "colors":randomFrom(colors)});
 let display = [];
-for ( i = 0; i < 12; i++ )
+for ( let i = 0; i < 12; i++ ) {
     display.push(new Rocket(mt_rand(200, 1720), 900));
+}
+for ( let i = 0; i < 6; i++ ) {
+    display.push(new SprayFX(mt_rand(200, 1720), 900, {count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
+}
+
 //const rocket = new Rocket(960, 900);
 const bg = new Image();
 bg.src = "night-sky.jpg";
@@ -310,9 +310,9 @@ function loop(now) {
     for ( const r of display)
         r.updateAndDraw(dt, ctx);
     //rocket.updateAndDraw(dt, ctx);
-    spray.updateAndDraw(dt, ctx);
+    //spray.updateAndDraw(dt, ctx);
 
-    fpsMeter.frame(now, dt);
+    DeltaReport.log(now);
 }
 
 loop(lastTime);
