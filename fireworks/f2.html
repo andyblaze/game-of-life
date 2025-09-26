@@ -128,6 +128,9 @@ class Rocket {
         explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:0, s:"100%", l:"55%", a:1 }}
     };
     constructor(x, y) {
+        this.reset(x, y);
+    }
+    reset(x, y) {
         this.launch = new SprayFX(x, y, this.config.launch);
         this.exploded = false;
         this.explosion = null;
@@ -143,7 +146,8 @@ class Rocket {
                 this.exploded = true;
             }
             this.explosion.updateAndDraw(dt, ctx);
-            //console.log(this.explosion.alive());
+            if ( !this.explosion.alive() )
+                this.reset(960, 900);
         }
     }
 }
