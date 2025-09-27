@@ -11,7 +11,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let display = [];
-for ( let i = 0; i < 12; i++ ) {
+for ( let i = 0; i < 13; i++ ) {
     display.push(new Rocket(mt_rand(200, 1720), 900));
 }
 for ( let i = 0; i < 3; i++ ) {
