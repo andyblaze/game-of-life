@@ -4,7 +4,7 @@ import { mt_rand, randomFrom } from "./functions.js";
 export default class Rocket {
     config = {
         launch: {count:1, lifetime:120, maxTrail:12, color:{h:0, s:"0%", l:"100%", a:1}, "colors": colors},
-        explosion: {count:48, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:120, s:"100%", l:"55%", a:1 }, "colors": colors}
+        explosion: {count:36, lifetime:120, spread:360, maxTrail:16, speed:1.2, color:{ h:120, s:"100%", l:"55%", a:1 }, "colors": colors}
     };
     constructor(x, y) {
         this.originalX = x;

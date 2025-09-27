@@ -15,12 +15,13 @@ for ( let i = 0; i < 12; i++ ) {
     display.push(new Rocket(mt_rand(200, 1720), 900));
 }
 for ( let i = 0; i < 3; i++ ) {
-    display.push(new SprayFX(mt_rand(200, 1720), 800, {size:0.5, count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 40)}));
+    //display.push(new SprayFX(mt_rand(200, 1720), 800, {size:0.5, count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 40)}));
 }
 for ( let i = 0; i < 3; i++ ) {
-    display.push(new SprayFX(mt_rand(200, 1720), 900, {size:2, count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
+    //display.push(new SprayFX(mt_rand(200, 1720), 900, {size:2, count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
 }
-display.push(new SparkleFX(mt_rand(200, 1720), 900, 8, 8));
+display.push(new SparkleFX(960, 900, 18, 80));
+display.push(new SprayFX(960, 900, {size:2, count:2, canReset:true, speed:1.5, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
 
 //const rocket = new Rocket(960, 900);
 const bg = new Image();
