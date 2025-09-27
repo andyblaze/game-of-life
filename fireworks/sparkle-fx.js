@@ -1,5 +1,5 @@
 import { mt_rand, randomFrom, degToRad, colorToStr } from "./functions.js";
-import colors from "./config.js";
+import { colors } from "./config.js";
 
 class SparkleParticle {
   constructor(x, y) {

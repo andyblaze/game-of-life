@@ -4,6 +4,9 @@ export default class SprayFX {
     constructor(x, y, config) {
         this.isActive = true;
         this.particles = [];
+        this.addParticles(x, y, config);
+    }
+    addParticles(x, y, config) {
         for ( let i = 0; i < config.count; i++ ) {
             this.particles.push(new Particle(x, y, config));
         }
@@ -12,15 +15,15 @@ export default class SprayFX {
         return this.particles[idx];
     }
     updateAndDraw(dt, ctx) {
-        let allActive = true;
+        let anyActive = false;
         for ( const p of this.particles ) {
             const active = p.update(dt);
-            if (active) 
+            if (active) { 
                 p.draw(ctx);
-            else 
-                allActive = false;
+                anyActive = true;
+            }
         }
-        this.isActive = allActive;
+        this.isActive = anyActive;
     }
     active() {
         return this.isActive;

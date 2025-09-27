@@ -1,6 +1,6 @@
 import SprayFX from "./spray-fx.js";
 import SparkleFX from "./sparkle-fx.js";
-import colors from "./config.js";
+import { colors } from "./config.js";
 import { mt_rand, randomFrom } from "./functions.js";
 
 export class RomanCandle {

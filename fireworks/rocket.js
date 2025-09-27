@@ -1,5 +1,5 @@
 import SprayFX from "./spray-fx.js";
-import colors from "./config.js";
+import { colors, superRandomColors } from "./config.js";
 import { mt_rand, randomFrom } from "./functions.js";
 export class Rocket {
     config = {
@@ -49,26 +49,31 @@ export class Rocket {
 export class BurstoRocket extends Rocket {
     config = {
         launch: {jitter:randomFrom([true, false]), count:1, lifetime:120, maxTrail:12, "colors": colors},
-        explosion: [
-            {count:18, lifetime:120, spread:360, maxTrail:16, speed:1.2, "colors": colors},
-            {count:18, lifetime:180, spread:360, maxTrail:8, speed:1.1, "colors": colors}
-        ]
+        explosion: {count:36, lifetime:120, spread:360, maxTrail:16, speed:1.2, "colors": colors}
     };
     constructor(x, y) {
         super(x, y);
     }
     initExplosion() {
-        this.explosion = [];
         const p = this.launch.getParticle(0);
-        this.config.explosion[0].colors = randomFrom(colors);
-        this.explosion[0] = new SprayFX(p.x, p.y, this.config.explosion[0]);
-        this.explosion[1] = new SprayFX(p.x, p.y, this.config.explosion[1]);
+        this.config.explosion.colors = randomFrom(colors);
+        this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
+        const half = this.config.explosion.count / 2;
+        for ( let i = 0; i < half; i++ ) {
+            const p = this.explosion.getParticle(i);
+            p.color = { h: 0, s: "0%", l: "100%", a: 1 }; 
+            p.lifetime = 60;
+
+            // Keep them clustered by lowering speed AND tightening spread
+            p.speed = 0.3 + Math.random() * 0.2;  // very small random speed
+            p.vx *= p.speed;  // scale down existing velocity
+            p.vy *= p.speed;  // scale down existing velocity
+        }
         this.exploded = true;
     }
     explode(dt, ctx) {
-        this.explosion[0].updateAndDraw(dt, ctx);
-        this.explosion[1].updateAndDraw(dt, ctx);
-        if ( this.explosion[0].inActive() && this.explosion[1].inActive() )
+        this.explosion.updateAndDraw(dt, ctx);
+        if ( this.explosion.inActive() )
             this.reset(this.originalX, this.originalY);
     }
     
