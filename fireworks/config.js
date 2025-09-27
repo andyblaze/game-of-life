@@ -1,7 +1,16 @@
-import {scaleX, scaleY } from "./functions.js";
+import {scaleX, scaleY, randomFrom } from "./functions.js";
 
 const screenW = window.innerWidth;
 const screenH = window.innerHeight;
+
+function superRandomColors(n) {
+    let result = [];
+    for ( let i = 0; i < n; i++ ) {
+        idx = randomFrom(colors);
+        result.push(randomFrom(colors[idx]));
+    }
+    return result;
+}
 
 const colors = [
     // Cyan / Teal

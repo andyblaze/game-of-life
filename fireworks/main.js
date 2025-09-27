@@ -1,4 +1,4 @@
-import Rocket from "./rocket.js";
+import { Rocket, BurstoRocket } from "./rocket.js";
 import { RomanCandle } from "./firework-types.js";
 import SprayFX from "./spray-fx.js";
 import SparkleFX from "./sparkle-fx.js";
@@ -27,6 +27,8 @@ let display = new FireworkDisplay();
 for ( let i = 0; i < 13; i++ ) {
     display.add(new Rocket(mt_rand(200, 1720), 900));
 }
+//display.add(new BurstoRocket(mt_rand(200, 1720), 900));
+
 for ( let i = 0; i < 3; i++ ) {
     //display.push(new SprayFX(mt_rand(200, 1720), 800, {size:0.5, count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 40)}));
 }

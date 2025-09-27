@@ -12,6 +12,7 @@ export default class Particle {
         this.gravity = config.gravity ?? 0.05;
         this.speed = config.speed ?? 3
         this.size = config.size ?? 2;
+        this.jitter = config.jitter ?? false;
         this.canReset = config.canReset ?? false;
         this.reset();
     }
@@ -48,6 +49,8 @@ export default class Particle {
 
         this.vy += this.gravity; // gravity per frame
         this.vx += Math.random() * 0.01; // wind 
+        if ( this.jitter )
+            this.vx += mt_rand(-9, 9) / 25;
         this.age++;
         this.alpha = 1 - this.age / this.lifetime;
         this.color.a = this.alpha;
