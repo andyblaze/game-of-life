@@ -23,3 +23,10 @@ export function mt_rand(min = 0, max = 2147483647) {
     if (min > max) [min, max] = [max, min]; // swap if min > max
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+export function degToRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+export function colorToStr(c) {
+    return "hsla(" + Object.values(c).join(",") + ")";
+}

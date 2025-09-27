@@ -8,7 +8,7 @@
   body {
     margin: 0;
     overflow: hidden;
-    background: #000; /* parchment-like */
+    background: #000; 
   }
   canvas { display: block; }
 </style>

@@ -3,111 +3,82 @@ import {scaleX, scaleY } from "./functions.js";
 const screenW = window.innerWidth;
 const screenH = window.innerHeight;
 
-const CONFIG = {
-    WORD: {
-        PARTICLE_COUNT: 600,
-        FORM_STEPS: 480, // in frames for this down to FREE_TIME 
-        HOLD_STEPS: 180,
-        DISPERSAL_STEPS: 300,
-        FREE_TIME: 480,
-        WORDS: ["MAGIC", "LIVING", "DUST", "FIRE", "ASH", "SMOKE", "EMBERS", "FLAMES", "SPARKS", "HEAT", "BURN", "FUEL", "BLAZE", "CINDER", "IGNITE", "FLARE", "PYRE", "KINDLE", "GLOW"],
-        FONT: "bold 120px serif",
-        AREAS: [ // configurable placement zones
-            {           
-                MIN_X: scaleX(150),
-                MAX_X: scaleX(screenW - 150),
-                MIN_Y: scaleY(150),
-                MAX_Y: scaleY(screenH - 150)
-            },
-            {           
-                MIN_X: scaleX(150),
-                MAX_X: scaleX(600),
-                MIN_Y: scaleY(150),
-                MAX_Y: scaleY(screenH - 150)
-            } ,       
-            {           
-                MIN_X: scaleX(1220),
-                MAX_X: scaleX(screenW - 150),
-                MIN_Y: scaleY(150),
-                MAX_Y: scaleY(screenH - 150)
-            }        
-        ]
-    },
-    PARTICLES: {
-        COLORS: [
-            "hsla(16, 100%, 54%, 1)",   // #ff4500 orange-red (flame core)
-            "hsla(9, 100%, 64%, 1)",    // #ff6347 tomato orange
-            "hsla(39, 100%, 50%, 1)",   // #ffa500 classic orange
-            "hsla(51, 100%, 50%, 1)",   // #ffd700 golden yellow
-            "hsla(60, 100%, 80%, 1)",   // #ffff99 pale yellow spark
-            "hsla(0, 100%, 50%, 1)",    // #ff0000 deep red ember
-            "hsla(0, 100%, 25%, 1)",    // #800000 smoldering dark red
-            "hsla(0, 0%, 27%, 1)"       // #444444 occasional ash/ember fade
-        ],
-        SHAPES: ["circle", "rect", "triangle", "line"],
-        DIRECTION: 270,
-        FORMATION_SPEED: 0.00,
-        NOISE_SPEED: 0.01,
-        SPEED_FACTOR: {
-            MIN: 13.7,
-            MAX: 17.7
-        },
-        NOISE_SCALE: 0.001,
-        SPAWN_X: screenW / 2,   // center of fountain
-        SPAWN_WIDTH: scaleX(2),             // how wide the base is
-        BASE_AREA: scaleY(900), // height from top
-        SPAWN_HEIGHT: scaleY(1), // how tall the vertical band is at the bottom
-        CONE_ANGLE: 30, // spread around vertical
-        INIT_SPEED: 13.5,
-        COUNT: 500
-    },
-    PARTICLE_SHAPES: ["circle", "rect", "triangle", "line"],
-    EMBER: {
-        POOL_SIZE: 30,
-        SPAWN_X: screenW / 2,        // center of fire
-        SPAWN_Y: screenH - scaleY(150),      // approximate fire top
-        SPAWN_WIDTH: 20,                   // horizontal variation
-        SPAWN_HEIGHT: 2,                  // vertical variation
-        SPAWN_CHANCE: 0.1,
-        MIN_SPEED: 2,                      // initial velocity min
-        MAX_SPEED: 5,                      // initial velocity max
-        MIN_ANGLE: -30,                    // degrees from vertical
-        MAX_ANGLE: 30,                     // degrees from vertical
-        LIFETIME: 4000,                    // milliseconds
-            COLORS: [
-            {h:16, s:"100%", l:"54%", a:1},          // bright yellow
-            {h:30, s:"100%", l:"50%", a:1},          // orange
-            {h:0, s:"100%", l:"40%", a:1}            // red ember
-        ],
-        TRAIL_LENGTH: 8,                   // number of previous positions to keep for trail
-        GRAVITY: 0.02,                     // optional downward pull
-        WIND: 0.02                          // optional horizontal drift
-    },
-    SHIMMER: {
-        regions: [{x: scaleX(970), y: scaleY(600)},{x: scaleX(880), y: scaleY(690)}],
-        width: scaleX(50),
-        height: scaleY(120),
-        colors: ["rgba(255,100,0,0.05)", "rgba(255,200,0,0.2)"],
-        shadowColor: "rgba(255,80,0,0.2)",
-        shadowBlur: 20,
-        flameWidth: 15,
-        amplitude: 10,
-        frequency: 0.25,
-        speed: 0.0014
-    },
-    GROUND_FLICKER: {
-        SCREEN_W: screenW,
-        SCREEN_H: screenH,
-        enabled: true,          // turn effect on/off
-        marginX: scaleX(100),           // left/right margin in pixels
-        height: scaleY(550),            // height of flicker region from top
-        numCells: 15,           // number of Voronoi-like cells
-        baseLightness: 20,      // base darkness of the cells (0–100)
-        flickerAmplitude: 20,    // how much lightness oscillates (+/-)
-        flickerSpeed: 0.002,    // speed of flicker
-        jitter: 5,              // maximum pixel jitter for cell centers
-        blendMode: "overlay"     // ctx.globalCompositeOperation
-    }
-};
+const colors = [
+    // Cyan / Teal
+    [
+      { h:180, s:"100%", l:"55%", a:1 },
+      { h:175, s:"100%", l:"50%", a:1 },
+      { h:185, s:"95%",  l:"60%", a:1 },
+      { h:190, s:"100%", l:"58%", a:1 },
+      { h:170, s:"90%",  l:"52%", a:1 }
+    ],
+    // Purple / Magenta
+    [
+      { h:270, s:"100%", l:"55%", a:1 },
+      { h:275, s:"100%", l:"50%", a:1 },
+      { h:265, s:"95%",  l:"60%", a:1 },
+      { h:280, s:"100%", l:"58%", a:1 },
+      { h:260, s:"90%",  l:"52%", a:1 }
+    ],
+    // Pink
+    [
+      { h:330, s:"100%", l:"55%", a:1 },
+      { h:340, s:"100%", l:"50%", a:1 },
+      { h:320, s:"95%",  l:"60%", a:1 },
+      { h:335, s:"100%", l:"58%", a:1 },
+      { h:310, s:"90%",  l:"52%", a:1 }
+    ],
+    // White / sparkle
+    [
+      { h:0, s:"0%", l:"100%", a:1 },
+      { h:0, s:"0%", l:"95%",  a:1 },
+      { h:0, s:"0%", l:"90%",  a:1 },
+      { h:0, s:"0%", l:"85%",  a:1 },
+      { h:0, s:"0%", l:"80%",  a:1 }
+    ],
+    [ // fiery
+        { h:16, s:"100%", l:"54%", a:1 },   
+        { h:9, s:"100%", l:"64%", a:1 },    
+        { h:39, s:"100%", l:"50%", a:1 },   
+        { h:51, s:"100%", l:"50%", a:1 },   
+        { h:60, s:"100%", l:"80%", a:1 },  
+        { h:0, s:"100%", l:"50%", a:1 },    
+        { h:0, s:"100%", l:"25%", a:1 },   
+        { h:0, s:"0%", l:"27%", a:1 }      
+    ], 
+    // Greens
+    [
+      { h:120, s:"100%", l:"55%", a:1 },  // base bright green
+      { h:115, s:"100%", l:"50%", a:1 },  // slightly warmer green
+      { h:125, s:"100%", l:"60%", a:1 },  // slightly cooler, lighter
+      { h:130, s:"90%",  l:"50%", a:1 },  // a touch desaturated
+      { h:110, s:"100%", l:"58%", a:1 },  // bold lime-ish
+      { h:135, s:"95%",  l:"55%", a:1 }   // teal-leaning variation
+    ],
+    // Reds
+        [
+      { h:0,   s:"100%", l:"55%", a:1 },
+      { h:5,   s:"100%", l:"50%", a:1 },
+      { h:350, s:"95%",  l:"60%", a:1 },
+      { h:10,  s:"100%", l:"58%", a:1 },
+      { h:355, s:"90%",  l:"52%", a:1 }
+    ], 
+    // Blues
+        [
+      { h:210, s:"100%", l:"55%", a:1 },
+      { h:220, s:"100%", l:"50%", a:1 },
+      { h:200, s:"95%",  l:"60%", a:1 },
+      { h:230, s:"100%", l:"58%", a:1 },
+      { h:205, s:"90%",  l:"52%", a:1 }
+    ], 
+    // Golds (yellow/orange)
+        [
+      { h:45,  s:"100%", l:"55%", a:1 },
+      { h:50,  s:"100%", l:"50%", a:1 },
+      { h:40,  s:"95%",  l:"60%", a:1 },
+      { h:35,  s:"100%", l:"58%", a:1 },
+      { h:55,  s:"90%",  l:"52%", a:1 }
+    ]
+];
 
-export default CONFIG;
+export default colors;

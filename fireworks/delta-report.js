@@ -19,7 +19,7 @@ export default class DeltaReport {
             const fps = parseInt(60 / (this.sum / this.frameCount));
             if ( fps < this.min ) this.min = fps; 
             if ( fps > this.max ) this.max = fps; 
-            console.log("time", minutes, ":", this.elapsedSeconds, " fps=", fps, " min=", this.min, " max=", this.max);
+            console.log("time", `${minutes}:${this.elapsedSeconds % 60}`, " fps=", fps, " min=", this.min, " max=", this.max);
             //this.report.innerText = fps + " " + this.min + " " + this.max;
             this.frameCount = 0;
             this.sum = 0;
