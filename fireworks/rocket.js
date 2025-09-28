@@ -6,11 +6,13 @@ export class Rocket {
         launch: {jitter:randomFrom([true, false]), count:1, lifetime:120, maxTrail:12, "colors": colors},
         explosion: {count:36, lifetime:120, spread:360, maxTrail:16, speed:1.2, "colors": colors}
     };
-    constructor(x, y) {
+    constructor(x, y, config={}) {
         this.originalX = x;
         this.originalY = y;
         this.launchTime = randomFrom([2, 3, 5, 7, 11, 13, 17]) * 60;
         this.countdown = 0;
+        this.config.explosion.count = config.explosionCount ?? this.config.explosion.count;
+        this.config.launch.speed = config.launchSpeed ?? this.config.launch.speed;
         this.reset(x, y);
     }
     reset(x, y) {
@@ -49,14 +51,14 @@ export class Rocket {
 export class BurstoRocket extends Rocket {
     config = {
         launch: {jitter:randomFrom([true, false]), count:1, lifetime:120, maxTrail:12, "colors": colors},
-        explosion: {count:36, lifetime:120, spread:360, maxTrail:16, speed:1.2, "colors": colors}
+        explosion: {count:36, lifetime:120, spread:360, maxTrail:36, speed:1.2, "colors": colors}
     };
     constructor(x, y) {
         super(x, y);
     }
     initExplosion() {
         const p = this.launch.getParticle(0);
-        this.config.explosion.colors = randomFrom(colors);
+        this.config.explosion.colors = superRandomColors(this.config.explosion.count);
         this.explosion = new SprayFX(p.x, p.y, this.config.explosion);
         const half = this.config.explosion.count / 2;
         for ( let i = 0; i < half; i++ ) {

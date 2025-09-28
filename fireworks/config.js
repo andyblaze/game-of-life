@@ -3,15 +3,6 @@ import {scaleX, scaleY, randomFrom } from "./functions.js";
 const screenW = window.innerWidth;
 const screenH = window.innerHeight;
 
-export function superRandomColors(n) {
-    let result = [];
-    for ( let i = 0; i < n; i++ ) {
-        const idx = randomFrom(colors);
-        result.push(randomFrom(colors[idx]));
-    }
-    return n === 1 ? result[0] : result;
-}
-
 export const colors = [
     // Cyan / Teal
     [
@@ -89,5 +80,19 @@ export const colors = [
       { h:55,  s:"90%",  l:"52%", a:1 }
     ]
 ];
+
+const flatColors = colors.flat();
+
+export function superRandomColors(n) {
+    if (n === 1) {
+        return flatColors[Math.floor(Math.random() * flatColors.length)];
+    }
+    const result = new Array(n);
+    for (let i = 0; i < n; i++) {
+        result[i] = flatColors[Math.floor(Math.random() * flatColors.length)];
+    }
+    return result;
+}
+
 
 //export colors;
