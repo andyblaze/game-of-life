@@ -2,7 +2,7 @@ import { Rocket, BurstoRocket } from "./rocket.js";
 import { RomanCandle } from "./firework-types.js";
 import SprayFX from "./spray-fx.js";
 import SparkleFX from "./sparkle-fx.js";
-import { colors } from "./config.js";
+import { colors, superRandomColors } from "./config.js";
 import { mt_rand, randomFrom, scaleX, scaleY } from "./functions.js";
 import { FullScreenOverlay } from "./overlays.js";
 import DeltaReport from "./delta-report.js";
@@ -32,8 +32,8 @@ for ( let i = 0; i < 4; i++ ) {
     display.add(new BurstoRocket(scaleX(mt_rand(200, 1720)), scaleY(1000)));
 }
 
-display.add(new SprayFX(scaleX(mt_rand(200, 760)), scaleY(1000), {size:0.5, count:6, canReset:true, speed:1.2, "colors":randomFrom(colors), gravity:0.06, spread:180}));
-display.add(new SprayFX(scaleX(mt_rand(1160, 1720)), scaleY(1000), {size:0.5, count:6, canReset:true, speed:1.2, "colors":randomFrom(colors), gravity:0.06, spread:180}));
+display.add(new SprayFX(scaleX(mt_rand(200, 760)), scaleY(1000), {size:0.5, count:6, canReset:true, speed:1.2, "colors":superRandomColors(6), gravity:0.06, spread:180}));
+display.add(new SprayFX(scaleX(mt_rand(1160, 1720)), scaleY(1000), {size:0.5, count:6, canReset:true, speed:1.2, "colors":superRandomColors(6), gravity:0.06, spread:180}));
 
 for ( let i = 0; i < 3; i++ ) {
     //display.push(new SprayFX(mt_rand(200, 1720), 900, {size:2, count:12, canReset:true, speed:1.2, "colors":randomFrom(colors), spread:mt_rand(20, 80)}));
