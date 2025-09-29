@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Laser Beam Animation</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: url("lasers.jpg") no-repeat center center fixed;
+      background-size: cover;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="laserCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('laserCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // resize canvas
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class LaserBeam {
+      constructor(config) {
+        this.startX = config.startX || canvas.width / 2;
+        this.startY = config.startY || canvas.height;
+        this.baseEndX = config.endX || canvas.width / 2;
+        this.baseEndY = config.endY || canvas.height / 2;
+        this.endX = this.baseEndX;
+        this.endY = this.baseEndY;
+        this.color = config.color || 'lime';
+        this.opacity = config.opacity || 0.8;
+        this.width = config.width || 3;
+        this.pulseSpeed = config.pulseSpeed || 0.2; // controls glow pulsing
+        this.arcSize = (config.arcSize || 30) * Math.PI / 180; // arc size in radians
+        this.sweepSpeed = config.sweepSpeed || 0.01; // how fast the sweep occurs
+        this._time = 0;
+      }
+
+      update() {
+        this._time += this.pulseSpeed;
+
+        // sweeping motion
+        const sweepAngle = Math.sin(this._time * (this.sweepSpeed / this.pulseSpeed)) * (this.arcSize / 2);
+        const dx = this.baseEndX - this.startX;
+        const dy = this.baseEndY - this.startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const baseAngle = Math.atan2(dy, dx);
+
+        const newAngle = baseAngle + sweepAngle;
+        this.endX = this.startX + Math.cos(newAngle) * length;
+        this.endY = this.startY + Math.sin(newAngle) * length;
+      }
+
+draw(ctx) {
+  const intensity = this.opacity * (0.7 + 0.3 * Math.sin(this._time));
+
+  // helper to make hsla string with given alpha
+  const hsla = (h, s, l, a) => `hsla(${h}, ${s}, ${l}, ${a})`;
+
+  // Core beam
+  ctx.strokeStyle = hsla(this.color.h, this.color.s, this.color.l, intensity);
+  ctx.lineWidth = this.width;
+  ctx.beginPath();
+  ctx.moveTo(this.startX, this.startY);
+  ctx.lineTo(this.endX, this.endY);
+  ctx.stroke();
+
+  // Glow layers
+  for (let i = 1; i <= 3; i++) {
+    ctx.strokeStyle = hsla(this.color.h, this.color.s, this.color.l, intensity * (0.3 / i));
+    ctx.lineWidth = this.width + i * 2;
+    ctx.beginPath();
+    ctx.moveTo(this.startX, this.startY);
+    ctx.lineTo(this.endX, this.endY);
+    ctx.stroke();
+  }
+}
+// end class
+}
+    
+
+    // create one beam
+    const beam = new LaserBeam({
+      startX: 200,
+      startY: 900,
+      endX: canvas.width / 2 + 50,
+      endY: canvas.height / 4,
+      color: { h: 180, s: "100%", l: "50%", a:1 },
+      opacity: 0.6,
+      width: 4,
+      arcSize: 30,  // degrees
+      sweepSpeed: 0.009
+    });
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      beam.update();
+      beam.draw(ctx);
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
