@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sage Brick Wall — Static Pop-Out Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html,body{height:100%;margin:0;background:#9aaea0;}
+    canvas{display:block;width:100%;height:100vh}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    let DPR = window.devicePixelRatio || 1;
+    function resize() {
+      DPR = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(window.innerWidth * DPR);
+      canvas.height = Math.floor(window.innerHeight * DPR);
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      grid.resize();
+    }
+    window.addEventListener('resize', resize);
+
+    const BG_COLOR = '#9aaea0';
+    const BRICK_ROWS = 10;
+    const BRICK_COLS = 18;
+    const POP_DURATION = 2000; // ms for pop effect
+
+    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+    class Brick {
+      constructor(i,j,w,h,x,y){
+        this.i = i; this.j = j;
+        this.w = w; this.h = h;
+        this.x = x; this.y = y;
+        this.pop = 0;
+        this.popDir = 0;
+        this.popDuration = POP_DURATION;
+        this.age = 0;
+      }
+
+      trigger(duration){
+        this.popDuration = duration || POP_DURATION;
+        this.popDir = 1;
+        this.age = 0;
+      }
+
+      update(dt){
+        if(this.popDir === 0) return;
+        this.age += dt;
+        let t = Math.min(1, this.age / this.popDuration);
+        if(this.popDir === 1){
+          this.pop = easeOutCubic(t);
+          if(t >= 1){ this.popDir = -1; this.age = 0; }
+        } else if(this.popDir === -1){
+          this.pop = 1 - easeOutCubic(t);
+          if(t >= 1){ this.popDir = 0; this.pop = 0; }
+        }
+      }
+
+      draw(ctx, DPR){
+        const px = this.x * DPR, py = this.y * DPR, pw = this.w * DPR, ph = this.h * DPR;
+        const edgeWidth = 4 * DPR * this.pop; // grow edge width as pop progresses
+
+        ctx.save();
+        ctx.fillStyle = BG_COLOR;
+        ctx.fillRect(px, py, pw, ph);
+
+        if(this.pop > 0){
+          const highlightAlpha = 0.2 + 0.4*this.pop;
+          const shadowAlpha = 0.2 + 0.4*this.pop;
+
+          // highlights (top-left)
+          ctx.fillStyle = `rgba(255,255,255,${highlightAlpha})`;
+          ctx.fillRect(px, py, pw, edgeWidth); // top
+          ctx.fillRect(px, py, edgeWidth, ph); // left
+
+          // shadows (bottom-right)
+          ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
+          ctx.fillRect(px, py + ph - edgeWidth, pw, edgeWidth); // bottom
+          ctx.fillRect(px + pw - edgeWidth, py, edgeWidth, ph); // right
+        }
+
+        ctx.restore();
+      }
+    }
+
+    class Grid {
+      constructor(cols, rows){
+        this.cols = cols; this.rows = rows;
+        this.bricks = [];
+        this.resize();
+      }
+      resize(){
+        const cssW = canvas.width / DPR; const cssH = canvas.height / DPR;
+        const bw = Math.floor(cssW / this.cols);
+        const bh = Math.floor(cssH / this.rows);
+        this.brickW = bw; this.brickH = bh;
+        this.bricks = [];
+        for(let j=0;j<this.rows;j++){
+          for(let i=0;i<this.cols;i++){
+            const x = i*this.brickW;
+            const y = j*this.brickH;
+            this.bricks.push(new Brick(i,j,this.brickW,this.brickH,x,y));
+          }
+        }
+      }
+      triggerSingleRandom(){
+        const idx = Math.floor(Math.random()*this.bricks.length);
+        this.bricks[idx].trigger();
+      }
+      update(dt){ this.bricks.forEach(b=>b.update(dt)); }
+      draw(ctx){
+        ctx.fillStyle = BG_COLOR; ctx.fillRect(0,0,canvas.width,canvas.height);
+        this.bricks.forEach(b=>b.draw(ctx,DPR));
+      }
+    }
+
+    let grid = new Grid(BRICK_COLS, BRICK_ROWS);
+    resize();
+
+    let isPointerDown = false;
+    canvas.addEventListener('pointerdown', (e)=>{ isPointerDown = true; canvas.setPointerCapture(e.pointerId); grid.triggerSingleRandom(); });
+    canvas.addEventListener('pointermove', (e)=>{ if(isPointerDown) grid.triggerSingleRandom(); });
+    canvas.addEventListener('pointerup', (e)=>{ isPointerDown=false; canvas.releasePointerCapture(e.pointerId); });
+    canvas.addEventListener('pointerleave', ()=>{ isPointerDown=false; });
+
+    let autoTimer = 0;
+    let last = 0;
+    function frame(ts){
+      if(!last) last = ts;
+      const dt = ts - last; last = ts;
+
+      autoTimer += dt;
+      if(autoTimer > 1000){
+        autoTimer = 0;
+        grid.triggerSingleRandom();
+      }
+
+      grid.update(dt);
+      grid.draw(ctx);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+  </script>
+</body>
+</html>
