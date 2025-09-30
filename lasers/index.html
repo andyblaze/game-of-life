@@ -7,7 +7,7 @@
     body {
       margin: 0;
       overflow: hidden;
-      background: url("lasers.jpg") no-repeat center center fixed;
+      background:#000 url("lasers.jpg") no-repeat center center fixed;
       background-size: cover;
     }
     canvas {
@@ -29,6 +29,70 @@
     }
     window.addEventListener('resize', resize);
     resize();
+class FullScreenOverlay {
+    constructor({ color = "255, 0, 0", min = 0.05, max = 0.2, speed = 0.005, scale = 0.25 } = {}) {
+        this.color = color;
+        this.min = min;
+        this.max = max;
+        this.speed = speed;
+        this.scale = scale;
+
+        this._elapsed = 0;
+        this._opacity = (this.max - this.min) / 2;
+
+        // --- pre-render setup ---
+        this.buffer = document.createElement("canvas");
+        this.buffer.width = window.innerWidth * this.scale;
+        this.buffer.height = window.innerHeight * this.scale;
+        this.bufCtx = this.buffer.getContext("2d");
+
+        // fill buffer once (solid color, full alpha)
+        this.bufCtx.fillStyle = `rgb(${this.color})`;
+        this.bufCtx.fillRect(0, 0, this.buffer.width, this.buffer.height);
+    }
+
+    update() {
+        this._elapsed = (this._elapsed + this.speed) % (Math.PI * 2);
+        const amplitude = (this.max - this.min) / 2;
+        const midpoint = (this.max + this.min) / 2;
+        this._opacity = midpoint + amplitude * Math.sin(this._elapsed);
+    }
+
+    draw(ctx, width, height) {
+        this.update();
+        ctx.save();
+        ctx.globalAlpha = this._opacity;
+        ctx.drawImage(this.buffer, 0, 0, width, height); // scaled blit
+        ctx.restore();
+    }
+}
+class DeltaReport {
+    static lastTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static elapsedSeconds = 0;
+    static report = document.getElementById("fps-report");
+    
+    static log(timestamp) {
+        this.frameCount++;
+        const delta = (timestamp - this.lastTime) / 16.67;
+        this.sum += delta;
+        this.lastTime = timestamp;
+        if ( this.frameCount === 120 ) { // every 2 seconds
+            this.elapsedSeconds += 2;
+            const minutes = Math.floor(this.elapsedSeconds / 60);
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if ( fps < this.min ) this.min = fps; 
+            if ( fps > this.max ) this.max = fps; 
+            console.log("time", `${minutes}:${this.elapsedSeconds % 60}`, " fps=", fps, " min=", this.min, " max=", this.max);
+            //this.report.innerText = fps + " " + this.min + " " + this.max;
+            this.frameCount = 0;
+            this.sum = 0;
+        }
+    }
+}
 
     class LaserBeam {
       constructor(config) {
@@ -44,10 +108,19 @@
         this.pulseSpeed = config.pulseSpeed || 0.2; // controls glow pulsing
         this.arcSize = (config.arcSize || 30) * Math.PI / 180; // arc size in radians
         this.sweepSpeed = config.sweepSpeed || 0.01; // how fast the sweep occurs
+        this.hueSpeed = config.hueSpeed || 0; // cycle through colors
+        this.active = config.active ?? true;
         this._time = 0;
       }
+  setActive(state) {
+    this.active = state;
+  }
 
+  toggle() {
+    this.active = !this.active;
+  }
       update() {
+        if (!this.active) return;
         this._time += this.pulseSpeed;
 
         // sweeping motion
@@ -60,53 +133,306 @@
         const newAngle = baseAngle + sweepAngle;
         this.endX = this.startX + Math.cos(newAngle) * length;
         this.endY = this.startY + Math.sin(newAngle) * length;
+    if (this.hueSpeed !== 0) {
+      this.color.h = (this.color.h + this.hueSpeed) % 360;
+    }
       }
 
 draw(ctx) {
-  const intensity = this.opacity * (0.7 + 0.3 * Math.sin(this._time));
-
-  // helper to make hsla string with given alpha
+    if (!this.active) return;
   const hsla = (h, s, l, a) => `hsla(${h}, ${s}, ${l}, ${a})`;
-
-  // Core beam
-  ctx.strokeStyle = hsla(this.color.h, this.color.s, this.color.l, intensity);
-  ctx.lineWidth = this.width;
-  ctx.beginPath();
-  ctx.moveTo(this.startX, this.startY);
-  ctx.lineTo(this.endX, this.endY);
-  ctx.stroke();
-
-  // Glow layers
-  for (let i = 1; i <= 3; i++) {
-    ctx.strokeStyle = hsla(this.color.h, this.color.s, this.color.l, intensity * (0.3 / i));
-    ctx.lineWidth = this.width + i * 2;
+  
+  const dx = this.endX - this.startX;
+  const dy = this.endY - this.startY;
+  const length = Math.sqrt(dx*dx + dy*dy);
+  
+  const segments = 10; // more segments = smoother gradient
+  for (let i = 0; i < segments; i++) {
+    const t1 = i / segments;
+    const t2 = (i + 1) / segments;
+    
+    ctx.strokeStyle = hsla(this.color.h, this.color.s, this.color.l, (1 - t1) * this.opacity);
+    ctx.lineWidth = this.width * (1 - 0.5 * t1); // optional taper
+    
     ctx.beginPath();
-    ctx.moveTo(this.startX, this.startY);
-    ctx.lineTo(this.endX, this.endY);
+    ctx.moveTo(this.startX + dx * t1, this.startY + dy * t1);
+    ctx.lineTo(this.startX + dx * t2, this.startY + dy * t2);
     ctx.stroke();
   }
-}
-// end class
-}
-    
 
+}
+// end LaserBeam class
+}
+class Voronoi {
+    constructor(w, h) {
+        this.screenW = w;
+        this.screenH = h;
+    }
+    update(sites) {
+        const cells = [];
+        for ( let i = 0; i < sites.length; i++ ) {
+            let cell = [
+                {x:0,y:0}, {x:this.screenW, y:0}, {x:this.screenW, y:this.screenH}, {x:0, y:this.screenH}
+            ];
+            for ( let j = 0; j < sites.length; j++ ) {
+                if ( i === j ) continue;
+                cell = this.initNewCell(cell, sites[i], sites[j]);
+                if ( ! cell.length ) break;
+            }
+            cells.push(cell);
+        }
+        return cells;
+    }
+    initNewCell(cell, site1, site2) {
+        let sx = (site1.x + site2.x) / 2;
+        let sy = (site1.y + site2.y) / 2;
+        let dx = site2.x - site1.x;
+        let dy = site2.y - site1.y;
+        let nx = -dx, ny = -dy; // perpendicular
+        //nx *= 1.8; ny *= 1.2;
+        let newCell=[];
+        for ( let k = 0; k < cell.length; k++ ) {
+            let a = cell[k], b = cell[(k + 1) % cell.length];
+            let da = (a.x - sx) * nx + (a.y - sy) * ny;
+            let db = (b.x - sx) * nx + (b.y - sy) * ny;
+            if ( da >= 0 ) 
+                newCell.push(a);
+            if ( da * db < 0 ) {
+                let t = da / (da - db);
+                newCell.push({x:a.x + (b.x - a.x) * t, y:a.y + (b.y - a.y) * t});
+            }
+        }
+        return newCell;
+    }
+}
+class Perlin {
+    constructor() {
+        this.p = new Uint8Array(512);
+        for ( let i = 0; i < 256; ++i ) this.p[i] = i;
+        for ( let i = 0; i < 256; ++i ) {
+            let r = i + Math.floor(Math.random() * (256 - i));
+            [this.p[i], this.p[r]] = [this.p[r], this.p[i]];
+        }
+        for (let i = 0; i < 256; ++i) this.p[i+256] = this.p[i];
+    }
+    fade(t) { 
+        return t * t * t * (t * (t * 6-15) + 10); 
+    }
+    lerp(a, b, t) { 
+        return a + t * (b - a); 
+    }
+    grad(hash, x, y) {
+        switch(hash & 3) {
+            case 0: return  x + y;
+            case 1: return -x + y;
+            case 2: return  x - y;
+            case 3: return -x - y;
+        }
+    }
+    noise(x, y) {
+        let X = Math.floor(x) & 255;
+        let Y = Math.floor(y) & 255;
+        x -= Math.floor(x);
+        y -= Math.floor(y);
+        let u = this.fade(x), v = this.fade(y);
+        let A = this.p[X]+Y, B  =this.p[X +1]+Y;
+        return this.lerp(
+            this.lerp(this.grad(this.p[A], x, y),
+            this.grad(this.p[B], x -1, y), u),
+            this.lerp(this.grad(this.p[A + 1], x, y -1),
+            this.grad(this.p[B +1], x -1, y -1), u),
+            v
+        );
+    }
+}
+class VoronoiHaze {
+  constructor(config = {}) {
+    this.width = config.width || window.innerWidth;
+    this.height = config.height || window.innerHeight;
+    this.cellCount = config.cellCount || 40;
+    this.opacity = config.opacity || 0.04;
+    this.speed = config.speed || 0.2;
+    this.blur = config.blur || 10;
+    this.perlinScale = config.perlinScale || 0.005; // scale of noise
+    this.perlinSpeed = config.perlinSpeed || 0.001; // temporal evolution
+
+    this.sites = [];
+    for (let i = 0; i < this.cellCount; i++) {
+      this.sites.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        baseX: 0,  // will store initial positions for Perlin offset
+        baseY: 0
+      });
+      this.sites[i].baseX = this.sites[i].x;
+      this.sites[i].baseY = this.sites[i].y;
+    }
+
+    this.voronoi = new Voronoi(this.width, this.height);
+    this.perlin = new Perlin();
+    this.time = 0;
+  }
+
+  resize(w, h) {
+    this.width = w;
+    this.height = h;
+  }
+
+  update() {
+    this.time += this.perlinSpeed;
+    // move sites according to Perlin noise
+    this.sites.forEach(s => {
+      const nx = this.perlin.noise(s.baseX * this.perlinScale, this.time);
+      const ny = this.perlin.noise(s.baseY * this.perlinScale, this.time + 100);
+      s.x = s.baseX + nx * 50; // amplitude of wobble
+      s.y = s.baseY + ny * 50;
+    });
+  }
+
+  draw(ctx) {
+    const cells = this.voronoi.update(this.sites);
+
+    ctx.save();
+    if (this.blur > 0) ctx.filter = `blur(${this.blur}px)`;
+    cells.forEach(cell => {
+      if (!cell.length) return;
+      ctx.beginPath();
+      ctx.moveTo(cell[0].x, cell[0].y);
+      for (let i = 1; i < cell.length; i++) ctx.lineTo(cell[i].x, cell[i].y);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+}
+
+
+
+
+const haze = new VoronoiHaze({
+  width: canvas.width,
+  height: canvas.height,
+  cellCount: 50,
+  opacity: 0.24,
+  blur: 15,
+  perlinScale: 0.05,
+  perlinSpeed: 0.01
+});
+const overlay = new FullScreenOverlay();
+// create a fan of beams
+class LaserDisplay {
+  constructor(config = {}) {
+    this.beams = [];
+    this.time = 0;   // ms since start
+    this.lastTime = 0;
+
+    const count = config.count || 8;
+    const baseX = config.baseX || window.innerWidth / 2;
+    const baseY = config.baseY || window.innerHeight;
+    const radius = config.radius || 600;
+
+    // generate beams in a fan
+    for (let i = 0; i < count; i++) {
+      const angle = (i / (count - 1)) * Math.PI; // spread 180°
+      this.beams.push(
+        new LaserBeam({
+          startX: baseX,
+          startY: baseY,
+          width:4,
+          endX: baseX + Math.cos(angle) * radius,
+          endY: baseY - Math.sin(angle) * radius,
+          color: { h: 120, s: "100%", l: "50%", a: 0.2 },
+          active: false,
+          sweepSpeed:0.001,
+          arcSize:0.001,
+          hueSpeed:0
+        })
+      );
+    }
+  }
+    updateBeamsSine(time) {
+        const speed = 0.0009; // wave speed
+        const wavelength = 6; // how many beams per wave cycle
+        const threshold = 0.0003; // cutoff for on/off
+
+        this.beams.forEach((beam, i) => {
+            // sine wave across beams, animated by time
+            const phase = (i / wavelength) + (time * speed);
+            const value = Math.sin(phase * Math.PI * 2);
+
+            // activate beams above threshold
+            beam.setActive(value > threshold);
+            beam.update();
+        });
+    }
+    updateBeamsSequential(time) {
+        const stepDuration = 90; // ms per step (adjust speed here)
+        const litWidth = 1;       // number of beams to light at once
+        const cycleLength = this.beams.length * stepDuration * 2; // forward & back sweep
+
+        // time offset in full sweep cycle
+        const t = time % cycleLength;
+        // index of the "head" beam
+        let index = Math.floor(t / stepDuration);
+
+        // sweep forward then back
+        if (index >= this.beams.length) {
+            index = 2 * this.beams.length - index - 1;
+        }
+
+        // activate a band of beams
+        this.beams.forEach((beam, i) => {
+            const dist = Math.abs(i - index);
+            beam.setActive(dist < litWidth); // on if within band
+            beam.update();
+        });
+    }
+
+  update(timestamp) {
+  if (!this.startTime) this.startTime = timestamp;
+  const elapsed = timestamp - this.startTime;
+
+  const stepDuration = 200; // ms per beam
+  const index = Math.floor(elapsed / stepDuration) % this.beams.length;
+
+    this.beams.forEach((beam, i) => {
+        //this.updateBeamsSine(timestamp);
+        this.updateBeamsSequential(timestamp);
+        //beam.setActive(i === index); // one beam lit at a time
+        beam.update();
+    });
+  }
+
+  draw(ctx) {
+    this.beams.forEach(beam => beam.draw(ctx));
+  }
+}
+const display = new LaserDisplay({ count: 32, baseX:944, baseY:684 });
     // create one beam
     const beam = new LaserBeam({
-      startX: 200,
-      startY: 900,
-      endX: canvas.width / 2 + 50,
-      endY: canvas.height / 4,
+      startX: 944,
+      startY: 684,
+      endX: canvas.width / 2,
+      endY: 20,
       color: { h: 180, s: "100%", l: "50%", a:1 },
-      opacity: 0.6,
+      opacity: 0.4,
       width: 4,
-      arcSize: 30,  // degrees
-      sweepSpeed: 0.009
+      arcSize: 60,  // degrees
+      sweepSpeed: 0.01,
+      hueSpeed: 0.5  // cycles hue smoothly
     });
 
-    function animate() {
+    function animate(timestamp) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       beam.update();
       beam.draw(ctx);
+  display.update(timestamp);
+  display.draw(ctx);
+      haze.update();
+      haze.draw(ctx);
+      overlay.draw(ctx, ctx.canvas.width, ctx.canvas.height);
+      DeltaReport.log(timestamp);
       requestAnimationFrame(animate);
     }
 
