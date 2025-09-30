@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lü Attractor Explorer</title>
+<style>
+  html,body {margin:0;height:100%;background:#000;overflow:hidden;}
+  canvas {display:block;width:100%;height:100%;}
+  .panel {
+    position:fixed;bottom:10px;left:10px;z-index:10;
+    background:rgba(200,0,0,0.6);padding:10px 14px;
+    border-radius:8px;color:#eee;font:13px sans-serif; width:400px;
+  }
+  .row {margin:4px 0;}
+  label {display:inline-block;width:16px;}
+  input[type=range]{width:100%;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="panel" id="panel">
+  <div class="row"><label>a</label><input type="range" id="a" min="0" max="50" step="0.1" value="36" /></div>
+  <div class="row"><label>b</label><input type="range" id="b" min="0" max="50" step="0.1" value="3" /></div>
+  <div class="row"><label>c</label><input type="range" id="c_" min="0" max="50" step="0.1" value="20" /></div>
+  <div class="row"><label>x</label><input type="range" id="x" min="-2" max="2" step="0.01" value="0.1" /></div>
+  <div class="row"><label>y</label><input type="range" id="y" min="-2" max="2" step="0.01" value="0" /></div>
+  <div class="row"><label>z</label><input type="range" id="z" min="-2" max="2" step="0.01" value="0" /></div>
+  <button id="reset">Reset</button>
+</div>
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let W, H, cx, cy;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  cx = W/2; cy = H/2;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// Params & state
+let a=36, b=3, c=20;
+let state = [0.1,0,0];
+const dt = 0.005;
+let stepsPerFrame = 100;
+
+// Derivative
+function deriv([x,y,z]) {
+  return [
+    a*(y-x),
+    -x*z + c*y,
+    x*y - b*z
+  ];
+}
+
+// Integrator (RK4)
+function rk4([x,y,z], dt) {
+  const f = deriv;
+  const k1 = f([x,y,z]);
+  const k2 = f([x+0.5*dt*k1[0], y+0.5*dt*k1[1], z+0.5*dt*k1[2]]);
+  const k3 = f([x+0.5*dt*k2[0], y+0.5*dt*k2[1], z+0.5*dt*k2[2]]);
+  const k4 = f([x+dt*k3[0], y+dt*k3[1], z+dt*k3[2]]);
+  return [
+    x + dt/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]),
+    y + dt/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]),
+    z + dt/6*(k1[2]+2*k2[2]+2*k3[2]+k4[2]),
+  ];
+}
+
+// Animation
+function draw() {
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
+  ctx.fillRect(0,0,W,H);
+  ctx.globalCompositeOperation = "lighter";
+  for (let i=0; i<stepsPerFrame; i++) {
+    state = rk4(state, dt);
+    const [x,y,z] = state;
+    const scale = 12;
+    const px = cx + x*scale;
+    const py = cy + y*scale;
+    ctx.fillStyle = `hsl(${(z*10)%360},80%,60%)`;
+    ctx.fillRect(px, py, 1.2, 1.2);
+  }
+  ctx.globalCompositeOperation = "source-over";
+  requestAnimationFrame(draw);
+}
+draw();
+
+// UI hookups
+function updateParams() {
+  a = parseFloat(document.getElementById("a").value);
+  b = parseFloat(document.getElementById("b").value);
+  c = parseFloat(document.getElementById("c_").value);
+}
+document.getElementById("a").oninput = updateParams;
+document.getElementById("b").oninput = updateParams;
+document.getElementById("c_").oninput = updateParams;
+
+document.getElementById("reset").onclick = () => {
+  state = [
+    parseFloat(document.getElementById("x").value),
+    parseFloat(document.getElementById("y").value),
+    parseFloat(document.getElementById("z").value)
+  ];
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,W,H);
+  updateParams();
+};
+</script>
+</body>
+</html>

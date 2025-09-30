@@ -1,118 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>3D Cube on Canvas with Sliders</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>Orthographic Cube Demo</title>
   <style>
-    html, body {margin:0; height:100%; display:flex; flex-direction:column;}
-    canvas {flex:1; display:block; background:#9AAEA0;}
-    .sliders {padding:10px; background:#333; color:white; display:flex; flex-wrap:wrap; gap:10px;}
-    .slider-container {display:flex; flex-direction:column; font-size:12px;}
-    input[type=range] {width:150px;}
+    body { background:#222; color:#eee; font-family:sans-serif; text-align:center; }
+    canvas { background:#111; display:block; margin:1rem auto; }
+    .controls { display:flex; flex-wrap:wrap; justify-content:center; gap:1rem; }
+    .control { display:flex; flex-direction:column; align-items:center; font-size:0.9rem; }
   </style>
 </head>
 <body>
-  <canvas id="c"></canvas>
-  <div class="sliders">
-    <div class="slider-container">X: <input type="range" id="posX" min="-200" max="200" value="0"></div>
-    <div class="slider-container">Y: <input type="range" id="posY" min="-200" max="200" value="0"></div>
-    <div class="slider-container">Z: <input type="range" id="posZ" min="-200" max="4200" value="0"></div>
-    <div class="slider-container">RotX: <input type="range" id="rotX" min="0" max="360" value="0"></div>
-    <div class="slider-container">RotY: <input type="range" id="rotY" min="0" max="360" value="0"></div>
-    <div class="slider-container">RotZ: <input type="range" id="rotZ" min="0" max="360" value="0"></div>
+  <h2>Orthographic Cube Demo</h2>
+  <canvas id="canvas" width="600" height="600"></canvas>
+  <div class="controls">
+    <div class="control">
+      <label>translateX</label>
+      <input type="range" id="translateX" min="-200" max="200" value="0">
+    </div>
+    <div class="control">
+      <label>translateY</label>
+      <input type="range" id="translateY" min="-200" max="200" value="0">
+    </div>
+    <div class="control">
+      <label>translateZ</label>
+      <input type="range" id="translateZ" min="-4200" max="4200" value="2100">
+    </div>
+    <div class="control">
+      <label>rotateX</label>
+      <input type="range" id="rotateX" min="0" max="360" value="0">
+    </div>
+    <div class="control">
+      <label>rotateY</label>
+      <input type="range" id="rotateY" min="0" max="360" value="0">
+    </div>
+    <div class="control">
+      <label>rotateZ</label>
+      <input type="range" id="rotateZ" min="0" max="360" value="0">
+    </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('c');
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize);
-    resize();
+    const W = canvas.width, H = canvas.height;
 
-    const sliders = ['posX','posY','posZ','rotX','rotY','rotZ'].map(id => document.getElementById(id));
+    // Cube vertices
+    const size = 100;
+    const vertices = [
+      [-1, -1, -1],
+      [ 1, -1, -1],
+      [ 1,  1, -1],
+      [-1,  1, -1],
+      [-1, -1,  1],
+      [ 1, -1,  1],
+      [ 1,  1,  1],
+      [-1,  1,  1],
+    ].map(v => v.map(coord => coord * size/2));
 
-    const cube = {
-      size:200,
-      vertices: [],
-      faces: []
+    // Faces
+    const faces = [
+      [0,1,2,3], // back
+      [4,5,6,7], // front
+      [0,1,5,4], // bottom
+      [2,3,7,6], // top
+      [1,2,6,5], // right
+      [0,3,7,4], // left
+    ];
+
+    // Colors
+    const colors = [
+      "#ff5555", // back
+      "#55ff55", // front
+      "#5555ff", // bottom
+      "#ffff55", // top
+      "#ff55ff", // right
+      "#55ffff"  // left
+    ];
+
+    // Sliders
+    const sliders = {
+      translateX: document.getElementById("translateX"),
+      translateY: document.getElementById("translateY"),
+      translateZ: document.getElementById("translateZ"),
+      rotateX: document.getElementById("rotateX"),
+      rotateY: document.getElementById("rotateY"),
+      rotateZ: document.getElementById("rotateZ"),
     };
 
-    function initCube(){
-      const s = cube.size/2;
-      cube.vertices = [
-        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},
-        {x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}
-      ];
-      cube.faces = [
-        {verts:[0,1,2,3],color:'#9aaea0'}, // front
-        {verts:[4,5,6,7],color:'#88b48f'}, // back
-        {verts:[0,3,7,4],color:'#6f8e6d'}, // left
-        {verts:[1,2,6,5],color:'#a5c1a2'}, // right
-        {verts:[3,2,6,7],color:'#5f7a5c'}, // top
-        {verts:[0,1,5,4],color:'#b4d0b0'}  // bottom
-      ];
+    function rotate([x,y,z], rx, ry, rz) {
+      // rotate around X
+      let cos = Math.cos(rx), sin = Math.sin(rx);
+      [y,z] = [y*cos - z*sin, y*sin + z*cos];
+      // rotate around Y
+      cos = Math.cos(ry); sin = Math.sin(ry);
+      [x,z] = [x*cos + z*sin, -x*sin + z*cos];
+      // rotate around Z
+      cos = Math.cos(rz); sin = Math.sin(rz);
+      [x,y] = [x*cos - y*sin, x*sin + y*cos];
+      return [x,y,z];
     }
 
-    function rotateVertex(v, rx, ry, rz){
-      let x=v.x, y=v.y, z=v.z;
-      const radX=rx*Math.PI/180, radY=ry*Math.PI/180, radZ=rz*Math.PI/180;
-      let cos, sin;
-      cos=Math.cos(radX); sin=Math.sin(radX); let y1=y*cos - z*sin; let z1=y*sin + z*cos; y=y1; z=z1;
-      cos=Math.cos(radY); sin=Math.sin(radY); let x1=x*cos + z*sin; z1=-x*sin + z*cos; x=x1; z=z1;
-      cos=Math.cos(radZ); sin=Math.sin(radZ); let x2=x*cos - y*sin; let y2=x*sin + y*cos; x=x2; y=y2;
-      return {x,y,z};
+    // Orthographic projection (ignore z)
+    function project([x,y,z]) {
+      return [W/2 + x, H/2 + y];
     }
 
-    function project(v){
-      const distance=500;
-      const scale=500;
-      return {
-        x: canvas.width/2 + v.x * scale / (v.z + distance),
-        y: canvas.height/2 + v.y * scale / (v.z + distance)
-      };
-    }
+    function draw() {
+      ctx.clearRect(0,0,W,H);
 
-    function drawCube(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      const rx=parseFloat(sliders[3].value), ry=parseFloat(sliders[4].value), rz=parseFloat(sliders[5].value);
-      const px=parseFloat(sliders[0].value), py=parseFloat(sliders[1].value), pz=parseFloat(sliders[2].value);
+      const rx = sliders.rotateX.value * Math.PI/180;
+      const ry = sliders.rotateY.value * Math.PI/180;
+      const rz = sliders.rotateZ.value * Math.PI/180;
+      const tx = +sliders.translateX.value;
+      const ty = +sliders.translateY.value;
+      const tz = +sliders.translateZ.value;
 
-      const transformed = cube.vertices.map(v=>{
-        let tv = rotateVertex(v, rx, ry, rz);
-        return {x: tv.x + px, y: tv.y + py, z: tv.z + pz};
+      const tVerts = vertices.map(v => {
+        let [x,y,z] = rotate(v, rx, ry, rz);
+        return [x+tx, y+ty, z+tz];
       });
 
-      // simple painter's sort by avg Z
-      const sortedFaces = cube.faces.map(f=>{
-        const zAvg = f.verts.reduce((sum,i)=>sum + transformed[i].z,0)/4;
-        return {face:f,zAvg};
+      // Sort faces by average z (painter's algorithm)
+      const faceDepths = faces.map((f,i) => {
+        const zAvg = f.map(idx => tVerts[idx][2]).reduce((a,b)=>a+b,0)/f.length;
+        return {i, zAvg};
       }).sort((a,b)=>a.zAvg - b.zAvg);
 
-      sortedFaces.forEach(fobj=>{
-        const f=fobj.face;
+      faceDepths.forEach(({i}) => {
+        const f = faces[i];
         ctx.beginPath();
-        f.verts.forEach((vi,i)=>{
-          const p = project(transformed[vi]);
-          if(i===0) ctx.moveTo(p.x,p.y);
-          else ctx.lineTo(p.x,p.y);
+        f.forEach((idx,j) => {
+          const [px,py] = project(tVerts[idx]);
+          if (j===0) ctx.moveTo(px,py);
+          else ctx.lineTo(px,py);
         });
         ctx.closePath();
-        ctx.fillStyle = f.color;
+        ctx.fillStyle = colors[i];
         ctx.fill();
-        //ctx.strokeStyle = 'black';
-        ///ctx.lineWidth = 1;
-        //ctx.stroke();
       });
+
+      requestAnimationFrame(draw);
     }
 
-    initCube();
-
-    function animate(){
-      drawCube();
-      requestAnimationFrame(animate);
-    }
-    animate();
+    draw();
   </script>
 </body>
 </html>

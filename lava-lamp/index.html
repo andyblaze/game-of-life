@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lightning with Delta Forks</title>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#0b0b10;height:100%;}
+  canvas{display:block;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize',()=>{W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;});
+
+  class BoltSegment {
+    constructor(x,y,length,angle,depth=0){
+      this.x=x; this.y=y; this.length=length; this.angle=angle;
+      this.children=[];
+      this.done=false;
+      this.depth = depth;
+    }
+    step(){
+      const jitter = (Math.random()-0.5)*0.4;
+      this.x2 = this.x + this.length*Math.cos(this.angle + jitter);
+      this.y2 = this.y + this.length*Math.sin(this.angle + jitter);
+      this.done=true;
+    }
+draw(ctx){
+  // 1️⃣ Glow layer
+  ctx.strokeStyle="rgba(180,220,255,0.3)"; // soft pale glow
+  ctx.lineWidth=4; // thicker for glow
+  ctx.beginPath();
+  ctx.moveTo(this.x,this.y);
+  ctx.lineTo(this.x2,this.y2);
+  ctx.stroke();
+
+  // 2️⃣ Main bolt on top
+  ctx.strokeStyle="rgba(180,220,255,1)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(this.x,this.y);
+  ctx.lineTo(this.x2,this.y2);
+  ctx.stroke();
+
+  // 3️⃣ Recursively draw children
+  for(const child of this.children){
+    child.draw(ctx);
+  }
+}
+  }
+
+  const maxY = H*0.9;
+  const baseLength = 15;
+  const baseAngle = Math.PI/2; // downward
+  const growthDelay = 0.0001; // ms
+
+  function growSegment(parent){
+    if(parent.y2 > maxY) return;
+
+    // main segment
+    const numSeg = 1; // keep main growth linear
+    for(let i=0;i<numSeg;i++){
+const downwardBias = Math.PI/2; // main downward direction
+const deviation = (Math.random()-0.1)*Math.PI/2; // bigger possible deviation
+const angle = downwardBias + deviation;
+      const seg = new BoltSegment(parent.x2,parent.y2,baseLength,angle,parent.depth+1);
+      seg.step();
+      parent.children.push(seg);
+
+      // short side forks
+      if(Math.random()<0.4){
+        const forkAngle = baseAngle + (Math.random()>0.5?1:-1)*Math.PI/4;
+        const forkLength = parent.length * (0.5 + Math.random()*0.5); // short forks
+        const fork = new BoltSegment(seg.x2,seg.y2,forkLength,forkAngle,seg.depth+1);
+        fork.step();
+        seg.children.push(fork);
+      }
+
+      // delta forks: longer forks near tips
+      if(seg.depth > 3 && Math.random()<0.3){
+        const deltaAngle = baseAngle + (Math.random()>0.5?1:-1)*Math.PI/6;
+        const deltaLength = parent.length * (1.5 + Math.random()); // long delta
+        const delta = new BoltSegment(seg.x2,seg.y2,deltaLength,deltaAngle,seg.depth+1);
+        delta.step();
+        seg.children.push(delta);
+      }
+
+      // continue growth recursively
+      setTimeout(()=>growSegment(seg), growthDelay);
+    }
+  }
+
+  // initial bolt
+  const root = new BoltSegment(W/2,0,baseLength,baseAngle);
+  root.step();
+  const segments = [root];
+
+  function draw(){
+    ctx.fillStyle="rgba(11,11,16,0.1)";
+    ctx.fillRect(0,0,W,H);
+    for(const s of segments){
+      s.draw(ctx);
+    }
+  }
+
+  function animate(){
+    draw();
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+  setTimeout(()=>growSegment(root), growthDelay);
+})();
+</script>
+</body>
+</html>
