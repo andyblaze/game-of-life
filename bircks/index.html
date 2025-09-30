@@ -2,175 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Sage Brick Wall — Slide Out Virtual Cubes with Corrected Edge Highlights/Shadows</title>
+  <title>3D Cube on Canvas with Sliders</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    html,body{height:100%;margin:0;background:#9aaea0;}
-    canvas{display:block;width:100%;height:100vh}
+    html, body {margin:0; height:100%; display:flex; flex-direction:column;}
+    canvas {flex:1; display:block; background:#9AAEA0;}
+    .sliders {padding:10px; background:#333; color:white; display:flex; flex-wrap:wrap; gap:10px;}
+    .slider-container {display:flex; flex-direction:column; font-size:12px;}
+    input[type=range] {width:150px;}
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
+  <div class="sliders">
+    <div class="slider-container">X: <input type="range" id="posX" min="-200" max="200" value="0"></div>
+    <div class="slider-container">Y: <input type="range" id="posY" min="-200" max="200" value="0"></div>
+    <div class="slider-container">Z: <input type="range" id="posZ" min="-200" max="4200" value="0"></div>
+    <div class="slider-container">RotX: <input type="range" id="rotX" min="0" max="360" value="0"></div>
+    <div class="slider-container">RotY: <input type="range" id="rotY" min="0" max="360" value="0"></div>
+    <div class="slider-container">RotZ: <input type="range" id="rotZ" min="0" max="360" value="0"></div>
+  </div>
 
   <script>
     const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d', { alpha: false });
-
-    let DPR = window.devicePixelRatio || 1;
-    function resize() {
-      DPR = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(window.innerWidth * DPR);
-      canvas.height = Math.floor(window.innerHeight * DPR);
-      canvas.style.width = window.innerWidth + 'px';
-      canvas.style.height = window.innerHeight + 'px';
-      grid.resize();
-    }
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resize);
-
-    const BG_COLOR = '#9aaea0';
-    const BRICK_ROWS = 10;
-    const BRICK_COLS = 18;
-
-    const POP_DURATION = 1000;
-    const UNPOP_DURATION = 1000;
-    const MAX_POP_Z = 8;
-
-    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-
-    class Brick {
-      constructor(i,j,w,h,x,y){
-        this.i = i; this.j = j;
-        this.w = w; this.h = h;
-        this.x = x; this.y = y;
-        this.d = MAX_POP_Z;
-
-        this.pop = 0;
-        this.phase = 'idle';
-        this.age = 0;
-      }
-
-      trigger(){
-        this.phase = 'pop';
-        this.age = 0;
-      }
-
-      update(dt){
-        if(this.phase === 'idle') return;
-        this.age += dt;
-
-        if(this.phase === 'pop'){
-          const t = Math.min(1, this.age / POP_DURATION);
-          this.pop = easeOutCubic(t);
-          if(t >= 1){ this.phase = 'unpop'; this.age = 0; }
-        } else if(this.phase === 'unpop'){
-          const t = Math.min(1, this.age / UNPOP_DURATION);
-          this.pop = 1 - easeOutCubic(t);
-          if(t >= 1){ this.phase = 'idle'; this.pop = 0; }
-        }
-      }
-
-      draw(ctx, DPR){
-        const px = this.x * DPR, py = this.y * DPR, pw = this.w * DPR, ph = this.h * DPR;
-        const popZ = this.pop * this.d * DPR;
-        const edgeWidthBase = 4 * DPR;
-
-        ctx.save();
-        ctx.fillStyle = BG_COLOR;
-        ctx.fillRect(px, py, pw, ph);
-
-        if(this.pop > 0){
-          const offsetX = 0;
-          const offsetY = -popZ / 2;
-          const cx = px + pw/2;
-          const cy = py + ph/2;
-
-          const screenCenterX = canvas.width / 2;
-          const screenCenterY = canvas.height / 2;
-
-          let dx = (cx - screenCenterX)/(screenCenterX);  // -1..1
-          let dy = (cy - screenCenterY)/(screenCenterY);
-          dx = Math.max(-1, Math.min(1, dx));
-          dy = Math.max(-1, Math.min(1, dy));
-
-          // Front face solid color
-          ctx.fillStyle = BG_COLOR;
-          ctx.fillRect(px + offsetX, py + offsetY, pw, ph);
-
-          const edgeWidth = edgeWidthBase * this.pop;
-
-          // Shadows/highlights relative to center
-          const baseAlpha = 0.15;
-          const maxAlpha = 0.3;
-
-          // Horizontal edges
-          const leftAlpha = baseAlpha + maxAlpha * Math.max(0, dx) * this.pop;   // right shadow if left of center
-          const rightAlpha = baseAlpha + maxAlpha * Math.max(0, -dx) * this.pop; // left shadow if right of center
-          // Vertical edges
-          const topAlpha = baseAlpha + maxAlpha * Math.max(0, -dy) * this.pop;    // bottom shadow if below center
-          const bottomAlpha = baseAlpha + maxAlpha * Math.max(0, dy) * this.pop;  // top shadow if above center
-
-          // Draw edges
-          ctx.fillStyle = `rgba(255,255,255,${topAlpha})`; ctx.fillRect(px + offsetX, py + offsetY, pw, edgeWidth); // top highlight
-          ctx.fillStyle = `rgba(255,255,255,${leftAlpha})`; ctx.fillRect(px + offsetX, py + offsetY, edgeWidth, ph); // left highlight
-          ctx.fillStyle = `rgba(0,0,0,${bottomAlpha})`; ctx.fillRect(px + offsetX, py + offsetY + ph - edgeWidth, pw, edgeWidth); // bottom shadow
-          ctx.fillStyle = `rgba(0,0,0,${rightAlpha})`; ctx.fillRect(px + offsetX + pw - edgeWidth, py + offsetY, edgeWidth, ph); // right shadow
-        }
-
-        ctx.restore();
-      }
-    }
-
-    class Grid {
-      constructor(cols, rows){
-        this.cols = cols; this.rows = rows;
-        this.bricks = [];
-        this.resize();
-      }
-      resize(){
-        const cssW = canvas.width / DPR; const cssH = canvas.height / DPR;
-        const bw = Math.floor(cssW / this.cols);
-        const bh = Math.floor(cssH / this.rows);
-        this.brickW = bw; this.brickH = bh;
-        this.bricks = [];
-        for(let j=0;j<this.rows;j++){
-          for(let i=0;i<this.cols;i++){
-            const x = i*this.brickW;
-            const y = j*this.brickH;
-            this.bricks.push(new Brick(i,j,this.brickW,this.brickH,x,y));
-          }
-        }
-      }
-      triggerSingleRandom(){
-        const idx = Math.floor(Math.random()*this.bricks.length);
-        this.bricks[idx].trigger();
-      }
-      update(dt){ this.bricks.forEach(b=>b.update(dt)); }
-      draw(ctx){
-        ctx.fillStyle = BG_COLOR; ctx.fillRect(0,0,canvas.width,canvas.height);
-        this.bricks.forEach(b=>b.draw(ctx,DPR));
-      }
-    }
-
-    let grid = new Grid(BRICK_COLS, BRICK_ROWS);
     resize();
 
-    let autoTimer = 0;
-    let last = 0;
-    function frame(ts){
-      if(!last) last = ts;
-      const dt = ts - last; last = ts;
+    const sliders = ['posX','posY','posZ','rotX','rotY','rotZ'].map(id => document.getElementById(id));
 
-      autoTimer += dt;
-      if(autoTimer > 1000){
-        autoTimer = 0;
-        grid.triggerSingleRandom();
-      }
+    const cube = {
+      size:200,
+      vertices: [],
+      faces: []
+    };
 
-      grid.update(dt);
-      grid.draw(ctx);
-      requestAnimationFrame(frame);
+    function initCube(){
+      const s = cube.size/2;
+      cube.vertices = [
+        {x:-s,y:-s,z:-s},{x:s,y:-s,z:-s},{x:s,y:s,z:-s},{x:-s,y:s,z:-s},
+        {x:-s,y:-s,z:s},{x:s,y:-s,z:s},{x:s,y:s,z:s},{x:-s,y:s,z:s}
+      ];
+      cube.faces = [
+        {verts:[0,1,2,3],color:'#9aaea0'}, // front
+        {verts:[4,5,6,7],color:'#88b48f'}, // back
+        {verts:[0,3,7,4],color:'#6f8e6d'}, // left
+        {verts:[1,2,6,5],color:'#a5c1a2'}, // right
+        {verts:[3,2,6,7],color:'#5f7a5c'}, // top
+        {verts:[0,1,5,4],color:'#b4d0b0'}  // bottom
+      ];
     }
-    requestAnimationFrame(frame);
+
+    function rotateVertex(v, rx, ry, rz){
+      let x=v.x, y=v.y, z=v.z;
+      const radX=rx*Math.PI/180, radY=ry*Math.PI/180, radZ=rz*Math.PI/180;
+      let cos, sin;
+      cos=Math.cos(radX); sin=Math.sin(radX); let y1=y*cos - z*sin; let z1=y*sin + z*cos; y=y1; z=z1;
+      cos=Math.cos(radY); sin=Math.sin(radY); let x1=x*cos + z*sin; z1=-x*sin + z*cos; x=x1; z=z1;
+      cos=Math.cos(radZ); sin=Math.sin(radZ); let x2=x*cos - y*sin; let y2=x*sin + y*cos; x=x2; y=y2;
+      return {x,y,z};
+    }
+
+    function project(v){
+      const distance=500;
+      const scale=500;
+      return {
+        x: canvas.width/2 + v.x * scale / (v.z + distance),
+        y: canvas.height/2 + v.y * scale / (v.z + distance)
+      };
+    }
+
+    function drawCube(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const rx=parseFloat(sliders[3].value), ry=parseFloat(sliders[4].value), rz=parseFloat(sliders[5].value);
+      const px=parseFloat(sliders[0].value), py=parseFloat(sliders[1].value), pz=parseFloat(sliders[2].value);
+
+      const transformed = cube.vertices.map(v=>{
+        let tv = rotateVertex(v, rx, ry, rz);
+        return {x: tv.x + px, y: tv.y + py, z: tv.z + pz};
+      });
+
+      // simple painter's sort by avg Z
+      const sortedFaces = cube.faces.map(f=>{
+        const zAvg = f.verts.reduce((sum,i)=>sum + transformed[i].z,0)/4;
+        return {face:f,zAvg};
+      }).sort((a,b)=>a.zAvg - b.zAvg);
+
+      sortedFaces.forEach(fobj=>{
+        const f=fobj.face;
+        ctx.beginPath();
+        f.verts.forEach((vi,i)=>{
+          const p = project(transformed[vi]);
+          if(i===0) ctx.moveTo(p.x,p.y);
+          else ctx.lineTo(p.x,p.y);
+        });
+        ctx.closePath();
+        ctx.fillStyle = f.color;
+        ctx.fill();
+        //ctx.strokeStyle = 'black';
+        ///ctx.lineWidth = 1;
+        //ctx.stroke();
+      });
+    }
+
+    initCube();
+
+    function animate(){
+      drawCube();
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>
