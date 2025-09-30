@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Sage Brick Wall — Static Pop-Out Demo</title>
+  <title>Sage Brick Wall — Balanced Perspective Pop-Out</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     html,body{height:100%;margin:0;background:#9aaea0;}
@@ -66,25 +66,41 @@
 
       draw(ctx, DPR){
         const px = this.x * DPR, py = this.y * DPR, pw = this.w * DPR, ph = this.h * DPR;
-        const edgeWidth = 4 * DPR * this.pop; // grow edge width as pop progresses
+        const edgeWidthBase = 4 * DPR;
 
         ctx.save();
         ctx.fillStyle = BG_COLOR;
         ctx.fillRect(px, py, pw, ph);
 
         if(this.pop > 0){
-          const highlightAlpha = 0.2 + 0.4*this.pop;
-          const shadowAlpha = 0.2 + 0.4*this.pop;
+          // center offsets normalized -1..1
+          const cx = px + pw/2, cy = py + ph/2;
+          const dx = (cx - canvas.width/2)/(canvas.width/2);
+          const dy = (cy - canvas.height/2)/(canvas.height/2);
 
-          // highlights (top-left)
-          ctx.fillStyle = `rgba(255,255,255,${highlightAlpha})`;
-          ctx.fillRect(px, py, pw, edgeWidth); // top
-          ctx.fillRect(px, py, edgeWidth, ph); // left
+          // base highlight/shadow, ensures balance
+          const baseHighlight = 0.2;
+          const baseShadow = 0.2;
 
-          // shadows (bottom-right)
-          ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
-          ctx.fillRect(px, py + ph - edgeWidth, pw, edgeWidth); // bottom
-          ctx.fillRect(px + pw - edgeWidth, py, edgeWidth, ph); // right
+          // directional contribution (-1..1) scaled to 0..0.4
+          const dirTop = Math.max(0, -dy) * 0.4;
+          const dirBottom = Math.max(0, dy) * 0.4;
+          const dirLeft = Math.max(0, -dx) * 0.4;
+          const dirRight = Math.max(0, dx) * 0.4;
+
+            const topAlpha = baseHighlight + this.pop * Math.max(0, dy);      // brick below center -> more top highlight
+            const bottomAlpha = baseShadow + this.pop * Math.max(0, -dy);     // brick above center -> more bottom shadow
+            const leftAlpha = baseHighlight + this.pop * Math.max(0, dx);     // brick right of center -> more left highlight
+            const rightAlpha = baseShadow + this.pop * Math.max(0, -dx);      // brick left of center -> more right shadow
+
+
+          const edgeWidth = edgeWidthBase * this.pop;
+
+          // draw edges with balanced highlight/shadow
+          ctx.fillStyle = `rgba(255,255,255,${topAlpha})`; ctx.fillRect(px, py, pw, edgeWidth); // top
+          ctx.fillStyle = `rgba(255,255,255,${leftAlpha})`; ctx.fillRect(px, py, edgeWidth, ph); // left
+          ctx.fillStyle = `rgba(0,0,0,${bottomAlpha})`; ctx.fillRect(px, py + ph - edgeWidth, pw, edgeWidth); // bottom
+          ctx.fillStyle = `rgba(0,0,0,${rightAlpha})`; ctx.fillRect(px + pw - edgeWidth, py, edgeWidth, ph); // right
         }
 
         ctx.restore();
