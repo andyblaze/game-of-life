@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Sage Brick Wall — Balanced Perspective Pop-Out</title>
+  <title>Sage Brick Wall — Slide Out Virtual Cubes with Corrected Edge Highlights/Shadows</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     html,body{height:100%;margin:0;background:#9aaea0;}
@@ -30,7 +30,10 @@
     const BG_COLOR = '#9aaea0';
     const BRICK_ROWS = 10;
     const BRICK_COLS = 18;
-    const POP_DURATION = 2000; // ms for pop effect
+
+    const POP_DURATION = 1000;
+    const UNPOP_DURATION = 1000;
+    const MAX_POP_Z = 8;
 
     const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
@@ -39,33 +42,36 @@
         this.i = i; this.j = j;
         this.w = w; this.h = h;
         this.x = x; this.y = y;
+        this.d = MAX_POP_Z;
+
         this.pop = 0;
-        this.popDir = 0;
-        this.popDuration = POP_DURATION;
+        this.phase = 'idle';
         this.age = 0;
       }
 
-      trigger(duration){
-        this.popDuration = duration || POP_DURATION;
-        this.popDir = 1;
+      trigger(){
+        this.phase = 'pop';
         this.age = 0;
       }
 
       update(dt){
-        if(this.popDir === 0) return;
+        if(this.phase === 'idle') return;
         this.age += dt;
-        let t = Math.min(1, this.age / this.popDuration);
-        if(this.popDir === 1){
+
+        if(this.phase === 'pop'){
+          const t = Math.min(1, this.age / POP_DURATION);
           this.pop = easeOutCubic(t);
-          if(t >= 1){ this.popDir = -1; this.age = 0; }
-        } else if(this.popDir === -1){
+          if(t >= 1){ this.phase = 'unpop'; this.age = 0; }
+        } else if(this.phase === 'unpop'){
+          const t = Math.min(1, this.age / UNPOP_DURATION);
           this.pop = 1 - easeOutCubic(t);
-          if(t >= 1){ this.popDir = 0; this.pop = 0; }
+          if(t >= 1){ this.phase = 'idle'; this.pop = 0; }
         }
       }
 
       draw(ctx, DPR){
         const px = this.x * DPR, py = this.y * DPR, pw = this.w * DPR, ph = this.h * DPR;
+        const popZ = this.pop * this.d * DPR;
         const edgeWidthBase = 4 * DPR;
 
         ctx.save();
@@ -73,34 +79,41 @@
         ctx.fillRect(px, py, pw, ph);
 
         if(this.pop > 0){
-          // center offsets normalized -1..1
-          const cx = px + pw/2, cy = py + ph/2;
-          const dx = (cx - canvas.width/2)/(canvas.width/2);
-          const dy = (cy - canvas.height/2)/(canvas.height/2);
+          const offsetX = 0;
+          const offsetY = -popZ / 2;
+          const cx = px + pw/2;
+          const cy = py + ph/2;
 
-          // base highlight/shadow, ensures balance
-          const baseHighlight = 0.2;
-          const baseShadow = 0.2;
+          const screenCenterX = canvas.width / 2;
+          const screenCenterY = canvas.height / 2;
 
-          // directional contribution (-1..1) scaled to 0..0.4
-          const dirTop = Math.max(0, -dy) * 0.4;
-          const dirBottom = Math.max(0, dy) * 0.4;
-          const dirLeft = Math.max(0, -dx) * 0.4;
-          const dirRight = Math.max(0, dx) * 0.4;
+          let dx = (cx - screenCenterX)/(screenCenterX);  // -1..1
+          let dy = (cy - screenCenterY)/(screenCenterY);
+          dx = Math.max(-1, Math.min(1, dx));
+          dy = Math.max(-1, Math.min(1, dy));
 
-            const topAlpha = baseHighlight + this.pop * Math.max(0, dy);      // brick below center -> more top highlight
-            const bottomAlpha = baseShadow + this.pop * Math.max(0, -dy);     // brick above center -> more bottom shadow
-            const leftAlpha = baseHighlight + this.pop * Math.max(0, dx);     // brick right of center -> more left highlight
-            const rightAlpha = baseShadow + this.pop * Math.max(0, -dx);      // brick left of center -> more right shadow
-
+          // Front face solid color
+          ctx.fillStyle = BG_COLOR;
+          ctx.fillRect(px + offsetX, py + offsetY, pw, ph);
 
           const edgeWidth = edgeWidthBase * this.pop;
 
-          // draw edges with balanced highlight/shadow
-          ctx.fillStyle = `rgba(255,255,255,${topAlpha})`; ctx.fillRect(px, py, pw, edgeWidth); // top
-          ctx.fillStyle = `rgba(255,255,255,${leftAlpha})`; ctx.fillRect(px, py, edgeWidth, ph); // left
-          ctx.fillStyle = `rgba(0,0,0,${bottomAlpha})`; ctx.fillRect(px, py + ph - edgeWidth, pw, edgeWidth); // bottom
-          ctx.fillStyle = `rgba(0,0,0,${rightAlpha})`; ctx.fillRect(px + pw - edgeWidth, py, edgeWidth, ph); // right
+          // Shadows/highlights relative to center
+          const baseAlpha = 0.15;
+          const maxAlpha = 0.3;
+
+          // Horizontal edges
+          const leftAlpha = baseAlpha + maxAlpha * Math.max(0, dx) * this.pop;   // right shadow if left of center
+          const rightAlpha = baseAlpha + maxAlpha * Math.max(0, -dx) * this.pop; // left shadow if right of center
+          // Vertical edges
+          const topAlpha = baseAlpha + maxAlpha * Math.max(0, -dy) * this.pop;    // bottom shadow if below center
+          const bottomAlpha = baseAlpha + maxAlpha * Math.max(0, dy) * this.pop;  // top shadow if above center
+
+          // Draw edges
+          ctx.fillStyle = `rgba(255,255,255,${topAlpha})`; ctx.fillRect(px + offsetX, py + offsetY, pw, edgeWidth); // top highlight
+          ctx.fillStyle = `rgba(255,255,255,${leftAlpha})`; ctx.fillRect(px + offsetX, py + offsetY, edgeWidth, ph); // left highlight
+          ctx.fillStyle = `rgba(0,0,0,${bottomAlpha})`; ctx.fillRect(px + offsetX, py + offsetY + ph - edgeWidth, pw, edgeWidth); // bottom shadow
+          ctx.fillStyle = `rgba(0,0,0,${rightAlpha})`; ctx.fillRect(px + offsetX + pw - edgeWidth, py + offsetY, edgeWidth, ph); // right shadow
         }
 
         ctx.restore();
@@ -141,12 +154,6 @@
     let grid = new Grid(BRICK_COLS, BRICK_ROWS);
     resize();
 
-    let isPointerDown = false;
-    canvas.addEventListener('pointerdown', (e)=>{ isPointerDown = true; canvas.setPointerCapture(e.pointerId); grid.triggerSingleRandom(); });
-    canvas.addEventListener('pointermove', (e)=>{ if(isPointerDown) grid.triggerSingleRandom(); });
-    canvas.addEventListener('pointerup', (e)=>{ isPointerDown=false; canvas.releasePointerCapture(e.pointerId); });
-    canvas.addEventListener('pointerleave', ()=>{ isPointerDown=false; });
-
     let autoTimer = 0;
     let last = 0;
     function frame(ts){
@@ -164,7 +171,6 @@
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
-
   </script>
 </body>
 </html>
