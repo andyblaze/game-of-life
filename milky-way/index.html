@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Galaxy Formation Demo</title>
+<style>
+  body { margin:0; overflow:hidden; background:black; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<script>
+class DeltaReport {
+    static lastTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static elapsedSeconds = 0;
+    static report = document.getElementById("fps-report");
+    
+    static log(timestamp) {
+        this.frameCount++;
+        const delta = (timestamp - this.lastTime) / 16.67;
+        this.sum += delta;
+        this.lastTime = timestamp;
+        if ( this.frameCount === 120 ) { // every 2 seconds
+            this.elapsedSeconds += 2;
+            const minutes = Math.floor(this.elapsedSeconds / 60);
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if ( fps < this.min ) this.min = fps; 
+            if ( fps > this.max ) this.max = fps; 
+            console.log("time", `${minutes}:${this.elapsedSeconds % 60}`, " fps=", fps, " min=", this.min, " max=", this.max);
+            //this.report.innerText = fps + " " + this.min + " " + this.max;
+            this.frameCount = 0;
+            this.sum = 0;
+        }
+    }
+}
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ------------------ Parameters ------------------
+  const nStars = 6000;
+  const G = 2000;
+  const dt = 0.2;
+  const centerMass = 0.21;
+  const radialDamp = 0.00995;
+  const particles = [];
+  const cx = canvas.width/2;
+  const cy = canvas.height/2;
+const RmaxX = canvas.width/2 * 0.96;
+const RmaxY = canvas.height/2 * 0.96;
+  const maxTrail = 2;
+  const blackHoles = [
+  { x: [cx, cy], m: 20000 },       // main BH at center
+  { x: [cx + 150, cy + 100], m: 15000 } // second BH somewhere else
+];
+  
+
+  // ------------------ Initialize stars with spiral velocity perturb ations ------------------
+  const nArms = 3; // number of spiral arms
+for (let i = 0; i < nStars; i++) {
+  const angle = Math.random() * 2 * Math.PI;
+  const r = Math.random(); // normalized radius (0..1)
+
+  // elliptical position
+  const x = cx + r * RmaxX * Math.cos(angle);
+  const y = cy + r * RmaxY * Math.sin(angle);
+
+  // distance from center (used for velocity magnitude)
+  const dx = x - cx, dy = y - cy;
+  const dist = Math.hypot(dx, dy);
+
+  // base circular orbit speed
+  let v_mag = Math.sqrt(G * centerMass / (dist + 1));
+
+  // spiral perturbation (arm seeding)
+  const perturb = Math.sin(nArms * angle + dist / 30) * 0.06;
+  v_mag *= 0.8 + perturb;
+
+  // tangential velocity direction
+  const vx = -dy / dist * v_mag;
+  const vy =  dx / dist * v_mag;
+  
+  let color;
+if (dist < RmaxX*0.2) color = '#ffcc88';    // warm core
+else if (dist < RmaxX*0.6) color = '#ffffff'; // white
+else color = '#66ccff';                      // bluish outer
+
+  particles.push({
+    x:[x,y],
+    v:[vx,vy],
+    a:[0,0],
+    "color":color,
+    trail:[],
+    size:1 + Math.random()**3 * 2
+  });
+}
+
+  // ------------------ Integrator ------------------
+  function computeAcceleration(p) {
+    const rx = cx - p.x[0];
+    const ry = cy - p.x[1];
+    const r2 = rx*rx + ry*ry + 1;
+    const invR3 = 1 / (r2 * Math.sqrt(r2));
+    return [G*centerMass*rx*invR3, G*centerMass*ry*invR3];
+  }
+
+  function velocityVerletStep(p) {
+    const aOld = [...p.a];
+    p.x[0] += p.v[0]*dt + 0.5*aOld[0]*dt*dt;
+    p.x[1] += p.v[1]*dt + 0.5*aOld[1]*dt*dt;
+
+    // update trail
+    p.trail.push([p.x[0], p.x[1]]);
+    if (p.trail.length > maxTrail) p.trail.shift();
+
+    p.a = computeAcceleration(p);
+    p.v[0] += 0.5*(aOld[0]+p.a[0])*dt;
+    p.v[1] += 0.5*(aOld[1]+p.a[1])*dt;
+
+    // radial damping for circularization
+    const rx = p.x[0]-cx, ry = p.x[1]-cy;
+    const r = Math.hypot(rx, ry) || 1;
+    const ux = rx/r, uy = ry/r;
+    const vr = p.v[0]*ux + p.v[1]*uy;
+    p.v[0] -= (1 - radialDamp)*vr*ux;
+    p.v[1] -= (1 - radialDamp)*vr*uy;
+  }
+function isVisible(p) {
+  return (
+    p.x[0] >= 0 && p.x[0] <= canvas.width &&
+    p.x[1] >= 0 && p.x[1] <= canvas.height
+  );
+}
+
+  // ------------------ Render ------------------
+  function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 1;
+
+    for(let p of particles){
+        if (!isVisible(p)) continue;  // skip drawing off-screen
+        ctx.strokeStyle = p.color;
+      const t = p.trail;
+      ctx.beginPath();
+      ctx.moveTo(t[0][0], t[0][1]);
+      for(let i=1;i<t.length;i++){
+        ctx.lineTo(t[i][0], t[i][1]);
+      }
+      ctx.stroke();
+  // --- star head ---
+  //const headSize = p.size;
+  // => closer stars smaller, outer stars can be a bit bigger, but max 3px
+  //ctx.fillStyle = p.color;
+  //ctx.beginPath();
+  //ctx.arc(p.x[0], p.x[1], headSize, 0, 2 * Math.PI);
+  //ctx.fill();
+    }
+  // black hole
+ctx.fillStyle = "black";
+ctx.beginPath();
+ctx.arc(cx, cy, 20, 0, 2 * Math.PI); // radius ~20px, tweak as needed
+ctx.fill();
+  }
+
+  // ------------------ Animation loop ------------------
+  function step(ts) {
+    for(let p of particles) velocityVerletStep(p);
+    draw();
+    DeltaReport.log(ts);
+    requestAnimationFrame(step);
+  }
+
+  step();
+})();
+</script>
+
+</body>
+</html>
