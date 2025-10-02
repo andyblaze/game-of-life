@@ -202,7 +202,7 @@ class Star extends Particle {
     this.ax = ax;
     this.ay = ay;
     }
-    verletVelocityStep(dt, blackHole, radialDamp, g, patternAngle) { 
+    verletVelocityStep(dt, blackHole, radialDamp, g, patternAngle) { // !!!!!!! pass in galaxy.cfg !!!!!
         const aOld = [...this.getAcceleration()];
         this.x += this.vx*dt + 0.5*aOld[0]*dt*dt;
         this.y += this.vy*dt + 0.5*aOld[1]*dt*dt;
@@ -263,13 +263,13 @@ class View {
 }
 
 // ------------------ Animation loop ------------------
-function step(ts) {
+function animate(timestamp) {
     const item = model.update();
     View.draw(ctx, item);
-    DeltaReport.log(ts);
-    requestAnimationFrame(step);
+    DeltaReport.log(timestamp);
+    requestAnimationFrame(animate);
 }
-step();
+animate();
 
 </script>
 
