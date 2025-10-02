@@ -210,7 +210,7 @@ class Star extends Particle {
         this.vy -= (1 - radialDamp)*vr*uy;
     }
     updateTrail() {
-        this.trail.push([this.x, this.y]);
+        this.trail.push({"x": this.x, "y": this.y});
         if ( this.trail.length > this.maxTrail ) this.trail.shift();    
     }
     draw(ctx) {
@@ -219,9 +219,9 @@ class Star extends Particle {
         ctx.strokeStyle = this.color;
         const t = this.trail; 
         ctx.beginPath();
-        ctx.moveTo(t[0][0], t[0][1]);
+        ctx.moveTo(t[0].x, t[0].y);
         for( let i = 1; i < t.length; i++ ) {
-            ctx.lineTo(t[i][0], t[i][1]);
+            ctx.lineTo(t[i].x, t[i].y);
         }
         ctx.stroke();    
     }
