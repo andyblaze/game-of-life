@@ -70,8 +70,8 @@ const config = {
 class Particle {
     invisible(ctx) {
         return (
-            this.x[0] < 0 && this.x[0] > ctx.canvas.width &&
-            this.x[1] < 0 && this.x[1] > ctx.canvas.height
+            this.x < 0 && this.x > ctx.canvas.width &&
+            this.y < 0 && this.y > ctx.canvas.height
         );
     }
 }
@@ -132,11 +132,16 @@ class Star extends Particle {
         super();
         this.x = position[0];
         this.y = position[1];
-        this.v = velocity;
-        this.a = acceleration;
+        this.vx = velocity[0];
+        this.vy = velocity[1];
+        this.ax = acceleration[0];
+        this.ay = acceleration[1];
         this.color = color;
         this.trail = [];
         this.maxTrail = 2;
+    }
+    getAcceleration() {
+        return [this.ax, this.ay];
     }
     // ------------------ Integrator ------------------
     computeAcceleration(blackHole, g, patternAngle) {
@@ -182,27 +187,27 @@ class Star extends Particle {
     ay += a_t * ty;
 
     // finally store
-    this.a[0] = ax;
-    this.a[1] = ay;
+    this.ax = ax;
+    this.ay = ay;
     }
     verletVelocityStep(dt, blackHole, radialDamp, g, patternAngle) { 
-        const aOld = [...this.a];
-        this.x += this.v[0]*dt + 0.5*aOld[0]*dt*dt;
-        this.y += this.v[1]*dt + 0.5*aOld[1]*dt*dt;
+        const aOld = [...this.getAcceleration()];
+        this.x += this.vx*dt + 0.5*aOld[0]*dt*dt;
+        this.y += this.vy*dt + 0.5*aOld[1]*dt*dt;
 
         this.updateTrail();
 
         this.computeAcceleration(blackHole, g, patternAngle);
-        this.v[0] += 0.5*(aOld[0]+this.a[0])*dt;
-        this.v[1] += 0.5*(aOld[1]+this.a[1])*dt;
+        this.vx += 0.5*(aOld[0]+this.ax)*dt;
+        this.vy += 0.5*(aOld[1]+this.ay)*dt;
 
         // radial damping for circularization
         const rx = this.x-blackHole.x, ry = this.y-blackHole.y;
         const r = Math.hypot(rx, ry) || 1;
         const ux = rx/r, uy = ry/r;
-        const vr = this.v[0]*ux + this.v[1]*uy;
-        this.v[0] -= (1 - radialDamp)*vr*ux;
-        this.v[1] -= (1 - radialDamp)*vr*uy;
+        const vr = this.vx*ux + this.vy*uy;
+        this.vx -= (1 - radialDamp)*vr*ux;
+        this.vy -= (1 - radialDamp)*vr*uy;
     }
     updateTrail() {
         this.trail.push([this.x, this.y]);
