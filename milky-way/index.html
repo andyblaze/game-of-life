@@ -46,52 +46,62 @@ class DeltaReport {
   window.addEventListener('resize', resize);
   resize();
 
-  // ------------------ Parameters ------------------
-  const nStars = 3000;
-  const nArms = 3; // number of spiral arms
-  const G = 2000;
-  const dt = 0.2;
-  const radialDamp = 0.01;
-  const particles = [];
-  const cx = canvas.width/2 +200;
-  const cy = canvas.height/2;
-  let perturbation = 0.05;
-const RmaxX = canvas.width/2 * 0.95;
-const RmaxY = canvas.height/2 * 0.95;
-  const maxTrail = 2;
-  const blackHole = { "x": cx, "y": cy, "mass": 1 };
+// ------------------ Parameters ------------------
+const config = {
+    nStars: 3000,
+    nArms: 3, // number of spiral arms
+    G: 2000,
+    dt: 0.2,
+    radialDamp: 0.01,
+    cx: canvas.width / 2 + 200,
+    cy: canvas.height / 2,
+    perturbation: 0.05,
+    RmaxX: canvas.width / 2 * 0.95,
+    RmaxY: canvas.height / 2 * 0.95,
+    maxTrail: 2,
+    blackHole: { 
+        "x": canvas.width / 2 + 200, 
+        "y": canvas.height / 2, 
+        "mass": 1 
+    }
+};
   
 class Galaxy {
-    constructor() {
+    constructor(config) {
+        this.cfg = config;
         this.particles = [];
     }
-    init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY) {
+    init() {
         // ------------------ Initialize stars with spiral velocity perturb ations ------------------  
-        for (let i = 0; i < nStars; i++) {
+        for (let i = 0; i < this.cfg.nStars; i++) {
             const angle = Math.random() * 2 * Math.PI;
             const r = Math.random(); // normalized radius (0..1)
             // elliptical position
-            const x = blackHole.x + r * RmaxX * Math.cos(angle);
-            const y = blackHole.y + r * RmaxY * Math.sin(angle);
+            const x = this.cfg.blackHole.x + r * this.cfg.RmaxX * Math.cos(angle);
+            const y = this.cfg.blackHole.y + r * this.cfg.RmaxY * Math.sin(angle);
             // distance from center (used for velocity magnitude)
-            const dx = x - blackHole.x, dy = y - blackHole.y;
+            const dx = x - this.cfg.blackHole.x, dy = y - this.cfg.blackHole.y;
             const dist = Math.hypot(dx, dy);
             // base circular orbit speed
-            let v_mag = Math.sqrt(G * blackHole.mass / (dist + 1));
+            let v_mag = Math.sqrt(this.cfg.G * this.cfg.blackHole.mass / (dist + 1));
             // spiral perturbation (arm seeding)
-            const perturb = Math.sin(nArms * angle + dist / 30) * perturbation;
+            const perturb = Math.sin(this.cfg.nArms * angle + dist / 30) * this.cfg.perturbation;
             v_mag *= 0.8 + perturb;
             // tangential velocity direction
             const vx = -dy / dist * v_mag;
             const vy =  dx / dist * v_mag;
             // colors  
             let color = "#99ccff"; // bluish outer
-            if ( dist < RmaxX*0.2 ) 
+            if ( dist < this.cfg.RmaxX*0.2 ) 
                 color = '#ffcc88';    // warm core
-            else if ( dist < RmaxX*0.6 ) 
+            else if ( dist < this.cfg.RmaxX*0.6 ) 
                 color = '#ffffff'; // white                       
             this.particles.push(new Particle([x,y], [vx,vy], [0,0], color));
         }
+    }
+    update() {
+        for(const p of this.particles) 
+            p.verletVelocityStep(this.cfg.dt, this.cfg.blackHole, this.cfg.radialDamp, this.cfg.G);
     }
     draw(ctx) {
         for( let p of this.particles ) {            
@@ -100,7 +110,7 @@ class Galaxy {
         // black hole
         ctx.fillStyle = "#000000";
         ctx.beginPath();
-        ctx.arc(cx, cy, 20, 0, 2 * Math.PI); // radius ~20px, tweak as needed
+        ctx.arc(this.cfg.blackHole.x, this.cfg.blackHole.y, 20, 0, 2 * Math.PI); // radius ~20px, tweak as needed
         ctx.fill();
     }
 }
@@ -166,8 +176,8 @@ class Particle {
     }
 }
 
-const galaxy = new Galaxy();
-galaxy.init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY);
+const galaxy = new Galaxy(config);
+galaxy.init();
 
   // ------------------ Render ------------------
   function draw() {
@@ -178,8 +188,7 @@ galaxy.init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY);
 
   // ------------------ Animation loop ------------------
   function step(ts) {
-    for(let p of galaxy.particles) 
-        p.verletVelocityStep(dt, blackHole, radialDamp, G);
+    galaxy.update();
     draw(ctx);
     DeltaReport.log(ts);
     requestAnimationFrame(step);
