@@ -54,8 +54,8 @@ const config = {
     dt: 0.2,
     radialDamp: 0.01,
     perturbation: 0.05,
-    RmaxX: canvas.width / 2 * 0.95,
-    RmaxY: canvas.height / 2 * 0.95,
+    radiusMaxX: canvas.width / 2 * 0.95,
+    radiusMaxY: canvas.height / 2 * 0.95,
     maxTrail: 2,
     blackHole: { 
         "x": canvas.width / 2 + 200, 
@@ -76,8 +76,8 @@ class Galaxy {
             const angle = Math.random() * 2 * Math.PI;
             const r = Math.random(); // normalized radius (0..1)
             // elliptical position
-            const x = cfg.blackHole.x + r * cfg.RmaxX * Math.cos(angle);
-            const y = cfg.blackHole.y + r * cfg.RmaxY * Math.sin(angle);
+            const x = cfg.blackHole.x + r * cfg.radiusMaxX * Math.cos(angle);
+            const y = cfg.blackHole.y + r * cfg.radiusMaxY * Math.sin(angle);
             // distance from center (used for velocity magnitude)
             const dx = x - cfg.blackHole.x, dy = y - cfg.blackHole.y;
             const dist = Math.hypot(dx, dy);
@@ -91,9 +91,9 @@ class Galaxy {
             const vy =  dx / dist * v_mag;
             // colors  
             let color = "#99ccff"; // bluish outer
-            if ( dist < cfg.RmaxX*0.2 ) 
+            if ( dist < cfg.radiusMaxX*0.2 ) 
                 color = '#ffcc88';    // warm core
-            else if ( dist < cfg.RmaxX*0.6 ) 
+            else if ( dist < cfg.radiusMaxX*0.6 ) 
                 color = '#ffffff'; // white                       
             this.particles.push(new Particle([x,y], [vx,vy], [0,0], color));
         }
