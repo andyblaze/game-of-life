@@ -58,10 +58,7 @@ class DeltaReport {
 const RmaxX = canvas.width/2 * 0.95;
 const RmaxY = canvas.height/2 * 0.95;
   const maxTrail = 2;
-  const blackHoles = [
-  { x: [cx, cy], m: 20000 },       // main BH at center
-  { x: [cx + 150, cy + 100], m: 15000 } // second BH somewhere else
-];
+  const blackHole = { "x": cx, "y": cy, "m": 1 };
 
 class Particle {
     constructor(position, velocity, acceleration, color) {
@@ -77,6 +74,14 @@ class Particle {
             this.x[0] < 0 && this.x[0] > ctx.canvas.width &&
             this.x[1] < 0 && this.x[1] > ctx.canvas.height
         );
+    }
+    computeAcceleration(bh, g) {
+        const rx = bh.x - this.x[0];
+        const ry = bh.y - this.x[1];
+        const r2 = rx*rx + ry*ry + 1;
+        const invR3 = 1 / (r2 * Math.sqrt(r2));
+        this.a[0] = g*bh.m*rx*invR3;
+        this.a[1] = g*bh.m*ry*invR3;
     }
     updateTrail() {
         this.trail.push([this.x[0], this.x[1]]);
@@ -104,15 +109,15 @@ for (let i = 0; i < nStars; i++) {
   const r = Math.random(); // normalized radius (0..1)
 
   // elliptical position
-  const x = cx + r * RmaxX * Math.cos(angle);
-  const y = cy + r * RmaxY * Math.sin(angle);
+  const x = blackHole.x + r * RmaxX * Math.cos(angle);
+  const y = blackHole.y + r * RmaxY * Math.sin(angle);
 
   // distance from center (used for velocity magnitude)
-  const dx = x - cx, dy = y - cy;
+  const dx = x - blackHole.x, dy = y - blackHole.y;
   const dist = Math.hypot(dx, dy);
 
   // base circular orbit speed
-  let v_mag = Math.sqrt(G * centerMass / (dist + 1));
+  let v_mag = Math.sqrt(G * blackHole.m / (dist + 1));
 
   // spiral perturbation (arm seeding)
   const perturb = Math.sin(nArms * angle + dist / 30) * 0.06;
@@ -134,27 +139,27 @@ else if ( dist < RmaxX*0.6 )
 }
 
   // ------------------ Integrator ------------------
-  function computeAcceleration(p) {
-    const rx = cx - p.x[0];
-    const ry = cy - p.x[1];
+  function computeAcceleration(p, bh, g) {
+    const rx = bh.x - p.x[0];
+    const ry = bh.y - p.x[1];
     const r2 = rx*rx + ry*ry + 1;
     const invR3 = 1 / (r2 * Math.sqrt(r2));
-    return [G*centerMass*rx*invR3, G*centerMass*ry*invR3];
+    return [g*bh.m*rx*invR3, g*bh.m*ry*invR3];
   }
 
-  function velocityVerletStep(p) { 
+  function verletVelocityStep(p) { 
     const aOld = [...p.a];
     p.x[0] += p.v[0]*dt + 0.5*aOld[0]*dt*dt;
     p.x[1] += p.v[1]*dt + 0.5*aOld[1]*dt*dt;
 
     p.updateTrail();
 
-    p.a = computeAcceleration(p);
+    p.computeAcceleration(blackHole, G);
     p.v[0] += 0.5*(aOld[0]+p.a[0])*dt;
     p.v[1] += 0.5*(aOld[1]+p.a[1])*dt;
 
     // radial damping for circularization
-    const rx = p.x[0]-cx, ry = p.x[1]-cy;
+    const rx = p.x[0]-blackHole.x, ry = p.x[1]-blackHole.y;
     const r = Math.hypot(rx, ry) || 1;
     const ux = rx/r, uy = ry/r;
     const vr = p.v[0]*ux + p.v[1]*uy;
@@ -173,20 +178,13 @@ function invisible(p) {
     ctx.fillStyle = "#000000";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 1;
+
+
 
     for(let p of particles){
         if ( p.invisible()) continue;  // skip drawing off-screen
-        //p.draw(ctx);
-        //ctx.strokeStyle = p.color;
-      const t = p.trail;
-      ctx.beginPath();
-      ctx.moveTo(t[0][0], t[0][1]);
-      for(let i=1;i<t.length;i++){
-        ctx.lineTo(t[i][0], t[i][1]);
-      }
-      ctx.stroke();
+        p.draw(ctx);
+
   // --- star head ---
   //const headSize = p.size;
   // => closer stars smaller, outer stars can be a bit bigger, but max 3px
@@ -204,7 +202,7 @@ ctx.fill();
 
   // ------------------ Animation loop ------------------
   function step(ts) {
-    for(let p of particles) velocityVerletStep(p);
+    for(let p of particles) verletVelocityStep(p);
     draw();
     DeltaReport.log(ts);
     requestAnimationFrame(step);
