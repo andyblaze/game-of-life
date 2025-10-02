@@ -48,17 +48,49 @@ class DeltaReport {
 
   // ------------------ Parameters ------------------
   const nStars = 3000;
+  const nArms = 3; // number of spiral arms
   const G = 2000;
   const dt = 0.2;
-  const centerMass = 1;
   const radialDamp = 0.01;
   const particles = [];
   const cx = canvas.width/2 +200;
   const cy = canvas.height/2;
+  let perturbation = 0.05;
 const RmaxX = canvas.width/2 * 0.95;
 const RmaxY = canvas.height/2 * 0.95;
   const maxTrail = 2;
-  const blackHole = { "x": cx, "y": cy, "m": 1 };
+  const blackHole = { "x": cx, "y": cy, "mass": 1 };
+  
+class Galaxy {
+    init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY) {
+        // ------------------ Initialize stars with spiral velocity perturb ations ------------------  
+        for (let i = 0; i < nStars; i++) {
+            const angle = Math.random() * 2 * Math.PI;
+            const r = Math.random(); // normalized radius (0..1)
+            // elliptical position
+            const x = blackHole.x + r * RmaxX * Math.cos(angle);
+            const y = blackHole.y + r * RmaxY * Math.sin(angle);
+            // distance from center (used for velocity magnitude)
+            const dx = x - blackHole.x, dy = y - blackHole.y;
+            const dist = Math.hypot(dx, dy);
+            // base circular orbit speed
+            let v_mag = Math.sqrt(G * blackHole.mass / (dist + 1));
+            // spiral perturbation (arm seeding)
+            const perturb = Math.sin(nArms * angle + dist / 30) * perturbation;
+            v_mag *= 0.8 + perturb;
+            // tangential velocity direction
+            const vx = -dy / dist * v_mag;
+            const vy =  dx / dist * v_mag;
+            // colors  
+            let color = "#99ccff"; // bluish outer
+            if ( dist < RmaxX*0.2 ) 
+                color = '#ffcc88';    // warm core
+            else if ( dist < RmaxX*0.6 ) 
+                color = '#ffffff'; // white                       
+            particles.push(new Particle([x,y], [vx,vy], [0,0], color));
+        }
+    }
+}
 
 class Particle {
     constructor(position, velocity, acceleration, color) {
@@ -75,13 +107,33 @@ class Particle {
             this.x[1] < 0 && this.x[1] > ctx.canvas.height
         );
     }
-    computeAcceleration(bh, g) {
-        const rx = bh.x - this.x[0];
-        const ry = bh.y - this.x[1];
+    // ------------------ Integrator ------------------
+    computeAcceleration(blackHole, g) {
+        const rx = blackHole.x - this.x[0];
+        const ry = blackHole.y - this.x[1];
         const r2 = rx*rx + ry*ry + 1;
         const invR3 = 1 / (r2 * Math.sqrt(r2));
-        this.a[0] = g*bh.m*rx*invR3;
-        this.a[1] = g*bh.m*ry*invR3;
+        this.a[0] = g*blackHole.mass*rx*invR3;
+        this.a[1] = g*blackHole.mass*ry*invR3;
+    }
+    verletVelocityStep(dt, blackHole, radialDamp, g) { 
+        const aOld = [...this.a];
+        this.x[0] += this.v[0]*dt + 0.5*aOld[0]*dt*dt;
+        this.x[1] += this.v[1]*dt + 0.5*aOld[1]*dt*dt;
+
+        this.updateTrail();
+
+        this.computeAcceleration(blackHole, g);
+        this.v[0] += 0.5*(aOld[0]+this.a[0])*dt;
+        this.v[1] += 0.5*(aOld[1]+this.a[1])*dt;
+
+        // radial damping for circularization
+        const rx = this.x[0]-blackHole.x, ry = this.x[1]-blackHole.y;
+        const r = Math.hypot(rx, ry) || 1;
+        const ux = rx/r, uy = ry/r;
+        const vr = this.v[0]*ux + this.v[1]*uy;
+        this.v[0] -= (1 - radialDamp)*vr*ux;
+        this.v[1] -= (1 - radialDamp)*vr*uy;
     }
     updateTrail() {
         this.trail.push([this.x[0], this.x[1]]);
@@ -100,10 +152,10 @@ class Particle {
         ctx.stroke();    
     }
 }
-  
 
+function init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY) {
   // ------------------ Initialize stars with spiral velocity perturb ations ------------------
-  const nArms = 3; // number of spiral arms
+  
 for (let i = 0; i < nStars; i++) {
   const angle = Math.random() * 2 * Math.PI;
   const r = Math.random(); // normalized radius (0..1)
@@ -120,7 +172,7 @@ for (let i = 0; i < nStars; i++) {
   let v_mag = Math.sqrt(G * blackHole.m / (dist + 1));
 
   // spiral perturbation (arm seeding)
-  const perturb = Math.sin(nArms * angle + dist / 30) * 0.06;
+  const perturb = Math.sin(nArms * angle + dist / 30) * perturbation;
   v_mag *= 0.8 + perturb;
 
   // tangential velocity direction
@@ -136,18 +188,21 @@ else if ( dist < RmaxX*0.6 )
 
 
   particles.push(new Particle([x,y], [vx,vy], [0,0], color));
+  }
 }
-
+const galaxy = new Galaxy();
+galaxy.init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY);
+//init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY);
   // ------------------ Integrator ------------------
-  function computeAcceleration(p, bh, g) {
+  /*function computeAcceleration(p, bh, g) {
     const rx = bh.x - p.x[0];
     const ry = bh.y - p.x[1];
     const r2 = rx*rx + ry*ry + 1;
     const invR3 = 1 / (r2 * Math.sqrt(r2));
     return [g*bh.m*rx*invR3, g*bh.m*ry*invR3];
-  }
+  }*/
 
-  function verletVelocityStep(p) { 
+  /*function verletVelocityStep(p, dt, bh, rd) { 
     const aOld = [...p.a];
     p.x[0] += p.v[0]*dt + 0.5*aOld[0]*dt*dt;
     p.x[1] += p.v[1]*dt + 0.5*aOld[1]*dt*dt;
@@ -165,13 +220,8 @@ else if ( dist < RmaxX*0.6 )
     const vr = p.v[0]*ux + p.v[1]*uy;
     p.v[0] -= (1 - radialDamp)*vr*ux;
     p.v[1] -= (1 - radialDamp)*vr*uy;
-  }
-function invisible(p) {
-  return (
-    p.x[0] < 0 && p.x[0] > canvas.width &&
-    p.x[1] < 0 && p.x[1] > canvas.height
-  );
-}
+  }*/
+
 
   // ------------------ Render ------------------
   function draw() {
@@ -202,7 +252,8 @@ ctx.fill();
 
   // ------------------ Animation loop ------------------
   function step(ts) {
-    for(let p of particles) verletVelocityStep(p);
+    for(let p of particles) 
+        p.verletVelocityStep(dt, blackHole, radialDamp, G);
     draw();
     DeltaReport.log(ts);
     requestAnimationFrame(step);
