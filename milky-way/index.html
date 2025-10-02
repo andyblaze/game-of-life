@@ -39,22 +39,20 @@ class DeltaReport {
         }
     }
 }
-(() => {
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize);
-  resize();
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
 
 // ------------------ Parameters ------------------
 const config = {
-    nStars: 3000,
-    nArms: 3, // number of spiral arms
+    numStars: 3000,
+    numArms: 3, // number of spiral arms
     gravity: 2000,
     dt: 0.2,
     radialDamp: 0.01,
-    cx: canvas.width / 2 + 200,
-    cy: canvas.height / 2,
     perturbation: 0.05,
     RmaxX: canvas.width / 2 * 0.95,
     RmaxY: canvas.height / 2 * 0.95,
@@ -70,31 +68,32 @@ class Galaxy {
     constructor(config) {
         this.cfg = config;
         this.particles = [];
+        this.init(config);
     }
-    init() {
+    init(cfg) {
         // ------------------ Initialize stars with spiral velocity perturb ations ------------------  
-        for (let i = 0; i < this.cfg.nStars; i++) {
+        for ( let i = 0; i < cfg.numStars; i++ ) {
             const angle = Math.random() * 2 * Math.PI;
             const r = Math.random(); // normalized radius (0..1)
             // elliptical position
-            const x = this.cfg.blackHole.x + r * this.cfg.RmaxX * Math.cos(angle);
-            const y = this.cfg.blackHole.y + r * this.cfg.RmaxY * Math.sin(angle);
+            const x = cfg.blackHole.x + r * cfg.RmaxX * Math.cos(angle);
+            const y = cfg.blackHole.y + r * cfg.RmaxY * Math.sin(angle);
             // distance from center (used for velocity magnitude)
-            const dx = x - this.cfg.blackHole.x, dy = y - this.cfg.blackHole.y;
+            const dx = x - cfg.blackHole.x, dy = y - cfg.blackHole.y;
             const dist = Math.hypot(dx, dy);
             // base circular orbit speed
-            let v_mag = Math.sqrt(this.cfg.gravity * this.cfg.blackHole.mass / (dist + 1));
+            let v_mag = Math.sqrt(this.cfg.gravity * cfg.blackHole.mass / (dist + 1));
             // spiral perturbation (arm seeding)
-            const perturb = Math.sin(this.cfg.nArms * angle + dist / 30) * this.cfg.perturbation;
+            const perturb = Math.sin(cfg.numArms * angle + dist / 30) * cfg.perturbation;
             v_mag *= 0.8 + perturb;
             // tangential velocity direction
             const vx = -dy / dist * v_mag;
             const vy =  dx / dist * v_mag;
             // colors  
             let color = "#99ccff"; // bluish outer
-            if ( dist < this.cfg.RmaxX*0.2 ) 
+            if ( dist < cfg.RmaxX*0.2 ) 
                 color = '#ffcc88';    // warm core
-            else if ( dist < this.cfg.RmaxX*0.6 ) 
+            else if ( dist < cfg.RmaxX*0.6 ) 
                 color = '#ffffff'; // white                       
             this.particles.push(new Particle([x,y], [vx,vy], [0,0], color));
         }
@@ -179,7 +178,6 @@ class Particle {
 class Model {
     constructor(config) {
         this.item = new Galaxy(config);
-        this.item.init();
     }
     update() {
         this.item.update();
@@ -208,7 +206,7 @@ function step(ts) {
     requestAnimationFrame(step);
 }
 step();
-})();
+
 </script>
 
 </body>
