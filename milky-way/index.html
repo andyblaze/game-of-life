@@ -47,21 +47,54 @@ class DeltaReport {
   resize();
 
   // ------------------ Parameters ------------------
-  const nStars = 6000;
+  const nStars = 3000;
   const G = 2000;
   const dt = 0.2;
-  const centerMass = 0.21;
-  const radialDamp = 0.00995;
+  const centerMass = 1;
+  const radialDamp = 0.01;
   const particles = [];
-  const cx = canvas.width/2;
+  const cx = canvas.width/2 +200;
   const cy = canvas.height/2;
-const RmaxX = canvas.width/2 * 0.96;
-const RmaxY = canvas.height/2 * 0.96;
+const RmaxX = canvas.width/2 * 0.95;
+const RmaxY = canvas.height/2 * 0.95;
   const maxTrail = 2;
   const blackHoles = [
   { x: [cx, cy], m: 20000 },       // main BH at center
   { x: [cx + 150, cy + 100], m: 15000 } // second BH somewhere else
 ];
+
+class Particle {
+    constructor(position, velocity, acceleration, color) {
+        this.x = position;
+        this.v = velocity;
+        this.a = acceleration;
+        this.color = color;
+        this.trail = [];
+        this.maxTrail = 2;
+    }
+    invisible(ctx) {
+        return (
+            this.x[0] < 0 && this.x[0] > ctx.canvas.width &&
+            this.x[1] < 0 && this.x[1] > ctx.canvas.height
+        );
+    }
+    updateTrail() {
+        this.trail.push([this.x[0], this.x[1]]);
+        if ( this.trail.length > this.maxTrail ) this.trail.shift();    
+    }
+    draw(ctx) {
+        if ( this.invisible(ctx) ) return;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = this.color;
+        const t = this.trail;
+        ctx.beginPath();
+        ctx.moveTo(t[0][0], t[0][1]);
+        for( let i=1; i<t.length; i++ ) {
+            ctx.lineTo(t[i][0], t[i][1]);
+        }
+        ctx.stroke();    
+    }
+}
   
 
   // ------------------ Initialize stars with spiral velocity perturb ations ------------------
@@ -89,19 +122,15 @@ for (let i = 0; i < nStars; i++) {
   const vx = -dy / dist * v_mag;
   const vy =  dx / dist * v_mag;
   
-  let color;
-if (dist < RmaxX*0.2) color = '#ffcc88';    // warm core
-else if (dist < RmaxX*0.6) color = '#ffffff'; // white
-else color = '#66ccff';                      // bluish outer
+let color = "#99ccff"; // bluish outer
+if ( dist < RmaxX*0.2 ) 
+    color = '#ffcc88';    // warm core
+else if ( dist < RmaxX*0.6 ) 
+    color = '#ffffff'; // white
+                    
 
-  particles.push({
-    x:[x,y],
-    v:[vx,vy],
-    a:[0,0],
-    "color":color,
-    trail:[],
-    size:1 + Math.random()**3 * 2
-  });
+
+  particles.push(new Particle([x,y], [vx,vy], [0,0], color));
 }
 
   // ------------------ Integrator ------------------
@@ -113,14 +142,12 @@ else color = '#66ccff';                      // bluish outer
     return [G*centerMass*rx*invR3, G*centerMass*ry*invR3];
   }
 
-  function velocityVerletStep(p) {
+  function velocityVerletStep(p) { 
     const aOld = [...p.a];
     p.x[0] += p.v[0]*dt + 0.5*aOld[0]*dt*dt;
     p.x[1] += p.v[1]*dt + 0.5*aOld[1]*dt*dt;
 
-    // update trail
-    p.trail.push([p.x[0], p.x[1]]);
-    if (p.trail.length > maxTrail) p.trail.shift();
+    p.updateTrail();
 
     p.a = computeAcceleration(p);
     p.v[0] += 0.5*(aOld[0]+p.a[0])*dt;
@@ -134,24 +161,25 @@ else color = '#66ccff';                      // bluish outer
     p.v[0] -= (1 - radialDamp)*vr*ux;
     p.v[1] -= (1 - radialDamp)*vr*uy;
   }
-function isVisible(p) {
+function invisible(p) {
   return (
-    p.x[0] >= 0 && p.x[0] <= canvas.width &&
-    p.x[1] >= 0 && p.x[1] <= canvas.height
+    p.x[0] < 0 && p.x[0] > canvas.width &&
+    p.x[1] < 0 && p.x[1] > canvas.height
   );
 }
 
   // ------------------ Render ------------------
   function draw() {
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 1;
 
     for(let p of particles){
-        if (!isVisible(p)) continue;  // skip drawing off-screen
-        ctx.strokeStyle = p.color;
+        if ( p.invisible()) continue;  // skip drawing off-screen
+        //p.draw(ctx);
+        //ctx.strokeStyle = p.color;
       const t = p.trail;
       ctx.beginPath();
       ctx.moveTo(t[0][0], t[0][1]);
