@@ -244,9 +244,9 @@ galaxy.init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY);
 
 
 
-    for(let p of galaxy.particles){
+    //for(let p of galaxy.particles){
         //if ( p.invisible()) continue;  // skip drawing off-screen
-        p.draw(ctx);
+        galaxy.draw(ctx);
 
   // --- star head ---
   //const headSize = p.size;
@@ -255,12 +255,12 @@ galaxy.init(nArms, nStars, blackHole, perturbation, RmaxX, RmaxY);
   //ctx.beginPath();
   //ctx.arc(p.x[0], p.x[1], headSize, 0, 2 * Math.PI);
   //ctx.fill();
-    }
+    //}
   // black hole
-ctx.fillStyle = "black";
-ctx.beginPath();
-ctx.arc(cx, cy, 20, 0, 2 * Math.PI); // radius ~20px, tweak as needed
-ctx.fill();
+//ctx.fillStyle = "black";
+//ctx.beginPath();
+//ctx.arc(cx, cy, 20, 0, 2 * Math.PI); // radius ~20px, tweak as needed
+//ctx.fill();
   }
 
   // ------------------ Animation loop ------------------
