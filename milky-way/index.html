@@ -46,6 +46,33 @@ function resize() { canvas.width = window.innerWidth; canvas.height = window.inn
 window.addEventListener('resize', resize);
 resize();
 
+class Particle {
+    invisible(ctx) {
+        return (
+            this.x < 0 && this.x > ctx.canvas.width &&
+            this.y < 0 && this.y > ctx.canvas.height
+        );
+    }
+}
+class BlackHole extends Particle {
+    constructor(x=0, y=0, r=20, m=1) {
+        super();
+        this.x = x;
+        this.y = y;
+        this.radius = r;
+        this.mass = m;
+    }
+    draw(ctx) {
+        ctx.fillStyle = "#000000";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+    setCoords(x, y) {
+        this.x = x;
+        this.y = y;    
+    }
+}
 // ------------------ Parameters ------------------
 const config = {
     numStars: 3000,
@@ -59,26 +86,15 @@ const config = {
     radiusMaxX: canvas.width / 2 * 0.95,
     radiusMaxY: canvas.height / 2 * 0.95,
     maxTrail: 2,
-    blackHole: { 
-        "x": canvas.width / 2 + 200, 
-        "y": canvas.height / 2, 
-        "radius":20,
-        "mass": 1 
-    }
+    canvasW: canvas.width,
+    canvasH: canvas.height
 };
-
-class Particle {
-    invisible(ctx) {
-        return (
-            this.x < 0 && this.x > ctx.canvas.width &&
-            this.y < 0 && this.y > ctx.canvas.height
-        );
-    }
-}
   
 class Galaxy {
-    constructor(config) {
+    constructor(config, blackHole) {
         this.cfg = config;
+        this.blackHole = blackHole;
+        this.blackHole.setCoords(config.canvasW / 2 + 400, config.canvasH / 2);
         this.stars = [];
         this.init(config);
     }
@@ -88,13 +104,13 @@ class Galaxy {
             const angle = Math.random() * 2 * Math.PI;
             const r = Math.random(); // normalized radius (0..1)
             // elliptical position
-            const x = cfg.blackHole.x + r * cfg.radiusMaxX * Math.cos(angle);
-            const y = cfg.blackHole.y + r * cfg.radiusMaxY * Math.sin(angle);
+            const x = this.blackHole.x + r * cfg.radiusMaxX * Math.cos(angle);
+            const y = this.blackHole.y + r * cfg.radiusMaxY * Math.sin(angle);
             // distance from center (used for velocity magnitude)
-            const dx = x - cfg.blackHole.x, dy = y - cfg.blackHole.y;
+            const dx = x - this.blackHole.x, dy = y - this.blackHole.y;
             const dist = Math.hypot(dx, dy);
             // base circular orbit speed
-            let v_mag = Math.sqrt(this.cfg.gravity * cfg.blackHole.mass / (dist + 1));
+            let v_mag = Math.sqrt(this.cfg.gravity * this.blackHole.mass / (dist + 1));
             // spiral perturbation (arm seeding)
             const perturb = Math.sin(cfg.numArms * angle + dist / 30) * cfg.perturbation;
             v_mag *= 0.8 + perturb;
@@ -113,17 +129,13 @@ class Galaxy {
     update() {
         this.cfg.patternAngle += this.cfg.patternSpeed;
         for(const s of this.stars) 
-            s.verletVelocityStep(this.cfg.dt, this.cfg.blackHole, this.cfg.radialDamp, this.cfg.gravity, this.cfg.patternAngle);
+            s.verletVelocityStep(this.cfg.dt, this.blackHole, this.cfg.radialDamp, this.cfg.gravity, this.cfg.patternAngle);
     }
     draw(ctx) {
         for( let s of this.stars ) {            
             s.draw(ctx);
         }
-        // black hole
-        ctx.fillStyle = "#000000";
-        ctx.beginPath();
-        ctx.arc(this.cfg.blackHole.x, this.cfg.blackHole.y, this.cfg.blackHole.radius, 0, 2 * Math.PI); // radius ~20px, tweak as needed
-        ctx.fill();
+        this.blackHole.draw(ctx);
     }
 }
 
@@ -229,7 +241,7 @@ class Star extends Particle {
 
 class Model {
     constructor(config) {
-        this.item = new Galaxy(config);
+        this.item = new Galaxy(config, new BlackHole());
     }
     update() {
         this.item.update();
