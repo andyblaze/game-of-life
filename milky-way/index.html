@@ -94,7 +94,7 @@ class Galaxy {
     constructor(config, blackHole) {
         this.cfg = config;
         this.blackHole = blackHole;
-        this.blackHole.setCoords(config.canvasW / 2 + 400, config.canvasH / 2);
+        //this.blackHole.setCoords(config.canvasW / 2 + 400, config.canvasH / 2);
         this.stars = [];
         this.init(config);
     }
@@ -241,7 +241,7 @@ class Star extends Particle {
 
 class Model {
     constructor(config) {
-        this.item = new Galaxy(config, new BlackHole());
+        this.item = new Galaxy(config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2));
     }
     update() {
         this.item.update();
