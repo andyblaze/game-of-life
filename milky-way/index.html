@@ -83,17 +83,17 @@ const config = {
     numArms: 3, // number of spiral arms
     gravity: 2000,
     dt: 0.2,
-    radialDamp: 0.01,
+    radialDamp: 0.00000001,
     perturbation: 0.05,
     // --- spiral arm shepherding force ---
-    armStrength: 0.6,     // 0.3 to 1.5 suggested. low & arms fade, high & stars becom "lanes"
+    armStrength: 0.000000006,     // 0.3 to 1.5 suggested. low & arms fade, high & stars becom "lanes"
     sigma: 0.2,          // 0.2 to 0.5 suggested. low = sharper, high = fuzzy arms
     windingScale: 40,     // smaller = whirlpool, larger = sweeping
     patternAngle: 0,              // start aligned at 0 radians
     patternSpeed: 0.0008,         // radians per frame
     
     // Plummer Sphere Halo potential.  keeps stars towards Black Hole
-    haloMass: 1,
+    haloMass: 0.00000001,
     haloRadius: 100,
     
     radiusMaxX: canvas.width / 2 * 0.95,
@@ -281,10 +281,10 @@ class Star extends Particle {
 class Model {
     constructor(config) {
         const g2Cfg = {...config};
-        g2Cfg.gravity = 4000;
+        g2Cfg.gravity = 80000;
         this.galaxies = [
             new Galaxy("milkyway", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2)),
-            new Galaxy("andromeda", g2Cfg, new BlackHole(-100, config.canvasH / 2), 20, 5.5)
+            new Galaxy("andromeda", g2Cfg, new BlackHole(-100, config.canvasH / 2 + 100), 20, 1025.5)
         ];
     }
     update() {
