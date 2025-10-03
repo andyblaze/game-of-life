@@ -68,6 +68,9 @@ class BlackHole extends Particle {
         ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
         ctx.fill();
     }
+    moveX(amount) {
+        this.x += amount;
+    }
     setCoords(x, y) {
         this.x = x;
         this.y = y;    
@@ -90,7 +93,7 @@ const config = {
     
     // Plummer Sphere Halo potential.  keeps stars towards Black Hole
     haloMass: 10,
-    haloRadius: 200,
+    haloRadius: 400,
     
     radiusMaxX: canvas.width / 2 * 0.95,
     radiusMaxY: canvas.height / 2 * 0.95,
@@ -108,7 +111,7 @@ class Galaxy {
         this.init(config);
     }
     init(cfg) {
-        // ------------------ Initialize stars with spiral velocity perturb ations ------------------  
+        // ------------------ Initialize stars with spiral velocity perturbations ------------------  
         for ( let i = 0; i < cfg.numStars; i++ ) {
             const angle = Math.random() * 2 * Math.PI;
             const r = Math.random(); // normalized radius (0..1)
@@ -144,6 +147,7 @@ class Galaxy {
         for( let s of this.stars ) {            
             s.draw(ctx);
         }
+        //this.blackHole.moveX(-0.01);
         this.blackHole.draw(ctx);
     }
 }
