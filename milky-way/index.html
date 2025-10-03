@@ -156,17 +156,16 @@ class Star extends Particle {
         return [this.ax, this.ay];
     }
     // ------------------ Integrator ------------------
-    computeAcceleration(blackHole, g, patternAngle) {
+    computeAcceleration(cfg, blackHole) { // galaxy cfg
     // --- gravitational acceleration from BH ---
     const rx = blackHole.x - this.x;
     const ry = blackHole.y - this.y;
     const r2 = rx*rx + ry*ry + 1;
     const invR3 = 1 / (r2 * Math.sqrt(r2));
-    let ax = g * blackHole.mass * rx * invR3;
-    let ay = g * blackHole.mass * ry * invR3;
+    let ax = cfg.gravity * blackHole.mass * rx * invR3;
+    let ay = cfg.gravity * blackHole.mass * ry * invR3;
 
     // --- spiral arm shepherding force ---
-    const nArms = 3; // !!!!!!!!!!!!!!!!!!!!!!!!!! this is in galaxy !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     const armStrength = 0.6;     // tweak!
     const sigma = 0.35;          // angular width
     const windingScale = 400;     // looser/tighter arms
@@ -180,8 +179,8 @@ class Star extends Particle {
 
     // find nearest arm
     let bestDiff = 1e9;
-    for (let m = 0; m < nArms; m++) {
-        const armAngle = patternAngle + (2 * Math.PI * m) / nArms + r / windingScale;
+    for (let m = 0; m < cfg.numArms; m++) {
+        const armAngle = cfg.patternAngle + (2 * Math.PI * m) / cfg.numArms + r / windingScale;
         let angDiff = theta - armAngle;
         angDiff = ((angDiff + Math.PI) % (2 * Math.PI)) - Math.PI; // wrap to [-π,π]
         if (Math.abs(angDiff) < Math.abs(bestDiff)) bestDiff = angDiff;
@@ -209,7 +208,7 @@ class Star extends Particle {
 
         this.updateTrail();
 
-        this.computeAcceleration(blackHole, cfg.gravity, cfg.gravity, cfg.patternAngle);
+        this.computeAcceleration(cfg, blackHole);
         this.vx += 0.5*(aOld[0]+this.ax)*cfg.dt;
         this.vy += 0.5*(aOld[1]+this.ay)*cfg.dt;
 
