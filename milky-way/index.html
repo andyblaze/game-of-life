@@ -93,8 +93,8 @@ const config = {
     patternSpeed: 0.0008,         // radians per frame
     
     // Plummer Sphere Halo potential.  keeps stars towards Black Hole
-    haloMass: 10,
-    haloRadius: 400,
+    haloMass: 1,
+    haloRadius: 100,
     
     radiusMaxX: canvas.width / 2 * 0.95,
     radiusMaxY: canvas.height / 2 * 0.95,
@@ -108,7 +108,6 @@ class Galaxy {
         this.id = id;
         this.cfg = config;
         this.blackHole = blackHole;
-        //this.blackHole.setCoords(config.canvasW / 2 + 400, config.canvasH / 2);
         this.stars = [];
         this.init(config);
     }
@@ -173,14 +172,27 @@ class Star extends Particle {
     }
     // ------------------ Integrator ------------------
     computeBHAcceleration(cfg, blackHoles, bh) {
-        const rx = bh.x - this.x;
+        let ax = 0, ay = 0;
+
+        for (const bh of blackHoles) {
+            const rx = bh.x - this.x;
+            const ry = bh.y - this.y;
+            const r2 = rx*rx + ry*ry + 1; // softening
+            const invR3 = 1 / (r2 * Math.sqrt(r2));
+
+            ax += cfg.gravity * bh.mass * rx * invR3;
+            ay += cfg.gravity * bh.mass * ry * invR3;
+        }
+
+        return [ax, ay];
+        /*const rx = bh.x - this.x;
         const ry = bh.y - this.y;
         const r2 = rx*rx + ry*ry + 1; // softening
         const invR3 = 1 / (r2 * Math.sqrt(r2));
         return [
             cfg.gravity * bh.mass * rx * invR3,
             cfg.gravity * bh.mass * ry * invR3
-        ];
+        ];*/
     } 
     computeHaloAcceleration(cfg, bh) {
         const dx = this.x - bh.x;
@@ -268,9 +280,11 @@ class Star extends Particle {
 
 class Model {
     constructor(config) {
+        const g2Cfg = {...config};
+        g2Cfg.gravity = 4000;
         this.galaxies = [
             new Galaxy("milkyway", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2)),
-            new Galaxy("andromeda", config, new BlackHole(-100, config.canvasH / 2))
+            new Galaxy("andromeda", g2Cfg, new BlackHole(-100, config.canvasH / 2), 20, 5.5)
         ];
     }
     update() {
