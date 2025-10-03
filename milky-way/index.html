@@ -63,6 +63,7 @@ class BlackHole extends Particle {
         this.mass = m;
     }
     draw(ctx) {
+        if ( this.invisible(ctx) ) return;
         ctx.fillStyle = "#000000";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
@@ -148,7 +149,8 @@ class Galaxy {
         for( let s of this.stars ) {            
             s.draw(ctx);
         }
-        //this.blackHole.moveX(-0.01);
+        if ( this.id === "andromeda" )
+            this.blackHole.moveX(0.09);
         this.blackHole.draw(ctx);
     }
 }
@@ -266,11 +268,15 @@ class Star extends Particle {
 
 class Model {
     constructor(config) {
-        this.item = new Galaxy("crashee", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2));
+        this.items = [
+            new Galaxy("milkyway", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2)),
+            new Galaxy("andromeda", config, new BlackHole(-100, config.canvasH / 2))
+        ];
     }
     update() {
-        this.item.update();
-        return this.item;
+        for ( const i of this.items )
+            i.update();
+        return this.items;
     }
 }
 
@@ -280,10 +286,11 @@ const model = new Model(config);
 
   // ------------------ Render ------------------
 class View {
-    static draw(ctx, item) {
+    static draw(ctx, items) {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0,0,canvas.width,canvas.height);
-        item.draw(ctx);
+        for ( const i of items )
+            i.draw(ctx);
     }
 }
 
