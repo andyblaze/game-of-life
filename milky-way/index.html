@@ -88,6 +88,10 @@ const config = {
     patternAngle: 0,              // start aligned at 0 radians
     patternSpeed: 0.0008,         // radians per frame
     
+    // Plummer Sphere Halo potential.  keeps stars towards Black Hole
+    haloMass: 10,
+    haloRadius: 200,
+    
     radiusMaxX: canvas.width / 2 * 0.95,
     radiusMaxY: canvas.height / 2 * 0.95,
     maxTrail: 2,
@@ -169,12 +173,20 @@ class Star extends Particle {
     const invR3 = 1 / (r2 * Math.sqrt(r2));
     let ax = cfg.gravity * blackHole.mass * rx * invR3;
     let ay = cfg.gravity * blackHole.mass * ry * invR3;
+    
+    // --- halo acceleration (Plummer sphere) ---
+    let dx = this.x - blackHole.x;
+    let dy = this.y - blackHole.y;
+    const r2_halo = dx*dx + dy*dy + cfg.haloRadius*cfg.haloRadius;
+    const invR3_halo = 1 / Math.pow(r2_halo, 1.5);
+    ax += cfg.gravity * cfg.haloMass * -dx * invR3_halo;
+    ay += cfg.gravity * cfg.haloMass * -dy * invR3_halo;
 
     const eps = 1e-6; // safety net for 0 or NaN
 
     // position relative to galactic center
-    const dx = this.x - blackHole.x;
-    const dy = this.y - blackHole.y;
+    dx = this.x - blackHole.x;
+    dy = this.y - blackHole.y;
     const r = Math.hypot(dx, dy) || eps;
     const theta = Math.atan2(dy, dx);
 
