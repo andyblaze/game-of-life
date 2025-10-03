@@ -81,8 +81,13 @@ const config = {
     dt: 0.2,
     radialDamp: 0.01,
     perturbation: 0.05,
+    // --- spiral arm shepherding force ---
+    armStrength: 0.6,     // 0.3 to 1.5 suggested. low & arms fade, high & stars becom "lanes"
+    sigma: 0.35,          // 0.2 to 0.5 suggested. low = sharper, high = fuzzy arms
+    windingScale: 40,     // smaller = whirlpool, larger = sweeping
     patternAngle: 0,              // start aligned at 0 radians
     patternSpeed: 0.0008,         // radians per frame
+    
     radiusMaxX: canvas.width / 2 * 0.95,
     radiusMaxY: canvas.height / 2 * 0.95,
     maxTrail: 2,
@@ -156,7 +161,7 @@ class Star extends Particle {
         return [this.ax, this.ay];
     }
     // ------------------ Integrator ------------------
-    computeAcceleration(cfg, blackHole) { // galaxy cfg
+    computeAcceleration(cfg, blackHole) { // galaxy.cfg
     // --- gravitational acceleration from BH ---
     const rx = blackHole.x - this.x;
     const ry = blackHole.y - this.y;
@@ -165,11 +170,7 @@ class Star extends Particle {
     let ax = cfg.gravity * blackHole.mass * rx * invR3;
     let ay = cfg.gravity * blackHole.mass * ry * invR3;
 
-    // --- spiral arm shepherding force ---
-    const armStrength = 0.6;     // tweak!
-    const sigma = 0.35;          // angular width
-    const windingScale = 400;     // looser/tighter arms
-    const eps = 1e-6;
+    const eps = 1e-6; // safety net for 0 or NaN
 
     // position relative to galactic center
     const dx = this.x - blackHole.x;
@@ -179,16 +180,17 @@ class Star extends Particle {
 
     // find nearest arm
     let bestDiff = 1e9;
-    for (let m = 0; m < cfg.numArms; m++) {
-        const armAngle = cfg.patternAngle + (2 * Math.PI * m) / cfg.numArms + r / windingScale;
+    for ( let m = 0; m < cfg.numArms; m++ ) {
+        const armAngle = cfg.patternAngle + (2 * Math.PI * m) / cfg.numArms + r / cfg.windingScale;
         let angDiff = theta - armAngle;
         angDiff = ((angDiff + Math.PI) % (2 * Math.PI)) - Math.PI; // wrap to [-π,π]
-        if (Math.abs(angDiff) < Math.abs(bestDiff)) bestDiff = angDiff;
+        if ( Math.abs(angDiff) < Math.abs(bestDiff) ) 
+            bestDiff = angDiff;
     }
 
     // gaussian-shaped tangential force
-    const weight = Math.exp(- (bestDiff*bestDiff) / (2 * sigma*sigma));
-    const a_t = -armStrength * bestDiff * weight / (r + eps);
+    const weight = Math.exp(- (bestDiff*bestDiff) / (2 * cfg.sigma * cfg.sigma));
+    const a_t = -cfg.armStrength * bestDiff * weight / (r + eps);
 
     // tangential unit vector
     const tx = -Math.sin(theta);
@@ -203,22 +205,22 @@ class Star extends Particle {
     }
     verletVelocityStep(cfg, blackHole) { // galaxy.cfg 
         const aOld = [...this.getAcceleration()];
-        this.x += this.vx*cfg.dt + 0.5*aOld[0]*cfg.dt*cfg.dt;
-        this.y += this.vy*cfg.dt + 0.5*aOld[1]*cfg.dt*cfg.dt;
+        this.x += this.vx * cfg.dt + 0.5 * aOld[0] * cfg.dt * cfg.dt;
+        this.y += this.vy * cfg.dt + 0.5 * aOld[1] * cfg.dt * cfg.dt;
 
         this.updateTrail();
 
         this.computeAcceleration(cfg, blackHole);
-        this.vx += 0.5*(aOld[0]+this.ax)*cfg.dt;
-        this.vy += 0.5*(aOld[1]+this.ay)*cfg.dt;
+        this.vx += 0.5 * (aOld[0] + this.ax) * cfg.dt;
+        this.vy += 0.5 * (aOld[1] + this.ay) * cfg.dt;
 
         // radial damping for circularization
         const rx = this.x-blackHole.x, ry = this.y-blackHole.y;
         const r = Math.hypot(rx, ry) || 1;
-        const ux = rx/r, uy = ry/r;
-        const vr = this.vx*ux + this.vy*uy;
-        this.vx -= (1 - cfg.radialDamp)*vr*ux;
-        this.vy -= (1 - cfg.radialDamp)*vr*uy;
+        const ux = rx / r, uy = ry / r;
+        const vr = this.vx * ux + this.vy * uy;
+        this.vx -= (1 - cfg.radialDamp) * vr * ux;
+        this.vy -= (1 - cfg.radialDamp) * vr * uy;
     }
     updateTrail() {
         this.trail.push({"x": this.x, "y": this.y});
