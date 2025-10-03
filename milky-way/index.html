@@ -150,7 +150,7 @@ class Galaxy {
             s.draw(ctx);
         }
         if ( this.id === "andromeda" )
-            this.blackHole.moveX(0.09);
+            this.blackHole.moveX(0.1);
         this.blackHole.draw(ctx);
     }
 }
@@ -281,8 +281,6 @@ class Model {
 }
 
 const model = new Model(config);
-//const galaxy = new Galaxy(config);
-//galaxy.init();
 
   // ------------------ Render ------------------
 class View {
