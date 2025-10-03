@@ -140,10 +140,10 @@ class Galaxy {
             this.stars.push(new Star([x,y], [vx,vy], [0,0], color));
         }
     }
-    update() {
+    update(blackHoles) {
         this.cfg.patternAngle += this.cfg.patternSpeed;
         for(const s of this.stars) 
-            s.verletVelocityStep(this.cfg, this.blackHole);
+            s.verletVelocityStep(this.cfg, blackHoles, this.blackHole);
     }
     draw(ctx) {
         for( let s of this.stars ) {            
@@ -172,7 +172,7 @@ class Star extends Particle {
         return [this.ax, this.ay];
     }
     // ------------------ Integrator ------------------
-    computeBHAcceleration(cfg, bh) {
+    computeBHAcceleration(cfg, blackHoles, bh) {
         const rx = bh.x - this.x;
         const ry = bh.y - this.y;
         const r2 = rx*rx + ry*ry + 1; // softening
@@ -216,8 +216,8 @@ class Star extends Particle {
             a_t *  Math.cos(theta)  // ty
         ];
     }
-    computeAcceleration(cfg, blackHole) { // galaxy.cfg
-        let [ax, ay] = this.computeBHAcceleration(cfg, blackHole);
+    computeAcceleration(cfg, blackHoles, blackHole) { // galaxy.cfg
+        let [ax, ay] = this.computeBHAcceleration(cfg, blackHoles, blackHole);
         const [ahx, ahy] = this.computeHaloAcceleration(cfg, blackHole);
         ax += ahx;
         ay += ahy;
@@ -229,14 +229,14 @@ class Star extends Particle {
         this.ax = ax;
         this.ay = ay;
     }
-    verletVelocityStep(cfg, blackHole) { // galaxy.cfg 
+    verletVelocityStep(cfg, blackHoles, blackHole) { // galaxy.cfg 
         const aOld = [...this.getAcceleration()];
         this.x += this.vx * cfg.dt + 0.5 * aOld[0] * cfg.dt * cfg.dt;
         this.y += this.vy * cfg.dt + 0.5 * aOld[1] * cfg.dt * cfg.dt;
 
         this.updateTrail();
 
-        this.computeAcceleration(cfg, blackHole);
+        this.computeAcceleration(cfg, blackHoles, blackHole);
         this.vx += 0.5 * (aOld[0] + this.ax) * cfg.dt;
         this.vy += 0.5 * (aOld[1] + this.ay) * cfg.dt;
 
@@ -268,15 +268,16 @@ class Star extends Particle {
 
 class Model {
     constructor(config) {
-        this.items = [
+        this.galaxies = [
             new Galaxy("milkyway", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2)),
             new Galaxy("andromeda", config, new BlackHole(-100, config.canvasH / 2))
         ];
     }
     update() {
-        for ( const i of this.items )
-            i.update();
-        return this.items;
+        const blackHoles = this.galaxies.map(g => g.blackHole);
+        for ( const g of this.galaxies )
+            g.update(blackHoles);
+        return this.galaxies;
     }
 }
 
@@ -284,18 +285,18 @@ const model = new Model(config);
 
   // ------------------ Render ------------------
 class View {
-    static draw(ctx, items) {
+    static draw(ctx, galaxies) {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0,0,canvas.width,canvas.height);
-        for ( const i of items )
-            i.draw(ctx);
+        for ( const g of galaxies )
+            g.draw(ctx);
     }
 }
 
 // ------------------ Animation loop ------------------
 function animate(timestamp) {
-    const item = model.update();
-    View.draw(ctx, item);
+    const galaxies = model.update();
+    View.draw(ctx, galaxies);
     DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
