@@ -129,7 +129,7 @@ class Galaxy {
     update() {
         this.cfg.patternAngle += this.cfg.patternSpeed;
         for(const s of this.stars) 
-            s.verletVelocityStep(this.cfg.dt, this.blackHole, this.cfg.radialDamp, this.cfg.gravity, this.cfg.patternAngle);
+            s.verletVelocityStep(this.cfg, this.blackHole);
     }
     draw(ctx) {
         for( let s of this.stars ) {            
@@ -202,24 +202,24 @@ class Star extends Particle {
     this.ax = ax;
     this.ay = ay;
     }
-    verletVelocityStep(dt, blackHole, radialDamp, g, patternAngle) { // !!!!!!! pass in galaxy.cfg !!!!!
+    verletVelocityStep(cfg, blackHole) { // galaxy.cfg 
         const aOld = [...this.getAcceleration()];
-        this.x += this.vx*dt + 0.5*aOld[0]*dt*dt;
-        this.y += this.vy*dt + 0.5*aOld[1]*dt*dt;
+        this.x += this.vx*cfg.dt + 0.5*aOld[0]*cfg.dt*cfg.dt;
+        this.y += this.vy*cfg.dt + 0.5*aOld[1]*cfg.dt*cfg.dt;
 
         this.updateTrail();
 
-        this.computeAcceleration(blackHole, g, patternAngle);
-        this.vx += 0.5*(aOld[0]+this.ax)*dt;
-        this.vy += 0.5*(aOld[1]+this.ay)*dt;
+        this.computeAcceleration(blackHole, cfg.gravity, cfg.gravity, cfg.patternAngle);
+        this.vx += 0.5*(aOld[0]+this.ax)*cfg.dt;
+        this.vy += 0.5*(aOld[1]+this.ay)*cfg.dt;
 
         // radial damping for circularization
         const rx = this.x-blackHole.x, ry = this.y-blackHole.y;
         const r = Math.hypot(rx, ry) || 1;
         const ux = rx/r, uy = ry/r;
         const vr = this.vx*ux + this.vy*uy;
-        this.vx -= (1 - radialDamp)*vr*ux;
-        this.vy -= (1 - radialDamp)*vr*uy;
+        this.vx -= (1 - cfg.radialDamp)*vr*ux;
+        this.vy -= (1 - cfg.radialDamp)*vr*uy;
     }
     updateTrail() {
         this.trail.push({"x": this.x, "y": this.y});
