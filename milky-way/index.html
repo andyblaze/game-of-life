@@ -149,7 +149,7 @@ class Galaxy {
             s.draw(ctx);
         }
         if ( this.id === "andromeda" )
-            this.blackHole.moveX(0.1);
+            this.blackHole.moveX(0.3);
         this.blackHole.draw(ctx);
     }
 }
@@ -281,10 +281,12 @@ class Star extends Particle {
 class Model {
     constructor(config) {
         const g2Cfg = {...config};
-        g2Cfg.gravity = 80000;
+        g2Cfg.gravity = 4000;
+        g2Cfg.haloMass = 2000;
+        g2Cfg.haloRadius = 1200;
         this.galaxies = [
             new Galaxy("milkyway", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2)),
-            new Galaxy("andromeda", g2Cfg, new BlackHole(-100, config.canvasH / 2 + 100), 20, 125.5)
+            new Galaxy("andromeda", g2Cfg, new BlackHole(0, config.canvasH / 2 - 100), 20, 15.5)
         ];
     }
     update() {
@@ -306,6 +308,52 @@ class View {
             g.draw(ctx);
     }
 }
+
+function diagnoseStar(star, homeBH, intruderBH, cfg) {
+  const G = cfg.gravity;
+
+  // distance from home BH
+  const dx = star.x - homeBH.x;
+  const dy = star.y - homeBH.y;
+  const r = Math.hypot(dx, dy) || 1;
+
+  // crude enclosed mass (home BH + halo if you want to include it)
+  const Menc = homeBH.mass + (cfg.haloMass || 0);
+
+  // orbital speeds
+  const v_circ = Math.sqrt(G * Menc / r);
+  const v_esc  = Math.sqrt(2 * G * Menc / r);
+
+  // distance to intruder BH
+  const d = Math.hypot(intruderBH.x - homeBH.x, intruderBH.y - homeBH.y);
+
+  // accelerations
+  const a_tidal = G * intruderBH.mass * r / Math.pow(d, 3);
+  const a_home  = G * Menc / (r * r);
+
+  return {
+    "r": r.toFixed(2),
+    "v_circ": v_circ.toFixed(2),
+    "v_esc": v_esc.toFixed(2),
+    "d": d.toFixed(2),
+    "a_tidal": a_tidal.toFixed(2),
+    "a_home": a_home.toFixed(2),
+    "tidalRatio": (a_tidal / a_home).toFixed(2)
+  };
+}
+
+// Example: check some outer stars of Galaxy 0 against Galaxy 1
+/*const home = model.galaxies[0].blackHole;
+const intr = model.galaxies[1].blackHole;
+const cfg = model.galaxies[0].cfg;
+
+let sumTr = 0;
+for (let s of model.galaxies[0].stars.slice(0, 2900)) {
+  const out = diagnoseStar(s, home, intr, cfg);
+  sumTr += parseFloat(out.tidalRatio);
+  //if (out.tidalRatio > 0.05) console.log(out);
+}
+console.log(sumTr / 2900);*/
 
 // ------------------ Animation loop ------------------
 function animate(timestamp) {
