@@ -43,7 +43,10 @@ const params = {
     desiredPeriod: 28.0,  // desired orbital period in seconds (used to pick G)
     softening: 1.0,      // gravitational softening in pixels (prevents singularity)
     visualScale: 4.0,     // world -> screen scale (pixels per world unit)
-    eccentricity: 0.4  // 0 = circle, 0.4 = noticeable ellipse, <1
+    eccentricity: 0.4,  // 0 = circle, 0.4 = noticeable ellipse, <1
+    canvasW: canvas.width,
+    canvasH: canvas.height,
+    DPR: window.devicePixelRatio || 1
 };
 // -------------------------------------------------------
 
@@ -61,8 +64,8 @@ class Star {
     } 
     worldToScreen(p){
         return Point(
-            canvas.width / DPR * 0.5 + p.x * this.cfg.scale,
-            canvas.height / DPR * 0.5 + p.y * this.cfg.scale
+            params.canvasW / DPR * 0.5 + p.x * this.cfg.scale,
+            params.canvasH / DPR * 0.5 + p.y * this.cfg.scale
         );
     }
     draw(ctx, hue) {
@@ -90,9 +93,9 @@ class Simulation {
     }
     // compute G so that circular-orbit period equals desiredPeriod:
     // omega = 2*pi/T ; for circular orbit: omega^2 = G*(M1+M2)/a^3
-    computeG(M1, M2, a, T) {
+    computeG(M1, M2, dist, T) {
         const omega = 2 * Math.PI / T;
-        this.gravity = Math.pow(a, 3) * omega * omega / (M1 + M2);
+        this.gravity = Math.pow(dist, 3) * omega * omega / (M1 + M2);
     }
     initBinary(cfg) {
         this.computeG(cfg.M1, cfg.M2, cfg.separation, cfg.desiredPeriod);
@@ -190,11 +193,11 @@ function animate(now){
     // subdivide the time-step for stability/accuracy
     const sub = 4;
     const sdt = dt / sub;
-    for ( let i=0; i < sub; i++ ) {
+    for ( let i = 0; i < sub; i++ ) {
         sim.integrateStars(sdt, starA, starB);
     }
     ctx.fillStyle = "#000000";
-    ctx.fillRect(0,0,canvas.width / DPR, canvas.height / DPR);
+    ctx.fillRect(0, 0, params.canvasW / params.DPR, params.canvasH / params.DPR);
     starA.draw(ctx, 40);   // orange-ish
     starB.draw(ctx, 200);  // blue-ish
 
