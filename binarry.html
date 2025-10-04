@@ -25,10 +25,10 @@ const ctx = canvas.getContext('2d', { alpha: true });
 const DPR = window.devicePixelRatio || 1;
 
 function resize() {
-    canvas.width = innerWidth * DPR;
-    canvas.height = innerHeight * DPR;
-    canvas.style.width = innerWidth + 'px';
-    canvas.style.height = innerHeight + 'px';
+    canvas.width = window.innerWidth * DPR;
+    canvas.height = window.innerHeight * DPR;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
     // draw in CSS pixels (transform to account for DPR)
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
@@ -47,7 +47,9 @@ const params = {
 };
 // -------------------------------------------------------
 
-
+function Point(a, b) {
+    return { "x": a, "y": b };
+}
 
 class Star {
     constructor(config) {
@@ -58,10 +60,10 @@ class Star {
         this.radius = config.radius;
     } 
     worldToScreen(p){
-        return {
-            x: canvas.width / DPR * 0.5 + p.x * params.visualScale,
-            y: canvas.height / DPR * 0.5 + p.y * params.visualScale
-        };
+        return Point(
+            canvas.width / DPR * 0.5 + p.x * params.visualScale,
+            canvas.height / DPR * 0.5 + p.y * params.visualScale
+        );
     }
     draw(ctx, hue) {
         const screen = this.worldToScreen(this.pos);
@@ -98,14 +100,8 @@ class Simulation {
         const a = cfg.separation;
 
         // center-of-mass at origin
-        starA.setPos({
-            x: - (M2 / (M1 + M2)) * a,
-            y:0
-        });
-        starB.setPos({
-            x: + (M1 / (M1 + M2)) * a,
-            y:0
-        });
+        starA.setPos(Point(- (M2 / (M1 + M2)) * a, 0));
+        starB.setPos(Point(+ (M1 / (M1 + M2)) * a, 0));
 
         // circular orbital velocity at this distance
         const vCirc = Math.sqrt(this.gravity * (M1 + M2) / a);
@@ -115,26 +111,20 @@ class Simulation {
         const v = vCirc * factor;
 
         // assign velocities perpendicular to radius vector
-        starA.setVel({
-            x: 0,
-            y: -v * (M2 / (M1 + M2))
-        });
-        starB.setVel({
-            x: 0,
-            y: +v * (M1 / (M1 + M2))
-        });
+        starA.setVel(Point(0, -v * (M2 / (M1 + M2))));
+        starB.setVel(Point(0, +v * (M1 / (M1 + M2))));
 
         starA.m = M1; starB.m = M2;
         starA.radius = Math.max(6, 12 * Math.cbrt(M1));
         starB.radius = Math.max(5, 10 * Math.cbrt(M2));
     }
-    // compute acceleration on body p due to q (softened)
-    accelOn(p, q) {
-        const dx = q.pos.x - p.pos.x;
-        const dy = q.pos.y - p.pos.y;
+    // compute acceleration on 2 bodies (softened)
+    accelOn(starA, starB) {
+        const dx = starB.pos.x - starA.pos.x;
+        const dy = starB.pos.y - starA.pos.y;
         const r2 = dx*dx + dy*dy + this.cfg.softening * this.cfg.softening;
         const invr3 = 1.0 / (Math.sqrt(r2) * r2); // 1/r^3
-        return { x: this.gravity * q.m * dx * invr3, y: this.gravity * q.m * dy * invr3 };
+        return { x: this.gravity * starB.m * dx * invr3, y: this.gravity * starB.m * dy * invr3 };
     }
     // symplectic leapfrog for the two stars (stable for long runs)
     integrateStars(dt, starA, starB) {
@@ -143,38 +133,38 @@ class Simulation {
         const aB1 = this.accelOn(starB, starA);
 
         // half kick
-        starA.setVel({
-            x: starA.vel.x + 0.5 * aA1.x * dt,
-            y: starA.vel.y + 0.5 * aA1.y * dt
-        });
-        starB.setVel({
-            x: starB.vel.x + 0.5 * aB1.x * dt,
-            y: starB.vel.y + 0.5 * aB1.y * dt
-        });
+        starA.setVel(Point(
+            starA.vel.x + 0.5 * aA1.x * dt,
+            starA.vel.y + 0.5 * aA1.y * dt
+        ));
+        starB.setVel(Point(
+            starB.vel.x + 0.5 * aB1.x * dt,
+            starB.vel.y + 0.5 * aB1.y * dt
+        ));
 
         // drift
-        starA.setPos({
-            x: starA.pos.x + starA.vel.x * dt,
-            y: starA.pos.y + starA.vel.y * dt
-        });
-        starB.setPos({
-            x: starB.pos.x + starB.vel.x * dt,
-            y: starB.pos.y + starB.vel.y * dt
-        });
+        starA.setPos(Point(
+            starA.pos.x + starA.vel.x * dt,
+            starA.pos.y + starA.vel.y * dt
+        ));
+        starB.setPos(Point(
+            starB.pos.x + starB.vel.x * dt,
+            starB.pos.y + starB.vel.y * dt
+        ));
 
         // compute accelerations at new positions
         const aA2 = this.accelOn(starA, starB);
         const aB2 = this.accelOn(starB, starA);
 
         // final half kick
-        starA.setVel({
-            x: starA.vel.x + 0.5 * aA2.x * dt,
-            y: starA.vel.y + 0.5 * aA2.y * dt
-        });
-        starB.setVel({
-            x: starB.vel.x + 0.5 * aB2.x * dt,
-            y: starB.vel.y + 0.5 * aB2.y * dt
-        });
+        starA.setVel(Point(
+            starA.vel.x + 0.5 * aA2.x * dt,
+            starA.vel.y + 0.5 * aA2.y * dt
+        ));
+        starB.setVel(Point(
+            starB.vel.x + 0.5 * aB2.x * dt,
+            starB.vel.y + 0.5 * aB2.y * dt
+        ));
     }
 }
 
@@ -186,9 +176,9 @@ const sim = new Simulation(params);
 
 function delta(a, b) {
     let dt = (a - b) / 1000;
-    if ( dt > 0.05 )  // cap big jumps
-        dt = 0.05;
-    return dt;
+    //if ( dt > 0.05 )  // cap big jumps
+    //    dt = 0.05;
+    return Math.min(0.05, dt);
 }
 
 // ---------- main loop ----------
