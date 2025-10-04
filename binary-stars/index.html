@@ -60,6 +60,7 @@ class Star {
         this.cfg.canvasSz = Point(config.canvasW, config.canvasH);
         this.cfg.scale = config.visualScale;
         this.cfg.dpr = config.DPR;
+        this.hue = this.cfg.hue;
         this.mass = config.mass;
         this.pos = {x:0,y:0};
         this.vel = {x:0,y:0};
@@ -71,11 +72,11 @@ class Star {
             this.cfg.canvasSz.y / this.cfg.dpr * 0.5 + p.y * this.cfg.scale
         );
     }
-    draw(ctx, hue) {
+    draw(ctx) {
         const screen = this.worldToScreen(this.pos);
         const r = Math.max(3, this.radius * this.cfg.scale);
         // small bright core
-        ctx.fillStyle = `hsla(${hue},100%,70%,1)`;
+        ctx.fillStyle = `hsla(${this.hue},100%,70%,1)`;
         ctx.beginPath();
         ctx.arc(screen.x, screen.y, r * 0.8, 0, Math.PI * 2);
         ctx.fill();
@@ -92,7 +93,7 @@ class Simulation {
     constructor(config) {
         this.cfg = config;
         this.gravity = 0;
-        this.initBinary(config)
+        //this.initBinary(config)
     }
     // compute G so that circular-orbit period equals desiredPeriod:
     // omega = 2*pi/T ; for circular orbit: omega^2 = G*(M1+M2)/a^3
@@ -100,7 +101,8 @@ class Simulation {
         const omega = 2 * Math.PI / T;
         this.gravity = Math.pow(dist, 3) * omega * omega / (M1 + M2);
     }
-    initBinary(cfg) {
+    initBinary(starA, starB) {
+        const cfg = this.cfg;
         this.computeG(cfg.M1, cfg.M2, cfg.separation, cfg.desiredPeriod);
         const M1 = cfg.M1, M2 = this.cfg.M2;
         const dist = cfg.separation;
@@ -173,23 +175,30 @@ class Simulation {
             starB.vel.y + 0.5 * aB2.y * dt
         );
     }
+    draw(ctx) {
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, this.cfg.canvasW / this.cfg.DPR, this.cfg.canvasH / this.cfg.DPR);    
+    }
 }
-
-// star objects (center-of-mass at origin initially)
-const starA = new Star(params, { mass: params.M1, radius: 12 });
-const starB = new Star(params, {mass: params.M2,  radius: 10 });
-
-const sim = new Simulation(params);
 
 class Model {
     constructor() {
+        this.starA = new Star(params, { mass: params.M1, radius: 12, hue: 40 });
+        this.starB = new Star(params, {mass: params.M2,  radius: 10, hue: 200 });
         this.sim = new Simulation(params);
-        this.starA = new Star(params, { mass: params.M1, radius: 12 });
-        this.starB = new Star(params, {mass: params.M2,  radius: 10 });
+        this.sim.initBinary(this.starA, this.starB);
     }
     update(sdt) {
         this.sim.integrateStars(sdt, this.starA, this.starB);
-        return {sim: this.sim, starA: this.starA, starB };
+        return [this.sim, this.starA, this.starB];
+    }
+}
+
+class View {
+    static draw(ctx, items) {
+        for ( const i of items ) {
+            i.draw(ctx);
+        }
     }
 }
 
@@ -205,19 +214,17 @@ class Controller {
         return Math.max(0, Math.min(0.05, dt));
     }
     animate(now) {
+        let items;
         const dt = this.delta(now, this.last);
         this.last = now;
         // subdivide the time-step for stability/accuracy
         const sub = 4;
         const sdt = dt / sub;
         for ( let i = 0; i < sub; i++ ) {
-            sim.integrateStars(sdt, starA, starB);
+            //sim.integrateStars(sdt, starA, starB);
+            items = model.update(sdt);
         }
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, this.cfg.canvasW / this.cfg.DPR, this.cfg.canvasH / this.cfg.DPR);
-        starA.draw(ctx, 40);   // orange-ish
-        starB.draw(ctx, 200);  // blue-ish
-
+        View.draw(ctx, items);
         requestAnimationFrame(this.animate.bind(this));
     }
 }
