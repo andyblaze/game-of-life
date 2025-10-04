@@ -64,8 +64,8 @@ class Star {
     } 
     worldToScreen(p){
         return Point(
-            params.canvasW / DPR * 0.5 + p.x * this.cfg.scale,
-            params.canvasH / DPR * 0.5 + p.y * this.cfg.scale
+            this.cfg.canvasSz.x / this.cfg.dpr * 0.5 + p.x * this.cfg.scale,
+            this.cfg.canvasSz.y / this.cfg.dpr * 0.5 + p.y * this.cfg.scale
         );
     }
     draw(ctx, hue) {
@@ -173,20 +173,51 @@ class Simulation {
 }
 
 // star objects (center-of-mass at origin initially)
-const starA = new Star({ mass: params.M1, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 12, scale: params.visualScale });
-const starB = new Star({ mass: params.M2, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 10, scale: params.visualScale });
+const starA = new Star({ 
+    mass: params.M1, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 12, 
+    scale: params.visualScale, dpr: params.DPR, canvasSz: Point(params.canvasW, params.canvasH) 
+});
+const starB = new Star({ 
+    mass: params.M2, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 10, 
+    scale: params.visualScale, dpr: params.DPR, canvasSz: Point(params.canvasW, params.canvasH)  
+});
 
 const sim = new Simulation(params);
 
 function delta(a, b) {
-    let dt = (a - b) / 1000;
-    //if ( dt > 0.05 )  // cap big jumps
-    //    dt = 0.05;
-    return Math.min(0.05, dt);
+    const dt = (a - b) / 1000; // ms → s
+    return Math.max(0, Math.min(0.05, dt));
 }
 
+class Controller {
+    constructor(params) {
+        this.last = performance.now();
+        this.cfg = params;
+    }
+    animate(now) {
+        const dt = delta(now, this.last);
+        this.last = now;
+        // subdivide the time-step for stability/accuracy
+        const sub = 4;
+        const sdt = dt / sub;
+        for ( let i = 0; i < sub; i++ ) {
+            sim.integrateStars(sdt, starA, starB);
+        }
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, this.cfg.canvasW / this.cfg.DPR, this.cfg.canvasH / this.cfg.DPR);
+        starA.draw(ctx, 40);   // orange-ish
+        starB.draw(ctx, 200);  // blue-ish
+
+        requestAnimationFrame(this.animate.bind(this));
+    }
+}
+
+const controller = new Controller(params);
+controller.animate(performance.now());
+
+
 // ---------- main loop ----------
-let last = performance.now();
+/*let last = performance.now();
 function animate(now){
     const dt = delta(now, last);
     last = now;
@@ -203,7 +234,7 @@ function animate(now){
 
     requestAnimationFrame(animate);
 }
-requestAnimationFrame(animate);
+requestAnimationFrame(animate);*/
 
 </script>
 </body>
