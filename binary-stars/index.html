@@ -22,13 +22,13 @@
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const DPR = window.devicePixelRatio || 1;
 
 function resize() {
+    const DPR = window.devicePixelRatio || 1;
     canvas.width = window.innerWidth * DPR;
     canvas.height = window.innerHeight * DPR;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
     // draw in CSS pixels (transform to account for DPR)
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
@@ -55,11 +55,14 @@ function Point(a, b) {
 }
 
 class Star {
-    constructor(config) {
-        this.cfg = config;
+    constructor(config, extra) {
+        this.cfg = { ...config, ...extra };
+        this.cfg.canvasSz = Point(config.canvasW, config.canvasH);
+        this.cfg.scale = config.visualScale;
+        this.cfg.dpr = config.DPR;
         this.mass = config.mass;
-        this.pos = config.pos;
-        this.vel = config.vel;
+        this.pos = {x:0,y:0};
+        this.vel = {x:0,y:0};
         this.radius = config.radius;
     } 
     worldToScreen(p){
@@ -173,29 +176,36 @@ class Simulation {
 }
 
 // star objects (center-of-mass at origin initially)
-const starA = new Star({ 
-    mass: params.M1, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 12, 
-    scale: params.visualScale, dpr: params.DPR, canvasSz: Point(params.canvasW, params.canvasH) 
-});
-const starB = new Star({ 
-    mass: params.M2, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 10, 
-    scale: params.visualScale, dpr: params.DPR, canvasSz: Point(params.canvasW, params.canvasH)  
-});
+const starA = new Star(params, { mass: params.M1, radius: 12 });
+const starB = new Star(params, {mass: params.M2,  radius: 10 });
 
 const sim = new Simulation(params);
 
-function delta(a, b) {
-    const dt = (a - b) / 1000; // ms → s
-    return Math.max(0, Math.min(0.05, dt));
+class Model {
+    constructor() {
+        this.sim = new Simulation(params);
+        this.starA = new Star(params, { mass: params.M1, radius: 12 });
+        this.starB = new Star(params, {mass: params.M2,  radius: 10 });
+    }
+    update(sdt) {
+        this.sim.integrateStars(sdt, this.starA, this.starB);
+        return {sim: this.sim, starA: this.starA, starB };
+    }
 }
+
+const model = new Model();
 
 class Controller {
     constructor(params) {
         this.last = performance.now();
         this.cfg = params;
     }
+    delta(a, b) {
+        const dt = (a - b) / 1000; // ms → s
+        return Math.max(0, Math.min(0.05, dt));
+    }
     animate(now) {
-        const dt = delta(now, this.last);
+        const dt = this.delta(now, this.last);
         this.last = now;
         // subdivide the time-step for stability/accuracy
         const sub = 4;
@@ -214,27 +224,6 @@ class Controller {
 
 const controller = new Controller(params);
 controller.animate(performance.now());
-
-
-// ---------- main loop ----------
-/*let last = performance.now();
-function animate(now){
-    const dt = delta(now, last);
-    last = now;
-    // subdivide the time-step for stability/accuracy
-    const sub = 4;
-    const sdt = dt / sub;
-    for ( let i = 0; i < sub; i++ ) {
-        sim.integrateStars(sdt, starA, starB);
-    }
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, params.canvasW / params.DPR, params.canvasH / params.DPR);
-    starA.draw(ctx, 40);   // orange-ish
-    starB.draw(ctx, 200);  // blue-ish
-
-    requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);*/
 
 </script>
 </body>
