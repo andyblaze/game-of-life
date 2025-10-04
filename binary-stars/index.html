@@ -182,7 +182,7 @@ class Simulation {
 }
 
 class Model {
-    constructor() {
+    constructor(params) {
         this.starA = new Star(params, { mass: params.M1, radius: 12, hue: 40 });
         this.starB = new Star(params, {mass: params.M2,  radius: 10, hue: 200 });
         this.sim = new Simulation(params);
@@ -202,7 +202,7 @@ class View {
     }
 }
 
-const model = new Model();
+const model = new Model(params);
 
 class Controller {
     constructor(params) {
@@ -221,7 +221,6 @@ class Controller {
         const sub = 4;
         const sdt = dt / sub;
         for ( let i = 0; i < sub; i++ ) {
-            //sim.integrateStars(sdt, starA, starB);
             items = model.update(sdt);
         }
         View.draw(ctx, items);
