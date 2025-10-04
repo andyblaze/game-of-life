@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Binary stars — basic</title>
+<style>
+  html,body { height:100%; margin:0; background:#000; }
+  canvas { display:block; width:100vw; height:100vh; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+/*
+  Minimal binary-star orbit demo (no UI).
+  - Two masses M1 and M2
+  - Separation (pixels) and desired orbital period (seconds)
+  - G is computed so the circular-orbit period ~ desiredPeriod
+  - Leapfrog integrator (symplectic) used to advance the two-body system
+  Tweak params below to experiment.
+*/
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', { alpha: true });
+const DPR = window.devicePixelRatio || 1;
+
+function resize(){
+  canvas.width = innerWidth * DPR;
+  canvas.height = innerHeight * DPR;
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  // draw in CSS pixels (transform to account for DPR)
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ---------- Simulation parameters (edit these) ----------
+const params = {
+  M1: 1.0,             // mass of star A (donor)
+  M2: 2.4,             // mass of star B (accretor)
+  separation: 260,     // separation between star centers in pixels
+  desiredPeriod: 28.0,  // desired orbital period in seconds (used to pick G)
+  softening: 1.0,      // gravitational softening in pixels (prevents singularity)
+  visualScale: 4.0,     // world -> screen scale (pixels per world unit)
+  eccentricity: 0.4  // 0 = circle, 0.4 = noticeable ellipse, <1
+};
+// -------------------------------------------------------
+
+// compute G so that circular-orbit period equals desiredPeriod:
+// omega = 2*pi/T ; for circular orbit: omega^2 = G*(M1+M2)/a^3
+function computeG(M1, M2, a, T){
+  const omega = 2 * Math.PI / T;
+  return Math.pow(a, 3) * omega * omega / (M1 + M2);
+}
+
+class Star {
+    constructor(config) {
+        this.cfg = config;
+        this.m = config.m;
+        this.pos = config.pos;
+        this.vel = config.vel;
+        this.radius = config.radius;
+    } 
+    worldToScreen(p){
+        return {
+            x: canvas.width / DPR * 0.5 + p.x * params.visualScale,
+            y: canvas.height / DPR * 0.5 + p.y * params.visualScale
+        };
+    }
+    draw(hue) {
+        const screen = this.worldToScreen(this.pos);
+        const r = Math.max(3, this.radius * params.visualScale);
+        // small bright core
+        ctx.fillStyle = `hsla(${hue},100%,70%,1)`;
+        ctx.beginPath();
+        ctx.arc(screen.x, screen.y, r*0.8, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+// star objects (center-of-mass at origin initially)
+const starA = new Star({ m: params.M1, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 12 });
+const starB = new Star({ m: params.M2, pos: {x:0,y:0}, vel: {x:0,y:0}, radius: 10 });
+
+class Simulation {
+    constructor() {
+        this.gravity = 0;
+    }
+    computeG(M1, M2, a, T) {
+        const omega = 2 * Math.PI / T;
+        this.gravity = Math.pow(a, 3) * omega * omega / (M1 + M2);
+    }
+    initBinary() {
+        this.computeG(params.M1, params.M2, params.separation, params.desiredPeriod);
+        const M1 = params.M1, M2 = params.M2;
+        const a = params.separation;
+
+        // center-of-mass at origin
+        starA.pos.x = - (M2 / (M1 + M2)) * a; starA.pos.y = 0;
+        starB.pos.x = + (M1 / (M1 + M2)) * a; starB.pos.y = 0;
+
+        // circular orbital velocity at this distance
+        const vCirc = Math.sqrt(this.gravity * (M1 + M2) / a);
+
+        // scale by eccentricity: treat initial position as apocenter
+        const factor = Math.sqrt((1 - params.eccentricity) / (1 + params.eccentricity));
+        const v = vCirc * factor;
+
+        // assign velocities perpendicular to radius vector
+        starA.vel.x = 0;
+        starA.vel.y = -v * (M2 / (M1 + M2));
+        starB.vel.x = 0;
+        starB.vel.y = +v * (M1 / (M1 + M2));
+
+        starA.m = M1; starB.m = M2;
+        starA.radius = Math.max(6, 12 * Math.cbrt(M1));
+        starB.radius = Math.max(5, 10 * Math.cbrt(M2));
+    }
+}
+const sim = new Simulation();
+sim.computeG(params.M1, params.M2, params.separation, params.desiredPeriod);
+sim.initBinary();
+
+// ---------- helper math ----------
+function worldToScreen(p){
+  return {
+    x: canvas.width / DPR * 0.5 + p.x * params.visualScale,
+    y: canvas.height / DPR * 0.5 + p.y * params.visualScale
+  };
+}
+
+// ---------- gravity + integrator ----------
+// compute acceleration on body p due to q (softened)
+function accelOn(p, q){
+  const dx = q.pos.x - p.pos.x;
+  const dy = q.pos.y - p.pos.y;
+  const r2 = dx*dx + dy*dy + params.softening * params.softening;
+  const invr3 = 1.0 / (Math.sqrt(r2) * r2); // 1/r^3
+  return { x: sim.gravity * q.m * dx * invr3, y: sim.gravity * q.m * dy * invr3 };
+}
+
+// symplectic leapfrog for the two stars (stable for long runs)
+function integrateStars(dt){
+  // compute accel at beginning
+  const dx = starB.pos.x - starA.pos.x;
+  const dy = starB.pos.y - starA.pos.y;
+  let r2 = dx*dx + dy*dy + params.softening * params.softening;
+  let invr3 = 1.0 / (Math.sqrt(r2) * r2);
+  let aAx = sim.gravity * starB.m * dx * invr3;
+  let aAy = sim.gravity * starB.m * dy * invr3;
+  let aBx = -sim.gravity * starA.m * dx * invr3;
+  let aBy = -sim.gravity * starA.m * dy * invr3;
+
+  // half kick
+  starA.vel.x += 0.5 * aAx * dt;
+  starA.vel.y += 0.5 * aAy * dt;
+  starB.vel.x += 0.5 * aBx * dt;
+  starB.vel.y += 0.5 * aBy * dt;
+
+  // drift
+  starA.pos.x += starA.vel.x * dt;
+  starA.pos.y += starA.vel.y * dt;
+  starB.pos.x += starB.vel.x * dt;
+  starB.pos.y += starB.vel.y * dt;
+
+  // recompute accel with new positions
+  const dx2 = starB.pos.x - starA.pos.x;
+  const dy2 = starB.pos.y - starA.pos.y;
+  r2 = dx2*dx2 + dy2*dy2 + params.softening * params.softening;
+  invr3 = 1.0 / (Math.sqrt(r2) * r2);
+  aAx = sim.gravity * starB.m * dx2 * invr3;
+  aAy = sim.gravity * starB.m * dy2 * invr3;
+  aBx = -sim.gravity * starA.m * dx2 * invr3;
+  aBy = -sim.gravity * starA.m * dy2 * invr3;
+
+  // final half kick
+  starA.vel.x += 0.5 * aAx * dt;
+  starA.vel.y += 0.5 * aAy * dt;
+  starB.vel.x += 0.5 * aBx * dt;
+  starB.vel.y += 0.5 * aBy * dt;
+}
+
+
+// ---------- main loop ----------
+let last = performance.now();
+function frame(now){
+  let dt = (now - last) / 1000;
+  if(dt > 0.05) dt = 0.05; // cap big jumps
+  last = now;
+
+  // subdivide the time-step for stability/accuracy
+  const sub = 4;
+  const sdt = dt / sub;
+  for(let i=0;i<sub;i++){
+    integrateStars(sdt);
+  }
+
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0,0,canvas.width / DPR, canvas.height / DPR);
+
+  // draw connecting line (optional, faint)
+  /*const sA = worldToScreen(starA.pos);
+  const sB = worldToScreen(starB.pos);
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(sA.x, sA.y);
+  ctx.lineTo(sB.x, sB.y);
+  ctx.stroke();*/
+
+  // draw stars (A: warm, B: cool)
+  starA.draw(40);   // orange-ish
+  starB.draw(200);  // blue-ish
+
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>

@@ -83,7 +83,7 @@ const config = {
     numArms: 3, // number of spiral arms
     gravity: 2000,
     dt: 0.2,
-    radialDamp: 0.00000001,
+    radialDamp: 0.1,
     perturbation: 0.05,
     // --- spiral arm shepherding force ---
     armStrength: 0.000000006,     // 0.3 to 1.5 suggested. low & arms fade, high & stars becom "lanes"
@@ -149,7 +149,9 @@ class Galaxy {
             s.draw(ctx);
         }
         if ( this.id === "andromeda" )
-            this.blackHole.moveX(0.3);
+            this.blackHole.moveX(0.05);
+        else 
+            this.blackHole.moveX(-0.05);
         this.blackHole.draw(ctx);
     }
 }
@@ -177,7 +179,7 @@ class Star extends Particle {
         for (const bh of blackHoles) {
             const rx = bh.x - this.x;
             const ry = bh.y - this.y;
-            const r2 = rx*rx + ry*ry + 1; // softening
+            const r2 = rx * rx + ry * ry + 1; // softening
             const invR3 = 1 / (r2 * Math.sqrt(r2));
 
             ax += cfg.gravity * bh.mass * rx * invR3;
@@ -285,7 +287,7 @@ class Model {
         g2Cfg.haloMass = 2000;
         g2Cfg.haloRadius = 1200;
         this.galaxies = [
-            new Galaxy("milkyway", config, new BlackHole(config.canvasW / 2 + 400, config.canvasH / 2)),
+            new Galaxy("milkyway", config, new BlackHole(config.canvasW, config.canvasH / 2)),
             new Galaxy("andromeda", g2Cfg, new BlackHole(0, config.canvasH / 2 - 100), 20, 15.5)
         ];
     }
@@ -347,13 +349,13 @@ function diagnoseStar(star, homeBH, intruderBH, cfg) {
 const intr = model.galaxies[1].blackHole;
 const cfg = model.galaxies[0].cfg;
 
-let sumTr = 0;
+let sumVCirc = 0;
 for (let s of model.galaxies[0].stars.slice(0, 2900)) {
   const out = diagnoseStar(s, home, intr, cfg);
-  sumTr += parseFloat(out.tidalRatio);
+  sumVCirc += parseFloat(out.v_circ);
   //if (out.tidalRatio > 0.05) console.log(out);
 }
-console.log(sumTr / 2900);*/
+console.log(sumVCirc / 2900);*/
 
 // ------------------ Animation loop ------------------
 function animate(timestamp) {
