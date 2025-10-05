@@ -8,7 +8,7 @@ export default function createBridgePath(donor, accretor) {
         y: (start.y + end.y) / 2 - 20  // adjust vertical offset for curvature
     };
 
-    // Return a function that maps t ∈ [0,1] to a point on the quadratic Bezier curve
+    // Return a function that maps t -> [0,1] to a point on the quadratic Bezier curve
     return function(t) {
         const invT = 1 - t;
         return {
