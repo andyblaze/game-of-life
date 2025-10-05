@@ -5,7 +5,7 @@ export default function createBridgePath(donor, accretor) {
     // Control point slightly offset toward the accretor to give a curve
     const mid = {
         x: (start.x + end.x) / 2,
-        y: (start.y + end.y) / 2 - 20  // adjust vertical offset for curvature
+        y: (start.y + end.y) / 2 - 20  // adjust vertical offset for curvature  !!!!!! PERLIN NOISE FOR THE 20 ?
     };
 
     // Return a function that maps t -> [0,1] to a point on the quadratic Bezier curve

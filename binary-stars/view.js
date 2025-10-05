@@ -19,7 +19,7 @@ export default class View {
             const sx = this.canvas.width / 2 + x * this.cfg.visualScale;
             const sy = this.canvas.height / 2 + y * this.cfg.visualScale;
             this.ctx.fillStyle = "rgba(255,255,255,1)";
-            this.ctx.fillRect(sx, sy, 2, 2); // small visual placeholder
+            this.ctx.fillRect(sx, sy, 1, 1); // small visual placeholder
         }
     }
 }
