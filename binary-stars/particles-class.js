@@ -27,7 +27,9 @@ export default class ParticleSystem {
             alpha: 0.5 + Math.random() * 0.5,
             pos: { x: 0, y: 0 },
             u: Math.random() * 20 - 10,         // tiny perpendicular offset
-            state: "bridge"
+            state: "bridge",
+            //hue:this.starA.hue,
+            wait:Math.random() * 20 + 5
         };
     }
 resetParticle(p, donor, acc, maxWidth) {
@@ -58,6 +60,7 @@ resetParticle(p, donor, acc, maxWidth) {
     p.alpha = 0.4 + Math.random() * 0.6;
     p.radius = 0;
     p.speed = 0.5 + Math.random() * 0.5;
+    //p.hue = this.starA.hue;
 }
 
 initParticles(donor, acc, maxWidth) {
@@ -84,6 +87,10 @@ update(dt) {
 
 
     for (const p of this.particles) {
+        if (p.wait > 0) {
+            p.wait -= dt;
+            continue;
+        }
         // --- STREAMING ALONG BRIDGE ---
         if (p.state === "bridge") {
             p.t += p.speed * dt * 0.2;
@@ -127,7 +134,7 @@ update(dt) {
             p.radius *= (1 - 0.1 * dt);
             p.pos.x = acc.pos.x + Math.cos(p.theta) * p.radius;
             p.pos.y = acc.pos.y + Math.sin(p.theta) * p.radius;
-            p.alpha -= 0.8 * dt;
+            p.alpha -= 0.8 * dt; 
 
             if (p.alpha <= 0) {
                 this.resetParticle(p, donor, acc, maxWidth);
@@ -147,8 +154,8 @@ update(dt) {
         const cx = ctx.canvas.width / 2;
         const cy = ctx.canvas.height / 2;
 
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
+        //ctx.save();
+        //ctx.globalCompositeOperation = "lighter";
         ctx.lineWidth = 1;
 
         for (const p of this.particles) {
@@ -156,10 +163,11 @@ update(dt) {
             const sx = cx + p.pos.x * visualScale;
             const sy = cy + p.pos.y * visualScale;
 
-            const tail = Math.max(0.5, 3 * (1 - p.t));
-            const hue = 40 + (200 - 40) * p.t;
+            const tail = Math.max(0.5, 1 * (1 - p.t));
+            const hue = this.starA.hue + (this.starB.hue - this.starA.hue) * p.t;
+            
 
-            const alpha = p.alpha * (1 - p.t * 0.3);
+            //const alpha = p.alpha * (1 - p.t * 0.3);
 
             // Calculate tail direction in screen space (diagonal works fine visually)
             /*const grad = ctx.createLinearGradient(sx, sy, sx - tail, sy - tail);
@@ -174,7 +182,7 @@ update(dt) {
             ctx.stroke();
         }
 
-        ctx.restore();
+        //ctx.restore();
     }
 
     drawold(ctx) {
