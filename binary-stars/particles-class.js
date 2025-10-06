@@ -12,7 +12,7 @@ export default class ParticleSystem {
         this.time = 0;
 
         // Number of active particles
-        this.count = 1500;
+        this.count = 5000;
         this.maxWidth = starA.radius * 0.9; // visually wide, but not huge
 
         // Pool of particles
@@ -29,7 +29,7 @@ export default class ParticleSystem {
             u: Math.random() * 20 - 10,         // tiny perpendicular offset
             state: "bridge",
             //hue:this.starA.hue,
-            wait:Math.random() * 20 + 5
+            wait:Math.random() * 15 + 5
         };
     }
 resetParticle(p, donor, acc, maxWidth) {
@@ -89,8 +89,10 @@ update(dt) {
     for (const p of this.particles) {
         if (p.wait > 0) {
             p.wait -= dt;
+            p.alpha = 0;
             continue;
         }
+        //p.alpha = 0.5 + Math.random() * 0.5;
         // --- STREAMING ALONG BRIDGE ---
         if (p.state === "bridge") {
             p.t += p.speed * dt * 0.2;
