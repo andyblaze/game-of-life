@@ -12,8 +12,8 @@ export default class ParticleSystem {
         this.time = 0;
 
         // Number of active particles
-        this.count = 300;
-        this.maxWidth = starA.radius * 1.1; // visually wide, but not huge
+        this.count = 1500;
+        this.maxWidth = starA.radius * 0.9; // visually wide, but not huge
 
         // Pool of particles
         this.particles = [];//Array.from({ length: this.count }, () => this.makeParticle());
@@ -157,7 +157,8 @@ update(dt) {
             const sy = cy + p.pos.y * visualScale;
 
             const tail = Math.max(0.5, 3 * (1 - p.t));
-            const hue = 40 + 160 * p.t;
+            const hue = 40 + (200 - 40) * p.t;
+
             const alpha = p.alpha * (1 - p.t * 0.3);
 
             // Calculate tail direction in screen space (diagonal works fine visually)
@@ -165,7 +166,7 @@ update(dt) {
             grad.addColorStop(0, `hsla(${hue}, 100%, 70%, ${alpha})`);
             grad.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);*/
 
-            ctx.strokeStyle = "#ffffff";
+            ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${p.alpha})`;
 
             ctx.beginPath();
             ctx.moveTo(sx, sy);

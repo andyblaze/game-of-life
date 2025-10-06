@@ -19,7 +19,7 @@ export default function createBridgePath(donor, accretor) {
     // Midpoint for curvature (slightly offset from straight line)
     const mid = {
         x: (start.x + northPole.x) / 2,
-        y: (start.y + northPole.y) / 2 - 0  // adjust for curvature; can add noise later
+        y: (start.y + northPole.y) / 2 - 10  // adjust for curvature; can add noise later
     };
 
     // Return a function mapping t ∈ [0,1] → position along bridge
