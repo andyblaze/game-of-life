@@ -1,5 +1,6 @@
 import Star from "./star-class.js";
 import Simulation from "./sim-class.js";
+import ParticleSystem from "./particles-class.js";
 
 export default class Model {
     constructor(config) {
@@ -7,6 +8,7 @@ export default class Model {
         this.starB = new Star(config, {mass: config.M2,  radius: 12, hue: 200 });
         this.sim = new Simulation(config);
         this.sim.initBinary(this.starA, this.starB);
+        this.particles = new ParticleSystem(this.starA, this.starB, config);
     }
     update(dt) {
         // subdivide the time-step for stability/accuracy
@@ -14,7 +16,8 @@ export default class Model {
         const sdt = dt / sub;
         for ( let i = 0; i < sub; i++ ) {
             this.sim.integrateStars(sdt, this.starA, this.starB);  // !!!!!!!!!! PUT STARS INTO SIM OBJECT ? !!!!!!
-        }        
-        return [this.sim, this.starA, this.starB];
+        } 
+        this.particles.update(dt);
+        return [this.sim, this.starA, this.starB, this.particles];
     }
 }
