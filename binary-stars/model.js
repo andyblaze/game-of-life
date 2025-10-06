@@ -4,8 +4,8 @@ import ParticleSystem from "./particles-class.js";
 
 export default class Model {
     constructor(config) {
-        this.starA = new Star(config, { mass: config.M1, radius: 4, hue: 40 }); // !!!!!!! FIX RADIUS !!!!!!
-        this.starB = new Star(config, {mass: config.M2,  radius: 12, hue: 200 });
+        this.starA = new Star(config, { mass: config.M1, radius: 4, color: {h:40, s:100, l:70, a:1} }); // !!!!!!! FIX RADIUS !!!!!!
+        this.starB = new Star(config, {mass: config.M2,  radius: 12, color: {h:200, s:100, l:70, a:1} });
         this.sim = new Simulation(config);
         this.sim.initBinary(this.starA, this.starB);
         this.particles = new ParticleSystem(this.starA, this.starB, config);

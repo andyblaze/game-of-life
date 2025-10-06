@@ -1,5 +1,9 @@
 import { getCanvas, getCtx } from "./config.js";
 
+export function hslaStr({h, s, l, a}) {
+    return `hsla(${h},${s}%,${l}%,${a})`;
+}
+
 export function resize() {
     const canvas = getCanvas();
     const ctx = getCtx();

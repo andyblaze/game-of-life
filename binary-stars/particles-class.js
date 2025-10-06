@@ -1,4 +1,5 @@
 import createBridgePath from "./path.js";
+import { hslaStr } from "./functions.js";
 
 export default class ParticleSystem {
     constructor(starA, starB, config) {
@@ -25,11 +26,12 @@ export default class ParticleSystem {
             speed: 0.8 + Math.random() * 0.2,
             size: 1 + Math.random() * 1.5,
             alpha: 0.5 + Math.random() * 0.5,
+            color: {...this.starA.color},
             pos: { x: 0, y: 0 },
             u: Math.random() * 20 - 10,         // tiny perpendicular offset
             state: "bridge",
             //hue:this.starA.hue,
-            wait:Math.random() * 15 + 5
+            wait:Math.random() * 13 + 4
         };
     }
 resetParticle(p, donor, acc, maxWidth) {
@@ -57,7 +59,7 @@ resetParticle(p, donor, acc, maxWidth) {
     p.state = "bridge";
     p.t = Math.random() * 0.05; // near start of bridge
     p.u = (Math.random() * 2 - 1);
-    p.alpha = 0.4 + Math.random() * 0.6;
+    p.color.a = 0.4 + Math.random() * 0.6;
     p.radius = 0;
     p.speed = 0.5 + Math.random() * 0.5;
     //p.hue = this.starA.hue;
@@ -89,10 +91,10 @@ update(dt) {
     for (const p of this.particles) {
         if (p.wait > 0) {
             p.wait -= dt;
-            p.alpha = 0;
+            p.color.a = 0;
             continue;
         }
-        //p.alpha = 0.5 + Math.random() * 0.5;
+        p.color.a = 1;
         // --- STREAMING ALONG BRIDGE ---
         if (p.state === "bridge") {
             p.t += p.speed * dt * 0.2;
@@ -109,7 +111,8 @@ update(dt) {
                 p.theta = Math.atan2(dy, dx);
                 p.omega = 1.5 + Math.random() * 0.8;
                 p.radius = Math.hypot(dx, dy);
-                p.alpha = 1.0;
+                p.alpha = 0.4;
+                p.color = {...acc.color};
                 p.t = 0;
                 continue;
             }
@@ -123,7 +126,7 @@ update(dt) {
             const perpY = dx / len;
 
             // taper width toward accretor
-            const width = maxWidth * (1 - p.t);
+            const width = this.maxWidth * (1 - p.t);
             const offset = width * p.u;
 
             p.pos.x = pos.x + perpX * offset;
@@ -136,21 +139,15 @@ update(dt) {
             p.radius *= (1 - 0.1 * dt);
             p.pos.x = acc.pos.x + Math.cos(p.theta) * p.radius;
             p.pos.y = acc.pos.y + Math.sin(p.theta) * p.radius;
-            p.alpha -= 0.8 * dt; 
+            p.color.a -= 8 * dt; 
+            p.color = {...acc.color};
 
-            if (p.alpha <= 0) {
+            if (p.alpha <= 1) {
                 this.resetParticle(p, donor, acc, maxWidth);
             }
         }
     }
 }
-
-
-
-
-
-
-
     draw(ctx) {
         const { visualScale } = this.cfg;
         const cx = ctx.canvas.width / 2;
@@ -166,7 +163,7 @@ update(dt) {
             const sy = cy + p.pos.y * visualScale;
 
             const tail = Math.max(0.5, 1 * (1 - p.t));
-            const hue = this.starA.hue + (this.starB.hue - this.starA.hue) * p.t;
+            p.color.h = this.starA.color.h + (this.starB.color.h - this.starA.color.h) * p.t;
             
 
             //const alpha = p.alpha * (1 - p.t * 0.3);
@@ -176,7 +173,7 @@ update(dt) {
             grad.addColorStop(0, `hsla(${hue}, 100%, 70%, ${alpha})`);
             grad.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);*/
 
-            ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${p.alpha})`;
+            ctx.strokeStyle = hslaStr(p.color);
 
             ctx.beginPath();
             ctx.moveTo(sx, sy);
