@@ -28,13 +28,13 @@ export default class Star {
                 spotYOffset: (Math.random() * 0.6 - 0.3) * radius,   // ±30% radius from equator
                 spotRadius: 0.5,// + Math.random(),                        // 1–2 px
                 colorOffset: {                                       // slightly darker/shifted
-                    h: color.h,
-                    s: Math.max(0, color.s - 40),
-                    l: Math.max(0, color.l - 40),
+                    h: 0,//color.h,
+                    s: 0,//Math.max(0, color.s - 40),
+                    l: 0,//Math.max(0, color.l - 40),
                     a: 1
                 },
                 transitSpeed: 0.02 + Math.random() * 0.03,           // fraction/sec across disk
-                waitTime: Math.random() * 2                            // seconds before starting
+                waitTime: 0//Math.random() * 2                            // seconds before starting
             }; //console.log(radius, spot.spotYOffset);
             this.spots.push(spot);
         }
@@ -71,10 +71,31 @@ export default class Star {
     }
     draw(ctx) {
         const screen = this.worldToScreen(this.pos);
-        const r = Math.max(3, this.radius * this.cfg.scale); 
-        const starRadius = r * 0.8; // same as used to draw star
-        // small bright core
-        ctx.fillStyle = hslaStr(this.color);
+        const r = Math.max(3, this.radius * this.cfg.scale);
+        const starRadius = r * 0.8; 
+
+        // --- create radial gradient ---
+        const litOffset = starRadius * 0.25; // adjust 0.1–0.3 for taste
+
+        const grad = ctx.createRadialGradient(
+            screen.x + litOffset, screen.y, 0,     // shifted light center
+            screen.x, screen.y, starRadius         // outer edge remains centered
+        );
+
+        // core color = star color
+        grad.addColorStop(0, hslaStr(this.color));
+
+        // edge color = slightly darker / desaturated
+        const edgeColor = {
+            h: this.color.h,
+            s: Math.max(0, this.color.s - 20),
+            l: Math.max(0, this.color.l - 30),
+            a: this.color.a
+        };
+        grad.addColorStop(1, hslaStr(edgeColor));
+
+        // fill the star with the gradient
+        ctx.fillStyle = grad;
         ctx.beginPath();
         ctx.arc(screen.x, screen.y, starRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -88,9 +109,10 @@ export default class Star {
             const y = screen.y + spot.spotYOffset * this.cfg.scale; 
 
             // Spot color slightly darker than star
-            const color = lerpColor(this.color, spot.colorOffset, 0.2);
-
-            ctx.fillStyle = hslaStr(color);
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, spot.spotRadius);
+            grad.addColorStop(0, hslaStr({ ...spot.colorOffset, a: 0.1 }));
+            grad.addColorStop(1, hslaStr({ ...spot.colorOffset, a: 0.05 }));
+            ctx.fillStyle = grad;
             ctx.beginPath();
             ctx.arc(x, y, spot.spotRadius * this.cfg.scale, 0, Math.PI * 2);
             ctx.fill();
