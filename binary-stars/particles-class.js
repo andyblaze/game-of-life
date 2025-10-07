@@ -13,7 +13,7 @@ export default class ParticleSystem {
         this.time = 0;
 
         // Number of active particles
-        this.count = 5000;
+        this.count = 1500;
         this.maxWidth = starA.radius * 0.9; // visually wide, but not huge
 
         // Pool of particles
@@ -70,130 +70,100 @@ export default class ParticleSystem {
         for ( const p of this.particles)
             this.resetParticle(p, donor, acc, maxWidth);
     }
-update(dt) {
-    const donor = this.starA;
-    const acc = this.starB;
-    const bridge = createBridgePath(donor, acc);
-    const maxWidth = this.maxWidth;
+    update(dt) {
+        const donor = this.starA;
+        const acc = this.starB;
+        const bridge = createBridgePath(donor, acc);
+        const maxWidth = this.maxWidth;
 
-    this.time += dt;
-    // Wait ~0.5s for stars to stabilize before creating particles
-    if (!this.ready) {
-        if (this.time < 2.5) return;
-        this.ready = true;
-
-        // Initialize all particles *after* stars are stable
-        this.initParticles(this.starA, this.starB, this.maxWidth);
-        return;
-    }
-
-
-    for (const p of this.particles) {
-        if (p.wait > 0) {
-            p.wait -= dt;
-            p.color.a = 0;
-            continue;
+        this.time += dt;
+        // Wait for stars to stabilize before creating particles
+        if ( ! this.ready ) {
+            if (this.time < 2.5) return;
+            this.ready = true;
+            // Initialize all particles *after* stars are stable
+            this.initParticles(donor, acc, this.maxWidth);
+            return;
         }
-        p.color.a = 1;
-        // --- STREAMING ALONG BRIDGE ---
-        if (p.state === "bridge") {
-            p.t += p.speed * dt * 0.2;
 
-            if (p.t >= 1) {
-                // reached accretor north pole
-                const pos = bridge(1);
-                p.pos.x = pos.x;
-                p.pos.y = pos.y;
-
-                const d = Point(pos.x - acc.pos.x, pos.y - acc.pos.y);
-                p.state = "swirl";
-                p.theta = Math.atan2(d.y, d.x);
-                p.omega = 1.5 + Math.random() * 0.8;
-                p.radius = Math.hypot(d.x, d.y);
-                p.alpha = 0.4;
-                p.color = {...acc.color};
-                p.t = 0;
+        for ( const p of this.particles ) {
+            if ( p.wait > 0 ) { // hide unready stars with alpha = 0
+                p.wait -= dt;
+                p.color.a = 0;
                 continue;
             }
+            p.color.a = 1;
+            // --- STREAMING ALONG BRIDGE ---
+            if ( p.state === "bridge" ) {
+                p.t += p.speed * dt * 0.2;
 
-            // normal bridge motion
-            const pos = bridge(p.t);
-            const d = Point(acc.pos.x - donor.pos.x, acc.pos.y - donor.pos.y);
-            const len = Math.hypot(d.x, d.y) || 1;
-            const perpX = -d.y / len;
-            const perpY = d.x / len;
+                if ( p.t >= 1 ) {
+                    // reached accretor north pole
+                    const pos = bridge(1);
+                    p.pos.x = pos.x;
+                    p.pos.y = pos.y;
 
-            // taper width toward accretor
-            const width = this.maxWidth * (1 - p.t);
-            const offset = width * p.u;
+                    const d = Point(pos.x - acc.pos.x, pos.y - acc.pos.y);
+                    p.state = "swirl";
+                    p.theta = Math.atan2(d.y, d.x);
+                    p.omega = 1.5 + Math.random() * 0.8;
+                    p.radius = Math.hypot(d.x, d.y);
+                    p.alpha = 0.4;
+                    p.color = {...acc.color};
+                    p.t = 0;
+                    continue;
+                }
 
-            p.pos = Point(pos.x + perpX * offset, pos.y + perpY * offset);
-        }
+                // normal bridge motion
+                const pos = bridge(p.t);
+                const d = Point(acc.pos.x - donor.pos.x, acc.pos.y - donor.pos.y);
+                const len = Math.hypot(d.x, d.y) || 1;
+                const perp = Point(-d.y / len, d.x / len);
 
-        // --- SWIRLING AROUND ACCRETOR ---
-        else if (p.state === "swirl") {
-            p.theta += p.omega * dt;
-            p.radius *= (1 - 0.1 * dt);
-            p.pos = Point(acc.pos.x + Math.cos(p.theta) * p.radius,
-                        acc.pos.y + Math.sin(p.theta) * p.radius
-                    );
-            p.color.a -= 8 * dt; 
-            p.color = {...acc.color};
+                // taper width toward accretor
+                const width = this.maxWidth * (1 - p.t);
+                const offset = width * p.u;
 
-            if (p.alpha <= 1) {
-                this.resetParticle(p, donor, acc, maxWidth);
+                p.pos = Point(pos.x + perp.x * offset, pos.y + perp.y * offset);
+            }
+
+            // --- SWIRLING AROUND ACCRETOR ---
+            else if ( p.state === "swirl" ) {
+                p.theta += p.omega * dt;
+                p.radius *= (1 - 0.1 * dt);
+                p.pos = Point(acc.pos.x + Math.cos(p.theta) * p.radius,
+                            acc.pos.y + Math.sin(p.theta) * p.radius
+                        );
+                p.color.a -= 8 * dt; 
+                p.color = {...acc.color};
+
+                if (p.alpha <= 1) {
+                    this.resetParticle(p, donor, acc, maxWidth);
+                }
             }
         }
     }
-}
     draw(ctx) {
         const { visualScale } = this.cfg;
-        const cx = ctx.canvas.width / 2;
-        const cy = ctx.canvas.height / 2;
+        const c = Point(ctx.canvas.width / 2, ctx.canvas.height / 2);
 
-        //ctx.save();
-        //ctx.globalCompositeOperation = "lighter";
         ctx.lineWidth = 1;
-
+        const donor = this.starA;
+        const acc = this.starB;
+        
         for (const p of this.particles) {
             // Convert world → screen
-            const sx = cx + p.pos.x * visualScale;
-            const sy = cy + p.pos.y * visualScale;
+            const sx = c.x + p.pos.x * visualScale;
+            const sy = c.y + p.pos.y * visualScale;
 
             const tail = Math.max(0.5, 1 * (1 - p.t));
-            p.color.h = this.starA.color.h + (this.starB.color.h - this.starA.color.h) * p.t;
+            p.color.h = donor.color.h + (acc.color.h - donor.color.h) * p.t;
             
-
-            //const alpha = p.alpha * (1 - p.t * 0.3);
-
-            // Calculate tail direction in screen space (diagonal works fine visually)
-            /*const grad = ctx.createLinearGradient(sx, sy, sx - tail, sy - tail);
-            grad.addColorStop(0, `hsla(${hue}, 100%, 70%, ${alpha})`);
-            grad.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);*/
-
             ctx.strokeStyle = hslaStr(p.color);
-
             ctx.beginPath();
             ctx.moveTo(sx, sy);
             ctx.lineTo(sx - tail, sy - tail);
             ctx.stroke();
         }
-
-        //ctx.restore();
-    }
-
-    drawold(ctx) {
-        //ctx.save();
-        //ctx.globalCompositeOperation = "lighter"; // additive blending looks nice
-        for (const p of this.particles) {
-            //ctx.globalAlpha = p.alpha;
-            ctx.beginPath();
-            const sx = ctx.canvas.width / 2 + p.pos.x * this.cfg.visualScale;
-            const sy = ctx.canvas.height / 2 + p.pos.y * this.cfg.visualScale;
-            ctx.arc(sx, sy, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(255, 220, 160, 1)";
-            ctx.fill();
-        }
-        //ctx.restore();
     }
 }
