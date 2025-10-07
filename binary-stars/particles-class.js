@@ -60,6 +60,7 @@ export default class ParticleSystem {
         p.state = "bridge";
         p.t = Math.random() * 0.05; // near start of bridge
         p.u = (Math.random() * 2 - 1);
+        p.color = {...this.starA.color};
         p.color.a = 0.4 + Math.random() * 0.6;
         p.radius = 0;
         p.speed = 0.5 + Math.random() * 0.5;

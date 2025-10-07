@@ -36,6 +36,18 @@ export default class Star {
         ctx.beginPath();
         ctx.arc(screen.x, screen.y, r * 0.8, 0, Math.PI * 2);
         ctx.fill();
+
+    // --- small black blob for rotation ---
+    const spotRadius = r * 0.15;         // small spot
+    const spotAngle = this.phase;        // we can reuse phase for now
+    const spotDist = r * 0.5;            // distance from center
+    const bx = screen.x + Math.cos(spotAngle) * spotDist;
+    const by = screen.y + Math.sin(spotAngle) * spotDist;
+
+    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.beginPath();
+    ctx.arc(bx, by, spotRadius, 0, Math.PI * 2);
+    ctx.fill();
     }
     setPosition(x, y) {
         this.pos = Point(x, y);
