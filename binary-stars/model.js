@@ -1,4 +1,4 @@
-import Star from "./star-class.js";
+import Star from "./star-class.js?gh";
 import Simulation from "./sim-class.js";
 import ParticleSystem from "./particles-class.js";
 

@@ -72,18 +72,19 @@ export default class Star {
     draw(ctx) {
         const screen = this.worldToScreen(this.pos);
         const r = Math.max(3, this.radius * this.cfg.scale); 
+        const starRadius = r * 0.8; // same as used to draw star
         // small bright core
         ctx.fillStyle = hslaStr(this.color);
         ctx.beginPath();
-        ctx.arc(screen.x, screen.y, r * 0.8, 0, Math.PI * 2);
+        ctx.arc(screen.x, screen.y, starRadius, 0, Math.PI * 2);
         ctx.fill();
 
 
         // --- Draw transit spots ---
         for (const spot of this.spots) {
             if (spot.waitTime > 0) continue; // not yet visible
-
-            const x = screen.x - r + 2 * r * spot.transitPhase;
+            const margin = 0.96;
+            const x = screen.x - starRadius * margin + 2 * starRadius * margin * spot.transitPhase;
             const y = screen.y + spot.spotYOffset * this.cfg.scale; 
 
             // Spot color slightly darker than star
