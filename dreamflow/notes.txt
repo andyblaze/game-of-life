@@ -1,0 +1,58 @@
+Dreamflow – Revival Notes
+
+Concept:
+A soft, flowing cellular automaton–meets–liquid simulation in pure JavaScript.
+Uses two grids (double buffering) to diffuse energy/colour fields and create smooth, organic motion.
+Upscaled to full canvas for beautiful, painterly visuals.
+
+🧠 Core Questions to Ask ChatGPT:
+
+Paste one (or all) of these tomorrow to pick up exactly where you left off 👇
+
+1️⃣ Getting Started
+
+“Let’s start Dreamflow — a smooth fluid-like cellular automata in JS. I want two buffers (A and B), each width×height arrays, and we’ll diffuse values by averaging 9 neighbors. Show me the skeleton simulation loop and render pass.”
+
+2️⃣ Diffusion Rule
+
+“Now let’s add a diffusion rule — each cell’s new value = average of itself + 8 neighbors, plus a small damping factor (so it slowly fades).”
+
+3️⃣ Color Field
+
+“Let’s evolve a 3-channel field (R, G, B), so it looks like a moving liquid or heat map. We’ll convert each cell’s value to color and render via ImageData.”
+
+4️⃣ Excitation / Input
+
+“Add random excitation: occasionally inject energy into random spots so ripples and flows keep appearing.”
+
+5️⃣ Visual Style
+
+“I want it to look like flowing ink — deep colors, smoothed edges. Add a post-process step or color mapping to give it that ‘Dreamflow’ aesthetic.”
+
+6️⃣ Performance
+
+“Optimize the loop for a 480×270 grid using typed arrays and ImageData updates. Keep it 60fps.”
+
+7️⃣ Interactivity (optional)
+
+“Let’s make Dreamflow interactive: clicking or moving the mouse injects energy or color into the field.”
+
+8️⃣ Artistic Enhancements (later)
+
+“How can we blend this with noise fields, velocity maps, or particle feedback to make the flow more organic?”
+
+🧩 Extra Notes
+
+Grid size: 480×270 (half-1080p) upscaled to full canvas.
+
+Data type: Float32Array or Uint8Array.
+
+Always swap buffers ([a, b] = [b, a]).
+
+Render via ctx.putImageData() once per frame.
+
+Optionally add per-cell phase oscillations for “living liquid” feel.
+
+If you want a one-line summary to paste first thing tomorrow, use this:
+
+“We’re starting a project called Dreamflow: a soft liquid cellular automata effect in pure JS using double buffering and diffusion. Let’s build it from scratch.”
