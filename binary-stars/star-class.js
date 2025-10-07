@@ -73,11 +73,35 @@ export default class Star {
         const screen = this.worldToScreen(this.pos);
         const r = Math.max(3, this.radius * this.cfg.scale);
         const starRadius = r * 0.8; 
+        
+        // --- Corona gradient (drawn before core) ---
+        const coronaRadius = starRadius * 1.5; // extends beyond star
+        let grad = ctx.createRadialGradient(
+            screen.x, screen.y, starRadius * 0.8,  // inner edge near surface
+            screen.x, screen.y, coronaRadius       // outer glow
+        );
+        grad.addColorStop(0, hslaStr({ 
+            h: this.color.h, 
+            s: this.color.s, 
+            l: Math.min(100, this.color.l + 20), 
+            a: 0.4 
+        }));
+        grad.addColorStop(1, hslaStr({ 
+            h: this.color.h, 
+            s: this.color.s * 0.5, 
+            l: this.color.l * 0.8, 
+            a: 0.01 
+        }));
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(screen.x, screen.y, coronaRadius, 0, Math.PI * 2);
+        ctx.fill();
 
         // --- create radial gradient ---
         const litOffset = starRadius * 0.25; // adjust 0.1–0.3 for taste
 
-        const grad = ctx.createRadialGradient(
+        grad = ctx.createRadialGradient(
             screen.x + litOffset, screen.y, 0,     // shifted light center
             screen.x, screen.y, starRadius         // outer edge remains centered
         );
@@ -109,7 +133,7 @@ export default class Star {
             const y = screen.y + spot.spotYOffset * this.cfg.scale; 
 
             // Spot color slightly darker than star
-            const grad = ctx.createRadialGradient(x, y, 0, x, y, spot.spotRadius);
+            grad = ctx.createRadialGradient(x, y, 0, x, y, spot.spotRadius);
             grad.addColorStop(0, hslaStr({ ...spot.colorOffset, a: 0.1 }));
             grad.addColorStop(1, hslaStr({ ...spot.colorOffset, a: 0.05 }));
             ctx.fillStyle = grad;
