@@ -1,4 +1,4 @@
-import { Point, hslaStr } from "./functions.js";
+import { Point, hslaStr, lerpColor } from "./functions.js";
 
 export default class Star {
     constructor(config, extra) {
@@ -6,18 +6,27 @@ export default class Star {
         this.cfg.canvasSz = Point(config.canvasW, config.canvasH);
         this.cfg.scale = config.visualScale;
         this.cfg.dpr = config.DPR;
-        this.hue = this.cfg.hue;
-        this.color = this.cfg.color;
+        this.colorA = {...this.cfg.colorA};
+        this.colorB = {...this.cfg.colorB};
         this.mass = config.mass;
         this.pos = {x:0,y:0};
         this.vel = {x:0,y:0};
         this.radius = config.radius;
+        this.phase = Math.random() * Math.PI * 2;
+        this.pulseRate = this.cfg.pulseRate;
     } 
     worldToScreen(p){
         return Point(
             this.cfg.canvasSz.x / this.cfg.dpr * 0.5 + p.x * this.cfg.scale,
             this.cfg.canvasSz.y / this.cfg.dpr * 0.5 + p.y * this.cfg.scale
         );
+    }
+    update(dt) {
+        // advance phase (controls oscillation speed)
+        this.phase += this.pulseRate * dt;
+        // oscillate f smoothly between 0 → 1 → 0
+        const f = (Math.sin(this.phase) + 1) / 2;
+        this.color = lerpColor(this.colorA, this.colorB, f);
     }
     draw(ctx) {
         const screen = this.worldToScreen(this.pos);

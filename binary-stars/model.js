@@ -4,8 +4,14 @@ import ParticleSystem from "./particles-class.js";
 
 export default class Model {
     constructor(config) {
-        this.starA = new Star(config, { mass: config.M1, radius: 4, color: {h:40, s:100, l:70, a:1} }); // !!!!!!! FIX RADIUS !!!!!!
-        this.starB = new Star(config, {mass: config.M2,  radius: 12, color: {h:200, s:100, l:70, a:1} });
+        this.starA = new Star(
+            config, 
+            { mass: config.M1, radius: 4, colorA: {h:40, s:100, l:70, a:1}, colorB: { h: 10, s: 80, l: 60, a: 1 }, pulseRate: 0.47 }
+        ); // !!!!!!! FIX RADIUS !!!!!!
+        this.starB = new Star(
+            config, 
+            {mass: config.M2,  radius: 12, colorA: { h: 170, s: 80, l: 70, a: 1 }, colorB: { h: 210, s: 90, l: 90, a: 1 }, pulseRate: 0.52 }
+        );
         this.sim = new Simulation(config);
         this.sim.initBinary(this.starA, this.starB);
         this.particles = new ParticleSystem(this.starA, this.starB, config);
@@ -16,7 +22,9 @@ export default class Model {
         const sdt = dt / sub;
         for ( let i = 0; i < sub; i++ ) {
             this.sim.integrateStars(sdt, this.starA, this.starB);  // !!!!!!!!!! PUT STARS INTO SIM OBJECT ? !!!!!!
-        } 
+        }
+        this.starA.update(dt);
+        this.starB.update(dt); 
         this.particles.update(dt);
         return [this.sim, this.starA, this.starB, this.particles];
     }
