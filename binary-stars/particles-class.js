@@ -81,7 +81,7 @@ export default class ParticleSystem {
         this.time += dt;
         // Wait for stars to stabilize before creating particles
         if ( ! this.ready ) {
-            if (this.time < 2.5) return;
+            if ( this.time < 2.5 ) return;
             this.ready = true;
             // Initialize all particles *after* stars are stable
             this.initParticles(donor, acc);
@@ -134,6 +134,7 @@ export default class ParticleSystem {
         p.omega = 1.5 + Math.random() * 0.8;
         p.radius = Math.hypot(d.x, d.y);
         p.color = {...acc.color};
+        p.color.a = 0.2;
         p.t = 0;
     }
     swirl(p, dt, acc) {
@@ -143,8 +144,8 @@ export default class ParticleSystem {
             acc.pos.x + Math.cos(p.theta) * p.radius,
             acc.pos.y + Math.sin(p.theta) * p.radius
         );
-        p.color.a -= 8 * dt; 
-        p.color = {...acc.color};
+        //p.color = {...acc.color};
+        p.color.a -= 0.01 * dt; 
     }
     draw(ctx) {
         const { visualScale } = this.cfg;
