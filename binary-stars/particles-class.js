@@ -7,17 +7,16 @@ export default class ParticleSystem {
         this.starB = starB;
         this.cfg = config;
 
-        // Create a reusable path function between the stars
-        this.bridge = null;//createBridgePath(starA, starB);
-        this.ready = false; // <-- NEW
+        this.bridge = null;
+        this.ready = false; 
         this.time = 0;
 
         // Number of active particles
-        this.count = 1500;
+        this.count = config.activeParticleCount;
         this.maxWidth = starA.radius * 0.9; // visually wide, but not huge
 
         // Pool of particles
-        this.particles = [];//Array.from({ length: this.count }, () => this.makeParticle());
+        this.particles = [];
     }
     makeParticle() {
         // Creates one particle at donor with randomized properties
@@ -25,64 +24,66 @@ export default class ParticleSystem {
             t: Math.random() - 0.08, // start near the donor
             speed: 0.8 + Math.random() * 0.2,
             size: 1 + Math.random() * 1.5,
-            alpha: 0.5 + Math.random() * 0.5,
             color: {...this.starA.color},
             pos: { x: 0, y: 0 },
-            u: Math.random() * 20 - 10,         // tiny perpendicular offset
+            u: Math.random() * 20 - 10,         // perpendicular offset
             state: "bridge",
-            //hue:this.starA.hue,
             wait:Math.random() * 13 + 4
         };
     }
-    resetParticle(p, donor, acc, maxWidth) {
+    setPosition(p) {
+        const donor = this.starA;
+        const acc = this.starB;
         // --- Compute base donor → accretor direction ---
-        const dx = acc.pos.x - donor.pos.x;
-        const dy = acc.pos.y - donor.pos.y;
-        const len = Math.hypot(dx, dy) || 1;
-        const dirX = dx / len;
-        const dirY = dy / len;
+        const d = Point(
+            acc.pos.x - donor.pos.x,
+            acc.pos.y - donor.pos.y
+        );
+        const len = Math.hypot(d.x, d.y) || 1;
+        const dir = Point(d.x / len, d.y / len);
 
         // --- Perpendicular for width jitter ---
-        const perpX = -dirY;
-        const perpY = dirX;
+        const perp = Point(-dir.y, dir.x);
 
         // --- Spawn just off donor surface, slightly inside ---
         const surfaceR = donor.radius * (0.95 + Math.random() * 0.1);
         const offsetAlong = surfaceR * 0.05; // tiny offset toward accretor
-        const width = maxWidth * 0.3;        // smaller scatter at start
+        const width = this.maxWidth * 0.3;        // smaller scatter at start
         const lateral = (Math.random() * 2 - 1) * width * 0.2;
 
-        p.pos = Point(donor.pos.x + dirX * offsetAlong + perpX * lateral,
-                    donor.pos.y + dirY * offsetAlong + perpY * lateral
-                );
-
-        // --- Initialize state ---
+        p.pos = Point(
+            donor.pos.x + dir.x * offsetAlong + perp.x * lateral,
+            donor.pos.y + dir.y * offsetAlong + perp.y * lateral
+        );
+    }
+    initializeState(p) {
         p.state = "bridge";
         p.t = Math.random() * 0.05; // near start of bridge
         p.u = (Math.random() * 2 - 1);
         p.color.a = 0.4 + Math.random() * 0.6;
         p.radius = 0;
         p.speed = 0.5 + Math.random() * 0.5;
-        //p.hue = this.starA.hue;
     }
-    initParticles(donor, acc, maxWidth) {
+    resetParticle(p) {
+        this.setPosition(p);
+        this.initializeState(p);
+    }
+    initParticles(donor, acc) {
         this.particles = Array.from({ length: this.count }, () => this.makeParticle());
         for ( const p of this.particles)
-            this.resetParticle(p, donor, acc, maxWidth);
+            this.resetParticle(p);
     }
     update(dt) {
         const donor = this.starA;
         const acc = this.starB;
         const bridge = createBridgePath(donor, acc);
-        const maxWidth = this.maxWidth;
-
         this.time += dt;
         // Wait for stars to stabilize before creating particles
         if ( ! this.ready ) {
             if (this.time < 2.5) return;
             this.ready = true;
             // Initialize all particles *after* stars are stable
-            this.initParticles(donor, acc, this.maxWidth);
+            this.initParticles(donor, acc);
             return;
         }
 
@@ -97,51 +98,52 @@ export default class ParticleSystem {
             if ( p.state === "bridge" ) {
                 p.t += p.speed * dt * 0.2;
 
-                if ( p.t >= 1 ) {
-                    // reached accretor north pole
-                    const pos = bridge(1);
-                    p.pos.x = pos.x;
-                    p.pos.y = pos.y;
-
-                    const d = Point(pos.x - acc.pos.x, pos.y - acc.pos.y);
-                    p.state = "swirl";
-                    p.theta = Math.atan2(d.y, d.x);
-                    p.omega = 1.5 + Math.random() * 0.8;
-                    p.radius = Math.hypot(d.x, d.y);
-                    p.alpha = 0.4;
-                    p.color = {...acc.color};
-                    p.t = 0;
+                if ( p.t >= 1 ) { // reached accretor north pole                    
+                    this.startSwirl(p, bridge(1), acc);
                     continue;
                 }
-
                 // normal bridge motion
-                const pos = bridge(p.t);
-                const d = Point(acc.pos.x - donor.pos.x, acc.pos.y - donor.pos.y);
-                const len = Math.hypot(d.x, d.y) || 1;
-                const perp = Point(-d.y / len, d.x / len);
-
-                // taper width toward accretor
-                const width = this.maxWidth * (1 - p.t);
-                const offset = width * p.u;
-
-                p.pos = Point(pos.x + perp.x * offset, pos.y + perp.y * offset);
+                this.rideTheBridge(p, bridge(p.t), donor, acc);
             }
-
             // --- SWIRLING AROUND ACCRETOR ---
             else if ( p.state === "swirl" ) {
-                p.theta += p.omega * dt;
-                p.radius *= (1 - 0.1 * dt);
-                p.pos = Point(acc.pos.x + Math.cos(p.theta) * p.radius,
-                            acc.pos.y + Math.sin(p.theta) * p.radius
-                        );
-                p.color.a -= 8 * dt; 
-                p.color = {...acc.color};
-
-                if (p.alpha <= 1) {
-                    this.resetParticle(p, donor, acc, maxWidth);
+                this.swirl(p, dt, acc);
+                if ( p.color.a <= 1 ) {
+                    this.resetParticle(p, donor, acc);
                 }
             }
         }
+    }
+    rideTheBridge(p, pos, donor, acc) {
+        const d = Point(acc.pos.x - donor.pos.x, acc.pos.y - donor.pos.y);
+        const len = Math.hypot(d.x, d.y) || 1;
+        const perp = Point(-d.y / len, d.x / len);
+        // taper width toward accretor
+        const width = this.maxWidth * (1 - p.t);
+        const offset = width * p.u;
+        
+        p.pos = Point(pos.x + perp.x * offset, pos.y + perp.y * offset);
+    }
+    startSwirl(p, pos, acc) {
+        p.pos.x = pos.x;
+        p.pos.y = pos.y;
+        const d = Point(pos.x - acc.pos.x, pos.y - acc.pos.y);
+        p.state = "swirl";
+        p.theta = Math.atan2(d.y, d.x);
+        p.omega = 1.5 + Math.random() * 0.8;
+        p.radius = Math.hypot(d.x, d.y);
+        p.color = {...acc.color};
+        p.t = 0;
+    }
+    swirl(p, dt, acc) {
+        p.theta += p.omega * dt;
+        p.radius *= (1 - 0.1 * dt);
+        p.pos = Point(
+            acc.pos.x + Math.cos(p.theta) * p.radius,
+            acc.pos.y + Math.sin(p.theta) * p.radius
+        );
+        p.color.a -= 8 * dt; 
+        p.color = {...acc.color};
     }
     draw(ctx) {
         const { visualScale } = this.cfg;

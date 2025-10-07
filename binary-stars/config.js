@@ -14,6 +14,7 @@ export const config = {
     softening: 1.0,      // gravitational softening in pixels (prevents singularity)
     visualScale: 4.0,     // world -> screen scale (pixels per world unit)
     eccentricity: 0.4,  // 0 = circle, 0.4 = noticeable ellipse, <1
+    activeParticleCount: 1500,
     get canvasW() { return getCanvas().width; },
     get canvasH() { return getCanvas().height; },
     DPR: window.devicePixelRatio || 1
