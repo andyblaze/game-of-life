@@ -11,9 +11,33 @@ export default class Star {
         this.mass = config.mass;
         this.pos = {x:0,y:0};
         this.vel = {x:0,y:0};
-        this.radius = config.radius;
+        this.radius = this.cfg.radius; 
         this.phase = Math.random() * Math.PI * 2;
         this.pulseRate = this.cfg.pulseRate;
+
+        // --- Transit spots ---
+        this.spots = [];
+        const numSpots = 3 + Math.floor(Math.random() * 3); // 3–5 spots
+        this.makeSpots(numSpots, this.radius, this.colorA);
+    }
+    makeSpots(numSpots, radius, color) {
+        //console.log(radius);
+        for (let i = 0; i < numSpots; i++) {
+            const spot = {
+                transitPhase: Math.random(),                          // starting phase along disk
+                spotYOffset: (Math.random() * 0.6 - 0.3) * radius,   // ±30% radius from equator
+                spotRadius: 0.5,// + Math.random(),                        // 1–2 px
+                colorOffset: {                                       // slightly darker/shifted
+                    h: color.h,
+                    s: Math.max(0, color.s - 40),
+                    l: Math.max(0, color.l - 40),
+                    a: 1
+                },
+                transitSpeed: 0.02 + Math.random() * 0.03,           // fraction/sec across disk
+                waitTime: Math.random() * 2                            // seconds before starting
+            }; //console.log(radius, spot.spotYOffset);
+            this.spots.push(spot);
+        }
     } 
     worldToScreen(p){
         return Point(
@@ -27,6 +51,23 @@ export default class Star {
         // oscillate f smoothly between 0 → 1 → 0
         const f = (Math.sin(this.phase) + 1) / 2;
         this.color = lerpColor(this.colorA, this.colorB, f);
+        // --- Update transit spots ---
+        for (const spot of this.spots) {
+            // Handle waiting time
+            if (spot.waitTime > 0) {
+                spot.waitTime -= dt;
+                continue; // spot hasn't started yet
+            }
+
+            // Advance transit phase
+            spot.transitPhase += spot.transitSpeed * dt;
+
+            // Loop phase: once past 1 (across disk), reset to 0 with new wait
+            if (spot.transitPhase > 1) {
+                spot.transitPhase = 0;
+                spot.waitTime = Math.random() * 2; // staggered restart
+            }
+        }
     }
     draw(ctx) {
         const screen = this.worldToScreen(this.pos);
@@ -37,17 +78,22 @@ export default class Star {
         ctx.arc(screen.x, screen.y, r * 0.8, 0, Math.PI * 2);
         ctx.fill();
 
-    // --- small black blob for rotation ---
-    const spotRadius = r * 0.15;         // small spot
-    const spotAngle = this.phase;        // we can reuse phase for now
-    const spotDist = r * 0.5;            // distance from center
-    const bx = screen.x + Math.cos(spotAngle) * spotDist;
-    const by = screen.y + Math.sin(spotAngle) * spotDist;
 
-    ctx.fillStyle = "rgba(0,0,0,0.1)";
-    ctx.beginPath();
-    ctx.arc(bx, by, spotRadius, 0, Math.PI * 2);
-    ctx.fill();
+        // --- Draw transit spots ---
+        for (const spot of this.spots) {
+            if (spot.waitTime > 0) continue; // not yet visible
+
+            const x = screen.x - r + 2 * r * spot.transitPhase;
+            const y = screen.y + spot.spotYOffset * this.cfg.scale; 
+
+            // Spot color slightly darker than star
+            const color = lerpColor(this.color, spot.colorOffset, 0.2);
+
+            ctx.fillStyle = hslaStr(color);
+            ctx.beginPath();
+            ctx.arc(x, y, spot.spotRadius * this.cfg.scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
     setPosition(x, y) {
         this.pos = Point(x, y);
