@@ -156,13 +156,19 @@ function hslToRgb(h, s, l){
   
 class DreamFlow {
     constructor() {
+        this.size = 0;                // number of cells
+        this.simA = null;
+        this.simB = null;  // Float32Arrays length size*3 (rgb)
+        this.neighbors3 = null;       // Int32Array length size*9 (neighborIndex*3)
+        this.hue = null;              // per-cell hue bias
+        this.imageData = null;
         this.alloc();
         this.seedRandom(1.0);
     }
     precomputeNeighbors() {
         // neighbors order: (xm1,ym1),(x,ym1),(xp1,ym1),(xm1,y),(x,y),(xp1,y),(xm1,yp1),(x,yp1),(xp1,yp1)
         const nPerCell = 9;
-        neighbors3 = new Int32Array(size * nPerCell);
+        neighbors3 = new Int32Array(this.size * nPerCell);
         for ( let y = 0; y < H; y++ ) {
             const ym1 = (y>0) ? y-1 : 0;
             const yp1 = (y < H-1) ? y+1 : H-1;
@@ -186,11 +192,11 @@ class DreamFlow {
     }
     // Allocate arrays for current grid size
     alloc() {
-        size = W * H;
-        simA = new Float32Array(size * 3);
-        simB = new Float32Array(size * 3);
-        hue = new Float32Array(size);
-        for ( let i=0;i<size;i++ ) 
+        this.size = W * H;
+        this.simA = new Float32Array(this.size * 3);
+        this.simB = new Float32Array(this.size * 3);
+        hue = new Float32Array(this.size);
+        for ( let i = 0; i < this.size; i++ ) 
             hue[i] = Math.random();
         this.precomputeNeighbors();
         off.width = W;
@@ -198,10 +204,10 @@ class DreamFlow {
         imageData = offCtx.createImageData(W, H);
     }
     seedRandom(str=1.0){
-        for ( let i=0, n=size*3; i<n; i+=3 ) {
-            simA[i  ] = (Math.random()-0.5) * str;
-            simA[i+1] = (Math.random()-0.5) * str;
-            simA[i+2] = (Math.random()-0.5) * str;
+        for ( let i = 0, n = this.size * 3; i < n; i+=3 ) {
+            this.simA[i  ] = (Math.random()-0.5) * str;
+            this.simA[i+1] = (Math.random()-0.5) * str;
+            this.simA[i+2] = (Math.random()-0.5) * str;
         }
     }
     nearestSampleBase(x, y) {
@@ -210,10 +216,14 @@ class DreamFlow {
         const iy = (y < 0) ? 0 : (y >= H ? H-1 : (y|0));
         return (iy * W + ix) * 3;
     }
+    clearAll() {
+        this.simA.fill(0);
+        this.simB.fill(0);
+    }
     // One simulation step (hot loop optimized)
     step() {
         const inv9 = 1/9;
-        const A = simA, B = simB, N3 = neighbors3;
+        const A = this.simA, B = this.simB, N3 = neighbors3;
         const nPerCell = 9;
 
         // local copies of params for JIT friendliness
@@ -223,7 +233,7 @@ class DreamFlow {
 
         // iterate every cell by index i (cell index)
         // we will compute neighbor base offsets using neighbors3
-        for ( let cell = 0, nBase = 0; cell < size; cell++, nBase += nPerCell ) {
+        for ( let cell = 0, nBase = 0; cell < this.size; cell++, nBase += nPerCell ) {
             // neighbor base addresses (already multiplied by 3)
             // note: N3[nBase + k] is the starting index in A for that neighbor's R component
             const nb0 = N3[nBase + 0], nb1 = N3[nBase + 1], nb2 = N3[nBase + 2],
@@ -284,11 +294,11 @@ class DreamFlow {
             B[baseOut+2] = newB < -1 ? -1 : (newB > 1.6 ? 1.6 : newB);
         }
         // swap
-        const tmp = simA; simA = simB; simB = tmp;
+        const tmp = this.simA; this.simA = this.simB; this.simB = tmp;
     }
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
     renderToOff() {
-        const A = simA;
+        const A = this.simA;
         const data = imageData.data;
 
         // first frame: allocate and zero
@@ -300,7 +310,7 @@ class DreamFlow {
         const boost = 230;
         const fade = fadeStrength;
 
-        for ( let cell = 0, p = 0; cell < size; cell++, p += 4 ) {
+        for ( let cell = 0, p = 0; cell < this.size; cell++, p += 4 ) {
             const base = cell * 3;
             let r = A[base]   * 0.8 + 0.03;
             let g = A[base+1] * 0.8 + 0.02;
@@ -335,6 +345,10 @@ class DreamFlow {
             data[p+3] = 255;
         }
         offCtx.putImageData(imageData, 0, 0);
+    }
+    drawToScreen(ctx) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
     }
     // Random excitation accumulator
     maybeExcite(dt) {
@@ -380,9 +394,9 @@ class DreamFlow {
                     const l = 0.5; // lightness
                     const rgb = hslToRgb(h, s, l);
 
-                    simA[i]   += rgb[0] * strength * f;
-                    simA[i+1] += rgb[1] * strength * f;
-                    simA[i+2] += rgb[2] * strength * f;
+                    this.simA[i]   += rgb[0] * strength * f;
+                    this.simA[i+1] += rgb[1] * strength * f;
+                    this.simA[i+2] += rgb[2] * strength * f;
                 }
             }
         }
@@ -642,8 +656,8 @@ function renderToOff() {
   }
 
   function clearAll(){
-    simA.fill(0);
-    simB.fill(0);
+    this.simA.fill(0);
+    this.simB.fill(0);
   }
 const dreamFlow = new DreamFlow();
 
@@ -748,7 +762,7 @@ function autoPaint() {
 
 
     dreamFlow.renderToOff();
-    drawToScreen();
+    dreamFlow.drawToScreen(ctx);
 
     // fps tracking
     frameCount++;
