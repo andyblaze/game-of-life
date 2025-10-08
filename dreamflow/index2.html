@@ -108,13 +108,9 @@ const config = {
   const offCtx = off.getContext('2d');
 
   // runtime
-  let running = true;
   let lastFrame = performance.now();
   let fpsTime = performance.now();
   let frameCount = 0;
-  let accumExc = 0;
-// persistence buffer
-let accumImage = null;
 
 
 let fadeStrength = 0.90; // how much of new frame blends in (0.7=long trails, 0.95=fast fade)
@@ -169,6 +165,7 @@ class DreamFlow {
         this.accumExc = 0;
         // persistence buffer
         this.accumImage = null;
+        this.running = true;
         this.alloc();
         this.seedRandom(1.0);
     }
@@ -515,7 +512,7 @@ function autoPaint() {
 
   // top-level loop
   function loop(now) {
-    if ( ! running ) return;
+    if ( ! dreamFlow.running ) return;
     const dt = Math.max(1, now - lastFrame);
     lastFrame = now;
     dreamFlow.update(dt, offCtx, ctx);
