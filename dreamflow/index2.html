@@ -422,6 +422,27 @@ class DreamFlow {
     }    
 }
 
+class ExcitationStrategy {
+    update(dt, dreamflow) {} // called every frame
+}
+
+class RandomExcite extends ExcitationStrategy {
+    constructor(rate) { 
+        super(); 
+        this.rate = rate; 
+        this.accum = 0; 
+    }
+    update(dt, df) {
+        this.accum += this.rate * dt * 0.001;
+        while (this.accum >= 1) {
+            this.accum -= 1;
+            const x = Math.random() * df.W;
+            const y = Math.random() * df.H;
+            df.exciteAt(x, y, Math.random() * 10 + 4, Math.random() * 1.1 + 0.4);
+        }
+    }
+}
+
 const dreamFlow = new DreamFlow();
 
 function makeSpiralPath(cx, cy, radius, turns, points) {
