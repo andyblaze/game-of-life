@@ -155,7 +155,44 @@ function hslToRgb(h, s, l){
   }
   
 class DreamFlow {
-
+    precomputeNeighbors() {
+        // neighbors order: (xm1,ym1),(x,ym1),(xp1,ym1),(xm1,y),(x,y),(xp1,y),(xm1,yp1),(x,yp1),(xp1,yp1)
+        const nPerCell = 9;
+        neighbors3 = new Int32Array(size * nPerCell);
+        for ( let y = 0; y < H; y++ ) {
+            const ym1 = (y>0) ? y-1 : 0;
+            const yp1 = (y < H-1) ? y+1 : H-1;
+            for ( let x = 0; x < W; x++ ) {
+                const xm1 = (x>0) ? x-1 : 0;
+                const xp1 = (x < W-1) ? x+1 : W-1;
+                const baseCell = y * W + x;
+                const cellIndex = baseCell * nPerCell;
+                // fill nine neighbors' base*3
+                neighbors3[cellIndex + 0] = (ym1 * W + xm1) * 3;
+                neighbors3[cellIndex + 1] = (ym1 * W + x  ) * 3;
+                neighbors3[cellIndex + 2] = (ym1 * W + xp1) * 3;
+                neighbors3[cellIndex + 3] = (y   * W + xm1) * 3;
+                neighbors3[cellIndex + 4] = (y   * W + x  ) * 3; // center
+                neighbors3[cellIndex + 5] = (y   * W + xp1) * 3;
+                neighbors3[cellIndex + 6] = (yp1 * W + xm1) * 3;
+                neighbors3[cellIndex + 7] = (yp1 * W + x  ) * 3;
+                neighbors3[cellIndex + 8] = (yp1 * W + xp1) * 3;
+            }
+        }
+    }
+    // Allocate arrays for current grid size
+    alloc() {
+        size = W * H;
+        simA = new Float32Array(size * 3);
+        simB = new Float32Array(size * 3);
+        hue = new Float32Array(size);
+        for ( let i=0;i<size;i++ ) 
+            hue[i] = Math.random();
+        this.precomputeNeighbors();
+        off.width = W;
+        off.height = H;
+        imageData = offCtx.createImageData(W, H);
+    }
 }
 
   // Precompute neighbor indices * 3 (so we can fetch rgb quickly)
