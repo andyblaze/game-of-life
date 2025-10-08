@@ -155,7 +155,7 @@ function hslToRgb(h, s, l){
   }
   
 class DreamFlow {
-    static precomputeNeighbors() {
+    precomputeNeighbors() {
         // neighbors order: (xm1,ym1),(x,ym1),(xp1,ym1),(xm1,y),(x,y),(xp1,y),(xm1,yp1),(x,yp1),(xp1,yp1)
         const nPerCell = 9;
         neighbors3 = new Int32Array(size * nPerCell);
@@ -181,7 +181,7 @@ class DreamFlow {
         }
     }
     // Allocate arrays for current grid size
-    static alloc() {
+    alloc() {
         size = W * H;
         simA = new Float32Array(size * 3);
         simB = new Float32Array(size * 3);
@@ -193,8 +193,14 @@ class DreamFlow {
         off.height = H;
         imageData = offCtx.createImageData(W, H);
     }
+    nearestSampleBase(x, y) {
+        // clamp to grid
+        const ix = (x < 0) ? 0 : (x >= W ? W-1 : (x|0));
+        const iy = (y < 0) ? 0 : (y >= H ? H-1 : (y|0));
+        return (iy * W + ix) * 3;
+    }
     // One simulation step (hot loop optimized)
-    static step() {
+    step() {
         const inv9 = 1/9;
         const A = simA, B = simB, N3 = neighbors3;
         const nPerCell = 9;
@@ -243,7 +249,7 @@ class DreamFlow {
             // compute current cell coords:
             const cy = (cell / W) | 0;
             const cx = cell - cy * W;
-            const srcBase = nearestSampleBase(cx - vx, cy - vy);
+            const srcBase = this.nearestSampleBase(cx - vx, cy - vy);
 
             // read advected color (nearest)
             const advR = A[srcBase];
@@ -270,7 +276,7 @@ class DreamFlow {
         const tmp = simA; simA = simB; simB = tmp;
     }
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
-    static renderToOff() {
+    renderToOff() {
         const A = simA;
         const data = imageData.data;
 
@@ -320,7 +326,7 @@ class DreamFlow {
         offCtx.putImageData(imageData, 0, 0);
     }
     // Random excitation accumulator
-    static maybeExcite(dt) {
+    maybeExcite(dt) {
         const pulses = excitationRate * dt * 0.001;
         accumExc += pulses;
         while ( accumExc >= 1 ) {
@@ -329,7 +335,45 @@ class DreamFlow {
             const y = Math.random() * H;
             const rad = Math.random() * 10 + 4;
             const strength = Math.random() * 1.1 + 0.4;
-            exciteAt(x,y,rad,strength);
+            this.exciteAt(x, y, rad, strength);
+        }
+    }
+    // Inject a soft pulse into simA at float grid coords
+    exciteAt(gridX, gridY, radius, strength = 1) {
+        const r2 = radius * radius;
+        const x0 = Math.max(0, Math.floor(gridX - radius));
+        const x1 = Math.min(W - 1, Math.floor(gridX + radius));
+        const y0 = Math.max(0, Math.floor(gridY - radius));
+        const y1 = Math.min(H - 1, Math.floor(gridY + radius));
+
+        // pick a base hue for this pulse (warmish range, 0 = red, 0.08~0.12 = whites/oranges)
+        let baseHue = Math.random() * 0.15 + 0.05; 
+
+        for ( let y = y0; y <= y1; y++ ) {
+            for ( let x = x0; x <= x1; x++ ) {
+                const dx = x - gridX, dy = y - gridY;
+                const d2 = dx*dx + dy*dy;
+                if ( d2 <= r2 ) {
+                    const f = 1 - Math.sqrt(d2) / radius;
+                    const i = (y * W + x) * 3;
+
+                    // small per-cell hue variation
+                    let h = (baseHue + (Math.random()-0.5)*0.05) % 1;
+
+                    // optional: slowly drift hue based on time or global frame
+                    h += performance.now() * 0.0002; // tiny drift
+                    h %= 1;
+
+                    // HSL to RGB
+                    const s = 0.8; // saturation
+                    const l = 0.5; // lightness
+                    const rgb = hslToRgb(h, s, l);
+
+                    simA[i]   += rgb[0] * strength * f;
+                    simA[i+1] += rgb[1] * strength * f;
+                    simA[i+2] += rgb[2] * strength * f;
+                }
+            }
         }
     }    
 }
@@ -590,6 +634,8 @@ function renderToOff() {
     simA.fill(0);
     simB.fill(0);
   }
+const dreamFlow = new DreamFlow();
+
 function makeSpiralPath(cx, cy, radius, turns, points) {
   const path = [];
   for (let i=0; i<points; i++) {
@@ -620,7 +666,7 @@ function simulatePath(path) {
     const [x,y] = path[i];
     const radius = Math.random() * 6 + 4;
     const strength = Math.random() * 1.2 + 0.3;
-    exciteAt(x, y, radius, strength);
+    dreamFlow.exciteAt(x, y, radius, strength);
   }
 }
 let t1 = 0;
@@ -684,13 +730,13 @@ function autoPaint() {
 
     // perform 1..2 simulation substeps for stability
     const steps = (W*H > 200000) ? 2 : 1;
-    for (let s=0; s<steps; s++) DreamFlow.step();
+    for (let s=0; s<steps; s++) dreamFlow.step();
 
-    DreamFlow.maybeExcite(dt); 
+    dreamFlow.maybeExcite(dt); 
     autoPaint(); // makes the trails appear automatically
 
 
-    DreamFlow.renderToOff();
+    dreamFlow.renderToOff();
     drawToScreen();
 
     // fps tracking
@@ -709,7 +755,7 @@ function autoPaint() {
   // init
   function init(){
     resizeCanvas();
-    DreamFlow.alloc();
+    dreamFlow.alloc();
     seedRandom(1.0);
     diffVal.textContent = diffusion.toFixed(3);
     advVal.textContent = advection.toFixed(3);
