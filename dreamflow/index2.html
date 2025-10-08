@@ -154,7 +154,8 @@ function hslToRgb(h, s, l){
   }
   
 class DreamFlow {
-    constructor() {
+    constructor(es=null) {
+        this.excitationStrategy = es;
         // Buffers & precomputed indices
         this.size = 0;                // number of cells
         this.simA = null;
@@ -230,7 +231,8 @@ class DreamFlow {
         // perform 1..2 simulation substeps for stability
         const steps = (config.W * config.H > 200000) ? 2 : 1;
         for ( let s = 0; s < steps; s++ ) 
-            this.step();   
+            this.step(); 
+        //if (this.exciteStrategy) this.exciteStrategy.update(dt, this);
         this.maybeExcite(dt);
         this.draw(offscreen, onscreen);
     }
@@ -427,10 +429,8 @@ class ExcitationStrategy {
 }
 
 class RandomExcite extends ExcitationStrategy {
-    constructor(rate) { 
+    constructor() { 
         super(); 
-        this.rate = rate; 
-        this.accum = 0; 
     }
     update(dt, df) {
         this.accum += this.rate * dt * 0.001;
@@ -443,7 +443,7 @@ class RandomExcite extends ExcitationStrategy {
     }
 }
 
-const dreamFlow = new DreamFlow();
+const dreamFlow = new DreamFlow(new RandomExcite());
 
 function makeSpiralPath(cx, cy, radius, turns, points) {
   const path = [];
