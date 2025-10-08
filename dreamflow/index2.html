@@ -96,11 +96,11 @@ document.getElementById("ui").appendChild(fadeRange);
   let excitationRate = parseFloat(excRange.value);
 
   // Buffers & precomputed indices
-  let size = 0;                // number of cells
+  /*let size = 0;                // number of cells
   let simA = null, simB = null;// Float32Array length size*3 (rgb)
   let neighbors3 = null;       // Int32Array length size*9 (neighborIndex*3)
   let hue = null;              // per-cell hue bias
-  let imageData = null;        // ImageData for low-res drawing
+  let imageData = null;        // ImageData for low-res drawing*/
   const off = document.createElement('canvas');
   const offCtx = off.getContext('2d');
 
@@ -168,7 +168,7 @@ class DreamFlow {
     precomputeNeighbors() {
         // neighbors order: (xm1,ym1),(x,ym1),(xp1,ym1),(xm1,y),(x,y),(xp1,y),(xm1,yp1),(x,yp1),(xp1,yp1)
         const nPerCell = 9;
-        neighbors3 = new Int32Array(this.size * nPerCell);
+        this.neighbors3 = new Int32Array(this.size * nPerCell);
         for ( let y = 0; y < H; y++ ) {
             const ym1 = (y>0) ? y-1 : 0;
             const yp1 = (y < H-1) ? y+1 : H-1;
@@ -178,15 +178,15 @@ class DreamFlow {
                 const baseCell = y * W + x;
                 const cellIndex = baseCell * nPerCell;
                 // fill nine neighbors' base*3
-                neighbors3[cellIndex + 0] = (ym1 * W + xm1) * 3;
-                neighbors3[cellIndex + 1] = (ym1 * W + x  ) * 3;
-                neighbors3[cellIndex + 2] = (ym1 * W + xp1) * 3;
-                neighbors3[cellIndex + 3] = (y   * W + xm1) * 3;
-                neighbors3[cellIndex + 4] = (y   * W + x  ) * 3; // center
-                neighbors3[cellIndex + 5] = (y   * W + xp1) * 3;
-                neighbors3[cellIndex + 6] = (yp1 * W + xm1) * 3;
-                neighbors3[cellIndex + 7] = (yp1 * W + x  ) * 3;
-                neighbors3[cellIndex + 8] = (yp1 * W + xp1) * 3;
+                this.neighbors3[cellIndex + 0] = (ym1 * W + xm1) * 3;
+                this.neighbors3[cellIndex + 1] = (ym1 * W + x  ) * 3;
+                this.neighbors3[cellIndex + 2] = (ym1 * W + xp1) * 3;
+                this.neighbors3[cellIndex + 3] = (y   * W + xm1) * 3;
+                this.neighbors3[cellIndex + 4] = (y   * W + x  ) * 3; // center
+                this.neighbors3[cellIndex + 5] = (y   * W + xp1) * 3;
+                this.neighbors3[cellIndex + 6] = (yp1 * W + xm1) * 3;
+                this.neighbors3[cellIndex + 7] = (yp1 * W + x  ) * 3;
+                this.neighbors3[cellIndex + 8] = (yp1 * W + xp1) * 3;
             }
         }
     }
@@ -195,13 +195,13 @@ class DreamFlow {
         this.size = W * H;
         this.simA = new Float32Array(this.size * 3);
         this.simB = new Float32Array(this.size * 3);
-        hue = new Float32Array(this.size);
+        this.hue = new Float32Array(this.size);
         for ( let i = 0; i < this.size; i++ ) 
-            hue[i] = Math.random();
+            this.hue[i] = Math.random();
         this.precomputeNeighbors();
         off.width = W;
         off.height = H;
-        imageData = offCtx.createImageData(W, H);
+        this.imageData = offCtx.createImageData(W, H);
     }
     seedRandom(str=1.0){
         for ( let i = 0, n = this.size * 3; i < n; i+=3 ) {
@@ -231,7 +231,7 @@ class DreamFlow {
     // One simulation step (hot loop optimized)
     step() {
         const inv9 = 1/9;
-        const A = this.simA, B = this.simB, N3 = neighbors3;
+        const A = this.simA, B = this.simB, N3 = this.neighbors3;
         const nPerCell = 9;
 
         // local copies of params for JIT friendliness
@@ -311,7 +311,7 @@ class DreamFlow {
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
     renderToOff() {
         const A = this.simA;
-        const data = imageData.data;
+        const data = this.imageData.data;
 
         // first frame: allocate and zero
         if ( ! accumImage || accumImage.length !== data.length ) {
@@ -356,7 +356,7 @@ class DreamFlow {
             data[p+2] = (newB * boost) | 0;
             data[p+3] = 255;
         }
-        offCtx.putImageData(imageData, 0, 0);
+        offCtx.putImageData(this.imageData, 0, 0);
     }
     drawToScreen(ctx) {
         ctx.imageSmoothingEnabled = true;
@@ -504,18 +504,12 @@ function autoPaint() {
   canvas.addEventListener('touchend', e => { painting = false; }, {passive:false});
 
   // top-level loop
-  function loop(now){
-    if (!running) return;
+  function loop(now) {
+    if ( ! running ) return;
     const dt = Math.max(1, now - lastFrame);
     lastFrame = now;
-
     dreamFlow.update(dt, offCtx, ctx);
-
-    //dreamFlow.maybeExcite(dt); 
     autoPaint(); // makes the trails appear automatically
-
-    //dreamFlow.draw(offCtx, ctx);
-
     // fps tracking
     frameCount++;
     const tNow = performance.now();
@@ -525,7 +519,6 @@ function autoPaint() {
       fpsTime = tNow;
       frameCount = 0;
     }
-
     requestAnimationFrame(loop);
   }
 
