@@ -155,7 +155,7 @@ function hslToRgb(h, s, l){
   }
   
 class DreamFlow {
-    precomputeNeighbors() {
+    static precomputeNeighbors() {
         // neighbors order: (xm1,ym1),(x,ym1),(xp1,ym1),(xm1,y),(x,y),(xp1,y),(xm1,yp1),(x,yp1),(xp1,yp1)
         const nPerCell = 9;
         neighbors3 = new Int32Array(size * nPerCell);
@@ -181,7 +181,7 @@ class DreamFlow {
         }
     }
     // Allocate arrays for current grid size
-    alloc() {
+    static alloc() {
         size = W * H;
         simA = new Float32Array(size * 3);
         simB = new Float32Array(size * 3);
@@ -193,6 +193,82 @@ class DreamFlow {
         off.height = H;
         imageData = offCtx.createImageData(W, H);
     }
+    // One simulation step (hot loop optimized)
+    static step(){
+    const inv9 = 1/9;
+    const A = simA, B = simB, N3 = neighbors3;
+    const nPerCell = 9;
+
+    // local copies of params for JIT friendliness
+    const diff = diffusion;
+    const adv = advection;
+    const damp = damping;
+
+    // iterate every cell by index i (cell index)
+    // we will compute neighbor base offsets using neighbors3
+    for ( let cell = 0, nBase = 0; cell < size; cell++, nBase += nPerCell ) {
+        // neighbor base addresses (already multiplied by 3)
+        // note: N3[nBase + k] is the starting index in A for that neighbor's R component
+        const nb0 = N3[nBase + 0], nb1 = N3[nBase + 1], nb2 = N3[nBase + 2],
+        nb3 = N3[nBase + 3], nb4 = N3[nBase + 4], nb5 = N3[nBase + 5],
+        nb6 = N3[nBase + 6], nb7 = N3[nBase + 7], nb8 = N3[nBase + 8];
+
+        // sum R channel across 9 neighbors
+        // reading sequentially from A, which is Float32Array
+        const rSum = A[nb0] + A[nb1] + A[nb2] + A[nb3] + A[nb4] + A[nb5] + A[nb6] + A[nb7] + A[nb8];
+        const gSum = A[nb0+1] + A[nb1+1] + A[nb2+1] + A[nb3+1] + A[nb4+1] + A[nb5+1] + A[nb6+1] + A[nb7+1] + A[nb8+1];
+        const bSum = A[nb0+2] + A[nb1+2] + A[nb2+2] + A[nb3+2] + A[nb4+2] + A[nb5+2] + A[nb6+2] + A[nb7+2] + A[nb8+2];
+
+        // average
+        const avgR = rSum * inv9;
+        const avgG = gSum * inv9;
+        const avgB = bSum * inv9;
+
+        // compute luminance gradient using left/right/up/down neighbors (nearest)
+        // left neighbor base = nb3, right = nb5, up = nb1, down = nb7
+        const lumC = (A[nb4] + A[nb4+1] + A[nb4+2]) / 3;
+        const lumL = (A[nb3] + A[nb3+1] + A[nb3+2]) / 3;
+        const lumR = (A[nb5] + A[nb5+1] + A[nb5+2]) / 3;
+        const lumU = (A[nb1] + A[nb1+1] + A[nb1+2]) / 3;
+        const lumD = (A[nb7] + A[nb7+1] + A[nb7+2]) / 3;
+
+        const gx = (lumR - lumL) * 0.5;
+        const gy = (lumD - lumU) * 0.5;
+
+        // velocity perpendicular to gradient -> swirl
+        const vx =  gy * adv;
+        const vy = -gx * adv;
+
+        // backtrace (nearest sampling): compute approximate source cell (float coords)
+        // compute current cell coords:
+        const cy = (cell / W) | 0;
+        const cx = cell - cy * W;
+        const srcBase = nearestSampleBase(cx - vx, cy - vy);
+
+        // read advected color (nearest)
+        const advR = A[srcBase];
+        const advG = A[srcBase + 1];
+        const advB = A[srcBase + 2];
+
+        // combine advected + diffusion average
+        let newR = advR * (1 - diff) + avgR * diff;
+        let newG = advG * (1 - diff) + avgG * diff;
+        let newB = advB * (1 - diff) + avgB * diff;
+
+        // apply damping
+        newR *= (1 - damp);
+        newG *= (1 - damp);
+        newB *= (1 - damp);
+
+        // clamp to safe range
+        const baseOut = cell * 3;
+        B[baseOut]   = newR < -1 ? -1 : (newR > 1.6 ? 1.6 : newR);
+        B[baseOut+1] = newG < -1 ? -1 : (newG > 1.6 ? 1.6 : newG);
+        B[baseOut+2] = newB < -1 ? -1 : (newB > 1.6 ? 1.6 : newB);
+    }
+    // swap
+    const tmp = simA; simA = simB; simB = tmp;
+    }    
 }
 
   // Precompute neighbor indices * 3 (so we can fetch rgb quickly)
@@ -545,7 +621,7 @@ function autoPaint() {
 
     // perform 1..2 simulation substeps for stability
     const steps = (W*H > 200000) ? 2 : 1;
-    for (let s=0; s<steps; s++) step();
+    for (let s=0; s<steps; s++) DreamFlow.step();
 
     maybeExcite(dt); 
     autoPaint(); // makes the trails appear automatically
@@ -570,7 +646,7 @@ function autoPaint() {
   // init
   function init(){
     resizeCanvas();
-    alloc();
+    DreamFlow.alloc();
     seedRandom(1.0);
     diffVal.textContent = diffusion.toFixed(3);
     advVal.textContent = advection.toFixed(3);
