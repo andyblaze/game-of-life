@@ -490,10 +490,10 @@ function autoPaint() {
     resizeCanvas();
   });
 
-  diffRange.addEventListener('input', ()=> { diffusion = parseFloat(diffRange.value)/100; diffVal.textContent = diffusion.toFixed(3); });
-  advRange.addEventListener('input', ()=> { advection = parseFloat(advRange.value)/100; advVal.textContent = advection.toFixed(3); });
-  dampRange.addEventListener('input', ()=> { damping = parseFloat(dampRange.value)/1000; dampVal.textContent = damping.toFixed(4); });
-  excRange.addEventListener('input', ()=> { excitationRate = parseFloat(excRange.value); excVal.textContent = excitationRate.toFixed(1); });
+  diffRange.addEventListener('input', ()=> { config.diffusion = parseFloat(diffRange.value)/100; diffVal.textContent = config.diffusion.toFixed(3); });
+  advRange.addEventListener('input', ()=> { config.advection = parseFloat(advRange.value)/100; advVal.textContent = config.advection.toFixed(3); });
+  dampRange.addEventListener('input', ()=> { config.damping = parseFloat(dampRange.value)/1000; dampVal.textContent = config.damping.toFixed(4); });
+  excRange.addEventListener('input', ()=> { config.excitationRate = parseFloat(excRange.value); excVal.textContent = config.excitationRate.toFixed(1); });
 
   // pointer painting
   let painting = false;
@@ -503,9 +503,9 @@ function autoPaint() {
     const gy = (clientY - r.top)  / r.height * config.H;
     return [gx, gy];
   }
-  canvas.addEventListener('mousedown', e => { painting = true; const [gx,gy] = pointerToGrid(e.clientX, e.clientY); exciteAt(gx, gy, Math.max(config.W/32,6), 1.5); });
+  canvas.addEventListener('mousedown', e => { painting = true; const [gx,gy] = pointerToGrid(e.clientX, e.clientY); dreamFlow.exciteAt(gx, gy, Math.max(config.W/32,6), 1.5); });
   window.addEventListener('mouseup', ()=> painting = false);
-  window.addEventListener('mousemove', e => { if(!painting) return; const [gx,gy] = pointerToGrid(e.clientX, e.clientY); exciteAt(gx, gy, Math.max(config.W/48,4), 0.9); });
+  window.addEventListener('mousemove', e => { if(!painting) return; const [gx,gy] = pointerToGrid(e.clientX, e.clientY); dreamFlow.exciteAt(gx, gy, Math.max(config.W/48,4), 0.9); });
   canvas.addEventListener('touchstart', e => { e.preventDefault(); painting = true; const t = e.touches[0]; const [gx,gy] = pointerToGrid(t.clientX, t.clientY); exciteAt(gx, gy, Math.max(W/32,6), 1.8); }, {passive:false});
   canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!painting) return; const t = e.touches[0]; const [gx,gy] = pointerToGrid(t.clientX, t.clientY); exciteAt(gx, gy, Math.max(W/48,4), 1.0); }, {passive:false});
   canvas.addEventListener('touchend', e => { painting = false; }, {passive:false});
@@ -542,7 +542,19 @@ function autoPaint() {
   init();
 
   // expose for tinkering
-  //window.Dreamflow = { dreamFlow.exciteAt, dreamFlow.seedRandom, dreamFlow.clearAll, getParams:()=>({W,H,diffusion,advection,damping,excitationRate}) };
+window.Dreamflow = {
+  exciteAt: dreamFlow.exciteAt.bind(dreamFlow),
+  seedRandom: dreamFlow.seedRandom.bind(dreamFlow),
+  clearAll: dreamFlow.clearAll.bind(dreamFlow),
+  getParams: () => ({
+    W,
+    H,
+    diffusion,
+    advection,
+    damping,
+    excitationRate
+  })
+};
 
 })();
 </script>
