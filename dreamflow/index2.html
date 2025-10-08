@@ -220,6 +220,14 @@ class DreamFlow {
         this.simA.fill(0);
         this.simB.fill(0);
     }
+    update(dt, offscreen, onscreen) {
+        // perform 1..2 simulation substeps for stability
+        const steps = (W * H > 200000) ? 2 : 1;
+        for ( let s = 0; s < steps; s++ ) 
+            this.step();   
+        this.maybeExcite(dt);
+        this.draw(offscreen, onscreen);
+    }
     // One simulation step (hot loop optimized)
     step() {
         const inv9 = 1/9;
@@ -295,6 +303,10 @@ class DreamFlow {
         }
         // swap
         const tmp = this.simA; this.simA = this.simB; this.simB = tmp;
+    }
+    draw(offscreen, onscreen) {
+        dreamFlow.renderToOff(offscreen);
+        dreamFlow.drawToScreen(onscreen);
     }
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
     renderToOff() {
@@ -497,16 +509,12 @@ function autoPaint() {
     const dt = Math.max(1, now - lastFrame);
     lastFrame = now;
 
-    // perform 1..2 simulation substeps for stability
-    const steps = (W*H > 200000) ? 2 : 1;
-    for (let s=0; s<steps; s++) dreamFlow.step();
+    dreamFlow.update(dt, offCtx, ctx);
 
-    dreamFlow.maybeExcite(dt); 
+    //dreamFlow.maybeExcite(dt); 
     autoPaint(); // makes the trails appear automatically
 
-
-    dreamFlow.renderToOff();
-    dreamFlow.drawToScreen(ctx);
+    //dreamFlow.draw(offCtx, ctx);
 
     // fps tracking
     frameCount++;
