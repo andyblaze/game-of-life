@@ -194,80 +194,143 @@ class DreamFlow {
         imageData = offCtx.createImageData(W, H);
     }
     // One simulation step (hot loop optimized)
-    static step(){
-    const inv9 = 1/9;
-    const A = simA, B = simB, N3 = neighbors3;
-    const nPerCell = 9;
+    static step() {
+        const inv9 = 1/9;
+        const A = simA, B = simB, N3 = neighbors3;
+        const nPerCell = 9;
 
-    // local copies of params for JIT friendliness
-    const diff = diffusion;
-    const adv = advection;
-    const damp = damping;
+        // local copies of params for JIT friendliness
+        const diff = diffusion;
+        const adv = advection;
+        const damp = damping;
 
-    // iterate every cell by index i (cell index)
-    // we will compute neighbor base offsets using neighbors3
-    for ( let cell = 0, nBase = 0; cell < size; cell++, nBase += nPerCell ) {
-        // neighbor base addresses (already multiplied by 3)
-        // note: N3[nBase + k] is the starting index in A for that neighbor's R component
-        const nb0 = N3[nBase + 0], nb1 = N3[nBase + 1], nb2 = N3[nBase + 2],
-        nb3 = N3[nBase + 3], nb4 = N3[nBase + 4], nb5 = N3[nBase + 5],
-        nb6 = N3[nBase + 6], nb7 = N3[nBase + 7], nb8 = N3[nBase + 8];
+        // iterate every cell by index i (cell index)
+        // we will compute neighbor base offsets using neighbors3
+        for ( let cell = 0, nBase = 0; cell < size; cell++, nBase += nPerCell ) {
+            // neighbor base addresses (already multiplied by 3)
+            // note: N3[nBase + k] is the starting index in A for that neighbor's R component
+            const nb0 = N3[nBase + 0], nb1 = N3[nBase + 1], nb2 = N3[nBase + 2],
+            nb3 = N3[nBase + 3], nb4 = N3[nBase + 4], nb5 = N3[nBase + 5],
+            nb6 = N3[nBase + 6], nb7 = N3[nBase + 7], nb8 = N3[nBase + 8];
 
-        // sum R channel across 9 neighbors
-        // reading sequentially from A, which is Float32Array
-        const rSum = A[nb0] + A[nb1] + A[nb2] + A[nb3] + A[nb4] + A[nb5] + A[nb6] + A[nb7] + A[nb8];
-        const gSum = A[nb0+1] + A[nb1+1] + A[nb2+1] + A[nb3+1] + A[nb4+1] + A[nb5+1] + A[nb6+1] + A[nb7+1] + A[nb8+1];
-        const bSum = A[nb0+2] + A[nb1+2] + A[nb2+2] + A[nb3+2] + A[nb4+2] + A[nb5+2] + A[nb6+2] + A[nb7+2] + A[nb8+2];
+            // sum R channel across 9 neighbors
+            // reading sequentially from A, which is Float32Array
+            const rSum = A[nb0] + A[nb1] + A[nb2] + A[nb3] + A[nb4] + A[nb5] + A[nb6] + A[nb7] + A[nb8];
+            const gSum = A[nb0+1] + A[nb1+1] + A[nb2+1] + A[nb3+1] + A[nb4+1] + A[nb5+1] + A[nb6+1] + A[nb7+1] + A[nb8+1];
+            const bSum = A[nb0+2] + A[nb1+2] + A[nb2+2] + A[nb3+2] + A[nb4+2] + A[nb5+2] + A[nb6+2] + A[nb7+2] + A[nb8+2];
 
-        // average
-        const avgR = rSum * inv9;
-        const avgG = gSum * inv9;
-        const avgB = bSum * inv9;
+            // average
+            const avgR = rSum * inv9;
+            const avgG = gSum * inv9;
+            const avgB = bSum * inv9;
 
-        // compute luminance gradient using left/right/up/down neighbors (nearest)
-        // left neighbor base = nb3, right = nb5, up = nb1, down = nb7
-        const lumC = (A[nb4] + A[nb4+1] + A[nb4+2]) / 3;
-        const lumL = (A[nb3] + A[nb3+1] + A[nb3+2]) / 3;
-        const lumR = (A[nb5] + A[nb5+1] + A[nb5+2]) / 3;
-        const lumU = (A[nb1] + A[nb1+1] + A[nb1+2]) / 3;
-        const lumD = (A[nb7] + A[nb7+1] + A[nb7+2]) / 3;
+            // compute luminance gradient using left/right/up/down neighbors (nearest)
+            // left neighbor base = nb3, right = nb5, up = nb1, down = nb7
+            const lumC = (A[nb4] + A[nb4+1] + A[nb4+2]) / 3;
+            const lumL = (A[nb3] + A[nb3+1] + A[nb3+2]) / 3;
+            const lumR = (A[nb5] + A[nb5+1] + A[nb5+2]) / 3;
+            const lumU = (A[nb1] + A[nb1+1] + A[nb1+2]) / 3;
+            const lumD = (A[nb7] + A[nb7+1] + A[nb7+2]) / 3;
 
-        const gx = (lumR - lumL) * 0.5;
-        const gy = (lumD - lumU) * 0.5;
+            const gx = (lumR - lumL) * 0.5;
+            const gy = (lumD - lumU) * 0.5;
 
-        // velocity perpendicular to gradient -> swirl
-        const vx =  gy * adv;
-        const vy = -gx * adv;
+            // velocity perpendicular to gradient -> swirl
+            const vx =  gy * adv;
+            const vy = -gx * adv;
 
-        // backtrace (nearest sampling): compute approximate source cell (float coords)
-        // compute current cell coords:
-        const cy = (cell / W) | 0;
-        const cx = cell - cy * W;
-        const srcBase = nearestSampleBase(cx - vx, cy - vy);
+            // backtrace (nearest sampling): compute approximate source cell (float coords)
+            // compute current cell coords:
+            const cy = (cell / W) | 0;
+            const cx = cell - cy * W;
+            const srcBase = nearestSampleBase(cx - vx, cy - vy);
 
-        // read advected color (nearest)
-        const advR = A[srcBase];
-        const advG = A[srcBase + 1];
-        const advB = A[srcBase + 2];
+            // read advected color (nearest)
+            const advR = A[srcBase];
+            const advG = A[srcBase + 1];
+            const advB = A[srcBase + 2];
 
-        // combine advected + diffusion average
-        let newR = advR * (1 - diff) + avgR * diff;
-        let newG = advG * (1 - diff) + avgG * diff;
-        let newB = advB * (1 - diff) + avgB * diff;
+            // combine advected + diffusion average
+            let newR = advR * (1 - diff) + avgR * diff;
+            let newG = advG * (1 - diff) + avgG * diff;
+            let newB = advB * (1 - diff) + avgB * diff;
 
-        // apply damping
-        newR *= (1 - damp);
-        newG *= (1 - damp);
-        newB *= (1 - damp);
+            // apply damping
+            newR *= (1 - damp);
+            newG *= (1 - damp);
+            newB *= (1 - damp);
 
-        // clamp to safe range
-        const baseOut = cell * 3;
-        B[baseOut]   = newR < -1 ? -1 : (newR > 1.6 ? 1.6 : newR);
-        B[baseOut+1] = newG < -1 ? -1 : (newG > 1.6 ? 1.6 : newG);
-        B[baseOut+2] = newB < -1 ? -1 : (newB > 1.6 ? 1.6 : newB);
+            // clamp to safe range
+            const baseOut = cell * 3;
+            B[baseOut]   = newR < -1 ? -1 : (newR > 1.6 ? 1.6 : newR);
+            B[baseOut+1] = newG < -1 ? -1 : (newG > 1.6 ? 1.6 : newG);
+            B[baseOut+2] = newB < -1 ? -1 : (newB > 1.6 ? 1.6 : newB);
+        }
+        // swap
+        const tmp = simA; simA = simB; simB = tmp;
     }
-    // swap
-    const tmp = simA; simA = simB; simB = tmp;
+    // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
+    static renderToOff() {
+        const A = simA;
+        const data = imageData.data;
+
+        // first frame: allocate and zero
+        if ( ! accumImage || accumImage.length !== data.length ) {
+            accumImage = new Float32Array(data.length);
+            for ( let i = 0; i < data.length; i++ ) accumImage[i] = 0;
+        }
+
+        const boost = 230;
+        const fade = fadeStrength;
+
+        for ( let cell = 0, p = 0; cell < size; cell++, p += 4 ) {
+            const base = cell * 3;
+            let r = A[base]   * 0.8 + 0.03;
+            let g = A[base+1] * 0.8 + 0.02;
+            let b = A[base+2] * 0.8 + 0.01;
+
+            // minimal cross mix for richer colors
+            const cr = r*1.0 + g*0.12 - b*0.05;
+            const cg = -0.05*r + g*1.0 + b*0.08;
+            const cb = 0.02*r + 0.08*g + b*1.0;
+
+            // tone clamp
+            const rr = Math.max(0, Math.min(1.4, cr));
+            const gg = Math.max(0, Math.min(1.4, cg));
+            const bb = Math.max(0, Math.min(1.4, cb));
+
+            // blend with previous accumulation
+            const oldR = accumImage[p];
+            const oldG = accumImage[p+1];
+            const oldB = accumImage[p+2];
+
+            const newR = oldR*(1-fade) + rr*fade;
+            const newG = oldG*(1-fade) + gg*fade;
+            const newB = oldB*(1-fade) + bb*fade;
+
+            accumImage[p]   = newR;
+            accumImage[p+1] = newG;
+            accumImage[p+2] = newB;
+
+            data[p  ] = (newR * boost) | 0;
+            data[p+1] = (newG * boost) | 0;
+            data[p+2] = (newB * boost) | 0;
+            data[p+3] = 255;
+        }
+        offCtx.putImageData(imageData, 0, 0);
+    }
+    // Random excitation accumulator
+    static maybeExcite(dt) {
+        const pulses = excitationRate * dt * 0.001;
+        accumExc += pulses;
+        while ( accumExc >= 1 ) {
+            accumExc -= 1;
+            const x = Math.random() * W;
+            const y = Math.random() * H;
+            const rad = Math.random() * 10 + 4;
+            const strength = Math.random() * 1.1 + 0.4;
+            exciteAt(x,y,rad,strength);
+        }
     }    
 }
 
@@ -456,7 +519,7 @@ function exciteAt(gridX, gridY, radius, strength = 1){
   }
 
   // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
-function renderToOff(){
+function renderToOff() {
   const A = simA;
   const data = imageData.data;
 
@@ -623,11 +686,11 @@ function autoPaint() {
     const steps = (W*H > 200000) ? 2 : 1;
     for (let s=0; s<steps; s++) DreamFlow.step();
 
-    maybeExcite(dt); 
+    DreamFlow.maybeExcite(dt); 
     autoPaint(); // makes the trails appear automatically
 
 
-    renderToOff();
+    DreamFlow.renderToOff();
     drawToScreen();
 
     // fps tracking
