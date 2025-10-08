@@ -166,6 +166,9 @@ class DreamFlow {
         this.neighbors3 = null;       // Int32Array length size*9 (neighborIndex*3)
         this.hue = null;              // per-cell hue bias
         this.imageData = null;
+        this.accumExc = 0;
+        // persistence buffer
+        this.accumImage = null;
         this.alloc();
         this.seedRandom(1.0);
     }
@@ -320,11 +323,12 @@ class DreamFlow {
         const data = this.imageData.data;
 
         // first frame: allocate and zero
-        if ( ! accumImage || accumImage.length !== data.length ) {
-            accumImage = new Float32Array(data.length);
-            for ( let i = 0; i < data.length; i++ ) accumImage[i] = 0;
+        if ( ! this.accumImage || this.accumImage.length !== data.length ) {
+            this.accumImage = new Float32Array(data.length);
+            for ( let i = 0; i < data.length; i++ ) 
+                this.accumImage[i] = 0;
         }
-
+        const accumImage = this.accumImage;
         const boost = 230;
         const fade = fadeStrength;
 
@@ -371,9 +375,9 @@ class DreamFlow {
     // Random excitation accumulator
     maybeExcite(dt) {
         const pulses = config.excitationRate * dt * 0.001;
-        accumExc += pulses;
-        while ( accumExc >= 1 ) {
-            accumExc -= 1;
+        this.accumExc += pulses;
+        while ( this.accumExc >= 1 ) {
+            this.accumExc -= 1;
             const x = Math.random() * config.W;
             const y = Math.random() * config.H;
             const rad = Math.random() * 10 + 4;
