@@ -232,8 +232,8 @@ class DreamFlow {
         const steps = (config.W * config.H > 200000) ? 2 : 1;
         for ( let s = 0; s < steps; s++ ) 
             this.step(); 
-        //if (this.exciteStrategy) this.exciteStrategy.update(dt, this);
-        this.maybeExcite(dt);
+        if (this.exciteStrategy) this.exciteStrategy.update(dt, this);
+        //this.maybeExcite(dt);
         this.draw(offscreen, onscreen);
     }
     // One simulation step (hot loop optimized)
@@ -429,21 +429,24 @@ class ExcitationStrategy {
 }
 
 class RandomExcite extends ExcitationStrategy {
-    constructor() { 
+    constructor(config) { 
         super(); 
+        this.cfg = config;
+        this.accumExc = 0;
     }
     update(dt, df) {
-        this.accum += this.rate * dt * 0.001;
+        const pulses = this.cfg.excitationRate * dt * 0.001;
+        this.accumExc += pulses;
         while (this.accum >= 1) {
             this.accum -= 1;
-            const x = Math.random() * df.W;
-            const y = Math.random() * df.H;
+            const x = Math.random() * this.cfg.W;
+            const y = Math.random() * this.cfg.H;
             df.exciteAt(x, y, Math.random() * 10 + 4, Math.random() * 1.1 + 0.4);
         }
     }
 }
 
-const dreamFlow = new DreamFlow(new RandomExcite());
+const dreamFlow = new DreamFlow(new RandomExcite(config));
 
 function makeSpiralPath(cx, cy, radius, turns, points) {
   const path = [];
