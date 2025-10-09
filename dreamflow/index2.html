@@ -171,6 +171,7 @@ class DreamFlow {
         this.alloc(config);
         this.seedRandom(1.0);
         this.brushes = [];
+        this.scheduler = null;
     }
     precomputeNeighbors(config) {
         // neighbors order: (xm1,ym1),(x,ym1),(xp1,ym1),(xm1,y),(x,y),(xp1,y),(xm1,yp1),(x,yp1),(xp1,yp1)
@@ -241,8 +242,9 @@ class DreamFlow {
         this.draw(offscreen, onscreen);
     }
     autoDraw() {
-        for ( const b of this.brushes )
-            b.update(this);
+        /*for ( const b of this.brushes )
+            b.update(this);*/
+        this.scheduler.update(this);
     }
     // One simulation step (hot loop optimized)
     step(config) {
@@ -419,6 +421,9 @@ class DreamFlow {
     }  
     addBrush(b) {
         this.brushes.push(b);
+    }
+    addScheduler(s) {
+        this.scheduler = s;
     }
 }
 
@@ -684,10 +689,39 @@ class ChaoticDuoBrush {
         }
     }
 }
+class BrushScheduler {
+    constructor(brushes, interval = 5000) { // interval in ms
+        this.brushes = brushes;
+        this.interval = interval;
+        this.activeIndex = 0;
+        this.lastSwitch = performance.now();
+    }
 
+    update(df) {
+        const now = performance.now();
+        if (now - this.lastSwitch > this.interval) {
+            // Switch to next brush
+            this.activeIndex = (this.activeIndex + 1) % this.brushes.length;
+            this.lastSwitch = now;
+        }
+
+        // Only update the active brush
+        this.brushes[this.activeIndex].update(df);
+    }
+}
+
+const brushes = [
+    new ChaoticDuoBrush(),
+    new LissajousBrush(config.W/2, config.H/2, 80, 5, 7, 0.002),
+    new RotatingLineBrush(config.W/2, config.H/2, 250, 0.04),
+    new Brush(spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
+    new Brush(wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
+];
+const scheduler = new BrushScheduler(brushes, 15000);
+dreamFlow.addScheduler(scheduler);
 // Usage:
-const chaosBrush = new ChaoticDuoBrush(dreamFlow);
-dreamFlow.addBrush(chaosBrush);
+//const chaosBrush = new ChaoticDuoBrush();
+//dreamFlow.addBrush(chaosBrush);
 
 // Classic 2:3 Lissajous
 //dreamFlow.addBrush(new LissajousBrush(config.W/2, config.H/2, 80, 5, 7, 0.002));
