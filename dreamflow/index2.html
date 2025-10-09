@@ -371,19 +371,6 @@ class DreamFlow {
         ctx.imageSmoothingEnabled = true;
         ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
     }
-    // Random excitation accumulator
-    maybeExcite(dt) {
-        const pulses = config.excitationRate * dt * 0.001;
-        this.accumExc += pulses;
-        while ( this.accumExc >= 1 ) {
-            this.accumExc -= 1;
-            const x = Math.random() * config.W;
-            const y = Math.random() * config.H;
-            const rad = Math.random() * 10 + 4;
-            const strength = Math.random() * 1.1 + 0.4;
-            this.exciteAt(x, y, rad, strength);
-        }
-    }
     // Inject a soft pulse into simA at float grid coords
     exciteAt(gridX, gridY, radius, strength = 1) {
         const r2 = radius * radius;
