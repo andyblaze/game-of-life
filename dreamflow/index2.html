@@ -650,14 +650,19 @@ class RotatingLineBrush extends BaseBrush {
     this.length = length;
     this.angle = 0;
     this.speed = speed;
-    this.phase = Math.random() * Math.PI * 2; // random offset for color variance
+    this.phase = Math.random() * Math.PI * 2;
+    this.segmentPhase = Math.random() * Math.PI * 2;
   }
 
   update(dt, df) {
     this.age += 1 / 60;
-    if (this.age > this.lifetime) return false; // signal expired
+    if (this.age > this.lifetime) return false;
+
     this.angle += this.speed;
 
+    // slowly oscillate segment count between 2 and 10
+    const segDrift = 0.5 + 0.5 * Math.sin(this.segmentPhase + this.age * 0.3);
+    const segments = Math.floor(2 + segDrift * 48); // 2 → 10
     const half = this.length / 2;
     const cosA = Math.cos(this.angle);
     const sinA = Math.sin(this.angle);
@@ -668,12 +673,12 @@ class RotatingLineBrush extends BaseBrush {
     const x2 = this.cx - cosA * half;
     const y2 = this.cy - sinA * half;
 
-    // draw multiple points along the line for a fuller trail
-    const segments = 2;
+    // draw along the line
     for (let i = 0; i <= segments; i++) {
       const t = i / segments;
       const x = x1 + (x2 - x1) * t;
       const y = y1 + (y2 - y1) * t;
+
       const radius = 3 + Math.random() * 3;
       const strength = 0.5 + 0.5 * Math.sin(this.phase + this.angle + t * Math.PI * 2);
       df.exciteAt(x, y, radius, strength);
@@ -681,6 +686,7 @@ class RotatingLineBrush extends BaseBrush {
     return true;
   }
 }
+
 
 class LissajousBrush extends BaseBrush {
   constructor(lifetime, cx, cy, radius = 180, freqX = 2, freqY = 3, speed = 0.02) {
@@ -828,10 +834,10 @@ class BrushScheduler {
 }
 
 const brushes = [
-    new TriangleBrush(10, config.W/2, config.H/2, Math.min(config.W, config.H)/4, 120, 0.03),
+    new RotatingLineBrush(15, config.W/2, config.H/2, 250, 0.04),
+    new TriangleBrush(4, config.W/2, config.H/2, Math.min(config.W, config.H)/4, 120, 0.03),
     new ChaoticDuoBrush(5),
     new LissajousBrush(6, config.W/2, config.H/2, 80, 5, 7, 0.002),
-    new RotatingLineBrush(5, config.W/2, config.H/2, 250, 0.04),
     new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
     new Brush(7, wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
 ];
