@@ -95,7 +95,8 @@ const config = {
   diffusion: parseFloat(diffRange.value)/100,
   advection: parseFloat(advRange.value)/100,
   damping: parseFloat(dampRange.value)/1000,
-  excitationRate: parseFloat(excRange.value)
+  excitationRate: parseFloat(excRange.value),
+  fadeStrength: parseFloat(fadeRange.value)/100
 };
 
   // Buffers & precomputed indices
@@ -113,7 +114,7 @@ const config = {
   let frameCount = 0;
 
 
-let fadeStrength = 0.90; // how much of new frame blends in (0.7=long trails, 0.95=fast fade)
+//let fadeStrength = 0.90; // how much of new frame blends in (0.7=long trails, 0.95=fast fade)
 
 
   // small helpers
@@ -156,6 +157,18 @@ function hslToRgb(h, s, l){
 class DreamFlow {
     constructor(config, es=null) {
         this.cfg = config;
+        // base values from config (slider-controlled)
+        this.baseDiffusion = config.diffusion;
+        this.baseAdvection = config.advection;
+        this.baseDamping = config.damping;
+        this.baseFade = config.fadeStrength;
+
+        // current values used in simulation
+        this.diffusion = this.baseDiffusion;
+        this.advection = this.baseAdvection;
+        this.damping = this.baseDamping;
+        this.fadeStrength = this.baseFade;
+        this.time = 0;
         this.exciteStrategy = es;
         // Buffers & precomputed indices
         this.size = 0;                // number of cells
@@ -231,6 +244,7 @@ class DreamFlow {
         this.simB.fill(0);
     }
     update(dt, offscreen, onscreen) {
+        this.updateParams(dt);
         // perform 1..2 simulation substeps for stability
         const steps = (config.W * config.H > 200000) ? 2 : 1;
         for ( let s = 0; s < steps; s++ ) 
@@ -238,13 +252,37 @@ class DreamFlow {
         if ( this.exciteStrategy ) {
             this.exciteStrategy.update(dt, this);
         }
-        this.autoDraw();
+        this.autoDraw(dt);
         this.draw(offscreen, onscreen);
     }
-    autoDraw() {
+    updateParams(dt) {
+        this.time += dt;
+        const drift = t => 0.5 + 0.5 * Math.sin(t);
+
+        // base drift speed – very slow overall
+        const base = 0.00005;  // smaller = slower drift
+
+        // use different primes for each parameter
+        const f1 = 2 * base;   // 2 × base
+        const f2 = 3 * base;   // 3 × base
+        const f3 = 5 * base;   // 5 × base
+        const f4 = 7 * base;   // 7 × base
+
+        this.diffusion    = drift(this.time * f1 + 0.3);             // 0 → 1
+        this.advection    = drift(this.time * f2 + 1.1) * 2.0;       // 0 → 2
+        this.damping      = drift(this.time * f3 + 2.7) * 0.02;      // 0 → 0.02
+        this.fadeStrength = 0.7 + 0.29 * drift(this.time * f4 + 3.5);// 0.7 → 0.99
+
+        // clamp for safety
+        this.diffusion    = Math.max(0, Math.min(1, this.diffusion));
+        this.advection    = Math.max(0, Math.min(2, this.advection));
+        this.damping      = Math.max(0, Math.min(0.02, this.damping));
+        this.fadeStrength = Math.max(0.7, Math.min(0.99, this.fadeStrength));
+    }
+    autoDraw(dt) {
         /*for ( const b of this.brushes )
             b.update(this);*/
-        this.scheduler.update(this);
+        this.scheduler.update(dt, this);
     }
     // One simulation step (hot loop optimized)
     step(config) {
@@ -253,9 +291,9 @@ class DreamFlow {
         const nPerCell = 9;
 
         // local copies of params for JIT friendliness
-        const diff = config.diffusion;
-        const adv = config.advection;
-        const damp = config.damping;
+        const diff = this.diffusion;
+        const adv = this.advection;
+        const damp = this.damping;
 
         // iterate every cell by index i (cell index)
         // we will compute neighbor base offsets using neighbors3
@@ -339,7 +377,7 @@ class DreamFlow {
         }
         const accumImage = this.accumImage;
         const boost = 230;
-        const fade = fadeStrength;
+        const fade = this.fadeStrength;
 
         for ( let cell = 0, p = 0; cell < this.size; cell++, p += 4 ) {
             const base = cell * 3;
@@ -475,16 +513,34 @@ function spiralPath(cx, cy, radius, turns, points) {
     return path;
 }
 
-class Brush {
-    constructor(p) {
-        this.path = p;
+class BaseBrush {
+    constructor(lifetime = 5000) {
+        this.t = 0;
+        this.age = 0;
+        this.lifetime = lifetime;
+    }
+    expired() {
+        return this.age > this.lifetime;
+    }
+    reset() {
+        this.age = 0;
         this.t = 0;
     }
-    update(df) {
+}
+
+class Brush extends BaseBrush {
+    constructor(lifetime, p) {
+        super(lifetime);
+        this.path = p;
+    }
+    update(dt, df) {
+        this.age += 1 / 60;
+        if (this.age > this.lifetime) return false; // signal expired
         if ( this.t >= this.path.length )
             this.t = 0;
         this.draw([this.path[this.t]], df);
         this.t++;
+        return true;
     }
     draw(path, df) {
         for ( let i = 0; i < path.length; i++ ) {
@@ -496,8 +552,9 @@ class Brush {
     }
 }
 
-class BinaryBrush {
-  constructor(cx, cy, distance = 200, m1 = 1, m2 = 1.2, G = 1) {
+class BinaryBrush extends BaseBrush {
+  constructor(lifetime, cx, cy, distance = 200, m1 = 1, m2 = 1.2, G = 1) {
+    super(lifetime);
     this.a = { x: cx - distance/2, y: cy, vx: 0, vy: 0, m: m1 };
     this.b = { x: cx + distance/2, y: cy, vx: 0, vy: 0, m: m2 };
     this.G = G;
@@ -526,7 +583,9 @@ class BinaryBrush {
     this.b.vy = -ny * v * (this.a.m / (this.a.m + this.b.m));
   }
 
-  update(df) {
+  update(dt, df) {
+    this.age += 1 / 60;
+    if (this.age > this.lifetime) return false; // signal expired
     const { a, b } = this;
 
     // vector from a -> b
@@ -573,6 +632,7 @@ class BinaryBrush {
     // draw both stars
     this.draw(df, a);
     this.draw(df, b);
+    return true;
   }
 
   draw(df, body) {
@@ -582,8 +642,9 @@ class BinaryBrush {
   }
 }
 
-class RotatingLineBrush {
-  constructor(cx, cy, length = 200, speed = 0.03) {
+class RotatingLineBrush extends BaseBrush {
+  constructor(lifetime, cx, cy, length = 200, speed = 0.03) {
+    super(lifetime);
     this.cx = cx;
     this.cy = cy;
     this.length = length;
@@ -592,7 +653,9 @@ class RotatingLineBrush {
     this.phase = Math.random() * Math.PI * 2; // random offset for color variance
   }
 
-  update(df) {
+  update(dt, df) {
+    this.age += 1 / 60;
+    if (this.age > this.lifetime) return false; // signal expired
     this.angle += this.speed;
 
     const half = this.length / 2;
@@ -615,11 +678,13 @@ class RotatingLineBrush {
       const strength = 0.5 + 0.5 * Math.sin(this.phase + this.angle + t * Math.PI * 2);
       df.exciteAt(x, y, radius, strength);
     }
+    return true;
   }
 }
 
-class LissajousBrush {
-  constructor(cx, cy, radius = 180, freqX = 2, freqY = 3, speed = 0.02) {
+class LissajousBrush extends BaseBrush {
+  constructor(lifetime, cx, cy, radius = 180, freqX = 2, freqY = 3, speed = 0.02) {
+    super(lifetime);
     this.cx = cx;
     this.cy = cy;
     this.radius = radius;
@@ -630,7 +695,9 @@ class LissajousBrush {
     this.phaseShift = Math.random() * Math.PI * 2; // for richer variation
   }
 
-  update(df) {
+  update(dt, df) {
+    this.age += 1 / 60;
+    if (this.age > this.lifetime) return false; // signal expired
     this.t += this.speed;
 
     const x = this.cx + this.radius * Math.sin(this.freqX * this.t + this.phaseShift);
@@ -640,11 +707,13 @@ class LissajousBrush {
     const strength = 0.6 + 0.4 * Math.sin(this.t * 2 + this.phaseShift);
 
     df.exciteAt(x, y, radius, strength);
+    return true;
   }
 }
 
-class ChaoticDuoBrush {
-    constructor(points=2000, dt=0.01, sigma=10, rho=28, beta=8/3, scale=5) {
+class ChaoticDuoBrush extends BaseBrush {
+    constructor(lifetime, points=2000, dt=0.01, sigma=10, rho=28, beta=8/3, scale=5) {
+        super(lifetime);
         this.points = points;
         this.dt = dt;
         this.sigma = sigma;
@@ -660,7 +729,9 @@ class ChaoticDuoBrush {
         this.offsetY = config.H/2;
     }
 
-    update(df) {
+    update(dt, df) {
+        this.age += 1 / 60;
+        if (this.age > this.lifetime) return false; // signal expired
         // Advance the path one step
         const dx = this.sigma*(this.y - this.x) * this.dt;
         const dy = (this.x*(this.rho - this.z) - this.y) * this.dt;
@@ -678,6 +749,7 @@ class ChaoticDuoBrush {
 
         // Draw current step
         this.draw([[canvasX, canvasY]], df);
+        return true;
     }
 
     draw(path, df) {
@@ -689,33 +761,79 @@ class ChaoticDuoBrush {
         }
     }
 }
-class BrushScheduler {
-    constructor(brushes, interval = 5000) { // interval in ms
-        this.brushes = brushes;
-        this.interval = interval;
-        this.activeIndex = 0;
-        this.lastSwitch = performance.now();
+class TriangleBrush extends BaseBrush {
+    constructor(lifetime, cx, cy, radius, points = 120, speed = 0.02) {
+        super(lifetime); 
+        this.cx = cx;
+        this.cy = cy;
+        this.radius = radius;
+        this.points = points;
+        this.speed = speed;
+        this.angle = 0;
     }
 
-    update(df) {
-        const now = performance.now();
-        if (now - this.lastSwitch > this.interval) {
-            // Switch to next brush
-            this.activeIndex = (this.activeIndex + 1) % this.brushes.length;
-            this.lastSwitch = now;
-        }
+    update(dt, df) {
+        this.age += 1 / 60;
+        if (this.age > this.lifetime) return false; // signal expired
+        this.angle += this.speed;
 
-        // Only update the active brush
-        this.brushes[this.activeIndex].update(df);
+        // Calculate 3 triangle vertices rotated by current angle
+        const a1 = this.angle;
+        const a2 = this.angle + (2 * Math.PI / 3);
+        const a3 = this.angle + (4 * Math.PI / 3);
+
+        const x1 = this.cx + Math.cos(a1) * this.radius;
+        const y1 = this.cy + Math.sin(a1) * this.radius;
+        const x2 = this.cx + Math.cos(a2) * this.radius;
+        const y2 = this.cy + Math.sin(a2) * this.radius;
+        const x3 = this.cx + Math.cos(a3) * this.radius;
+        const y3 = this.cy + Math.sin(a3) * this.radius;
+
+        // Option 1: excite the three points
+        df.exciteAt(x1, y1, 6, 1.0);
+        df.exciteAt(x2, y2, 6, 1.0);
+        df.exciteAt(x3, y3, 6, 1.0);
+
+        // Option 2 (optional): excite along triangle edges for solid shape
+        this.drawEdge(df, x1, y1, x2, y2);
+        this.drawEdge(df, x2, y2, x3, y3);
+        this.drawEdge(df, x3, y3, x1, y1);
+        return true;
+    }
+
+    drawEdge(df, x1, y1, x2, y2) {
+        const steps = 20;
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const x = x1 + (x2 - x1) * t;
+            const y = y1 + (y2 - y1) * t;
+            df.exciteAt(x, y, 3, 0.6);
+        }
+    }
+}
+
+class BrushScheduler {
+    constructor(brushes) { // interval in ms
+        this.brushes = brushes;
+        this.current = 0;
+    }
+    update(dt, df) {
+        const brush = this.brushes[this.current];
+        if ( ! brush.update(dt, df) ) {
+            // brush expired → move to next
+            brush.reset();
+            this.current = (this.current + 1) % this.brushes.length;
+        }
     }
 }
 
 const brushes = [
-    new ChaoticDuoBrush(),
-    new LissajousBrush(config.W/2, config.H/2, 80, 5, 7, 0.002),
-    new RotatingLineBrush(config.W/2, config.H/2, 250, 0.04),
-    new Brush(spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
-    new Brush(wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
+    new TriangleBrush(10, config.W/2, config.H/2, Math.min(config.W, config.H)/4, 120, 0.03),
+    new ChaoticDuoBrush(5),
+    new LissajousBrush(6, config.W/2, config.H/2, 80, 5, 7, 0.002),
+    new RotatingLineBrush(5, config.W/2, config.H/2, 250, 0.04),
+    new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
+    new Brush(7, wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
 ];
 const scheduler = new BrushScheduler(brushes, 15000);
 dreamFlow.addScheduler(scheduler);
