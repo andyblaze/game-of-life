@@ -978,10 +978,32 @@ class BrushScheduler {
     }
 }
 
+class SpinMotion {
+  constructor(speed = 0.02) {
+    this.time = 0;        // internal spin timer
+    this.speed = speed;    // how fast it “spins”
+  }
+
+  update(vertices) {
+    this.time += this.speed;
+
+    // Compute scale factor for X coordinate (0.5 → narrow, 1 → full width)
+    const scale = 0.5 + 0.5 * Math.sin(this.time);
+
+    const cx = vertices.reduce((sum, v) => sum + v[0], 0) / vertices.length;
+
+    // Return new vertices with X scaled around center
+    return vertices.map(([x, y]) => [
+      cx + (x - cx) * scale,
+      y
+    ]);
+  }
+}
+
 const brushes = [
     new ShapeBrush(16, new LineShape(config, 200), new RotatingMotion(0.03)),
+    new ShapeBrush(16, new RectangleShape(config, 100, 100), new SpinMotion(0.02)),
     new ShapeBrush(16, new StarShape(config), new WobbleMotion()), //RotatingMotion(0.03)),
-    new ShapeBrush(16, new RectangleShape(config, 100, 100), new RotatingMotion(0.02)),
     new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
     //new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config, 250, 0.04),
