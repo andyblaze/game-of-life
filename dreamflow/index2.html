@@ -339,7 +339,7 @@ class DreamFlow {
         dreamFlow.drawToScreen(onscreen);
     }
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
-    renderToOff() {
+    renderToOff(offscreen) {
         const A = this.simA;
         const data = this.imageData.data;
 
@@ -387,11 +387,11 @@ class DreamFlow {
             data[p+2] = (newB * boost) | 0;
             data[p+3] = 255;
         }
-        offCtx.putImageData(this.imageData, 0, 0);
+        offscreen.putImageData(this.imageData, 0, 0);
     }
-    drawToScreen(ctx) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(off, 0, 0, canvas.width, canvas.height);
+    drawToScreen(onscreen) {
+        onscreen.imageSmoothingEnabled = true;
+        onscreen.drawImage(off, 0, 0, canvas.width, canvas.height);
     }
     // Inject a soft pulse into simA at float grid coords
     exciteAt(gridX, gridY, radius, strength = 1) {
