@@ -6,7 +6,7 @@
 <title>Dreamflow — CPU optimized</title>
 <style>
   html,body{height:100%;margin:0;background:#050507;color:#eaf2ff;font-family:system-ui,Segoe UI,Roboto,Arial;}
-  #ui{position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
+  #ui{display:none;position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
   label{display:block;margin-top:6px;font-size:13px}
   input[type=range]{width:100%}
   button{margin-top:8px;margin-right:6px}
@@ -45,6 +45,9 @@
   <label>Excite/sec <span class="val" id="excVal">8</span></label>
   <input id="exc" type="range" min="0" max="60" value="8">
 
+  <label>Fade <span class="val" id="fadeVal">0.90</span></label>
+  <input id="fade" type="range" min="70" max="90" value="90">
+
   <small style="display:block;margin-top:6px">Nearest-neighbor advection is used for speed. Click & drag to paint.</small>
 </div>
 
@@ -53,8 +56,8 @@
 <script>
 (() => {
   // DOM
-  const canvas = document.getElementById('main');
-  const ctx = canvas.getContext('2d', { alpha: false });
+const canvas = document.getElementById('main');
+const ctx = canvas.getContext('2d', { alpha: false });
 
   // UI
   const btnPause = document.getElementById('btnPause');
@@ -67,26 +70,13 @@
   const advRange = document.getElementById('adv');
   const dampRange = document.getElementById('damp');
   const excRange = document.getElementById('exc');
+  const fadeRange = document.getElementById('fade');
   const diffVal = document.getElementById('diffVal');
   const advVal = document.getElementById('advVal');
   const dampVal = document.getElementById('dampVal');
   const excVal = document.getElementById('excVal');
+  const fadeVal = document.getElementById('fadeVal');
   const fpsLabel = document.getElementById('fps');
-const fadeVal = document.createElement("span");
-fadeVal.textContent = "0.90";
-const fadeLabel = document.createElement("label");
-fadeLabel.textContent = "Fade ";
-fadeLabel.appendChild(fadeVal);
-const fadeRange = document.createElement("input");
-fadeRange.type = "range";
-fadeRange.min = "70"; fadeRange.max = "99"; fadeRange.value = "90";
-fadeRange.style.width = "100%";
-fadeRange.addEventListener("input",()=>{
-  fadeStrength = parseFloat(fadeRange.value)/100;
-  fadeVal.textContent = fadeStrength.toFixed(2);
-});
-document.getElementById("ui").appendChild(fadeLabel);
-document.getElementById("ui").appendChild(fadeRange);
 
 // Simulation parameters (start values)
 const config = {  
@@ -99,27 +89,11 @@ const config = {
   fadeStrength: parseFloat(fadeRange.value)/100
 };
 
-  // Buffers & precomputed indices
-  /*let size = 0;                // number of cells
-  let simA = null, simB = null;// Float32Array length size*3 (rgb)
-  let neighbors3 = null;       // Int32Array length size*9 (neighborIndex*3)
-  let hue = null;              // per-cell hue bias
-  let imageData = null;        // ImageData for low-res drawing*/
-  const off = document.createElement('canvas');
-  const offCtx = off.getContext('2d');
+const off = document.createElement('canvas');
+const offCtx = off.getContext('2d');
 
-  // runtime
-  let lastFrame = performance.now();
-  let fpsTime = performance.now();
-  let frameCount = 0;
+const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
 
-
-//let fadeStrength = 0.90; // how much of new frame blends in (0.7=long trails, 0.95=fast fade)
-
-
-  // small helpers
-  const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
-// HSL -> RGB conversion
 function hslToRgb(h, s, l){
   let r, g, b;
 
@@ -144,15 +118,15 @@ function hslToRgb(h, s, l){
   return [r, g, b];
 }
 
-  // Resize main canvas for DPR
-  function resizeCanvas(){
+
+function resizeCanvas() {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
     canvas.width  = Math.round(window.innerWidth * dpr);
     canvas.height = Math.round(window.innerHeight * dpr);
     canvas.style.width  = window.innerWidth + 'px';
     canvas.style.height = window.innerHeight + 'px';
     ctx.imageSmoothingEnabled = true;
-  }
+}
   
 class DreamFlow {
     constructor(config, es=null) {
@@ -883,8 +857,13 @@ dreamFlow.addScheduler(scheduler);
   canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!painting) return; const t = e.touches[0]; const [gx,gy] = pointerToGrid(t.clientX, t.clientY); exciteAt(gx, gy, Math.max(W/48,4), 1.0); }, {passive:false});
   canvas.addEventListener('touchend', e => { painting = false; }, {passive:false});
 
-  // top-level loop
-  function loop(now) {
+// runtime
+let lastFrame = performance.now();
+let fpsTime = performance.now();
+let frameCount = 0;
+
+// top-level loop
+function loop(now) {
     if ( ! dreamFlow.running ) return;
     const dt = Math.max(1, now - lastFrame);
     lastFrame = now;
@@ -892,26 +871,26 @@ dreamFlow.addScheduler(scheduler);
     // fps tracking
     frameCount++;
     const tNow = performance.now();
-    if (tNow - fpsTime >= 500){
-      const fps = Math.round(frameCount / ((tNow - fpsTime)/1000));
-      fpsLabel.textContent = fps + ' fps';
-      fpsTime = tNow;
-      frameCount = 0;
+    if ( tNow - fpsTime >= 500 ) {
+        const fps = Math.round(frameCount / ((tNow - fpsTime)/1000));
+        fpsLabel.textContent = fps + ' fps';
+        fpsTime = tNow;
+        frameCount = 0;
     }
     requestAnimationFrame(loop);
-  }
+}
 
   // init
-  function init(){
+function init(){
     resizeCanvas();
     diffVal.textContent = config.diffusion.toFixed(3);
     advVal.textContent = config.advection.toFixed(3);
     dampVal.textContent = config.damping.toFixed(4);
     excVal.textContent = config.excitationRate.toFixed(1);
     requestAnimationFrame(loop);
-  }
-  window.addEventListener('resize', resizeCanvas);
-  init();
+}
+window.addEventListener('resize', resizeCanvas);
+init();
 
   // expose for tinkering
 window.Dreamflow = {
