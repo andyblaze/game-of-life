@@ -616,10 +616,10 @@ class BinaryBrush extends BaseBrush {
 }
 
 class RotatingLineBrush extends BaseBrush {
-  constructor(lifetime, cx, cy, length = 200, speed = 0.03) {
+  constructor(lifetime, config, length = 200, speed = 0.03) {
     super(lifetime);
-    this.cx = cx;
-    this.cy = cy;
+    this.cx = config.W / 2;
+    this.cy = config.H / 2;
     this.length = length;
     this.angle = 0;
     this.speed = speed;
@@ -632,9 +632,9 @@ class RotatingLineBrush extends BaseBrush {
 
     this.angle += this.speed;
 
-    // slowly oscillate segment count between 2 and 10
+    // slowly oscillate segment count between 2 and n
     const segDrift = 0.5 + 0.5 * Math.sin(this.segmentPhase + this.age * 0.3);
-    const segments = Math.floor(2 + segDrift * 48); // 2 → 10
+    const segments = Math.floor(2 + segDrift * 48); 
     const half = this.length / 2;
     const cosA = Math.cos(this.angle);
     const sinA = Math.sin(this.angle);
@@ -655,6 +655,22 @@ class RotatingLineBrush extends BaseBrush {
       const strength = 0.5 + 0.5 * Math.sin(this.phase + this.angle + t * Math.PI * 2);
       df.exciteAt(x, y, radius, strength);
     }
+  }
+}
+
+class LineShape {
+  constructor(config, length = 200) {
+    this.cx = config.W / 2;
+    this.cy = config.H / 2;
+    this.length = length;
+    this.vertices = [
+      [this.cx - this.length / 2, this.cy],
+      [this.cx + this.length / 2, this.cy],
+    ];
+  }
+
+  getVertices() {
+    return this.vertices.map(([x, y]) => [x, y]);
   }
 }
 
@@ -686,7 +702,7 @@ class LissajousBrush extends BaseBrush {
   }
 }
 
-class ChaoticDuoBrush extends BaseBrush {
+class ChaoticDuoBrush extends BaseBrush { // lorenz 
     constructor(lifetime, points=2000, dt=0.01, sigma=10, rho=28, beta=8/3, scale=5) {
         super(lifetime);
         this.points = points;
@@ -791,22 +807,23 @@ class TriangleShape {
         this.cx = config.W / 2;
         this.cy = config.H / 2;
         this.radius = Math.min(config.W, config.H) / 4;
+        this.vertices = this.computeVertices();
     }
-    getVertices(angle=0) {
-        // Return 3 rotated vertices for given angle
-        const a1 = angle;
-        const a2 = angle + (2 * Math.PI / 3);
-        const a3 = angle + (4 * Math.PI / 3);
 
-        const x1 = this.cx + Math.cos(a1) * this.radius;
-        const y1 = this.cy + Math.sin(a1) * this.radius;
-        const x2 = this.cx + Math.cos(a2) * this.radius;
-        const y2 = this.cy + Math.sin(a2) * this.radius;
-        const x3 = this.cx + Math.cos(a3) * this.radius;
-        const y3 = this.cy + Math.sin(a3) * this.radius;
-
-        return [[x1, y1], [x2, y2], [x3, y3]];
+  computeVertices() {
+    const verts = [];
+    for (let i = 0; i < 3; i++) {
+      const angle = i * (2 * Math.PI / 3);
+      const x = this.cx + Math.cos(angle) * this.radius;
+      const y = this.cy + Math.sin(angle) * this.radius;
+      verts.push([x, y]);
     }
+    return verts;
+  }
+
+  getVertices() {
+    return this.vertices.map(v => [...v]); // return a copy to avoid mutation
+  }
 }
 
 // --- Motion: defines how angle (and possibly position) changes over time ---
@@ -815,9 +832,25 @@ class RotatingMotion {
         this.speed = speed;
         this.angle = initialAngle;
     }
-    update() {
+    update(vertices) {
         this.angle += this.speed;
-        return this.angle;
+
+        // Compute rotation around shape’s center
+        // Find centroid first
+        const cx = vertices.reduce((a, [x]) => a + x, 0) / vertices.length;
+        const cy = vertices.reduce((a, [_, y]) => a + y, 0) / vertices.length;
+
+        const cosA = Math.cos(this.angle);
+        const sinA = Math.sin(this.angle);
+
+        // Rotate each vertex about the centroid
+        return vertices.map(([x, y]) => {
+            const dx = x - cx;
+            const dy = y - cy;
+            const rx = cx + dx * cosA - dy * sinA;
+            const ry = cy + dx * sinA + dy * cosA;
+            return [rx, ry];
+        });
     }
 }
 
@@ -830,9 +863,9 @@ class ShapeBrush extends BaseBrush {
     }
     update(dt, df) {
         this.updateAge();
-        let verts = this.shape.getVertices();
-        const angle = this.motion.update();
-        verts = this.shape.getVertices(angle);
+        //let verts = this.shape.getVertices();
+        const verts = this.motion.update(this.shape.getVertices());
+        //verts = this.shape.getVertices(angle);
         this.paint(df, verts);
     }
     paint(df, verts) {
@@ -861,28 +894,25 @@ class RectangleShape {
     this.cy = config.H / 2;
     this.width = width;
     this.height = height;
+    this.vertices = this.computeVertices();
   }
 
-  getVertices(angle) {
+
+  computeVertices() {
     const hw = this.width / 2;
     const hh = this.height / 2;
 
     // Unrotated rectangle corners relative to center
-    const corners = [
-      [-hw, -hh],
-      [ hw, -hh],
-      [ hw,  hh],
-      [-hw,  hh],
+    return [
+      [this.cx - hw, this.cy - hh],
+      [this.cx + hw, this.cy - hh],
+      [this.cx + hw, this.cy + hh],
+      [this.cx - hw, this.cy + hh],
     ];
-
-    const cosA = Math.cos(angle);
-    const sinA = Math.sin(angle);
-
-    // Rotate corners around center
-    return corners.map(([x, y]) => [
-      this.cx + x * cosA - y * sinA,
-      this.cy + x * sinA + y * cosA
-    ]);
+  }
+  getVertices() {
+    // Return a shallow copy to avoid mutation
+    return this.vertices.map(([x, y]) => [x, y]);
   }
 }
 class WobbleMotion {
@@ -921,16 +951,17 @@ class BrushScheduler {
 }
 
 const brushes = [
+    new ShapeBrush(16, new LineShape(config, 200), new RotatingMotion(0.03)),
     new ShapeBrush(16, new RectangleShape(config, 100, 100), new RotatingMotion(0.02)),
     new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
     //new TriangleBrush(8, config, 120, 0.03),
-    new RotatingLineBrush(15, config.W/2, config.H/2, 250, 0.04),
+    new RotatingLineBrush(15, config, 250, 0.04),
     new ChaoticDuoBrush(5),
     new LissajousBrush(6, config.W/2, config.H/2, 80, 5, 7, 0.002),
     new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
     new Brush(7, wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
 ];
-const scheduler = new BrushScheduler(brushes, 15000);
+const scheduler = new BrushScheduler(brushes);
 dreamFlow.addScheduler(scheduler);
 
 
