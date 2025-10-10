@@ -506,8 +506,8 @@ class BaseBrush {
 }
 
 class NullBrush extends BaseBrush {
-    constructor(lifetime, p) {
-        super(lifetime);
+    constructor() {
+        super(Math.floor(Math.random() * 2) + 3);
     }
     update() {
         this.updateAge();
@@ -1037,7 +1037,7 @@ const brushes = [
     new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
     new Brush(7, wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
 ];
-const scheduler = new BrushScheduler(brushes, new NullBrush(1));
+const scheduler = new BrushScheduler(brushes, new NullBrush());
 dreamFlow.addScheduler(scheduler);
 
 
