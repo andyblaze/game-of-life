@@ -764,9 +764,9 @@ class TriangleBrush extends BaseBrush {
         const y3 = this.cy + Math.sin(a3) * this.radius;
 
         // Option 1: excite the three points
-        //df.exciteAt(x1, y1, 6, 1.0);
-        //df.exciteAt(x2, y2, 6, 1.0);
-        //df.exciteAt(x3, y3, 6, 1.0);
+        df.exciteAt(x1, y1, 6, 1.0);
+        df.exciteAt(x2, y2, 6, 1.0);
+        df.exciteAt(x3, y3, 6, 1.0);
 
         // Option 2 (optional): excite along triangle edges for solid shape
         this.drawEdge(df, x1, y1, x2, y2);
@@ -785,6 +785,83 @@ class TriangleBrush extends BaseBrush {
     }
 }
 
+// --- Shape: defines geometry ---
+class TriangleShape {
+    constructor(config) {
+        this.cx = config.W / 2;
+        this.cy = config.H / 2;
+        this.radius = Math.min(config.W, config.H) / 4;
+    }
+    getVertices(angle) {
+        // Return 3 rotated vertices for given angle
+        const a1 = angle;
+        const a2 = angle + (2 * Math.PI / 3);
+        const a3 = angle + (4 * Math.PI / 3);
+
+        const x1 = this.cx + Math.cos(a1) * this.radius;
+        const y1 = this.cy + Math.sin(a1) * this.radius;
+        const x2 = this.cx + Math.cos(a2) * this.radius;
+        const y2 = this.cy + Math.sin(a2) * this.radius;
+        const x3 = this.cx + Math.cos(a3) * this.radius;
+        const y3 = this.cy + Math.sin(a3) * this.radius;
+
+        return [[x1, y1], [x2, y2], [x3, y3]];
+    }
+}
+
+// --- Motion: defines how angle (and possibly position) changes over time ---
+class RotatingMotion {
+    constructor(speed = 0.02, initialAngle = 0) {
+        this.speed = speed;
+        this.angle = initialAngle;
+    }
+    update() {
+        this.angle += this.speed;
+        return this.angle;
+    }
+}
+
+// --- Brush: owns shape and motion, paints into Dreamflow ---
+class ShapeBrush extends BaseBrush {
+    constructor(lifetime, shape, motion) {
+        super(lifetime);
+        this.shape = shape;
+        this.motion = motion;
+    }
+    update(dt, df) {
+        this.updateAge();
+        const angle = this.motion.update();
+        const verts = this.shape.getVertices(angle);
+        this.paint(df, verts);
+    }
+    paint(df, verts) {
+        // Excite vertices
+        for ( const [x, y] of verts ) {
+            df.exciteAt(x, y, 6, 1.0);
+        }
+
+        // Excite edges
+        const edges = [
+            [verts[0], verts[1]],
+            [verts[1], verts[2]],
+            [verts[2], verts[0]],
+        ];
+
+        for ( const [[x1, y1], [x2, y2]] of edges ) {
+            const steps = 20;
+            for ( let i = 0; i <= steps; i++ ) {
+                const t = i / steps;
+                const x = x1 + (x2 - x1) * t;
+                const y = y1 + (y2 - y1) * t;
+                df.exciteAt(x, y, 3, 0.6);
+            }
+        }
+    }
+}
+
+const triBrush = new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02));
+
+
 class BrushScheduler {
     constructor(brushes) { // interval in ms
         this.brushes = brushes;
@@ -801,7 +878,8 @@ class BrushScheduler {
 }
 
 const brushes = [
-    new TriangleBrush(8, config, 120, 0.03),
+    triBrush,
+    //new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config.W/2, config.H/2, 250, 0.04),
     new ChaoticDuoBrush(5),
     new LissajousBrush(6, config.W/2, config.H/2, 80, 5, 7, 0.002),
