@@ -840,17 +840,13 @@ class ShapeBrush extends BaseBrush {
             df.exciteAt(x, y, 6, 1.0);
         }
 
-        // Excite edges
-        const edges = [
-            [verts[0], verts[1]],
-            [verts[1], verts[2]],
-            [verts[2], verts[0]],
-        ];
-
-        for ( const [[x1, y1], [x2, y2]] of edges ) {
+        // Excite edges — automatically loop back to the first vertex
+        for ( let i = 0; i < verts.length; i++ ) {
+            const [x1, y1] = verts[i];
+            const [x2, y2] = verts[(i + 1) % verts.length]; // wraps around
             const steps = 20;
-            for ( let i = 0; i <= steps; i++ ) {
-                const t = i / steps;
+            for ( let s = 0; s <= steps; s++ ) {
+                const t = s / steps;
                 const x = x1 + (x2 - x1) * t;
                 const y = y1 + (y2 - y1) * t;
                 df.exciteAt(x, y, 3, 0.6);
@@ -858,9 +854,36 @@ class ShapeBrush extends BaseBrush {
         }
     }
 }
+class RectangleShape {
+  constructor(config, width, height) {
+    this.cx = config.W / 2;
+    this.cy = config.H / 2;
+    this.width = width;
+    this.height = height;
+  }
 
-const triBrush = new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02));
+  getVertices(angle) {
+    const hw = this.width / 2;
+    const hh = this.height / 2;
 
+    // Unrotated rectangle corners relative to center
+    const corners = [
+      [-hw, -hh],
+      [ hw, -hh],
+      [ hw,  hh],
+      [-hw,  hh],
+    ];
+
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+
+    // Rotate corners around center
+    return corners.map(([x, y]) => [
+      this.cx + x * cosA - y * sinA,
+      this.cy + x * sinA + y * cosA
+    ]);
+  }
+}
 
 class BrushScheduler {
     constructor(brushes) { // interval in ms
@@ -878,7 +901,8 @@ class BrushScheduler {
 }
 
 const brushes = [
-    triBrush,
+    new ShapeBrush(6, new RectangleShape(config, 100, 100), new RotatingMotion(0.02)),
+    new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
     //new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config.W/2, config.H/2, 250, 0.04),
     new ChaoticDuoBrush(5),
