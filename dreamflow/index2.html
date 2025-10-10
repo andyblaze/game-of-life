@@ -505,6 +505,15 @@ class BaseBrush {
     }
 }
 
+class NullBrush extends BaseBrush {
+    constructor(lifetime, p) {
+        super(lifetime);
+    }
+    update() {
+        this.updateAge();
+    }
+}
+
 class Brush extends BaseBrush {
     constructor(lifetime, p) {
         super(lifetime);
@@ -964,17 +973,33 @@ class WobbleMotion {
   }
 }
 class BrushScheduler {
-    constructor(brushes) { // interval in ms
+    constructor(brushes, nb) {
         this.brushes = brushes;
+        this.nullBrush = nb;
         this.current = 0;
+        this.isResting = false;
     }
     update(dt, df) {
-        const brush = this.brushes[this.current];
-        brush.update(dt, df);
-        if ( brush.expired() ) {
-            brush.reset();
-            this.current = (this.current + 1) % this.brushes.length;
-        }
+// currently resting?
+    if (this.isResting) {
+      if (this.nullBrush.expired()) {
+        this.nullBrush.reset();
+        this.isResting = false;
+      } else {
+        this.nullBrush.update();
+        return;
+      }
+    }
+
+    // otherwise, run the active brush
+    const brush = this.brushes[this.current];
+    brush.update(dt, df);
+
+    if (brush.expired()) {
+      brush.reset();
+      this.current = (this.current + 1) % this.brushes.length;
+      this.isResting = true; // trigger a short null pause
+    }
     }
 }
 
@@ -1012,7 +1037,7 @@ const brushes = [
     new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
     new Brush(7, wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
 ];
-const scheduler = new BrushScheduler(brushes);
+const scheduler = new BrushScheduler(brushes, new NullBrush(1));
 dreamFlow.addScheduler(scheduler);
 
 
