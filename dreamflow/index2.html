@@ -6,7 +6,7 @@
 <title>Dreamflow — CPU optimized</title>
 <style>
   html,body{height:100%;margin:0;background:#050507;color:#eaf2ff;font-family:system-ui,Segoe UI,Roboto,Arial;}
-  #ui{display:none;position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
+  #ui{position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
   label{display:block;margin-top:6px;font-size:13px}
   input[type=range]{width:100%}
   button{margin-top:8px;margin-right:6px}
@@ -826,6 +826,34 @@ class TriangleShape {
   }
 }
 
+class StarShape {
+    constructor(config, points = 5) {
+        this.cx = config.W / 2;
+        this.cy = config.H / 2;
+        this.radiusOuter = Math.min(config.W, config.H) / 4;
+        this.radiusInner = this.radiusOuter * 0.5; // inner points of star
+        this.points = points;
+        this.vertices = this.computeVertices();
+    }
+
+    computeVertices() {
+        const verts = [];
+        const total = this.points * 2; // outer + inner
+        for (let i = 0; i < total; i++) {
+            const angle = i * (Math.PI / this.points); // π / points = half angle step
+            const r = (i % 2 === 0) ? this.radiusOuter : this.radiusInner;
+            const x = this.cx + Math.cos(angle) * r;
+            const y = this.cy + Math.sin(angle) * r;
+            verts.push([x, y]);
+        }
+        return verts;
+    }
+
+    getVertices() {
+        return this.vertices.map(v => [...v]); // return a copy
+    }
+}
+
 // --- Motion: defines how angle (and possibly position) changes over time ---
 class RotatingMotion {
     constructor(speed = 0.02, initialAngle = 0) {
@@ -952,6 +980,7 @@ class BrushScheduler {
 
 const brushes = [
     new ShapeBrush(16, new LineShape(config, 200), new RotatingMotion(0.03)),
+    new ShapeBrush(16, new StarShape(config), new WobbleMotion()), //RotatingMotion(0.03)),
     new ShapeBrush(16, new RectangleShape(config, 100, 100), new RotatingMotion(0.02)),
     new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
     //new TriangleBrush(8, config, 120, 0.03),
