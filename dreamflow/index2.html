@@ -488,13 +488,16 @@ function spiralPath(cx, cy, radius, turns, points) {
 }
 
 class BaseBrush {
-    constructor(lifetime = 5000) {
+    constructor(lifetime) {
         this.t = 0;
         this.age = 0;
         this.lifetime = lifetime;
     }
     expired() {
         return this.age > this.lifetime;
+    }
+    updateAge() {
+        this.age += 1 / 60;
     }
     reset() {
         this.age = 0;
@@ -508,13 +511,11 @@ class Brush extends BaseBrush {
         this.path = p;
     }
     update(dt, df) {
-        this.age += 1 / 60;
-        if (this.age > this.lifetime) return false; // signal expired
+        this.updateAge();
         if ( this.t >= this.path.length )
             this.t = 0;
         this.draw([this.path[this.t]], df);
         this.t++;
-        return true;
     }
     draw(path, df) {
         for ( let i = 0; i < path.length; i++ ) {
@@ -558,8 +559,7 @@ class BinaryBrush extends BaseBrush {
   }
 
   update(dt, df) {
-    this.age += 1 / 60;
-    if (this.age > this.lifetime) return false; // signal expired
+    this.updateAge();
     const { a, b } = this;
 
     // vector from a -> b
@@ -606,7 +606,6 @@ class BinaryBrush extends BaseBrush {
     // draw both stars
     this.draw(df, a);
     this.draw(df, b);
-    return true;
   }
 
   draw(df, body) {
@@ -629,8 +628,7 @@ class RotatingLineBrush extends BaseBrush {
   }
 
   update(dt, df) {
-    this.age += 1 / 60;
-    if (this.age > this.lifetime) return false;
+    this.updateAge();
 
     this.angle += this.speed;
 
@@ -657,7 +655,6 @@ class RotatingLineBrush extends BaseBrush {
       const strength = 0.5 + 0.5 * Math.sin(this.phase + this.angle + t * Math.PI * 2);
       df.exciteAt(x, y, radius, strength);
     }
-    return true;
   }
 }
 
@@ -676,8 +673,7 @@ class LissajousBrush extends BaseBrush {
   }
 
   update(dt, df) {
-    this.age += 1 / 60;
-    if (this.age > this.lifetime) return false; // signal expired
+    this.updateAge();
     this.t += this.speed;
 
     const x = this.cx + this.radius * Math.sin(this.freqX * this.t + this.phaseShift);
@@ -687,7 +683,6 @@ class LissajousBrush extends BaseBrush {
     const strength = 0.6 + 0.4 * Math.sin(this.t * 2 + this.phaseShift);
 
     df.exciteAt(x, y, radius, strength);
-    return true;
   }
 }
 
@@ -742,21 +737,20 @@ class ChaoticDuoBrush extends BaseBrush {
     }
 }
 class TriangleBrush extends BaseBrush {
-    constructor(lifetime, cx, cy, radius, points = 120, speed = 0.02) {
+    constructor(lifetime, config, points = 120, speed = 0.02) {
         super(lifetime); 
-        this.cx = cx;
-        this.cy = cy;
-        this.radius = radius;
+        this.cx = config.W / 2;
+        this.cy = config.H / 2;
+        this.radius = Math.min(config.W, config.H) / 4;
         this.points = points;
         this.speed = speed;
         this.angle = 0;
     }
 
     update(dt, df) {
-        this.age += 1 / 60;
-        if (this.age > this.lifetime) return false; // signal expired
+        this.updateAge();
+        
         this.angle += this.speed;
-
         // Calculate 3 triangle vertices rotated by current angle
         const a1 = this.angle;
         const a2 = this.angle + (2 * Math.PI / 3);
@@ -770,15 +764,14 @@ class TriangleBrush extends BaseBrush {
         const y3 = this.cy + Math.sin(a3) * this.radius;
 
         // Option 1: excite the three points
-        df.exciteAt(x1, y1, 6, 1.0);
-        df.exciteAt(x2, y2, 6, 1.0);
-        df.exciteAt(x3, y3, 6, 1.0);
+        //df.exciteAt(x1, y1, 6, 1.0);
+        //df.exciteAt(x2, y2, 6, 1.0);
+        //df.exciteAt(x3, y3, 6, 1.0);
 
         // Option 2 (optional): excite along triangle edges for solid shape
         this.drawEdge(df, x1, y1, x2, y2);
         this.drawEdge(df, x2, y2, x3, y3);
         this.drawEdge(df, x3, y3, x1, y1);
-        return true;
     }
 
     drawEdge(df, x1, y1, x2, y2) {
@@ -799,8 +792,8 @@ class BrushScheduler {
     }
     update(dt, df) {
         const brush = this.brushes[this.current];
-        if ( ! brush.update(dt, df) ) {
-            // brush expired → move to next
+        brush.update(dt, df);
+        if ( brush.expired() ) {
             brush.reset();
             this.current = (this.current + 1) % this.brushes.length;
         }
@@ -808,8 +801,8 @@ class BrushScheduler {
 }
 
 const brushes = [
+    new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config.W/2, config.H/2, 250, 0.04),
-    new TriangleBrush(4, config.W/2, config.H/2, Math.min(config.W, config.H)/4, 120, 0.03),
     new ChaoticDuoBrush(5),
     new LissajousBrush(6, config.W/2, config.H/2, 80, 5, 7, 0.002),
     new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
