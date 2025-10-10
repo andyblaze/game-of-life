@@ -792,7 +792,7 @@ class TriangleShape {
         this.cy = config.H / 2;
         this.radius = Math.min(config.W, config.H) / 4;
     }
-    getVertices(angle) {
+    getVertices(angle=0) {
         // Return 3 rotated vertices for given angle
         const a1 = angle;
         const a2 = angle + (2 * Math.PI / 3);
@@ -830,8 +830,9 @@ class ShapeBrush extends BaseBrush {
     }
     update(dt, df) {
         this.updateAge();
+        let verts = this.shape.getVertices();
         const angle = this.motion.update();
-        const verts = this.shape.getVertices(angle);
+        verts = this.shape.getVertices(angle);
         this.paint(df, verts);
     }
     paint(df, verts) {
@@ -884,7 +885,26 @@ class RectangleShape {
     ]);
   }
 }
+class WobbleMotion {
+  constructor({ amp = 6, freq = 0.002, phaseSpread = Math.PI * 2 } = {}) {
+    this.amp = amp;             // how far vertices wobble
+    this.freq = freq;           // how fast the wobble oscillates
+    this.phaseSpread = phaseSpread; // ensures vertices move differently
+    this.startTime = performance.now();
+  }
 
+  update(vertices) {
+    const t = (performance.now() - this.startTime) * this.freq;
+
+    // return new set of wobbled vertices
+    return vertices.map(([x, y], i) => {
+      const phase = i * this.phaseSpread / vertices.length;
+      const dx = Math.sin(t + phase) * this.amp;
+      const dy = Math.cos(t * 1.1 + phase * 0.7) * this.amp * 0.8;
+      return [x + dx, y + dy];
+    });
+  }
+}
 class BrushScheduler {
     constructor(brushes) { // interval in ms
         this.brushes = brushes;
@@ -901,7 +921,7 @@ class BrushScheduler {
 }
 
 const brushes = [
-    new ShapeBrush(6, new RectangleShape(config, 100, 100), new RotatingMotion(0.02)),
+    new ShapeBrush(16, new RectangleShape(config, 100, 100), new RotatingMotion(0.02)),
     new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
     //new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config.W/2, config.H/2, 250, 0.04),
