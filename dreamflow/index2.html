@@ -6,7 +6,7 @@
 <title>Dreamflow — CPU optimized</title>
 <style>
   html,body{height:100%;margin:0;background:#050507;color:#eaf2ff;font-family:system-ui,Segoe UI,Roboto,Arial;}
-  #ui{position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
+  #ui{display:none; position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
   label{display:block;margin-top:6px;font-size:13px}
   input[type=range]{width:100%}
   button{margin-top:8px;margin-right:6px}
@@ -99,6 +99,7 @@ const config = {
 <script type="text/javascript" src="brushes.js"></script>
 <script type="text/javascript" src="motions.js"></script>
 <script type="text/javascript" src="brush-scheduler.js"></script>
+<script type="text/javascript" src="delta-report.js"></script>
 
 
 <script type="text/javascript">
@@ -121,58 +122,25 @@ const brushes = [
 const scheduler = new BrushScheduler(brushes, new NullBrush());
 dreamFlow.addScheduler(scheduler);
 
-
-
-// runtime
-let lastFrame = performance.now();
-let fpsTime = performance.now();
-let frameCount = 0;
-
 // top-level loop
+let lastFrame = performance.now();
 function loop(now) {
     if ( ! dreamFlow.running ) return;
-    const dt = Math.max(1, now - lastFrame);
     lastFrame = now;
+    const dt = Math.max(1, now - lastFrame);
     dreamFlow.update(dt, offCtx, ctx);
-    // fps tracking
-    frameCount++;
-    const tNow = performance.now();
-    if ( tNow - fpsTime >= 500 ) {
-        const fps = Math.round(frameCount / ((tNow - fpsTime)/1000));
-        fpsLabel.textContent = fps + ' fps';
-        fpsTime = tNow;
-        frameCount = 0;
-    }
+
+    DeltaReport.log(now);
     requestAnimationFrame(loop);
 }
 
   // init
 function init(){
     resizeCanvas();
-    diffVal.textContent = config.diffusion.toFixed(3);
-    advVal.textContent = config.advection.toFixed(3);
-    dampVal.textContent = config.damping.toFixed(4);
-    excVal.textContent = config.excitationRate.toFixed(1);
     requestAnimationFrame(loop);
 }
 window.addEventListener('resize', resizeCanvas);
 init();
-
-  // expose for tinkering
-window.Dreamflow = {
-  exciteAt: dreamFlow.exciteAt.bind(dreamFlow),
-  seedRandom: dreamFlow.seedRandom.bind(dreamFlow),
-  clearAll: dreamFlow.clearAll.bind(dreamFlow),
-  getParams: () => ({
-    W,
-    H,
-    diffusion,
-    advection,
-    damping,
-    excitationRate
-  })
-};
-
 
 </script>
 </body>

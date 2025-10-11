@@ -1,19 +1,14 @@
 class DreamFlow {
     constructor(config, es=null) {
         this.cfg = config;
-        // base values from config (slider-controlled)
-        this.baseDiffusion = config.diffusion;
-        this.baseAdvection = config.advection;
-        this.baseDamping = config.damping;
-        this.baseFade = config.fadeStrength;
-
-        // current values used in simulation
-        this.diffusion = this.baseDiffusion;
-        this.advection = this.baseAdvection;
-        this.damping = this.baseDamping;
-        this.fadeStrength = this.baseFade;
-        this.time = 0;
         this.exciteStrategy = es;
+        // base values from config (slider-controlled)
+        this.diffusion = config.diffusion;
+        this.advection = config.advection;
+        this.damping = config.damping;
+        this.fadeStrength = config.fadeStrength;
+
+        this.time = 0;
         // Buffers & precomputed indices
         this.size = 0;                // number of cells
         this.simA = null;
@@ -21,13 +16,11 @@ class DreamFlow {
         this.neighbors3 = null;       // Int32Array length size*9 (neighborIndex*3)
         this.hue = null;              // per-cell hue bias
         this.imageData = null;
-        this.accumExc = 0;
         // persistence buffer
         this.accumImage = null;
         this.running = true;
         this.alloc(config);
         this.seedRandom(1.0);
-        this.brushes = [];
         this.scheduler = null;
     }
     precomputeNeighbors(config) {
