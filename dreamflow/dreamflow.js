@@ -97,13 +97,13 @@ class DreamFlow {
         const drift = t => 0.5 + 0.5 * Math.sin(t);
 
         // base drift speed – very slow overall
-        const base = 0.00005;  // smaller = slower drift
+        const base = 0.0005;  // smaller = slower drift
 
         // use different primes for each parameter
-        const f1 = 2 * base;   // 2 × base
-        const f2 = 3 * base;   // 3 × base
-        const f3 = 5 * base;   // 5 × base
-        const f4 = 7 * base;   // 7 × base
+        const f1 = 3 * base;   // 2 × base
+        const f2 = 5 * base;   // 3 × base
+        const f3 = 7 * base;   // 5 × base
+        const f4 = 11 * base;   // 7 × base
 
         this.diffusion    = drift(this.time * f1 + 0.3);             // 0 → 1
         this.advection    = drift(this.time * f2 + 1.1) * 2.0;       // 0 → 2
@@ -111,9 +111,9 @@ class DreamFlow {
         this.fadeStrength = 0.7 + 0.29 * drift(this.time * f4 + 3.5);// 0.7 → 0.99
 
         // clamp for safety
-        this.diffusion    = Math.max(0, Math.min(1, this.diffusion));
+        this.diffusion    = Math.max(0.1, Math.min(1, this.diffusion));
         this.advection    = Math.max(0, Math.min(2, this.advection));
-        this.damping      = Math.max(0, Math.min(0.02, this.damping));
+        this.damping      = Math.max(0.01, Math.min(0.02, this.damping));
         this.fadeStrength = Math.max(0.7, Math.min(0.99, this.fadeStrength));
     }
     autoDraw(dt) {

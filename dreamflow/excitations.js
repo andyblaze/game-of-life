@@ -10,7 +10,7 @@ class RandomExcite extends ExcitationStrategy {
         this.accumExc = 0;
     }
     update(dt, df) { 
-        const pulses = this.cfg.excitationRate * dt * 0.001;
+        const pulses = this.cfg.excitationRate * dt * 0.01;
         this.accumExc += pulses;
         while (this.accumExc >= 1) {
             this.accumExc -= 1;
