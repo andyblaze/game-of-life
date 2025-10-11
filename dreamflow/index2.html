@@ -462,8 +462,10 @@ class RandomExcite extends ExcitationStrategy {
 }
 
 const dreamFlow = new DreamFlow(config, new RandomExcite(config));
-function wavePath(cx, cy, radius, freq, steps) {
-    const path = [];
+function wavePath(config, freq, steps) {
+    const cx = config.W / 2;
+    const cy = config.H / 2;
+    const radius = Math.min(config.W, config.H) / 3;    const path = [];
     for (let i=0; i<steps; i++) {
         const angle = (i / steps) * Math.PI*2;
         const r = radius * (0.5 + 0.5*Math.sin(angle*freq));
@@ -474,11 +476,14 @@ function wavePath(cx, cy, radius, freq, steps) {
     return path;
 }
 
-function spiralPath(cx, cy, radius, turns, points) {
+function spiralPath(config, turns, points) {
+    const cx = config.W / 2;
+    const cy = config.H / 2;
+    const radius = Math.min(config.W, config.H) / 3;
     const path = [];
-    for (let i=0; i<points; i++) {
+    for ( let i = 0; i < points; i++ ) {
         const t = i / points;
-        const angle = t * turns * 2*Math.PI;
+        const angle = t * turns * 2 * Math.PI;
         const r = t * radius;
         const x = cx + r * Math.cos(angle);
         const y = cy + r * Math.sin(angle);
@@ -521,12 +526,14 @@ class Brush extends BaseBrush {
     constructor(lifetime, p) {
         super(lifetime);
         this.path = p;
+        this.t = 0;
     }
     update(dt, df) {
         this.updateAge();
-        if ( this.t >= this.path.length )
+        const verts = this.path.getVertices();  //console.log(verts);
+        if ( this.t >= verts.length )
             this.t = 0;
-        this.draw([this.path[this.t]], df);
+        this.draw([verts[this.t]], df);
         this.t++;
     }
     draw(path, df) {
@@ -671,47 +678,48 @@ class RotatingLineBrush extends BaseBrush {
 }
 
 class LineShape {
-  constructor(config, length = 200) {
-    this.cx = config.W / 2;
-    this.cy = config.H / 2;
-    this.length = length;
-    this.vertices = [
-      [this.cx - this.length / 2, this.cy],
-      [this.cx + this.length / 2, this.cy],
-    ];
-  }
+    constructor(config, length = 200) {
+        this.cx = config.W / 2;
+        this.cy = config.H / 2;
+        this.length = length;
+        this.vertices = [
+        [this.cx - this.length / 2, this.cy],
+        [this.cx + this.length / 2, this.cy],
+        ];
+    }
 
-  getVertices() {
-    return this.vertices.map(([x, y]) => [x, y]);
-  }
+    getVertices() {
+        return this.vertices.map(([x, y]) => [x, y]);
+    }
 }
 
 
 class LissajousBrush extends BaseBrush {
-  constructor(lifetime, cx, cy, radius = 180, freqX = 2, freqY = 3, speed = 0.02) {
+    constructor(lifetime, config, radius = 180, freqX = 2, freqY = 3, speed = 0.02) {
     super(lifetime);
-    this.cx = cx;
-    this.cy = cy;
-    this.radius = radius;
-    this.freqX = freqX;
-    this.freqY = freqY;
-    this.speed = speed;
-    this.t = Math.random() * Math.PI * 2; // random phase offset
-    this.phaseShift = Math.random() * Math.PI * 2; // for richer variation
-  }
+        this.cx = config.W / 2;
+        this.cy = config.H / 2;
+        this.radius = radius;
+        this.freqX = freqX;
+        this.freqY = freqY;
+        this.speed = speed;
+        this.t = Math.random() * Math.PI * 2; // random phase offset
+        this.phaseShift = Math.random() * Math.PI * 2; // for richer variation
+    }
 
-  update(dt, df) {
-    this.updateAge();
-    this.t += this.speed;
+    update(dt, df) {
+        this.updateAge();
+        this.t += this.speed;
 
-    const x = this.cx + this.radius * Math.sin(this.freqX * this.t + this.phaseShift);
-    const y = this.cy + this.radius * Math.cos(this.freqY * this.t);
+        const x = this.cx + this.radius * Math.sin(this.freqX * this.t + this.phaseShift);
+        const y = this.cy + this.radius * Math.cos(this.freqY * this.t);
 
-    const radius = 4 + Math.sin(this.t * 0.7) * 2;
-    const strength = 0.6 + 0.4 * Math.sin(this.t * 2 + this.phaseShift);
+        const radius = 4 + Math.sin(this.t * 0.7) * 2;
+        const strength = 0.6 + 0.4 * Math.sin(this.t * 2 + this.phaseShift);
 
-    df.exciteAt(x, y, radius, strength);
-  }
+        df.exciteAt(x, y, radius, strength);
+        df.exciteAt(x+20, y-20, radius, strength);
+    }
 }
 
 class ChaoticDuoBrush extends BaseBrush { // lorenz 
@@ -813,6 +821,40 @@ class TriangleBrush extends BaseBrush {
     }
 }
 
+class PathShape {
+    constructor(generatorFn, ...params) {
+        this.vertices = generatorFn(...params);
+    }
+    getVertices() {
+        // return a copy to avoid accidental mutation
+        return this.vertices.map(v => [...v]);
+    }
+}
+
+class SizingMotion {
+    constructor(speed = 1.5, amplitude = 0.15) {
+        this.time = Math.random() * Math.PI * 2; // random phase offset
+        this.speed = speed;     // how fast it pulses
+        this.amplitude = amplitude; // how strong the size change (0.15 = ±15%)
+    }
+
+    update(vertices) {
+        this.time += this.speed * 0.016; // roughly frame-scaled increment
+        const scale = 1 + Math.sin(this.time) * this.amplitude;
+
+        // Find centroid
+        const cx = vertices.reduce((a, [x]) => a + x, 0) / vertices.length;
+        const cy = vertices.reduce((a, [_, y]) => a + y, 0) / vertices.length;
+
+        // Scale vertices relative to centroid
+        return vertices.map(([x, y]) => {
+            const dx = x - cx;
+            const dy = y - cy;
+            return [cx + dx * scale, cy + dy * scale];
+        });
+    }
+}
+
 // --- Shape: defines geometry ---
 class TriangleShape {
     constructor(config) {
@@ -864,12 +906,13 @@ class StarShape {
 
 // --- Motion: defines how angle (and possibly position) changes over time ---
 class RotatingMotion {
-    constructor(speed = 0.02, initialAngle = 0) {
+    constructor(speed = 0.02, initialAngle = 0, direction = 1) {
         this.speed = speed;
         this.angle = initialAngle;
+        this.direction = Math.sign(direction) || 1; // ensure ±1
     }
     update(vertices) {
-        this.angle += this.speed;
+        this.angle += this.speed * this.direction;
 
         // Compute rotation around shape’s center
         // Find centroid first
@@ -892,16 +935,14 @@ class RotatingMotion {
 
 // --- Brush: owns shape and motion, paints into Dreamflow ---
 class ShapeBrush extends BaseBrush {
-    constructor(lifetime, shape, motion) {
+    constructor(lifetime, shape, motion=null) {
         super(lifetime);
         this.shape = shape;
         this.motion = motion;
     }
     update(dt, df) {
         this.updateAge();
-        //let verts = this.shape.getVertices();
         const verts = this.motion.update(this.shape.getVertices());
-        //verts = this.shape.getVertices(angle);
         this.paint(df, verts);
     }
     paint(df, verts) {
@@ -1018,17 +1059,42 @@ class SpinMotion {
     }
 }
 
+class CircleShape {
+  constructor(config, radius = null , steps = 24) {
+    this.cx = config.W / 2;
+    this.cy = config.H / 2;
+    this.radius = radius === null ? Math.min(config.W, config.H) / 4 : radius;
+    this.steps = steps;
+    this.vertices = this.computeVertices();
+  }
+
+  computeVertices() {
+    const verts = [];
+    for (let i = 0; i < this.steps; i++) {
+      const angle = (i / this.steps) * 2 * Math.PI;
+      const x = this.cx + Math.cos(angle) * this.radius;
+      const y = this.cy + Math.sin(angle) * this.radius;
+      verts.push([x, y]);
+    }
+    return verts;
+  }
+
+  getVertices() {
+    return this.vertices.map(v => [...v]);
+  }
+}
 const brushes = [
+    new ShapeBrush(12, new CircleShape(config, 100, 18), new SizingMotion()),
+    new Brush(7, new PathShape(wavePath, config, 0.05, 200), new WobbleMotion()),
+    new Brush(6, new PathShape(spiralPath, config, 3, 200), new WobbleMotion()),
+    new LissajousBrush(16, config, 80, 5, 7, 0.002),
     new ShapeBrush(16, new LineShape(config, 200), new RotatingMotion(0.03)),
     new ShapeBrush(16, new RectangleShape(config, 100, 100), new SpinMotion(0.02)),
     new ShapeBrush(16, new StarShape(config), new WobbleMotion()), //RotatingMotion(0.03)),
     new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
     //new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config, 250, 0.04),
-    new ChaoticDuoBrush(5),
-    new LissajousBrush(6, config.W/2, config.H/2, 80, 5, 7, 0.002),
-    new Brush(6, spiralPath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 3, 200)),
-    new Brush(7, wavePath(config.W/2, config.H/2, Math.min(config.W,config.H)/3, 0.05, 200))
+    new ChaoticDuoBrush(5)
 ];
 const scheduler = new BrushScheduler(brushes, new NullBrush());
 dreamFlow.addScheduler(scheduler);
