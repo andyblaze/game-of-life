@@ -94,27 +94,29 @@ class DreamFlow {
     }
     updateParams(dt) {
         this.time += dt;
+
+        // Smooth oscillation 0→1→0
         const drift = t => 0.5 + 0.5 * Math.sin(t);
 
-        // base drift speed – very slow overall
-        const base = 0.0005;  // smaller = slower drift
+        const baseFreq = 0.0005;
+        const freqs = {
+            diffusion:  3 * baseFreq,
+            advection:  5 * baseFreq,
+            damping:    7 * baseFreq,
+            fade:      11 * baseFreq,
+        };
 
-        // use different primes for each parameter
-        const f1 = 3 * base;   // 2 × base
-        const f2 = 5 * base;   // 3 × base
-        const f3 = 7 * base;   // 5 × base
-        const f4 = 11 * base;   // 7 × base
+        // Raw drifting values
+        const dif = drift(this.time * freqs.diffusion + 0.3);
+        const adv = drift(this.time * freqs.advection + 1.1) * 2.0;
+        const dam = drift(this.time * freqs.damping + 2.7) * 0.02;
+        const fde = 0.7 + 0.29 * drift(this.time * freqs.fade + 3.5);
 
-        this.diffusion    = drift(this.time * f1 + 0.3);             // 0 → 1
-        this.advection    = drift(this.time * f2 + 1.1) * 2.0;       // 0 → 2
-        this.damping      = drift(this.time * f3 + 2.7) * 0.02;      // 0 → 0.02
-        this.fadeStrength = 0.7 + 0.29 * drift(this.time * f4 + 3.5);// 0.7 → 0.99
-
-        // clamp for safety
-        this.diffusion    = Math.max(0.1, Math.min(1, this.diffusion));
-        this.advection    = Math.max(0, Math.min(2, this.advection));
-        this.damping      = Math.max(0.01, Math.min(0.02, this.damping));
-        this.fadeStrength = Math.max(0.7, Math.min(0.99, this.fadeStrength));
+        // Clamp safely
+        this.diffusion    = clamp(dif, 0.1, 1.0);
+        this.advection    = clamp(adv, 0.0, 2.0);
+        this.damping      = clamp(dam, 0.01, 0.02);
+        this.fadeStrength = clamp(fde, 0.7, 0.99);
     }
     autoDraw(dt) {
         /*for ( const b of this.brushes )
