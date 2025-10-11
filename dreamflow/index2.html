@@ -395,6 +395,7 @@ class DreamFlow {
     }
     // Inject a soft pulse into simA at float grid coords
     exciteAt(gridX, gridY, radius, strength = 1) {
+        if ( gridX < 0 || gridX >= this.cfg.W || gridY < 0 || gridY >= this.cfg.H ) return;
         const r2 = radius * radius;
         const x0 = Math.max(0, Math.floor(gridX - radius));
         const x1 = Math.min(this.cfg.W - 1, Math.floor(gridX + radius));
@@ -431,9 +432,6 @@ class DreamFlow {
             }
         }
     }  
-    addBrush(b) {
-        this.brushes.push(b);
-    }
     addScheduler(s) {
         this.scheduler = s;
     }
@@ -1059,7 +1057,7 @@ class SpinMotion {
     }
 }
 
-class CircleShape {
+class PolygonShape {
   constructor(config, radius = null , steps = 24) {
     this.cx = config.W / 2;
     this.cy = config.H / 2;
@@ -1084,15 +1082,14 @@ class CircleShape {
   }
 }
 const brushes = [
-    new ShapeBrush(12, new CircleShape(config, 100, 18), new SizingMotion()),
+    new ShapeBrush(16, new PolygonShape(config, 100, 4), new SpinMotion(0.02)),
+    new ShapeBrush(16, new PolygonShape(config, 120, 3), new RotatingMotion(0.02, 1, -1)),
+    new ShapeBrush(12, new PolygonShape(config, 100, 8), new SizingMotion()),
     new Brush(7, new PathShape(wavePath, config, 0.05, 200), new WobbleMotion()),
     new Brush(6, new PathShape(spiralPath, config, 3, 200), new WobbleMotion()),
     new LissajousBrush(16, config, 80, 5, 7, 0.002),
     new ShapeBrush(16, new LineShape(config, 200), new RotatingMotion(0.03)),
-    new ShapeBrush(16, new RectangleShape(config, 100, 100), new SpinMotion(0.02)),
     new ShapeBrush(16, new StarShape(config), new WobbleMotion()), //RotatingMotion(0.03)),
-    new ShapeBrush(6, new TriangleShape(config), new RotatingMotion(0.02)),
-    //new TriangleBrush(8, config, 120, 0.03),
     new RotatingLineBrush(15, config, 250, 0.04),
     new ChaoticDuoBrush(5)
 ];
