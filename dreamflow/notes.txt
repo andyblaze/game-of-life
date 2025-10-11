@@ -28,7 +28,7 @@ Shape Echoes – Every N frames, a faint echo of the shape reappears and dissipa
 
 Shape Dance – Shapes react to param drift (diffusion/advection) and seem to “move with the flow.”
 
-💡 4. Higher-Order Constructs
+💡 4. Higher-Order Constructs 風
 
 Metashape – ShapeBrushes used as vertices for a bigger geometric form.
 
