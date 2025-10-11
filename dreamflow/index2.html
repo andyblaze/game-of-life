@@ -512,6 +512,9 @@ class NullBrush extends BaseBrush {
     update() {
         this.updateAge();
     }
+    reset() {
+        this.age = Math.floor(Math.random() * 2) + 3;
+    }
 }
 
 class Brush extends BaseBrush {
@@ -818,21 +821,19 @@ class TriangleShape {
         this.radius = Math.min(config.W, config.H) / 4;
         this.vertices = this.computeVertices();
     }
-
-  computeVertices() {
-    const verts = [];
-    for (let i = 0; i < 3; i++) {
-      const angle = i * (2 * Math.PI / 3);
-      const x = this.cx + Math.cos(angle) * this.radius;
-      const y = this.cy + Math.sin(angle) * this.radius;
-      verts.push([x, y]);
+    computeVertices() {
+        const verts = [];
+        for ( let i = 0; i < 3; i++ ) {
+            const angle = i * (2 * Math.PI / 3);
+            const x = this.cx + Math.cos(angle) * this.radius;
+            const y = this.cy + Math.sin(angle) * this.radius;
+            verts.push([x, y]);
+        }
+        return verts;
     }
-    return verts;
-  }
-
-  getVertices() {
-    return this.vertices.map(v => [...v]); // return a copy to avoid mutation
-  }
+    getVertices() {
+        return this.vertices.map(v => [...v]); // return a copy to avoid mutation
+    }
 }
 
 class StarShape {
@@ -844,7 +845,6 @@ class StarShape {
         this.points = points;
         this.vertices = this.computeVertices();
     }
-
     computeVertices() {
         const verts = [];
         const total = this.points * 2; // outer + inner
@@ -857,7 +857,6 @@ class StarShape {
         }
         return verts;
     }
-
     getVertices() {
         return this.vertices.map(v => [...v]); // return a copy
     }
@@ -926,51 +925,48 @@ class ShapeBrush extends BaseBrush {
     }
 }
 class RectangleShape {
-  constructor(config, width, height) {
-    this.cx = config.W / 2;
-    this.cy = config.H / 2;
-    this.width = width;
-    this.height = height;
-    this.vertices = this.computeVertices();
-  }
+    constructor(config, width, height) {
+        this.cx = config.W / 2;
+        this.cy = config.H / 2;
+        this.width = width;
+        this.height = height;
+        this.vertices = this.computeVertices();
+    }
+    computeVertices() {
+        const hw = this.width / 2;
+        const hh = this.height / 2;
 
-
-  computeVertices() {
-    const hw = this.width / 2;
-    const hh = this.height / 2;
-
-    // Unrotated rectangle corners relative to center
-    return [
-      [this.cx - hw, this.cy - hh],
-      [this.cx + hw, this.cy - hh],
-      [this.cx + hw, this.cy + hh],
-      [this.cx - hw, this.cy + hh],
-    ];
-  }
-  getVertices() {
-    // Return a shallow copy to avoid mutation
-    return this.vertices.map(([x, y]) => [x, y]);
-  }
+        // Unrotated rectangle corners relative to center
+        return [
+        [this.cx - hw, this.cy - hh],
+        [this.cx + hw, this.cy - hh],
+        [this.cx + hw, this.cy + hh],
+        [this.cx - hw, this.cy + hh],
+        ];
+    }
+    getVertices() {
+        // Return a shallow copy to avoid mutation
+        return this.vertices.map(([x, y]) => [x, y]);
+    }
 }
 class WobbleMotion {
-  constructor({ amp = 6, freq = 0.002, phaseSpread = Math.PI * 2 } = {}) {
-    this.amp = amp;             // how far vertices wobble
-    this.freq = freq;           // how fast the wobble oscillates
-    this.phaseSpread = phaseSpread; // ensures vertices move differently
-    this.startTime = performance.now();
-  }
+    constructor({ amp = 6, freq = 0.002, phaseSpread = Math.PI * 2 } = {}) {
+        this.amp = amp;             // how far vertices wobble
+        this.freq = freq;           // how fast the wobble oscillates
+        this.phaseSpread = phaseSpread; // ensures vertices move differently
+        this.startTime = performance.now();
+    }
+    update(vertices) {
+        const t = (performance.now() - this.startTime) * this.freq;
 
-  update(vertices) {
-    const t = (performance.now() - this.startTime) * this.freq;
-
-    // return new set of wobbled vertices
-    return vertices.map(([x, y], i) => {
-      const phase = i * this.phaseSpread / vertices.length;
-      const dx = Math.sin(t + phase) * this.amp;
-      const dy = Math.cos(t * 1.1 + phase * 0.7) * this.amp * 0.8;
-      return [x + dx, y + dy];
-    });
-  }
+        // return new set of wobbled vertices
+        return vertices.map(([x, y], i) => {
+            const phase = i * this.phaseSpread / vertices.length;
+            const dx = Math.sin(t + phase) * this.amp;
+            const dy = Math.cos(t * 1.1 + phase * 0.7) * this.amp * 0.8;
+            return [x + dx, y + dy];
+        });
+    }
 }
 class BrushScheduler {
     constructor(brushes, nb) {
@@ -979,50 +975,47 @@ class BrushScheduler {
         this.current = 0;
         this.isResting = false;
     }
+    intermission() {
+        if ( this.nullBrush.expired() ) {
+            this.nullBrush.reset();
+            this.isResting = false;
+        } else {
+            this.nullBrush.update();
+        }
+    }
     update(dt, df) {
-// currently resting?
-    if (this.isResting) {
-      if (this.nullBrush.expired()) {
-        this.nullBrush.reset();
-        this.isResting = false;
-      } else {
-        this.nullBrush.update();
-        return;
-      }
-    }
+        if ( this.isResting ) {
+            this.intermission();
+            return;
+        }
+        const brush = this.brushes[this.current];
+        brush.update(dt, df);
 
-    // otherwise, run the active brush
-    const brush = this.brushes[this.current];
-    brush.update(dt, df);
-
-    if (brush.expired()) {
-      brush.reset();
-      this.current = (this.current + 1) % this.brushes.length;
-      this.isResting = true; // trigger a short null pause
-    }
+        if ( brush.expired() ) {
+            brush.reset();
+            this.current = (this.current + 1) % this.brushes.length;
+            this.isResting = true; // trigger a short null pause
+        }
     }
 }
 
 class SpinMotion {
-  constructor(speed = 0.02) {
-    this.time = 0;        // internal spin timer
-    this.speed = speed;    // how fast it “spins”
-  }
+    constructor(speed = 0.02) {
+        this.time = 0;        // internal spin timer
+        this.speed = speed;    // how fast it “spins”
+    }
 
-  update(vertices) {
-    this.time += this.speed;
-
-    // Compute scale factor for X coordinate (0.5 → narrow, 1 → full width)
-    const scale = 0.5 + 0.5 * Math.sin(this.time);
-
-    const cx = vertices.reduce((sum, v) => sum + v[0], 0) / vertices.length;
-
-    // Return new vertices with X scaled around center
-    return vertices.map(([x, y]) => [
-      cx + (x - cx) * scale,
-      y
-    ]);
-  }
+    update(vertices) {
+        this.time += this.speed;
+        // Compute scale factor for X coordinate (0.5 → narrow, 1 → full width)
+        const scale = 0.5 + 0.5 * Math.sin(this.time);
+        const cx = vertices.reduce((sum, v) => sum + v[0], 0) / vertices.length;
+        // Return new vertices with X scaled around center
+        return vertices.map(([x, y]) => [
+            cx + (x - cx) * scale,
+            y
+        ]);
+    }
 }
 
 const brushes = [
