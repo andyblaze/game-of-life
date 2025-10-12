@@ -1,7 +1,8 @@
 function wavePath(config, freq, steps) {
     const cx = config.W / 2;
     const cy = config.H / 2;
-    const radius = Math.min(config.W, config.H) / 3;    const path = [];
+    const radius = Math.min(config.W, config.H) / 3;    
+    const path = [];
     for (let i=0; i<steps; i++) {
         const angle = (i / steps) * Math.PI*2;
         const r = radius * (0.5 + 0.5*Math.sin(angle*freq));
@@ -28,21 +29,15 @@ function spiralPath(config, turns, points) {
     return path;
 }
 
-
-class LineShape {
-    constructor(config, length = 200) {
+class Shape {
+    constructor(config) {
         this.cx = config.W / 2;
-        this.cy = config.H / 2;
-        this.length = length;
-        this.vertices = [
-        [this.cx - this.length / 2, this.cy],
-        [this.cx + this.length / 2, this.cy],
-        ];
+        this.cy = config.H / 2;       
     }
-
-    getVertices() {
-        return this.vertices.map(([x, y]) => [x, y]);
-    }
+    autoRadius(divisor) {
+        this.radius = Math.min(config.W, config.H) / divisor;
+        return this.radius;
+    }    
 }
 class PathShape {
     constructor(generatorFn, ...params) {
@@ -54,13 +49,24 @@ class PathShape {
     }
 }
 
+class Line extends Shape {
+    constructor(config, length = 200) {
+        super(config)
+        this.length = length;
+        this.vertices = [
+            [this.cx - this.length / 2, this.cy],
+            [this.cx + this.length / 2, this.cy],
+        ];
+    }
+    getVertices() {
+        return this.vertices.map(([x, y]) => [x, y]);
+    }
+}
 
-// --- Shape: defines geometry ---
-class TriangleShape {
+class Triangle extends Shape {
     constructor(config) {
-        this.cx = config.W / 2;
-        this.cy = config.H / 2;
-        this.radius = Math.min(config.W, config.H) / 4;
+        super(config);
+        this.autoRadius(4);
         this.vertices = this.computeVertices();
     }
     computeVertices() {
@@ -78,10 +84,9 @@ class TriangleShape {
     }
 }
 
-class StarShape {
+class Star extends Shape {
     constructor(config, points = 5) {
-        this.cx = config.W / 2;
-        this.cy = config.H / 2;
+        super(config);
         this.radiusOuter = Math.min(config.W, config.H) / 4;
         this.radiusInner = this.radiusOuter * 0.5; // inner points of star
         this.points = points;
@@ -104,14 +109,9 @@ class StarShape {
     }
 }
 
-
-
-// --- Brush: owns shape and motion, paints into Dreamflow ---
-
-class RectangleShape {
+class Rectangle extends Shape {
     constructor(config, width, height) {
-        this.cx = config.W / 2;
-        this.cy = config.H / 2;
+        super(config);
         this.width = width;
         this.height = height;
         this.vertices = this.computeVertices();
@@ -122,10 +122,10 @@ class RectangleShape {
 
         // Unrotated rectangle corners relative to center
         return [
-        [this.cx - hw, this.cy - hh],
-        [this.cx + hw, this.cy - hh],
-        [this.cx + hw, this.cy + hh],
-        [this.cx - hw, this.cy + hh],
+            [this.cx - hw, this.cy - hh],
+            [this.cx + hw, this.cy - hh],
+            [this.cx + hw, this.cy + hh],
+            [this.cx - hw, this.cy + hh],
         ];
     }
     getVertices() {
@@ -134,15 +134,13 @@ class RectangleShape {
     }
 }
 
-class PolygonShape {
-    constructor(config, radius = null , steps = 24) {
-        this.cx = config.W / 2;
-        this.cy = config.H / 2;
-        this.radius = radius === null ? Math.min(config.W, config.H) / 4 : radius;
+class Polygon extends Shape {
+    constructor(config, steps = 8, radius = null) {
+        super(config);
+        this.radius = (radius === null ? this.autoRadius(2.5) : radius);
         this.steps = steps;
         this.vertices = this.computeVertices();
     }
-
     computeVertices() {
         const verts = [];
         for ( let i = 0; i < this.steps; i++ ) {
@@ -153,7 +151,6 @@ class PolygonShape {
         }
         return verts;
     }
-
     getVertices() {
         return this.vertices.map(v => [...v]);
     }

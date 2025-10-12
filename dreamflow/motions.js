@@ -1,5 +1,5 @@
 // --- Motion: defines how angle (and possibly position) changes over time ---
-class RotatingMotion {
+class Rotate {
     constructor(speed = 0.02, initialAngle = 0, direction = 1) {
         this.speed = speed;
         this.angle = initialAngle;
@@ -26,7 +26,7 @@ class RotatingMotion {
         });
     }
 }
-class SizingMotion {
+class Pulse {
     constructor(speed = 1.5, amplitude = 0.15) {
         this.time = Math.random() * Math.PI * 2; // random phase offset
         this.speed = speed;     // how fast it pulses
@@ -50,7 +50,7 @@ class SizingMotion {
     }
 }
 
-class WobbleMotion {
+class Wobble {
     constructor({ amp = 6, freq = 0.002, phaseSpread = Math.PI * 2 } = {}) {
         this.amp = amp;             // how far vertices wobble
         this.freq = freq;           // how fast the wobble oscillates
@@ -70,7 +70,7 @@ class WobbleMotion {
     }
 }
 
-class SpinMotion {
+class Spin {
     constructor(speed = 0.02) {
         this.time = 0;        // internal spin timer
         this.speed = speed;    // how fast it “spins”

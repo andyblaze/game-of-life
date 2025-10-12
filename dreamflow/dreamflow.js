@@ -59,9 +59,9 @@ class DreamFlow {
         for ( let i = 0; i < this.size; i++ ) 
             this.hue[i] = Math.random();
         this.precomputeNeighbors(config);
-        off.width = config.W;
-        off.height = config.H;
-        this.imageData = offCtx.createImageData(config.W, config.H);
+        config.offscreenCanvas.width = config.W;
+        config.offscreenCanvas.height = config.H;
+        this.imageData = config.offCtx.createImageData(config.W, config.H);
     }
     seedRandom(str=1.0){
         for ( let i = 0, n = this.size * 3; i < n; i+=3 ) {
@@ -201,7 +201,7 @@ class DreamFlow {
     }
     draw(offscreen, onscreen) {
         dreamFlow.renderToOff(offscreen);
-        dreamFlow.drawToScreen(onscreen);
+        dreamFlow.drawToScreen(offscreen, onscreen);
     }
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
     renderToOff(offscreen) {
@@ -254,9 +254,9 @@ class DreamFlow {
         }
         offscreen.putImageData(this.imageData, 0, 0);
     }
-    drawToScreen(onscreen) {
+    drawToScreen(offscreen, onscreen) {
         onscreen.imageSmoothingEnabled = true;
-        onscreen.drawImage(off, 0, 0, canvas.width, canvas.height);
+        onscreen.drawImage(offscreen.canvas, 0, 0, onscreen.canvas.width, onscreen.canvas.height);
     }
     // Inject a soft pulse into simA at float grid coords
     exciteAt(gridX, gridY, radius, strength = 1) {

@@ -5,90 +5,63 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Dreamflow — CPU optimized</title>
 <style>
-  html,body{height:100%;margin:0;background:#050507;color:#eaf2ff;font-family:system-ui,Segoe UI,Roboto,Arial;}
-  #ui{display:none; position:fixed;left:12px;top:12px;background:rgba(3,6,9,0.6);padding:10px;border-radius:10px;z-index:20;width:320px;}
-  label{display:block;margin-top:6px;font-size:13px}
-  input[type=range]{width:100%}
-  button{margin-top:8px;margin-right:6px}
-  .row{display:flex;gap:6px;align-items:center}
-  .val{min-width:56px;text-align:right;font-family:monospace}
-  canvas{display:block;width:100%;height:100vh}
+html,body {
+    height:100%;
+    margin:0;
+    background:#050507;
+    color:#eaf2ff;
+    font-family:system-ui,Segoe UI,Roboto,Arial;
+}
+canvas {
+    display:block;
+    width:100%;
+    height:100vh
+}
 </style>
 </head>
 <body>
-<div id="ui">
-  <strong>Dreamflow — CPU optimized</strong>
-  <div class="row" style="margin-top:6px">
-    <button id="btnPause">Pause</button>
-    <button id="btnSeed">Seed</button>
-    <button id="btnClear">Clear</button>
-    <div style="flex:1"></div>
-    <div class="val" id="fps">— fps</div>
-  </div>
+<input id="dif" type="hidden"value="26" />
+<input id="adv" type="hidden" value="40" />
+<input id="dmp" type="hidden" value="8" />
+<input id="exc" type="hidden" value="12" />
+<input id="fde" type="hidden" value="90" />
+<input id="gridW" type="hidden" value="480" />
+<input id="gridH" type="hidden" value="270" />
 
-  <label>Grid (W × H)</label>
-  <div class="row">
-    <input id="gridW" type="number" min="80" max="960" value="480" style="width:92px">
-    <input id="gridH" type="number" min="48" max="540" value="270" style="width:92px">
-    <button id="applyGrid">Apply</button>
-  </div>
-
-  <label>Diffusion <span class="val" id="diffVal">0.26</span></label>
-  <input id="diff" type="range" min="0" max="100" value="26">
-
-  <label>Advection <span class="val" id="advVal">0.40</span></label>
-  <input id="adv" type="range" min="0" max="200" value="40">
-
-  <label>Damping <span class="val" id="dampVal">0.008</span></label>
-  <input id="damp" type="range" min="0" max="50" value="8">
-
-  <label>Excite/sec <span class="val" id="excVal">8</span></label>
-  <input id="exc" type="range" min="0" max="60" value="8">
-
-  <label>Fade <span class="val" id="fadeVal">0.90</span></label>
-  <input id="fade" type="range" min="70" max="90" value="90">
-
-  <small style="display:block;margin-top:6px">Nearest-neighbor advection is used for speed. Click & drag to paint.</small>
-</div>
-
-<canvas id="main"></canvas>
+<canvas id="onscreen"></canvas>
 
 <script>
-const canvas = document.getElementById('main');
-const ctx = canvas.getContext('2d', { alpha: false });
+const onscreen = document.getElementById("onscreen");
+const onCtx = onscreen.getContext("2d", { alpha: false });
 
-const off = document.createElement('canvas');
-const offCtx = off.getContext('2d');
+const offscreen = document.createElement("canvas");
+const offCtx = offscreen.getContext("2d");
 
-  // UI
-  const btnPause = document.getElementById('btnPause');
-  const btnSeed  = document.getElementById('btnSeed');
-  const btnClear = document.getElementById('btnClear');
-  const gridWIn = document.getElementById('gridW');
-  const gridHIn = document.getElementById('gridH');
-  const applyGridBtn = document.getElementById('applyGrid');
-  const diffRange = document.getElementById('diff');
-  const advRange = document.getElementById('adv');
-  const dampRange = document.getElementById('damp');
-  const excRange = document.getElementById('exc');
-  const fadeRange = document.getElementById('fade');
-  const diffVal = document.getElementById('diffVal');
-  const advVal = document.getElementById('advVal');
-  const dampVal = document.getElementById('dampVal');
-  const excVal = document.getElementById('excVal');
-  const fadeVal = document.getElementById('fadeVal');
-  const fpsLabel = document.getElementById('fps');
+
+const gridWIn = document.getElementById('gridW');
+const gridHIn = document.getElementById('gridH');
+
+const diff = document.getElementById('dif');
+const adv = document.getElementById('adv');
+const damp = document.getElementById('dmp');
+const exc = document.getElementById('exc');
+const fade = document.getElementById('fde');
+
 
 
 // Simulation parameters (start values)
 const config = {  
-  W: parseInt(gridWIn.value,10), 
-  H: parseInt(gridHIn.value,10),
-  diffusion: parseFloat(diffRange.value)/100,
-  advection: parseFloat(advRange.value)/100,
-  damping: parseFloat(dampRange.value)/1000,
-  excitationRate: parseFloat(excRange.value),
-  fadeStrength: parseFloat(fadeRange.value)/100
+    W: parseInt(gridWIn.value,10), 
+    H: parseInt(gridHIn.value,10),
+    diffusion: parseFloat(diff.value)/100,
+    advection: parseFloat(adv.value)/100,
+    damping: parseFloat(damp.value)/1000,
+    excitationRate: parseFloat(exc.value),
+    fadeStrength: parseFloat(fade.value)/100,
+    onscreenCanvas: onscreen,
+    "onCtx": onCtx,
+    offscreenCanvas: offscreen,
+    "offCtx": offCtx
 };
 </script>
 
@@ -108,15 +81,15 @@ const config = {
 const dreamFlow = new DreamFlow(config, new RandomExcite(config));
 
 const brushes = [
-    new ShapeBrush(16, new PolygonShape(config, 100, 4), new SpinMotion(0.02)),
-    new ShapeBrush(16, new PolygonShape(config, 120, 3), new RotatingMotion(0.02, 1, -1)),
-    new ShapeBrush(12, new PolygonShape(config, 100, 8), new SizingMotion()),
-    new Brush(7, new PathShape(wavePath, config, 0.05, 200), new WobbleMotion()),
-    new Brush(6, new PathShape(spiralPath, config, 3, 200), new WobbleMotion()),
-    new LissajousBrush(16, config, 80, 5, 7, 0.002),
-    new ShapeBrush(16, new LineShape(config, 200), new RotatingMotion(0.03)),
-    new ShapeBrush(16, new StarShape(config), new WobbleMotion()), //RotatingMotion(0.03)),
-    new RotatingLineBrush(15, config, 250, 0.04),
+    new ShapeBrush(6, new Polygon(config, 4), new Spin(0.02)),
+    new ShapeBrush(6, new Polygon(config, 3), new Rotate(0.02, 1, -1)),
+    new ShapeBrush(5, new Polygon(config, 8), new Pulse()),
+    new Brush(7, new PathShape(wavePath, config, 0.05, 200), new Wobble()),
+    new Brush(6, new PathShape(spiralPath, config, 3, 200), new Wobble()),
+    new LissajousBrush(6, config, 80, 5, 7, 0.002),
+    new ShapeBrush(6, new Line(config, 200), new Rotate(0.03)),
+    new ShapeBrush(6, new Star(config), new Wobble()), //RotatingMotion(0.03)),
+    new RotatingLineBrush(5, config, 250, 0.04),
     new ChaoticDuoBrush(5)
 ];
 const scheduler = new BrushScheduler(brushes, new NullBrush());
@@ -128,7 +101,7 @@ function loop(now) {
     if ( ! dreamFlow.running ) return;
     lastFrame = now;
     const dt = Math.max(1, now - lastFrame);
-    dreamFlow.update(dt, offCtx, ctx);
+    dreamFlow.update(dt, offCtx, onCtx);
 
     DeltaReport.log(now);
     requestAnimationFrame(loop);

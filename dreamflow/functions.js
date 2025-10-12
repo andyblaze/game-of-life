@@ -26,9 +26,9 @@ function hslToRgb(h, s, l) {
 
 function resizeCanvas() {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    canvas.width  = Math.round(window.innerWidth * dpr);
-    canvas.height = Math.round(window.innerHeight * dpr);
-    canvas.style.width  = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
-    ctx.imageSmoothingEnabled = true;
+    onscreen.width  = Math.round(window.innerWidth * dpr);
+    onscreen.height = Math.round(window.innerHeight * dpr);
+    onscreen.style.width  = window.innerWidth + 'px';
+    onscreen.style.height = window.innerHeight + 'px';
+    onCtx.imageSmoothingEnabled = true;
 }
