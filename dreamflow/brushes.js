@@ -343,3 +343,30 @@ class ShapeBrush extends BaseBrush {
         }
     }
 }
+class MultiShapeBrush extends BaseBrush {
+  constructor(lifetime, ...brushes) {
+    super(lifetime);
+    // assign lifetime to all child brushes
+    this.brushes = brushes.map(b => {
+      b.lifetime = lifetime;
+      return b;
+    });
+  }
+
+  update(dt, df) {
+    this.updateAge();
+
+    for (const brush of this.brushes) {
+      if (!brush.expired()) {
+        brush.update(dt, df);
+      }
+    }
+  }
+
+  reset() {
+    super.reset();
+    for (const brush of this.brushes) {
+      brush.reset();
+    }
+  }
+}

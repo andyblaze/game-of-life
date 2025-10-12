@@ -81,6 +81,10 @@ const config = {
 const dreamFlow = new DreamFlow(config, new RandomExcite(config));
 
 const brushes = [
+    new MultiShapeBrush(10,
+        new ShapeBrush(10, new Line(config).setCx(-50), new Rotate(0.02, 1, 1)),
+        new ShapeBrush(10, new Line(config).setCx(50), new Rotate(0.02, 1, -1))
+    ),
     new ShapeBrush(6, new Polygon(config, 4), new Spin(0.02)),
     new ShapeBrush(6, new Polygon(config, 3), new Rotate(0.02, 1, -1)),
     new ShapeBrush(5, new Polygon(config, 8), new Pulse()),

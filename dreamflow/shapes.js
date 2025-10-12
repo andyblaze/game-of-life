@@ -37,7 +37,13 @@ class Shape {
     autoRadius(divisor) {
         this.radius = Math.min(config.W, config.H) / divisor;
         return this.radius;
-    }    
+    } 
+    setCx(x) {
+        this.cx += x;
+        this.vertices = this.computeVertices();
+        return this;
+    }
+    computeVertices()  {}
 }
 class PathShape {
     constructor(generatorFn, ...params) {
@@ -53,7 +59,10 @@ class Line extends Shape {
     constructor(config, length = 200) {
         super(config)
         this.length = length;
-        this.vertices = [
+        this.vertices = this.computeVertices();
+    }
+    computeVertices() {
+        return [
             [this.cx - this.length / 2, this.cy],
             [this.cx + this.length / 2, this.cy],
         ];
