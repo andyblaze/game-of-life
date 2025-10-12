@@ -1,78 +1,293 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>KaleidoScope Simulator</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Particles + Curl Noise</title>
 <style>
-  body { margin:0; overflow:hidden; background:#000; }
-  canvas { display:block; }
+  html,body { height:100%; margin:0; background:#000; }
+  canvas { display:block; width:100vw; height:100vh; }
+  #ui {
+    position: fixed; left: 12px; top: 12px; color: #eee; font-family: system-ui, sans-serif;
+    background: rgba(0,0,0,0.35); padding:8px 10px; border-radius:8px; font-size:13px;
+  }
+  label { display:inline-flex; gap:6px; align-items:center; }
+  input[type=range] { width:140px; vertical-align:middle; }
 </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div><label>Particles <span id="pc">1000</span><input id="pRange" type="range" min="200" max="6000" value="1000"></label></div>
+  <div style="margin-top:6px"><label>Noise scale <span id="ns">0.002</span><input id="sRange" type="range" min="0.0005" max="0.01" step="0.0001" value="0.002"></label></div>
+  <div style="margin-top:6px"><label>Speed <span id="sp">1.0</span><input id="vRange" type="range" min="0.1" max="6" step="0.1" value="1.0"></label></div>
+  <div style="margin-top:6px"><label>Trail (alpha) <span id="al">0.1</span><input id="aRange" type="range" min="0.02" max="0.5" step="0.01" value="0.1"></label></div>
+  <div style="margin-top:8px;font-size:12px;opacity:0.85">Click to respawn particles • Drag to push</div>
+</div>
+
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+class DeltaReport {
+    static lastTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static elapsedSeconds = 0;
+    static report = document.getElementById("fps-report");
+    
+    static log(timestamp) {
+        this.frameCount++;
+        const delta = (timestamp - this.lastTime) / 16.67;
+        this.sum += delta;
+        this.lastTime = timestamp;
+        if ( this.frameCount === 120 ) { // every 2 seconds
+            this.elapsedSeconds += 2;
+            const minutes = Math.floor(this.elapsedSeconds / 60);
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if ( fps < this.min ) this.min = fps; 
+            if ( fps > this.max ) this.max = fps; 
+            console.log("time", `${minutes}:${this.elapsedSeconds % 60}`, " fps=", fps, " min=", this.min, " max=", this.max);
+            //this.report.innerText = fps + " " + this.min + " " + this.max;
+            this.frameCount = 0;
+            this.sum = 0;
+        }
+    }
+}
+/* -------------------------
+   Simple Perlin noise (improved)
+   ------------------------- */
+class Perlin {
+  constructor() {
+    this.p = new Uint8Array(512);
+    const perm = new Uint8Array([
+      151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+      190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+      77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,
+      189,28,42,223,183,170,213,119,248,152, 2,44,154,163,70,221,153,101,155,167, 43,172,9,129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127, 4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+    ]);
+    for (let i = 0; i < 512; ++i) this.p[i] = perm[i & 255];
+  }
 
-const slices = 12;                 // number of mirrored panels
-const angle = (2 * Math.PI) / slices;
-let t = 0;
+  fade(t){ return t*t*t*(t*(t*6 -15) +10); }
+  lerp(a,b,t){ return a + t*(b-a); }
+  grad(hash, x, y, z=0) {
+    const h = hash & 15;
+    const u = h<8 ? x : y;
+    const v = h<4 ? y : (h===12||h===14 ? x : z);
+    return ((h&1)? -u : u) + ((h&2)? -v : v);
+  }
 
-// Create an offscreen canvas as the "source texture"
-const src = document.createElement('canvas');
-src.width = 800;
-src.height = 800;
-const sctx = src.getContext('2d');
+  // 3D Perlin (we use third dim as time)
+  noise(x, y, z=0) {
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    const Z = Math.floor(z) & 255;
+    x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+    const u = this.fade(x), v = this.fade(y), w = this.fade(z);
+    const p = this.p;
 
-// Draw or animate your texture here
-function drawSource(time) {
-  const w = src.width, h = src.height;
-  sctx.fillStyle = 'black';
-  sctx.fillRect(0, 0, w, h);
-  for (let i = 0; i < 20; i++) {
-    const x = (Math.sin(time*0.001 + i)*0.5 + 0.5)*w;
-    const y = (Math.cos(time*0.0012 + i)*0.5 + 0.5)*h;
-    const r = 50 + 40*Math.sin(time*0.002 + i);
-    sctx.fillStyle = `hsl(${(i*30 + time*0.05)%360},80%,60%)`;
-    sctx.beginPath();
-    sctx.rect(x, y, 12, 12);
-    sctx.fill();
+    const A  = p[X  ]+Y, AA = p[A]+Z, AB = p[A+1]+Z;
+    const B  = p[X+1]+Y, BA = p[B]+Z, BB = p[B+1]+Z;
+
+    return this.lerp(
+      this.lerp(
+        this.lerp(this.grad(p[AA], x  , y  , z   ), this.grad(p[BA], x-1, y  , z   ), u),
+        this.lerp(this.grad(p[AB], x  , y-1, z   ), this.grad(p[BB], x-1, y-1, z   ), u),
+        v
+      ),
+      this.lerp(
+        this.lerp(this.grad(p[AA+1], x  , y  , z-1 ), this.grad(p[BA+1], x-1, y  , z-1 ), u),
+        this.lerp(this.grad(p[AB+1], x  , y-1, z-1 ), this.grad(p[BB+1], x-1, y-1, z-1 ), u),
+        v
+      ),
+      w
+    );
   }
 }
 
-// Draw the kaleidoscope
-function draw(time) {
-  drawSource(time);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  const radius = Math.min(canvas.width, canvas.height) / 2;
-  ctx.save();
-  ctx.translate(canvas.width/2, canvas.height/2);
-  
-  for (let i = 0; i < slices; i++) {
-    ctx.save();
-    ctx.rotate(i * angle);
-    if (i % 2 === 0) ctx.scale(1, 1); // normal
-    else ctx.scale(1, -1); // mirrored
-    
+/* -------------------------
+   Curl noise helper (2D)
+   Use scalar noise n(x,y,t). Curl = (∂n/∂y, -∂n/∂x)  (gives divergence-free field)
+   We'll get derivatives via central differences.
+   ------------------------- */
+
+const perlin = new Perlin();
+
+function curlNoise(x, y, t, scale, eps = 1e-3) {
+  // sample positions scaled
+  const sx = x * scale;
+  const sy = y * scale;
+  const dt = t * 0.0005;
+
+  // finite differences for partial derivatives of scalar field n(x,y,t)
+  const n_x1 = perlin.noise(sx + eps, sy, dt);
+  const n_x2 = perlin.noise(sx - eps, sy, dt);
+  const n_y1 = perlin.noise(sx, sy + eps, dt);
+  const n_y2 = perlin.noise(sx, sy - eps, dt);
+
+  const dx = (n_x1 - n_x2) / (2 * eps);
+  const dy = (n_y1 - n_y2) / (2 * eps);
+
+  // curl of gradient-like scalar -> divergence-free 2D vector
+  // vector = (d/dy n, -d/dx n)
+  return { x: dy, y: -dx };
+}
+
+/* -------------------------
+   Particles
+   ------------------------- */
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', { alpha: true });
+let W = canvas.width = innerWidth;
+let H = canvas.height = innerHeight;
+
+window.addEventListener('resize', () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; });
+
+let particles = [];
+let PARTICLE_COUNT = 1000;
+const maxCountEl = document.getElementById('pc');
+const pRange = document.getElementById('pRange');
+pRange.addEventListener('input', (e) => {
+  PARTICLE_COUNT = +e.target.value;
+  maxCountEl.textContent = PARTICLE_COUNT;
+  syncParticles();
+});
+
+const sRange = document.getElementById('sRange');
+const nsEl = document.getElementById('ns');
+sRange.addEventListener('input', () => nsEl.textContent = parseFloat(sRange.value).toFixed(4));
+
+const vRange = document.getElementById('vRange');
+const spEl = document.getElementById('sp');
+vRange.addEventListener('input', () => spEl.textContent = parseFloat(vRange.value).toFixed(1));
+
+const aRange = document.getElementById('aRange');
+const alEl = document.getElementById('al');
+aRange.addEventListener('input', () => alEl.textContent = parseFloat(aRange.value).toFixed(2));
+
+function syncParticles() {
+  if (particles.length < PARTICLE_COUNT) {
+    const toAdd = PARTICLE_COUNT - particles.length;
+    for (let i=0;i<toAdd;i++) particles.push(randomParticle());
+  } else {
+    particles.length = PARTICLE_COUNT;
+  }
+}
+function randomParticle() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: 0,
+    vy: 0,
+    age: 0,
+    hue: Math.random()*360,
+    r: 0.6 + Math.random()*1.8
+  };
+}
+for (let i=0;i<PARTICLE_COUNT;i++) particles.push(randomParticle());
+
+/* Interaction: click to respawn, drag to push */
+let mouse = { x:0, y:0, down:false, px:0, py:0 };
+canvas.addEventListener('pointerdown', e => { mouse.down = true; mouse.x = e.clientX; mouse.y = e.clientY; mouse.px = mouse.x; mouse.py = mouse.y; });
+canvas.addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+canvas.addEventListener('pointerup', e => { mouse.down = false; });
+canvas.addEventListener('click', e => {
+  // respawn some particles around click
+  for (let i=0;i<40;i++) {
+    const p = particles[Math.floor(Math.random()*particles.length)];
+    p.x = e.clientX + (Math.random()-0.5)*40;
+    p.y = e.clientY + (Math.random()-0.5)*40;
+    p.vx = (Math.random()-0.5)*2;
+    p.vy = (Math.random()-0.5)*2;
+    p.hue = (Math.random()*360);
+  }
+});
+
+/* -------------------------
+   Animation
+   ------------------------- */
+
+let last = performance.now();
+function step(now) {
+  const dtMs = now - last;
+  last = now;
+  const dt = Math.min(dtMs / 16.6667, 4); // normalized, cap to avoid jumps
+
+  // draw decaying background for trails
+  ctx.fillStyle = `rgba(0,0,0,${parseFloat(aRange.value)})`; // trail alpha from UI
+  ctx.fillRect(0,0,W,H);
+
+  // update particles
+  const scale = parseFloat(sRange.value); // noise scale
+  const speed = parseFloat(vRange.value) * 0.6; // global speed
+  for (let i=0;i<particles.length;i++){
+    const p = particles[i];
+    // get curl at particle pos
+    const c = curlNoise(p.x, p.y, now, scale, 1e-3);
+    // small normalization so vectors are a bit smoother
+    const mag = Math.hypot(c.x, c.y) + 1e-6;
+    const fx = (c.x / mag) * speed;
+    const fy = (c.y / mag) * speed;
+
+    // verlet-ish integration (simple)
+    p.vx += fx * dt * 0.3;
+    p.vy += fy * dt * 0.3;
+
+    // damping
+    p.vx *= 0.985;
+    p.vy *= 0.985;
+
+    // add mouse influence if dragging
+    if (mouse.down) {
+      const mx = mouse.x, my = mouse.y;
+      const dx = p.x - mx, dy = p.y - my;
+      const dist2 = dx*dx + dy*dy;
+      if (dist2 < 20000) {
+        p.vx += (dx / (Math.sqrt(dist2)+20)) * 0.08;
+        p.vy += (dy / (Math.sqrt(dist2)+20)) * 0.08;
+      }
+    }
+
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.age += dt;
+
+    // wrap around edges for continuous field
+    if (p.x < -10) p.x = W + 10;
+    if (p.x > W + 10) p.x = -10;
+    if (p.y < -10) p.y = H + 10;
+    if (p.y > H + 10) p.y = -10;
+  }
+
+  // render
+  ctx.globalCompositeOperation = 'lighter'; // glow-ish additive blending
+  for (let i=0;i<particles.length;i++){
+    const p = particles[i];
+    const alpha = 0.6;
+    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
+    grad.addColorStop(0, `hsla(${p.hue}, 90%, 60%, ${alpha})`);
+    grad.addColorStop(0.4, `hsla(${(p.hue+40)%360}, 90%, 55%, ${alpha*0.45})`);
+    grad.addColorStop(1, `hsla(${(p.hue+80)%360}, 80%, 20%, 0)`);
+    ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.lineTo(radius*Math.tan(angle/2), radius);
-    ctx.lineTo(-radius*Math.tan(angle/2), radius);
-    ctx.closePath();
-    ctx.clip();
-    
-    // Draw source pattern rotated slowly
-    ctx.drawImage(src, -radius, -radius, radius*2, radius*2);
-    ctx.restore();
+    ctx.arc(p.x, p.y, p.r*6, 0, Math.PI*2);
+    ctx.fill();
   }
+  ctx.globalCompositeOperation = 'source-over';
+
+  // keep particles synced with slider
+  syncParticles();
   
-  ctx.restore();
-  requestAnimationFrame(draw);
+  DeltaReport.log(now);
+
+  requestAnimationFrame(step);
 }
-draw();
+
+// kick off
+ctx.fillStyle = 'black';
+ctx.fillRect(0,0,W,H);
+requestAnimationFrame(step);
 </script>
 </body>
 </html>
