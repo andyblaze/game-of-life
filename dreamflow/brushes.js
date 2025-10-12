@@ -210,6 +210,7 @@ class LissajousBrush extends BaseBrush {
 
         df.exciteAt(x, y, radius, strength);
         df.exciteAt(x+20, y-20, radius, strength);
+        df.exciteAt(x-20, y+20, radius, strength);
     }
 }
 
