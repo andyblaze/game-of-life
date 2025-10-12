@@ -1,4 +1,6 @@
-function wavePath(config, freq, steps) {
+import config from "./config.js";
+
+export function wavePath(config, freq, steps) {
     const cx = config.W / 2;
     const cy = config.H / 2;
     const radius = Math.min(config.W, config.H) / 3;    
@@ -13,7 +15,7 @@ function wavePath(config, freq, steps) {
     return path;
 }
 
-function spiralPath(config, turns, points) {
+export function spiralPath(config, turns, points) {
     const cx = config.W / 2;
     const cy = config.H / 2;
     const radius = Math.min(config.W, config.H) / 3;
@@ -45,7 +47,7 @@ class Shape {
     }
     computeVertices()  {}
 }
-class PathShape {
+export class PathShape {
     constructor(generatorFn, ...params) {
         this.vertices = generatorFn(...params);
     }
@@ -55,7 +57,7 @@ class PathShape {
     }
 }
 
-class Line extends Shape {
+export class Line extends Shape {
     constructor(config, length = 200) {
         super(config)
         this.length = length;
@@ -72,7 +74,7 @@ class Line extends Shape {
     }
 }
 
-class Triangle extends Shape {
+export class Triangle extends Shape {
     constructor(config) {
         super(config);
         this.autoRadius(4);
@@ -93,7 +95,7 @@ class Triangle extends Shape {
     }
 }
 
-class Star extends Shape {
+export class Star extends Shape {
     constructor(config, points = 5) {
         super(config);
         this.radiusOuter = Math.min(config.W, config.H) / 4;
@@ -118,7 +120,7 @@ class Star extends Shape {
     }
 }
 
-class Rectangle extends Shape {
+export class Rectangle extends Shape {
     constructor(config, width, height) {
         super(config);
         this.width = width;
@@ -143,7 +145,7 @@ class Rectangle extends Shape {
     }
 }
 
-class Polygon extends Shape {
+export class Polygon extends Shape {
     constructor(config, steps = 8, radius = null) {
         super(config);
         this.radius = (radius === null ? this.autoRadius(2.5) : radius);

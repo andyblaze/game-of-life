@@ -1,5 +1,5 @@
 
-class DeltaReport {
+export default class DeltaReport {
     static lastTime = performance.now();
     static frameCount = 0;
     static sum = 0;

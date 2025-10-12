@@ -1,3 +1,5 @@
+import config from "./config.js";
+
 class BaseBrush {
     constructor(lifetime) {
         this.t = 0;
@@ -16,7 +18,7 @@ class BaseBrush {
     }
 }
 
-class NullBrush extends BaseBrush {
+export class NullBrush extends BaseBrush {
     constructor() {
         super(Math.floor(Math.random() * 2) + 3);
     }
@@ -28,7 +30,7 @@ class NullBrush extends BaseBrush {
     }
 }
 
-class Brush extends BaseBrush {
+export class Brush extends BaseBrush {
     constructor(lifetime, p) {
         super(lifetime);
         this.path = p;
@@ -52,7 +54,7 @@ class Brush extends BaseBrush {
     }
 }
 
-class BinaryBrush extends BaseBrush {
+export class BinaryBrush extends BaseBrush {
   constructor(lifetime, cx, cy, distance = 200, m1 = 1, m2 = 1.2, G = 1) {
     super(lifetime);
     this.a = { x: cx - distance/2, y: cy, vx: 0, vy: 0, m: m1 };
@@ -140,7 +142,7 @@ class BinaryBrush extends BaseBrush {
   }
 }
 
-class RotatingLineBrush extends BaseBrush {
+export class RotatingLineBrush extends BaseBrush {
   constructor(lifetime, config, length = 200, speed = 0.03) {
     super(lifetime);
     this.cx = config.W / 2;
@@ -185,7 +187,7 @@ class RotatingLineBrush extends BaseBrush {
 
 
 
-class LissajousBrush extends BaseBrush {
+export class LissajousBrush extends BaseBrush {
     constructor(lifetime, config, radius = 180, freqX = 2, freqY = 3, speed = 0.02) {
     super(lifetime);
         this.cx = config.W / 2;
@@ -214,7 +216,7 @@ class LissajousBrush extends BaseBrush {
     }
 }
 
-class ChaoticDuoBrush extends BaseBrush { // lorenz 
+export class ChaoticDuoBrush extends BaseBrush { // lorenz 
     constructor(lifetime, points=2000, dt=0.01, sigma=10, rho=28, beta=8/3, scale=5) {
         super(lifetime);
         this.points = points;
@@ -264,7 +266,7 @@ class ChaoticDuoBrush extends BaseBrush { // lorenz
         }
     }
 }
-class TriangleBrush extends BaseBrush {
+export class TriangleBrush extends BaseBrush {
     constructor(lifetime, config, points = 120, speed = 0.02) {
         super(lifetime); 
         this.cx = config.W / 2;
@@ -313,7 +315,7 @@ class TriangleBrush extends BaseBrush {
     }
 }
 
-class ShapeBrush extends BaseBrush {
+export class ShapeBrush extends BaseBrush {
     constructor(lifetime, shape, motion=null) {
         super(lifetime);
         this.shape = shape;
@@ -344,7 +346,7 @@ class ShapeBrush extends BaseBrush {
         }
     }
 }
-class MultiShapeBrush extends BaseBrush {
+export class MultiShapeBrush extends BaseBrush {
   constructor(lifetime, ...brushes) {
     super(lifetime);
     // assign lifetime to all child brushes

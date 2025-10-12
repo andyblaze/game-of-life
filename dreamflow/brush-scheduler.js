@@ -1,5 +1,5 @@
 
-class BrushScheduler {
+export default class BrushScheduler {
     constructor(brushes, nb) {
         this.brushes = brushes;
         this.nullBrush = nb;

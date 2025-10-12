@@ -1,6 +1,8 @@
-const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
+import config from "./config.js";
 
-function hslToRgb(h, s, l) {
+export const clamp = (v,a,b) => v < a ? a : (v > b ? b : v);
+
+export function hslToRgb(h, s, l) {
     let r, g, b;
 
     if ( s == 0 ) {
@@ -24,11 +26,11 @@ function hslToRgb(h, s, l) {
 }
 
 
-function resizeCanvas() {
+export function resizeCanvas() {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
     onscreen.width  = Math.round(window.innerWidth * dpr);
     onscreen.height = Math.round(window.innerHeight * dpr);
     onscreen.style.width  = window.innerWidth + 'px';
     onscreen.style.height = window.innerHeight + 'px';
-    onCtx.imageSmoothingEnabled = true;
+    config.onCtx.imageSmoothingEnabled = true;
 }

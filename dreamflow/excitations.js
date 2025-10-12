@@ -3,7 +3,7 @@ class ExcitationStrategy {
     update(dt, df) {} // called every frame
 }
 
-class RandomExcite extends ExcitationStrategy {
+export default class RandomExcite extends ExcitationStrategy {
     constructor(config) { 
         super(); 
         this.cfg = config;

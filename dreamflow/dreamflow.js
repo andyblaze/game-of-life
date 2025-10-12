@@ -1,4 +1,7 @@
-class DreamFlow {
+import config from "./config.js";
+import { clamp, hslToRgb } from "./functions.js";
+
+export default class DreamFlow {
     constructor(config, es=null) {
         this.cfg = config;
         this.exciteStrategy = es;
@@ -200,8 +203,8 @@ class DreamFlow {
         const tmp = this.simA; this.simA = this.simB; this.simB = tmp;
     }
     draw(offscreen, onscreen) {
-        dreamFlow.renderToOff(offscreen);
-        dreamFlow.drawToScreen(offscreen, onscreen);
+        this.renderToOff(offscreen);
+        this.drawToScreen(offscreen, onscreen);
     }
     // Render simA (Float32) -> imageData (Uint8ClampedArray) quickly
     renderToOff(offscreen) {
