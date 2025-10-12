@@ -1,17 +1,9 @@
-<?php 
-require '../utils.php';
-$crud = new JsonCrud('../gallery-data/data.json');
-$page = $crud->read(pageSlug());
-?><!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title><?=$page->data->page_title;?></title>
-<meta name="description" content="<?=$page->data->description;?>" />
-<meta name="keywords" content="<?=$page->data->keywords;?>" />
-<link rel="canonical" href="<?=BASE_URL . pageSlug();?>" />
-<?=ogMetaData($page->data->og) . 
-twitterMetaData($page->data->og);?>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dreamflow — CPU optimized</title>
 <style>
 html,body {
     height:100%;
