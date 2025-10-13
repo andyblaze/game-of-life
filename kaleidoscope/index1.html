@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Particles + Curl Noise</title>
 <style>
-  html,body { height:100%; margin:0; background:#000; }
+  html,body { height:100%; margin:0; background:#000 }
   canvas { display:block; width:100vw; height:100vh; }
   #ui {
     position: fixed; left: 12px; top: 12px; color: #eee; font-family: system-ui, sans-serif;
@@ -18,10 +18,10 @@
 <body>
 <canvas id="c"></canvas>
 <div id="ui">
-  <div><label>Particles <span id="pc">1000</span><input id="pRange" type="range" min="200" max="6000" value="1000"></label></div>
-  <div style="margin-top:6px"><label>Noise scale <span id="ns">0.002</span><input id="sRange" type="range" min="0.0005" max="0.01" step="0.0001" value="0.01"></label></div>
+  <div><label>Particles <span id="pc">1000</span><input id="pRange" type="range" min="200" max="6000" value="250"></label></div>
+  <div style="margin-top:6px"><label>Noise scale <span id="ns">0.002</span><input id="sRange" type="range" min="0.0005" max="0.01" step="0.0001" value="0.002"></label></div>
   <div style="margin-top:6px"><label>Speed <span id="sp">1.0</span><input id="vRange" type="range" min="0.1" max="6" step="0.1" value="0.1"></label></div>
-  <div style="margin-top:6px"><label>Trail (alpha) <span id="al">0</span><input id="aRange" type="range" min="0" max="1" step="0.1" value="0.1"></label></div>
+  <div style="margin-top:6px"><label>Trail (alpha) <span id="al">0</span><input id="aRange" type="range" min="0" max="1" step="0.1" value="0.5"></label></div>
   <div style="margin-top:8px;font-size:12px;opacity:0.85">Click to respawn particles • Drag to push</div>
 </div>
 
@@ -144,8 +144,7 @@ let H = canvas.height = innerHeight;
 
 window.addEventListener('resize', () => { W = canvas.width = innerWidth; H = canvas.height = innerHeight; });
 
-let particles = [];
-let PARTICLE_COUNT = 1000;
+let PARTICLE_COUNT = 250;
 const maxCountEl = document.getElementById('pc');
 const pRange = document.getElementById('pRange');
 pRange.addEventListener('input', (e) => {
@@ -166,6 +165,83 @@ const aRange = document.getElementById('aRange');
 const alEl = document.getElementById('al');
 aRange.addEventListener('input', () => alEl.textContent = parseFloat(aRange.value).toFixed(2));
 
+class Particles {
+    constructor() {
+        this.items = [];
+    }
+    sync() {
+        if ( this.items.length < PARTICLE_COUNT ) {
+            const toAdd = PARTICLE_COUNT - this.items.length;
+            for ( let i = 0; i < toAdd; i++ ) 
+                this.items.push(randomParticle());
+        } else {
+            this.items.length = PARTICLE_COUNT;
+        }
+    }
+    add(p) {
+        this.items.push(p);
+    }
+    update(dt, now, scale, speed) {
+        for ( const p of this.items ) {
+            // get curl at particle pos
+            const c = curlNoise(p.x, p.y, now, scale, 1e-3);
+            // small normalization so vectors are a bit smoother
+            const mag = Math.hypot(c.x, c.y) + 1e-6;
+            const fx = (c.x / mag) * speed;
+            const fy = (c.y / mag) * speed;
+
+            // verlet-ish integration (simple)
+            p.vx += fx * dt * 0.3;
+            p.vy += fy * dt * 0.3;
+
+            // move right 
+            p.vx +=0.01;
+
+            // damping
+            p.vx *= 0.985;
+            p.vy *= 0.985;
+
+            // add mouse influence if dragging
+            if ( mouse.down ) {
+                const mx = mouse.x, my = mouse.y;
+                const dx = p.x - mx, dy = p.y - my;
+                const dist2 = dx*dx + dy*dy;
+                if ( dist2 < 20000 ) {
+                    p.vx += (dx / (Math.sqrt(dist2)+20)) * 0.08;
+                    p.vy += (dy / (Math.sqrt(dist2)+20)) * 0.08;
+                }
+            }
+
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+            p.age += dt;
+
+            // wrap around edges for continuous field
+            if (p.x < -10) p.x = W + 10;
+            if (p.x > W + 10) p.x = -10;
+            if (p.y < -10) p.y = H + 10;
+            if (p.y > H + 10) p.y = -10;
+        }
+    }
+    draw(ctx) {
+        ctx.globalCompositeOperation = 'lighter'; // glow-ish additive blending
+        for ( const p of this.items ) {
+            const alpha = 0.6;
+            const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
+            grad.addColorStop(0, `hsla(${p.hue}, 90%, 60%, ${alpha})`);
+            grad.addColorStop(0.4, `hsla(${(p.hue+40)%360}, 90%, 55%, ${alpha*0.45})`);
+            grad.addColorStop(1, `hsla(${(p.hue+80)%360}, 80%, 20%, 0)`);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r*6, 0, Math.PI*2);
+            ctx.fill();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+    }
+}
+//let particles = [];
+const particles = new Particles();
+
 function syncParticles() {
   if (particles.length < PARTICLE_COUNT) {
     const toAdd = PARTICLE_COUNT - particles.length;
@@ -185,7 +261,8 @@ function randomParticle() {
     r: 0.6 + Math.random()*1.8
   };
 }
-for (let i=0;i<PARTICLE_COUNT;i++) particles.push(randomParticle());
+for ( let i = 0; i < PARTICLE_COUNT; i++ ) 
+    particles.add(randomParticle());
 
 /* Interaction: click to respawn, drag to push */
 let mouse = { x:0, y:0, down:false, px:0, py:0 };
@@ -207,7 +284,8 @@ canvas.addEventListener('click', e => {
 /* -------------------------
    Animation
    ------------------------- */
-
+const bg = new Image();
+bg.src = "bg.jpg";
 let last = performance.now();
 function step(now) {
   const dtMs = now - last;
@@ -215,69 +293,20 @@ function step(now) {
   const dt = Math.min(dtMs / 16.6667, 4); // normalized, cap to avoid jumps
 
   // draw decaying background for trails
+  ctx.drawImage(bg, 0, 0, W, H)
   ctx.fillStyle = `rgba(0,0,0,${parseFloat(aRange.value)})`; // trail alpha from UI
   ctx.fillRect(0,0,W,H);
 
   // update particles
   const scale = parseFloat(sRange.value); // noise scale
   const speed = parseFloat(vRange.value) * 0.6; // global speed
-  for (let i=0;i<particles.length;i++){
-    const p = particles[i];
-    // get curl at particle pos
-    const c = curlNoise(p.x, p.y, now, scale, 1e-3);
-    // small normalization so vectors are a bit smoother
-    const mag = Math.hypot(c.x, c.y) + 1e-6;
-    const fx = (c.x / mag) * speed;
-    const fy = (c.y / mag) * speed;
-
-    // verlet-ish integration (simple)
-    p.vx += fx * dt * 0.3;
-    p.vy += fy * dt * 0.3;
-
-    // damping
-    p.vx *= 0.985;
-    p.vy *= 0.985;
-
-    // add mouse influence if dragging
-    if (mouse.down) {
-      const mx = mouse.x, my = mouse.y;
-      const dx = p.x - mx, dy = p.y - my;
-      const dist2 = dx*dx + dy*dy;
-      if (dist2 < 20000) {
-        p.vx += (dx / (Math.sqrt(dist2)+20)) * 0.08;
-        p.vy += (dy / (Math.sqrt(dist2)+20)) * 0.08;
-      }
-    }
-
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.age += dt;
-
-    // wrap around edges for continuous field
-    if (p.x < -10) p.x = W + 10;
-    if (p.x > W + 10) p.x = -10;
-    if (p.y < -10) p.y = H + 10;
-    if (p.y > H + 10) p.y = -10;
-  }
+  particles.update(dt, now, scale, speed);
 
   // render
-  ctx.globalCompositeOperation = 'lighter'; // glow-ish additive blending
-  for (let i=0;i<particles.length;i++){
-    const p = particles[i];
-    const alpha = 0.6;
-    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
-    grad.addColorStop(0, `hsla(${p.hue}, 90%, 60%, ${alpha})`);
-    grad.addColorStop(0.4, `hsla(${(p.hue+40)%360}, 90%, 55%, ${alpha*0.45})`);
-    grad.addColorStop(1, `hsla(${(p.hue+80)%360}, 80%, 20%, 0)`);
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r*6, 0, Math.PI*2);
-    ctx.fill();
-  }
-  ctx.globalCompositeOperation = 'source-over';
+  particles.draw(ctx);
 
   // keep particles synced with slider
-  syncParticles();
+  particles.sync();
   
   DeltaReport.log(now);
 
