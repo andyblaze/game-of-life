@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Kaleidoscope — Particles + Curl Noise (fixed)</title>
+<style>
+  html,body {height:100%;margin:0;background:#000;overflow:hidden}
+  canvas {display:block;width:100vw;height:100vh}
+  #ui {
+    position: fixed; left:12px; top:12px; color:#eee; font-family:system-ui,Segoe UI,Roboto,Arial;
+    background: rgba(0,0,0,0.36); padding:10px 12px; border-radius:10px; font-size:13px;
+    backdrop-filter: blur(4px);
+  }
+  label{display:flex;align-items:center;gap:8px}
+  input[type=range]{width:150px}
+  .row{margin-top:8px}
+  button{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);color:#fff;padding:6px 8px;border-radius:6px;cursor:pointer}
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="ui">
+  <div><label>Particles <span id="pc">1000</span><input id="pRange" type="range" min="200" max="6000" value="1000"></label></div>
+  <div class="row"><label>Noise scale <span id="ns">0.002</span><input id="sRange" type="range" min="0.0005" max="0.01" step="0.0001" value="0.002"></label></div>
+  <div class="row"><label>Speed <span id="sp">1.0</span><input id="vRange" type="range" min="0.1" max="6" step="0.1" value="1.0"></label></div>
+  <div class="row"><label>Trail (alpha) <span id="al">0.10</span><input id="aRange" type="range" min="0.02" max="0.5" step="0.01" value="0.10"></label></div>
+  <div class="row" style="display:flex;gap:8px;align-items:center;margin-top:10px">
+    <button id="reset">Respawn</button>
+    <button id="rotateToggle">Rotate: on</button>
+  </div>
+  <div style="margin-top:8px;font-size:12px;opacity:0.9">Click to respawn local particles • Drag to push</div>
+</div>
+
+<script>
+/* -------------------------
+   Perlin (improved) — same as before
+   ------------------------- */
+class Perlin {
+  constructor() {
+    this.p = new Uint8Array(512);
+    const perm = new Uint8Array([
+      151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+      190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,
+      74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,
+      63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,
+      124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,
+      163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,
+      193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,
+      45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+    ]);
+    for (let i=0;i<512;i++) this.p[i]=perm[i&255];
+  }
+  fade(t){ return t*t*t*(t*(t*6-15) +10); }
+  lerp(a,b,t){ return a + t*(b-a); }
+  grad(hash, x, y, z=0) {
+    const h = hash & 15;
+    const u = h<8 ? x : y;
+    const v = h<4 ? y : (h===12||h===14 ? x : z);
+    return ((h&1)? -u : u) + ((h&2)? -v : v);
+  }
+  noise(x,y,z=0){
+    const X = Math.floor(x)&255, Y = Math.floor(y)&255, Z = Math.floor(z)&255;
+    x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+    const u=this.fade(x), v=this.fade(y), w=this.fade(z);
+    const p=this.p;
+    const A=p[X]+Y, AA=p[A]+Z, AB=p[A+1]+Z, B=p[X+1]+Y, BA=p[B]+Z, BB=p[B+1]+Z;
+    return this.lerp(
+      this.lerp(
+        this.lerp(this.grad(p[AA], x, y, z), this.grad(p[BA], x-1, y, z), u),
+        this.lerp(this.grad(p[AB], x, y-1, z), this.grad(p[BB], x-1, y-1, z), u),
+        v
+      ),
+      this.lerp(
+        this.lerp(this.grad(p[AA+1], x, y, z-1), this.grad(p[BA+1], x-1, y, z-1), u),
+        this.lerp(this.grad(p[AB+1], x, y-1, z-1), this.grad(p[BB+1], x-1, y-1, z-1), u),
+        v
+      ),
+      w
+    );
+  }
+}
+const perlin = new Perlin();
+
+function curlNoise(x,y,t,scale,eps=1e-3){
+  const sx = x * scale, sy = y * scale, st = t * 0.0005;
+  const n_x1 = perlin.noise(sx + eps, sy, st);
+  const n_x2 = perlin.noise(sx - eps, sy, st);
+  const n_y1 = perlin.noise(sx, sy + eps, st);
+  const n_y2 = perlin.noise(sx, sy - eps, st);
+  const dx = (n_x1 - n_x2) / (2 * eps);
+  const dy = (n_y1 - n_y2) / (2 * eps);
+  return { x: dy, y: -dx };
+}
+
+/* -------------------------
+   Canvas + simulation setup
+   ------------------------- */
+const view = document.getElementById('view');
+const ctx = view.getContext('2d', { alpha: false });
+let W = view.width = innerWidth, H = view.height = innerHeight;
+window.addEventListener('resize', () => { W = view.width = innerWidth; H = view.height = innerHeight; sim.width = W; sim.height = H; });
+
+const sim = document.createElement('canvas');
+let SW = sim.width = W, SH = sim.height = H;
+const sctx = sim.getContext('2d', { alpha: true });
+
+/* UI elements */
+const pRange = document.getElementById('pRange');
+const pcEl = document.getElementById('pc');
+const sRange = document.getElementById('sRange');
+const nsEl = document.getElementById('ns');
+const vRange = document.getElementById('vRange');
+const spEl = document.getElementById('sp');
+const aRange = document.getElementById('aRange');
+const alEl = document.getElementById('al');
+const resetBtn = document.getElementById('reset');
+const rotBtn = document.getElementById('rotateToggle');
+
+let ROTATE_ON = true;
+
+/* particles (match the earlier "good" defaults) */
+let PARTICLE_COUNT = parseInt(pRange.value,10) || 1000;
+pcEl.textContent = PARTICLE_COUNT;
+
+function randomParticle() {
+  return {
+    x: Math.random() * SW,
+    y: Math.random() * SH,
+    vx: 0,
+    vy: 0,
+    age: 0,
+    hue: Math.random() * 360,
+    r: 0.6 + Math.random() * 1.8
+  };
+}
+let particles = [];
+function initParticles(n) {
+  particles.length = 0;
+  for (let i=0;i<n;i++) particles.push(randomParticle());
+}
+initParticles(PARTICLE_COUNT);
+
+/* UI handlers */
+pRange.addEventListener('input', (e) => {
+  PARTICLE_COUNT = +e.target.value;
+  pcEl.textContent = PARTICLE_COUNT;
+  syncParticles();
+});
+sRange.addEventListener('input', () => nsEl.textContent = parseFloat(sRange.value).toFixed(4));
+vRange.addEventListener('input', () => spEl.textContent = parseFloat(vRange.value).toFixed(1));
+aRange.addEventListener('input', () => alEl.textContent = parseFloat(aRange.value).toFixed(2));
+resetBtn.addEventListener('click', () => initParticles(PARTICLE_COUNT));
+rotBtn.addEventListener('click', () => { ROTATE_ON = !ROTATE_ON; rotBtn.textContent = `Rotate: ${ROTATE_ON? 'on' : 'off'}`; });
+
+function syncParticles() {
+  if (particles.length < PARTICLE_COUNT) {
+    const toAdd = PARTICLE_COUNT - particles.length;
+    for (let i=0;i<toAdd;i++) particles.push(randomParticle());
+  } else particles.length = PARTICLE_COUNT;
+}
+
+/* Interaction */
+let mouse = { x:0, y:0, down:false, px:0, py:0 };
+sim.addEventListener('pointerdown', e => { mouse.down = true; mouse.x = e.clientX; mouse.y = e.clientY; mouse.px = mouse.x; mouse.py = mouse.y; });
+sim.addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+sim.addEventListener('pointerup', e => { mouse.down = false; });
+sim.addEventListener('click', e => {
+  for (let i=0;i<40;i++) {
+    const p = particles[Math.floor(Math.random()*particles.length)];
+    p.x = e.clientX + (Math.random()-0.5)*40;
+    p.y = e.clientY + (Math.random()-0.5)*40;
+    p.vx = (Math.random()-0.5)*2;
+    p.vy = (Math.random()-0.5)*2;
+    p.hue = (Math.random()*360);
+  }
+});
+
+/* -------------------------
+   Animation loop — preserve the strong look
+   ------------------------- */
+let last = performance.now();
+let globalRotation = 0;
+
+function step(now) {
+  const dtMs = now - last;
+  last = now;
+  const dt = Math.min(dtMs / 16.6667, 4);
+
+  // trail alpha on sim canvas (not too opaque so particles stay vivid)
+  const trailAlpha = parseFloat(aRange.value);
+  sctx.fillStyle = `rgba(0,0,0,${trailAlpha})`;
+  sctx.fillRect(0,0,SW,SH);
+
+  // parameters from UI
+  const scale = parseFloat(sRange.value);
+  const speed = parseFloat(vRange.value);
+
+  // render particles into sim (additive look)
+  sctx.globalCompositeOperation = 'lighter'; // additive for glow
+  for (let i=0;i<particles.length;i++){
+    const p = particles[i];
+    const c = curlNoise(p.x, p.y, now, scale, 1e-3);
+    const mag = Math.hypot(c.x, c.y) + 1e-6;
+    const fx = (c.x / mag) * speed;
+    const fy = (c.y / mag) * speed;
+
+    p.vx += fx * dt * 0.3;
+    p.vy += fy * dt * 0.3;
+
+    // damping
+    p.vx *= 0.985;
+    p.vy *= 0.985;
+
+    // mouse influence (drag pushes)
+    if (mouse.down) {
+      const mx = mouse.x, my = mouse.y;
+      const dx = p.x - mx, dy = p.y - my;
+      const dist2 = dx*dx + dy*dy;
+      if (dist2 < 20000) {
+        p.vx += (dx / (Math.sqrt(dist2)+20)) * 0.08;
+        p.vy += (dy / (Math.sqrt(dist2)+20)) * 0.08;
+      }
+    }
+
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.age += dt;
+
+    // wrap edges
+    if (p.x < -20) p.x = SW + 20;
+    if (p.x > SW + 20) p.x = -20;
+    if (p.y < -20) p.y = SH + 20;
+    if (p.y > SH + 20) p.y = -20;
+
+    // draw stronger/glowy particle — use gradient and larger radius like original "good" look
+    const r = p.r * 6; // larger visible radius
+    const grad = sctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+    grad.addColorStop(0, `hsla(${p.hue}, 90%, 60%, 0.85)`);
+    grad.addColorStop(0.4, `hsla(${(p.hue+40)%360}, 85%, 55%, 0.45)`);
+    grad.addColorStop(1, `hsla(${(p.hue+80)%360}, 80%, 25%, 0)`);
+    sctx.fillStyle = grad;
+    sctx.beginPath();
+    sctx.arc(p.x, p.y, r, 0, Math.PI*2);
+    sctx.fill();
+  }
+  sctx.globalCompositeOperation = 'source-over';
+
+  // keep particles synced with slider
+  syncParticles();
+
+  // === draw sim buffer to visible canvas with 6-fold symmetry ===
+  ctx.save();
+  ctx.clearRect(0,0,W,H);
+  ctx.translate(W/2,H/2);
+
+  // optional slow global rotation
+  if (ROTATE_ON) globalRotation += 0.0006 * (speed/1.0);
+  ctx.rotate(globalRotation);
+
+  const R = Math.min(W,H) * 0.55; // radius of the drawn circle
+  for (let i=0;i<6;i++){
+    ctx.save();
+    ctx.rotate(i * Math.PI / 3);
+    if (i % 2 === 1) ctx.scale(-1, 1);
+    // draw the sim buffer centered so the kaleidoscope forms around the center
+    ctx.drawImage(sim, -R, -R, R*2, R*2);
+    ctx.restore();
+  }
+
+  // soft circular vignette to emulate eyepiece/barrel
+  ctx.globalCompositeOperation = 'source-over';
+  const g = ctx.createRadialGradient(W/2, H/2, R*0.2, W/2, H/2, Math.max(W,H)*0.6);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(0.85, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(0,0,0,0.65)');
+  // Use a rect fill to apply gradient across canvas
+  ctx.fillStyle = g;
+  ctx.fillRect(-W/2, -H/2, W, H);
+
+  ctx.restore();
+
+  requestAnimationFrame(step);
+}
+
+/* kick off */
+requestAnimationFrame(step);
+</script>
+</body>
+</html>

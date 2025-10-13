@@ -1,0 +1,145 @@
+Visual Layers
+
+Backdrop / “Pebble Bed”
+
+A single static image (could be a photo or a painted texture).
+
+Slight blur or color shift so it feels submerged.
+
+Maybe slowly darken or lighten over time, as if light ripples are passing over it.
+
+The Core Idea: “Voronoi Caustics”
+
+Instead of static polygons, treat the Voronoi map as a moving, refracted light pattern:
+
+Think of it like the bright interference lines made when sunlight bends through shallow water.
+
+Each cell acts as a pocket of brighter or dimmer light.
+
+Gentle motion of cell points + soft blur = living shimmer.
+
+🧩 Implementation Layers
+
+You’d overlay this Voronoi “light map” on top of the pebble image but underneath the particle layers.
+
+1️⃣ Generate Voronoi pattern
+
+Place ~100–300 seed points across the canvas.
+
+Compute distance from each pixel to its nearest seed → gives you cell boundaries.
+
+Use a smooth falloff, not sharp edges — think gradient borders, not polygons.
+
+2️⃣ Animate it
+
+Move the seed points slightly over time, using curl noise or slow sine waves.
+
+This causes the cells to drift and morph continuously.
+
+You can even vary their motion speed subtly so the pattern never repeats.
+
+3️⃣ Light simulation
+
+Convert the Voronoi distance map to a light mask:
+
+Bright along cell edges (simulating refracted caustic lines).
+
+Dimmer toward cell centers.
+
+You can invert or threshold it to emphasize the bright ridges.
+
+Multiply or screen-blend this over the pebble background.
+
+4️⃣ Optional: Depth shimmer
+
+Slightly modulate the brightness of each Voronoi cell using low-frequency Perlin noise.
+
+It mimics light passing through different water depths — soft pulsation rather than flicker.
+
+🪩 Visual Tips
+
+Keep Voronoi cells large enough (20–50px typical).
+
+Use high contrast but low alpha — subtlety is key; it should “breathe,” not flash.
+
+Apply a small Gaussian blur after drawing to soften hard edges.
+
+Blue-tinted highlights work beautifully if your pebbles are neutral.
+
+Fast “Fake Caustics” Voronoi (stylized + efficient)
+
+Concept: Skip full Voronoi math — fake the look by layering animated soft circles (the seed points) and using their overlapping brightness as a pseudo-Voronoi field.
+How:
+
+Draw blurred white circles at each seed position.
+
+Composite with screen or additive blending.
+
+Animate circle positions slightly with noise.
+
+You’ll get organic intersecting highlight lines that look just like refracted light.
+
+Option: modulate brightness with a low-frequency sine wave or noise to fake “caustics.”
+
+The “Depth Stack” Concept
+
+Think of your canvas as 3–5 transparent “sheets,” each holding its own population of particles.
+Each sheet represents a depth plane in a shallow, drifting world.
+They all use the same basic particle logic (curl noise advection), but with different visual and behavioral parameters.
+
+🧩 1️⃣ Layer Parameters
+
+For each depth layer (say, back, mid, front), vary these properties:
+
+Property	Far Layer	Mid Layer	Near Layer	Effect
+Particle count	High	Medium	Low	Far feels more filled, near feels sparse
+Particle size	Large & soft	Medium	Small & sharp	Near particles look crisp
+Alpha / opacity	Low	Medium	High	Fades with “distance”
+Color saturation	Desaturated blues	Natural tones	Slightly warm/bright	Creates aerial perspective
+Noise scale (curl freq)	Large-scale noise	Medium	High-frequency turbulence	Adds parallax-like movement
+Velocity / damping	Slower	Medium	Faster	Near particles drift quicker
+Trail length	Long	Medium	Short	Distant ones smear, near ones pop
+
+🎬 2️⃣ Parallax Motion
+
+You can fake parallax by scaling each layer’s flow field slightly differently:
+
+Deeper layers move slower and respond less to input.
+
+Foreground layers respond more quickly (or even slightly differently to the same noise pattern).
+
+The key: even if all layers share the same noise source, offset their coordinates:
+
+💨 3️⃣ Atmospheric Blend
+
+Subtle tweaks that tie it together visually:
+
+Slight overall blur on the background layer (soft focus).
+
+Foreground has a tiny bit of brightness contrast boost.
+
+A faint tint overlay (like a gentle gradient from blue at bottom to gold at top) mimics light falloff through fluid.
+
+🔮 4️⃣ Depth Cues From Interactions
+
+Later, you can add occasional “cross-layer” interactions:
+
+Particles on front layers briefly occlude or cast shadows on back layers (faked by alpha blending order).
+
+Or have deeper particles fade momentarily when a near one passes above it (as if light scattered).
+Even without physics, these tiny cues can give physical believability.
+
+5️⃣ Optional: Layer Distortion
+
+To push the illusion further:
+
+Slightly distort deeper layers with low-amplitude noise or sine waves.
+→ Mimics refraction through water.
+
+Let near layers stay more stable → adds realism through relative motion.
+
+Optional Top Layer – Light Refraction Film
+
+A faint, moving distortion or soft “glass ripple” overlay.
+
+Could be noise-mapped displacement, or just low-opacity sine waves that subtly warp what’s beneath.
