@@ -133,6 +133,13 @@ function curlNoise(x, y, t, scale, eps = 1e-3) {
   return { x: dy, y: -dx };
 }
 
+function mt_rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
 /* -------------------------
    Particles
    ------------------------- */
@@ -165,45 +172,104 @@ const aRange = document.getElementById('aRange');
 const alEl = document.getElementById('al');
 aRange.addEventListener('input', () => alEl.textContent = parseFloat(aRange.value).toFixed(2));
 
-class Particles {
+
+function randomParticle() {
+    return {
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: 0,
+        vy: 0,
+        age: 0,
+        hue: Math.random() * 360,
+        r: 0.6 + Math.random() * 1.8
+    };
+}
+class VirtualMouse {
     constructor() {
-        this.items = [];
+        this.xCoord = 0;
+        this.yCoord = 0;
+        this.x = 0;
+        this.y = 0;
+        this.down = false;
+        this.dragSpeed = 0;
+        this.lifetime = 0;
+        this.age = 0;
     }
-    sync() {
-        if ( this.items.length < PARTICLE_COUNT ) {
-            const toAdd = PARTICLE_COUNT - this.items.length;
+    mouseDown() {
+        this.xCoord = W - mt_rand(10, 200);
+        this.yCoord = mt_rand(200, H - 200);
+        this.x = this.xCoord;
+        this.y = this.yCoord;
+        this.lifetime = mt_rand(10, 20);
+        this.dragSpeed = mt_rand(2, 4);
+        this.down = true;
+    }
+    mouseUp() {
+        this.age = 0;
+        this.down = false;
+    }
+    mouseDrag() {
+        this.age += 0.02;
+        this.x -= this.dragSpeed;
+        this.y -= 0.5;
+        if ( this.age > this.lifetime || this.x < 1 )
+            this.mouseUp();
+    } 
+    trigger() {
+        if ( this.down === true ) return true;
+        if ( this.down === false && Math.random() < 0.01 ) {
+            this.mouseDown();
+            return true;
+        }
+        return false;
+    }
+}
+const virtualMouse = new VirtualMouse();
+
+class ParticleManager {
+    constructor(count) {
+        this.flowRate = 0.01;
+        this.items = [];
+        for ( let i = 0; i < count; i++ ) 
+            this.add(randomParticle());
+    }
+    sync(count) {
+        if ( this.items.length < count ) {
+            const toAdd = count - this.items.length;
             for ( let i = 0; i < toAdd; i++ ) 
                 this.items.push(randomParticle());
         } else {
-            this.items.length = PARTICLE_COUNT;
+            this.items.length = count;
         }
     }
     add(p) {
         this.items.push(p);
     }
+    applyNoise(p, dt, now, scale, speed) {
+        const c = curlNoise(p.x, p.y, now, scale, 1e-3);
+        // small normalization so vectors are a bit smoother
+        const mag = Math.hypot(c.x, c.y) + 1e-6;
+        const fx = (c.x / mag) * speed;
+        const fy = (c.y / mag) * speed;
+
+        // verlet-ish integration (simple)
+        p.vx += fx * dt * 0.3;
+        p.vy += fy * dt * 0.3;
+    }
     update(dt, now, scale, speed) {
         for ( const p of this.items ) {
-            // get curl at particle pos
-            const c = curlNoise(p.x, p.y, now, scale, 1e-3);
-            // small normalization so vectors are a bit smoother
-            const mag = Math.hypot(c.x, c.y) + 1e-6;
-            const fx = (c.x / mag) * speed;
-            const fy = (c.y / mag) * speed;
-
-            // verlet-ish integration (simple)
-            p.vx += fx * dt * 0.3;
-            p.vy += fy * dt * 0.3;
-
-            // move right 
-            p.vx +=0.01;
-
+            this.applyNoise(p, dt, now, scale, speed);
+            // particles flow
+            p.vx += this.flowRate;
             // damping
             p.vx *= 0.985;
             p.vy *= 0.985;
 
             // add mouse influence if dragging
-            if ( mouse.down ) {
-                const mx = mouse.x, my = mouse.y;
+            if ( virtualMouse.down ) {
+            //    ctx.fillStyle = "#00ff00";
+                const mx = virtualMouse.x, my = virtualMouse.y;
+            //    ctx.rect(mx, my, 18, 18);
                 const dx = p.x - mx, dy = p.y - my;
                 const dist2 = dx*dx + dy*dy;
                 if ( dist2 < 20000 ) {
@@ -216,18 +282,20 @@ class Particles {
             p.y += p.vy * dt;
             p.age += dt;
 
-            // wrap around edges for continuous field
-            if (p.x < -10) p.x = W + 10;
-            if (p.x > W + 10) p.x = -10;
-            if (p.y < -10) p.y = H + 10;
-            if (p.y > H + 10) p.y = -10;
+            this.wrapAround(p);
         }
+    }
+    wrapAround(p) {
+        if (p.x < -10) p.x = W + 10;
+        if (p.x > W + 10) p.x = -10;
+        if (p.y < -10) p.y = H + 10;
+        if (p.y > H + 10) p.y = -10;
     }
     draw(ctx) {
         ctx.globalCompositeOperation = 'lighter'; // glow-ish additive blending
         for ( const p of this.items ) {
             const alpha = 0.6;
-            const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
+            const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 6);
             grad.addColorStop(0, `hsla(${p.hue}, 90%, 60%, ${alpha})`);
             grad.addColorStop(0.4, `hsla(${(p.hue+40)%360}, 90%, 55%, ${alpha*0.45})`);
             grad.addColorStop(1, `hsla(${(p.hue+80)%360}, 80%, 20%, 0)`);
@@ -237,32 +305,19 @@ class Particles {
             ctx.fill();
         }
         ctx.globalCompositeOperation = 'source-over';
+        if ( virtualMouse.down ) {
+            ctx.beginPath();
+            ctx.fillStyle = "#ffffff";
+            ctx.rect(virtualMouse.x, virtualMouse.y, 18, 18);
+            ctx.fill();
+        }
     }
 }
 //let particles = [];
-const particles = new Particles();
+const particleManager = new ParticleManager();
 
-function syncParticles() {
-  if (particles.length < PARTICLE_COUNT) {
-    const toAdd = PARTICLE_COUNT - particles.length;
-    for (let i=0;i<toAdd;i++) particles.push(randomParticle());
-  } else {
-    particles.length = PARTICLE_COUNT;
-  }
-}
-function randomParticle() {
-  return {
-    x: Math.random() * W,
-    y: Math.random() * H,
-    vx: 0,
-    vy: 0,
-    age: 0,
-    hue: Math.random()*360,
-    r: 0.6 + Math.random()*1.8
-  };
-}
-for ( let i = 0; i < PARTICLE_COUNT; i++ ) 
-    particles.add(randomParticle());
+
+
 
 /* Interaction: click to respawn, drag to push */
 let mouse = { x:0, y:0, down:false, px:0, py:0 };
@@ -284,38 +339,40 @@ canvas.addEventListener('click', e => {
 /* -------------------------
    Animation
    ------------------------- */
-const bg = new Image();
-bg.src = "bg.jpg";
+const pebbles = new Image();
+pebbles.src = "bg.jpg";
+
 let last = performance.now();
 function step(now) {
-  const dtMs = now - last;
-  last = now;
-  const dt = Math.min(dtMs / 16.6667, 4); // normalized, cap to avoid jumps
+    if ( virtualMouse.trigger() )
+        virtualMouse.mouseDrag();
 
-  // draw decaying background for trails
-  ctx.drawImage(bg, 0, 0, W, H)
-  ctx.fillStyle = `rgba(0,0,0,${parseFloat(aRange.value)})`; // trail alpha from UI
-  ctx.fillRect(0,0,W,H);
+    const dtMs = now - last;
+    last = now;
+    const dt = Math.min(dtMs / 16.6667, 4); // normalized, cap to avoid jumps
 
-  // update particles
-  const scale = parseFloat(sRange.value); // noise scale
-  const speed = parseFloat(vRange.value) * 0.6; // global speed
-  particles.update(dt, now, scale, speed);
+    // draw decaying background for trails
+    ctx.drawImage(pebbles, 0, 0, W, H);
 
-  // render
-  particles.draw(ctx);
 
-  // keep particles synced with slider
-  particles.sync();
-  
-  DeltaReport.log(now);
+    ctx.fillStyle = `rgba(0,0,0,${parseFloat(aRange.value)})`; // trail alpha from UI
+    ctx.fillRect(0,0,W,H);
 
-  requestAnimationFrame(step);
+    // update particles
+    const scale = parseFloat(sRange.value); // noise scale
+    const speed = parseFloat(vRange.value) * 0.6; // global speed
+    particleManager.update(dt, now, scale, speed);
+    particleManager.draw(ctx);
+    particleManager.sync(PARTICLE_COUNT);
+
+    DeltaReport.log(now);
+
+    requestAnimationFrame(step);
 }
 
 // kick off
-ctx.fillStyle = 'black';
-ctx.fillRect(0,0,W,H);
+//ctx.fillStyle = 'black';
+//ctx.fillRect(0,0,W,H);
 requestAnimationFrame(step);
 </script>
 </body>
