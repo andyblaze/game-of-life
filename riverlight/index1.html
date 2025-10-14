@@ -245,10 +245,10 @@ const scale = parseFloat(sRange.value); // noise scale
 const speed = parseFloat(vRange.value) * 0.6; // global speed
 
 class ParticleManager {
-    constructor(count, scale, speed) {
+    constructor(count, scale, speed, flowRate) {
         this.scale = scale;
         this.speed = speed;
-        this.flowRate = 0.01; // speed from left to right
+        this.flowRate = flowRate; // speed from left to right
         this.items = [];
         for ( let i = 0; i < count; i++ ) 
             this.add(randomParticle());
@@ -365,9 +365,6 @@ class FullScreenOverlay {
         //ctx.restore();
     }
 }
-
-
-
 
 /* -------------------------
    Animation
@@ -486,9 +483,9 @@ class Lighting {
 }
 
 const layerConfig = [
-  { count: 43, scale: 0.002, speed: 0.06, hueShift: 0,   alpha: 0.7, sizeMult: 0.7 }, // surface
-  { count: 43, scale: 0.001, speed: 0.03, hueShift: 15,  alpha: 0.5, sizeMult: 1.0 }, // mid
-  { count: 43, scale: 0.0006, speed: 0.01, hueShift: 40, alpha: 0.35, sizeMult: 1.3 } // deep
+  { count: 73, scale: 0.002, speed: 0.06, hueShift: 0,   alpha: 0.7, sizeMult: 0.7, flowRate:0.01 }, // surface
+  { count: 73, scale: 0.001, speed: 0.03, hueShift: 15,  alpha: 0.5, sizeMult: 1.0, flowRate:0.005 }, // mid
+  { count: 73, scale: 0.0006, speed: 0.01, hueShift: 40, alpha: 0.35, sizeMult: 1.3, flowRate:0.003 } // deep
 ];
 
 class ParticleSystem {
@@ -496,7 +493,7 @@ class ParticleSystem {
         // Each config describes a layer
         // e.g. { count, scale, speed, hueShift, alpha, sizeMult }
         this.layers = configs.map(cfg => {
-            const layer = new ParticleManager(cfg.count, cfg.scale, cfg.speed);
+            const layer = new ParticleManager(cfg.count, cfg.scale, cfg.speed, cfg.flowRate);
             layer.hueShift = cfg.hueShift ?? 0;
             layer.alpha = cfg.alpha ?? 0.6;
             layer.sizeMult = cfg.sizeMult ?? 1.0;
