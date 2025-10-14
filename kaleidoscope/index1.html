@@ -461,7 +461,6 @@ class Lighting {
         ctx.save();
         ctx.globalCompositeOperation = 'screen';  // additive blending
         //ctx.filter = 'blur(2px)';                 // soft glow
-
         for (let lamp of this.lamps) {
             const size = lamp.radius || this.blob.width;
             ctx.globalAlpha = lamp.alpha;
@@ -473,7 +472,6 @@ class Lighting {
                 size
             );
         }
-
         ctx.restore();
     }
 
@@ -485,9 +483,9 @@ class Lighting {
 }
 
 const layerConfig = [
-  { count: 50, scale: 0.002, speed: 0.06, hueShift: 0,   alpha: 0.7, sizeMult: 0.7 }, // surface
-  { count: 50, scale: 0.001, speed: 0.03, hueShift: 15,  alpha: 0.5, sizeMult: 1.0 }, // mid
-  { count: 50, scale: 0.0006, speed: 0.01, hueShift: 40, alpha: 0.35, sizeMult: 1.3 } // deep
+  { count: 30, scale: 0.002, speed: 0.06, hueShift: 0,   alpha: 0.7, sizeMult: 0.7 }, // surface
+  { count: 30, scale: 0.001, speed: 0.03, hueShift: 15,  alpha: 0.5, sizeMult: 1.0 }, // mid
+  { count: 30, scale: 0.0006, speed: 0.01, hueShift: 40, alpha: 0.35, sizeMult: 1.3 } // deep
 ];
 
 class ParticleSystem {
@@ -552,7 +550,7 @@ function step(now) {
     lighting.step(dt, onCtx);
     //overlay.draw(offCtx, W, H);
 
-    onCtx.fillStyle = `rgba(0,0,0,0.1)`;//${parseFloat(aRange.value)})`; // trail alpha from UI
+    onCtx.fillStyle = "rgba(0,0,0,0.3)";//${parseFloat(aRange.value)})`; // trail alpha from UI
     onCtx.fillRect(0,0,W,H);
 
     // update particles
