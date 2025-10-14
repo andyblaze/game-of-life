@@ -245,7 +245,7 @@ class ParticleManager {
     constructor(count, scale, speed) {
         this.scale = scale;
         this.speed = speed;
-        this.flowRate = 0.01;
+        this.flowRate = 0.01; // speed from left to right
         this.items = [];
         for ( let i = 0; i < count; i++ ) 
             this.add(randomParticle());
@@ -284,9 +284,7 @@ class ParticleManager {
 
             // add mouse influence if dragging
             if ( virtualMouse.down ) {
-            //    ctx.fillStyle = "#00ff00";
                 const mx = virtualMouse.x, my = virtualMouse.y;
-            //    ctx.rect(mx, my, 18, 18);
                 const dx = p.x - mx, dy = p.y - my;
                 const dist2 = dx*dx + dy*dy;
                 if ( dist2 < 20000 ) {
@@ -324,7 +322,7 @@ class ParticleManager {
         ctx.globalCompositeOperation = "source-over";
     }
 }
-//let particles = [];
+
 const particleManager = new ParticleManager(PARTICLE_COUNT, scale, speed);
 
 class FullScreenOverlay {
@@ -389,128 +387,119 @@ onscreen.addEventListener('click', e => {
 const pebbles = new Image();
 pebbles.src = "bg.jpg";
 
-class Voronoi {
-    constructor(w, h) {
-        this.screenW = w;
-        this.screenH = h;
-    }
-    update(sites) {
-        const cells = [];
-        for ( let i = 0; i < sites.length; i++ ) {
-            let cell = [
-                {x:0,y:0}, {x:this.screenW, y:0}, {x:this.screenW, y:this.screenH}, {x:0, y:this.screenH}
-            ];
-            for ( let j = 0; j < sites.length; j++ ) {
-                if ( i === j ) continue;
-                cell = this.initNewCell(cell, sites[i], sites[j]);
-                if ( ! cell.length ) break;
-            }
-            cells.push(cell);
-        }
-        return cells;
-    }
-    initNewCell(cell, site1, site2) {
-        let sx = (site1.x + site2.x) / 2;
-        let sy = (site1.y + site2.y) / 2;
-        let dx = site2.x - site1.x;
-        let dy = site2.y - site1.y;
-        let nx = -dx, ny = -dy; // perpendicular
-        //nx *= 1.8; ny *= 1.2;
-        let newCell=[];
-        for ( let k = 0; k < cell.length; k++ ) {
-            let a = cell[k], b = cell[(k + 1) % cell.length];
-            let da = (a.x - sx) * nx + (a.y - sy) * ny;
-            let db = (b.x - sx) * nx + (b.y - sy) * ny;
-            if ( da >= 0 ) 
-                newCell.push(a);
-            if ( da * db < 0 ) {
-                let t = da / (da - db);
-                newCell.push({x:a.x + (b.x - a.x) * t, y:a.y + (b.y - a.y) * t});
-            }
-        }
-        return newCell;
-    }
-}
-
-class LightRipples {
-    constructor(w, h, p, numSites) {
+class Lamp {
+    constructor(w, h, perlin, color) {
         this.w = w;
         this.h = h;
-        this.perlin = p;
-        this.voronoi = new Voronoi(w, h);
-        this.sites = [];
-        this.init(numSites);
+        this.perlin = perlin;
+        this.color = color;
+        // base position spreads lamps across the canvas
+        this.baseX = Math.random() * w;
+        this.baseY = Math.random() * h;        
+        // Perlin offsets
+        this.nx = Math.random() * 1000;
+        this.ny = Math.random() * 1000;
+        // drift range in pixels
+        this.driftX = 550 + Math.random() * 50;
+        this.driftY = 330 + Math.random() * 30;        
+        // current position
+        this.x = this.baseX;
+        this.y = this.baseY;
+        // visual properties
+        this.alpha = 0.3 + Math.random() * 0.2;
+        this.radius = 64 + Math.pow(Math.random(), 2.2) * (512 - 128);
+        this.speed = 0.002 + Math.random() * 0.0003;
     }
-    init(num) {
-        for ( let i = 0; i < num; i++ ) {
-            this.sites.push({
-                x:Math.random() * this.w,
-                y:Math.random() * this.h, 
-                nx:Math.random() * 1100, 
-                ny:Math.random() * 1000
-            });
-        }
-    } 
-    move() {
-        this.sites.forEach(s=>{
-            s.nx+= 0.0002; 
-            s.ny+= 0.0002;
-            s.x = (this.perlin.noise(s.nx, 0) + 1) * 0.5 * this.w;
-            s.y = (this.perlin.noise(0, s.ny) + 1) * 0.5 * this.h;
-        });
-    }
-    update(timestamp, ctx) {
-        this.move();
-        const cells = this.voronoi.update(this.sites);
-        this.draw(timestamp, ctx, cells)
-        //return { "cells": cells, "sites": this.sites, "timestamp": (isNaN(timestamp) ? 0 : timestamp), "perlin": this.perlin };
-    }
-    shimmer(t, i) {
-        return 0.3 + 0.2 * Math.sin(t * 0.002 + i);
-    }
-    floodFill(ctx, hue, alpha) {
-        ctx.fillStyle = `hsla(${hue},0%,100%,0.73)`;
-        ctx.strokeStyle = `hsla(0,0%,100%,0)`;
-        ctx.fill();
-        ctx.stroke();
-    }
-    radialGradientFill(ctx, site, hue, alpha) {
-        if ( alpha < 0.2 ) alpha = 0.2;
-        const g = ctx.createRadialGradient(site.x, site.y, 0, site.x, site.y, 180);
-        g.addColorStop(0, `hsla(${hue},80%,70%,${alpha})`);
-        g.addColorStop(0.4, `hsla(${hue},80%,30%,0.01)`);
-        g.addColorStop(1, `hsla(${hue},80%,30%,0)`);
-        ctx.fillStyle = g;
-        ctx.fill();        
-        // Optional:  stroke to outline facets
-        //ctx.strokeStyle = "rgba(0,0,255,0.01)";
-        //ctx.lineWidth = 0.5;
-        //ctx.stroke();    
-    }
-    draw(timestamp, ctx, cells) {
-        for ( let i = 0; i < cells.length; i++ ) {
-            const cell = cells[i];
-            if ( cell.length < 3 ) continue;
-            ctx.beginPath();
-            ctx.moveTo(cell[0].x, cell[0].y);
-            for ( let j = 1; j < cell.length; j++ ) {
-                ctx.lineTo(cell[j].x, cell[j].y);
-            }
-            ctx.closePath();
-            
-            const base = 20;
-            const range = 20;
-            const light = 95;
-            const speed = 0.001;
-            const hue = base + Math.sin(timestamp * speed + this.sites[i].x * 0.01) * (range / 2);
-            const alpha = this.shimmer(timestamp, i);
-            //this.floodFill(ctx, hue, alpha);
-            this.radialGradientFill(ctx, this.sites[i], hue, alpha);
-        }
+    move(dt) {
+        // increment Perlin coordinates
+        this.nx += this.speed * dt;
+        this.ny += this.speed * dt;
+
+        // compute smooth drift around base position
+        this.x = this.baseX + (this.perlin.noise(this.nx, 0) * this.driftX);
+        this.y = this.baseY + (this.perlin.noise(0, this.ny) * this.driftY);
+
+        // optional alpha flicker
+        this.alpha = 0.3 + (this.perlin.noise(this.nx + 5000, this.ny + 5000) * 0.1);
     }
 }
 
-const lightRipples = new LightRipples(W, H, perlin, 30);
+class Lighting {
+    constructor(w, h, perlin, numLamps = 20) {
+        this.w = w;
+        this.h = h;
+        this.perlin = perlin;
+
+        // create reusable radial blobs
+        this.blobs = this.makeBlobs(6); // 6 variations
+
+        // initialize lamps
+        this.lamps = [];
+        for (let i = 0; i < numLamps; i++) {
+            const color = this.blobs[mt_rand(0, this.blobs.length - 1)];
+            this.lamps.push(new Lamp(w, h, perlin, color));
+        }
+    }
+  makeBlobs(count) {
+    const blobs = [];
+    for (let i = 0; i < count; i++) {
+      const sz = 96 + Math.random() * 160;
+      const hue = 45 + Math.random() * 20;          // golden/yellow tone
+      const sat = 70 + Math.random() * 20;
+      const light = 60 + Math.random() * 10;
+      const alpha = 0.35 + Math.random() * 0.2;
+
+      const blob = document.createElement('canvas');
+      blob.width = blob.height = sz;
+      const bctx = blob.getContext('2d');
+      const r = sz / 2;
+      const g = bctx.createRadialGradient(r, r, 0, r, r, r);
+      g.addColorStop(0, `hsla(${hue},${sat}%,${light}%,${alpha})`);
+      g.addColorStop(0.4, `hsla(${hue},${sat}%,${light - 20}%,${alpha * 0.2})`);
+      g.addColorStop(1, `hsla(${hue},${sat}%,${light - 40}%,0)`);
+
+      bctx.fillStyle = g;
+      bctx.fillRect(0, 0, sz, sz);
+      blobs.push(blob);
+    }
+    return blobs;
+  }
+    update(dt) {
+        // move all lamps
+        for (let lamp of this.lamps) {
+            lamp.move(dt);
+            // optional subtle alpha flicker
+            lamp.alpha = 0.3 + (this.perlin.noise(lamp.nx + 5000, lamp.ny + 5000) * 0.1);
+        }
+    }
+    draw(ctx) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';  // additive blending
+        //ctx.filter = 'blur(2px)';                 // soft glow
+
+        for (let lamp of this.lamps) {
+            const size = lamp.radius || this.blob.width;
+            ctx.globalAlpha = lamp.alpha;
+            ctx.drawImage(
+                lamp.color,
+                lamp.x - size / 2,
+                lamp.y - size / 2,
+                size,
+                size
+            );
+        }
+
+        ctx.restore();
+    }
+
+    // convenience: update and draw in one call
+    step(dt, ctx) {
+        this.update(dt);
+        this.draw(ctx);
+    }
+}
+
+const lighting = new Lighting(W, H, perlin, 30);
 const overlay = new FullScreenOverlay();
 
 function blit() {
@@ -527,20 +516,19 @@ function step(now) {
     last = now;
     const dt = Math.min(dtMs / 16.6667, 4); // normalized, cap to avoid jumps
 
-    // draw decaying background for trails
-    offCtx.drawImage(pebbles, 0, 0, W, H);
+    onCtx.drawImage(pebbles, 0, 0, W, H);
     
-    lightRipples.update(now, offCtx);
+    lighting.step(dt, onCtx);
     //overlay.draw(offCtx, W, H);
 
-    offCtx.fillStyle = `rgba(0,0,0,${parseFloat(aRange.value)})`; // trail alpha from UI
-    offCtx.fillRect(0,0,W,H);
+    onCtx.fillStyle = `rgba(0,0,0,0.1)`;//${parseFloat(aRange.value)})`; // trail alpha from UI
+    onCtx.fillRect(0,0,W,H);
 
     // update particles
     particleManager.update(dt, now, scale, speed);
-    particleManager.draw(offCtx);
+    particleManager.draw(onCtx);
     particleManager.sync(PARTICLE_COUNT);
-    blit();
+    //blit();
 
     DeltaReport.log(now);
 
