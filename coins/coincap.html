@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CoinCap Mock Viewer</title>
+  <title>CoinCap Animation Loop</title>
   <style>
     body {
       font-family: monospace;
@@ -19,35 +19,127 @@
   </style>
 </head>
 <body>
-  <h1>CoinCap Mock Data</h1>
-  <pre id="output">Loading...</pre>
+<canvas width="800" height="600" id="onscreen"></canvas>
+<h1>CoinCap Animation Loop</h1>
+<pre id="output">Initializing...</pre>
 
-  <script>
-    class DataCollector {
-      constructor(url, outputElementId) {
+<script>
+class DataCollector {
+    constructor(url) {
         this.url = url;
-        this.outputElement = document.getElementById(outputElementId);
-      }
-
-      async fetchData() {
+        this.data = null;
+    }
+    async fetchData() {
         try {
-          const response = await fetch(this.url);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const data = await response.json();
-          this.displayData(data);
+            const response = await fetch(this.url);
+            if ( ! response.ok ) throw new Error(`HTTP ${response.status}`);
+            const json = await response.json();
+            this.data = json;
+            //console.log("Fetched data:", json);
+            return json;
         } catch (err) {
-          this.outputElement.textContent = 'Error: ' + err.message;
+            //console.error("Fetch error:", err);
+            return null;
         }
-      }
+    }
+}
 
-      displayData(data) {
-        this.outputElement.textContent = JSON.stringify(data, null, 2);
-      }
+class AnimationController {
+    constructor(collector, processor, fetchIntervalSeconds = 5) {
+        this.collector = collector;
+        this.processor = processor;
+        this.frame = 0;
+        this.fps = 60;
+        this.fetchIntervalFrames = fetchIntervalSeconds * this.fps;
+
+        this.lastFetchFrame = -this.fetchIntervalFrames; // force immediate fetch
+    }
+    async start() {
+        await this.collector.fetchData();
+        this.loop();
+    }
+    async loop() {
+        this.frame++;
+        // Trigger fetch every N seconds
+        if ( this.frame - this.lastFetchFrame >= this.fetchIntervalFrames ) {
+            this.lastFetchFrame = this.frame;
+            const data = await this.collector.fetchData();
+            if (data) 
+                this.processor.process(data);
+        }
+        requestAnimationFrame(() => this.loop());
+    }
+}
+
+class Processor {
+    constructor(renderer) {
+        this.renderer = renderer;
     }
 
-    // Instantiate and use
-    const collector = new DataCollector('http://127.0.0.1/gol/coins/data.php', 'output');
-    collector.fetchData();
-  </script>
+    process(rawData) {
+        if ( ! rawData?.data ) return;
+
+        // Convert raw coin data into renderable info
+        const coinsArray = Object.values(rawData.data);
+        const processed = coinsArray.map(coin => {
+            const price = parseFloat(coin.price);
+
+            // Example: radius based on log of price
+            const radius = Math.max(5, Math.log10(price) * 5);
+
+            return {
+                id: coin.id,
+                price: price,
+                radius: radius
+            };
+        });
+
+        // Send processed data to Renderer
+        this.renderer.render(processed);
+    }
+}
+
+class Renderer {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+
+        // optional: set canvas size
+        this.canvas.width = 800;
+        this.canvas.height = 600;
+    }
+    render(coins) {
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        coins.forEach((coin, i) => {
+            // simple grid layout
+            const cols = 10;
+            const spacingX = this.canvas.width / cols;
+            const spacingY = 80;
+            const x = (i % cols) * spacingX + spacingX / 2;
+            const y = Math.floor(i / cols) * spacingY + spacingY / 2;
+
+            ctx.beginPath();
+            // radius based on processed value
+            ctx.arc(x, y, coin.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'limegreen';
+            ctx.fill();
+
+            // optional: label
+            ctx.fillStyle = 'white';
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(coin.id, x, y + coin.radius + 12);
+        });
+    }
+}
+
+// Instantiate
+const processor = new Processor(new Renderer("onscreen"));
+const collector = new DataCollector('http://127.0.0.1/gol/coins/data.php');
+const controller = new AnimationController(collector, processor, 3); 
+controller.start();
+</script>
 </body>
 </html>
