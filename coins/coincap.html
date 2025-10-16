@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CoinCap Mock Viewer</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #111;
+      color: #0f0;
+      padding: 1em;
+    }
+    pre {
+      background: #222;
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>CoinCap Mock Data</h1>
+  <pre id="output">Loading...</pre>
+
+  <script>
+    class DataCollector {
+      constructor(url, outputElementId) {
+        this.url = url;
+        this.outputElement = document.getElementById(outputElementId);
+      }
+
+      async fetchData() {
+        try {
+          const response = await fetch(this.url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          this.displayData(data);
+        } catch (err) {
+          this.outputElement.textContent = 'Error: ' + err.message;
+        }
+      }
+
+      displayData(data) {
+        this.outputElement.textContent = JSON.stringify(data, null, 2);
+      }
+    }
+
+    // Instantiate and use
+    const collector = new DataCollector('http://127.0.0.1/gol/coins/data.php', 'output');
+    collector.fetchData();
+  </script>
+</body>
+</html>

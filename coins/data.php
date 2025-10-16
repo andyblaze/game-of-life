@@ -9,7 +9,7 @@ class CoinCap {
     private $data = [];
     public function loadHistory() {
         if ( file_exists($this->histFile) ) {
-            $this->data = (array)json_decode(file_get_contents($this->histFile));
+            $this->data = json_decode(file_get_contents($this->histFile));
             return true;
         }
         return false;
@@ -21,10 +21,10 @@ class CoinCap {
             $pricerange = $ranges[$id]->pricerange;
             $this->data[$coin->symbol] = (object)[
                 "id"=>$coin->id,
-                "price"=>round(mt_rand($pricerange->min * 10000, $pricerange->max * 10000) / 10000, 4)
+                "price"=>round(mt_rand($pricerange->min * 10000, $pricerange->max * 10000) / 10000, 4),
+                "changePercent24Hr"=>0
             ];
-        }
-        $this->saveHistory();
+        } 
     }
     public function saveHistory() {
         file_put_contents($this->histFile, json_encode($this->data, JSON_PRETTY_PRINT));    
@@ -35,21 +35,21 @@ class CoinCap {
             $delta = $last * (mt_rand(-100, 100) / 10000); // ±1%
             $coin->price = round($last + $delta, 4);
             $coin->changePercent24Hr = round(($delta / $last) * 100, 2);
-            $this->data[$symbol] = $coin;
-        }
+            $this->data->{$symbol} = $coin;
+        } 
     }
     public function sendData() {
         header('Content-Type: application/json');
-        echo json_encode(['timestamp' => time(), 'data' => array_values($this->data)], JSON_PRETTY_PRINT);
+        echo json_encode(['timestamp' => time(), 'data' => $this->data], JSON_PRETTY_PRINT);
     }
 }
     
 $coincap = new CoinCap();
 if ( true === $coincap->loadHistory() ) {
     $coincap->updateData();    
-    $coincap->saveHistory();
 }
 else {
-    $coincap->initialise();
+    $coincap->initialise();    
 }
+$coincap->saveHistory();
 $coincap->sendData();
