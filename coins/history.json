@@ -1,0 +1,252 @@
+{
+    "BTC": {
+        "id": "bitcoin",
+        "price": 21372.6621,
+        "changePercent24Hr": -0.81
+    },
+    "ETH": {
+        "id": "ethereum",
+        "price": 3839.9563,
+        "changePercent24Hr": -0.09
+    },
+    "USDT": {
+        "id": "tether",
+        "price": 1.0078,
+        "changePercent24Hr": 0.01
+    },
+    "BNB": {
+        "id": "binance-coin",
+        "price": 444.844,
+        "changePercent24Hr": 0.05
+    },
+    "USDC": {
+        "id": "usd-coin",
+        "price": 1.0057,
+        "changePercent24Hr": -0.32
+    },
+    "XRP": {
+        "id": "ripple",
+        "price": 1.1306,
+        "changePercent24Hr": -0.76
+    },
+    "ADA": {
+        "id": "cardano",
+        "price": 1.2385,
+        "changePercent24Hr": -0.65
+    },
+    "DOGE": {
+        "id": "dogecoin",
+        "price": 0.338,
+        "changePercent24Hr": -0.47
+    },
+    "MATIC": {
+        "id": "polygon",
+        "price": 1.297,
+        "changePercent24Hr": 0.45
+    },
+    "SOL": {
+        "id": "solana",
+        "price": 195.9814,
+        "changePercent24Hr": -0.9
+    },
+    "DOT": {
+        "id": "polkadot",
+        "price": 13.381,
+        "changePercent24Hr": 0.78
+    },
+    "LTC": {
+        "id": "litecoin",
+        "price": 56.4615,
+        "changePercent24Hr": -0.7
+    },
+    "LINK": {
+        "id": "chainlink",
+        "price": 20.9685,
+        "changePercent24Hr": -0.9
+    },
+    "XLM": {
+        "id": "stellar",
+        "price": 0.1281,
+        "changePercent24Hr": 0.68
+    },
+    "VET": {
+        "id": "vechain",
+        "price": 0.0564,
+        "changePercent24Hr": -0.62
+    },
+    "UNI": {
+        "id": "uniswap",
+        "price": 17.0524,
+        "changePercent24Hr": -0.22
+    },
+    "THETA": {
+        "id": "theta",
+        "price": 2.053,
+        "changePercent24Hr": -0.48
+    },
+    "TRX": {
+        "id": "tron",
+        "price": 0.1344,
+        "changePercent24Hr": -0.04
+    },
+    "FIL": {
+        "id": "filecoin",
+        "price": 52.633,
+        "changePercent24Hr": -0.58
+    },
+    "XMR": {
+        "id": "monero",
+        "price": 141.0346,
+        "changePercent24Hr": 0.62
+    },
+    "ATOM": {
+        "id": "cosmos",
+        "price": 27.8072,
+        "changePercent24Hr": -0.12
+    },
+    "AAVE": {
+        "id": "aave",
+        "price": 103.9327,
+        "changePercent24Hr": 0.31
+    },
+    "EOS": {
+        "id": "eos",
+        "price": 7.3562,
+        "changePercent24Hr": 0.34
+    },
+    "XTZ": {
+        "id": "tezos",
+        "price": 1.2916,
+        "changePercent24Hr": 0.5
+    },
+    "MKR": {
+        "id": "maker",
+        "price": 1302.2965,
+        "changePercent24Hr": -0.29
+    },
+    "DASH": {
+        "id": "dash",
+        "price": 207.3264,
+        "changePercent24Hr": 0.55
+    },
+    "ZEC": {
+        "id": "zcash",
+        "price": 138.5297,
+        "changePercent24Hr": 0.78
+    },
+    "NEO": {
+        "id": "neo",
+        "price": 12.3896,
+        "changePercent24Hr": -0.72
+    },
+    "COMP": {
+        "id": "compound",
+        "price": 438.3171,
+        "changePercent24Hr": -0.98
+    },
+    "SUSHI": {
+        "id": "sushi",
+        "price": 7.4264,
+        "changePercent24Hr": 0.9
+    },
+    "ALGO": {
+        "id": "algorand",
+        "price": 1.5663,
+        "changePercent24Hr": -0.52
+    },
+    "EGLD": {
+        "id": "elrond",
+        "price": 254.3794,
+        "changePercent24Hr": 0.99
+    },
+    "ENJ": {
+        "id": "enjincoin",
+        "price": 4.4237,
+        "changePercent24Hr": 0.16
+    },
+    "DCR": {
+        "id": "decred",
+        "price": 104.2231,
+        "changePercent24Hr": -0.88
+    },
+    "WAVES": {
+        "id": "waves",
+        "price": 27.1463,
+        "changePercent24Hr": -0.55
+    },
+    "IOTX": {
+        "id": "iotex",
+        "price": 0.0574,
+        "changePercent24Hr": 0.98
+    },
+    "ONE": {
+        "id": "harmony",
+        "price": 0.123,
+        "changePercent24Hr": 0.51
+    },
+    "AVAX": {
+        "id": "avalanche",
+        "price": 57.0834,
+        "changePercent24Hr": 0.73
+    },
+    "HBAR": {
+        "id": "hedera",
+        "price": 0.0643,
+        "changePercent24Hr": -0.49
+    },
+    "CHZ": {
+        "id": "chiliz",
+        "price": 0.0974,
+        "changePercent24Hr": 0.31
+    },
+    "KCS": {
+        "id": "kucoin-token",
+        "price": 15.2147,
+        "changePercent24Hr": -0.67
+    },
+    "AR": {
+        "id": "arweave",
+        "price": 67.2144,
+        "changePercent24Hr": 0.76
+    },
+    "BAT": {
+        "id": "basic-attention-token",
+        "price": 1.6991,
+        "changePercent24Hr": -0.77
+    },
+    "BCH": {
+        "id": "bitcoin-cash",
+        "price": 766.9034,
+        "changePercent24Hr": -0.68
+    },
+    "ELA": {
+        "id": "elastos",
+        "price": 7.2051,
+        "changePercent24Hr": -0.08
+    },
+    "ONT": {
+        "id": "ontology",
+        "price": 0.5088,
+        "changePercent24Hr": -0.02
+    },
+    "RVN": {
+        "id": "ravencoin",
+        "price": 0.0929,
+        "changePercent24Hr": 0.61
+    },
+    "SC": {
+        "id": "siacoin",
+        "price": 0.041,
+        "changePercent24Hr": 0.5
+    },
+    "LRC": {
+        "id": "loopring",
+        "price": 2.7568,
+        "changePercent24Hr": 0.03
+    },
+    "ZRX": {
+        "id": "0x",
+        "price": 0.6736,
+        "changePercent24Hr": -0.79
+    }
+}
