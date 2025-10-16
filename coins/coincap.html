@@ -71,51 +71,31 @@ class AnimationController {
     }
 }
 
-class Processor {
-    constructor(renderer) {
-        this.renderer = renderer;
-    }
-
-    process(rawData) {
-        if ( ! rawData?.data ) return;
-
+class DefaultProcessor {
+    transform(data) {
         // Convert raw coin data into renderable info
-        const coinsArray = Object.values(rawData.data);
-        const processed = coinsArray.map(coin => {
+        const coinsArray = Object.values(data);
+        const processed = Object.entries(data).map(([symbol, coin]) => {
             const price = parseFloat(coin.price);
-
-            // Example: radius based on log of price
             const radius = Math.max(5, Math.log10(price) * 5);
-
             return {
+                symbol,       // <-- keep it!
                 id: coin.id,
-                price: price,
-                radius: radius
+                price,
+                radius
             };
         });
-
-        // Send processed data to Renderer
-        this.renderer.render(processed);
+        return processed;
     }
 }
 
-class Renderer {
-    constructor(canvasId) {
-        this.canvas = document.getElementById(canvasId);
-        this.ctx = this.canvas.getContext('2d');
-
-        // optional: set canvas size
-        this.canvas.width = 800;
-        this.canvas.height = 600;
-    }
-    render(coins) {
-        const ctx = this.ctx;
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        coins.forEach((coin, i) => {
+class DefaultRenderer {
+    draw(ctx, data) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        data.forEach((coin, i) => {
             // simple grid layout
             const cols = 10;
-            const spacingX = this.canvas.width / cols;
+            const spacingX = ctx.canvas.width / cols;
             const spacingY = 80;
             const x = (i % cols) * spacingX + spacingX / 2;
             const y = Math.floor(i / cols) * spacingY + spacingY / 2;
@@ -130,13 +110,43 @@ class Renderer {
             ctx.fillStyle = 'white';
             ctx.font = '12px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText(coin.id, x, y + coin.radius + 12);
+            ctx.fillText(coin.symbol, x, y + coin.radius + 12);
         });
     }
 }
 
+class Processor {
+    constructor(renderer, strategy) {
+        this.renderer = renderer;
+        this.strategy = strategy;
+    }
+
+    process(rawData) { 
+        const processed = this.strategy.transform(rawData.data);
+        this.renderer.render(processed);
+    }
+}
+
+class Renderer {
+    constructor(canvasId, strategy) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.strategy = strategy;
+
+        // optional: set canvas size !!!!!!!!!!!!!!!!!!!!!! FIX !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        this.canvas.width = 800;
+        this.canvas.height = 600;
+    }
+    render(data) {
+        this.strategy.draw(this.ctx, data);
+    }
+}
+
 // Instantiate
-const processor = new Processor(new Renderer("onscreen"));
+const processor = new Processor(
+    new Renderer("onscreen", new DefaultRenderer()),
+    new DefaultProcessor()
+);
 const collector = new DataCollector('http://127.0.0.1/gol/coins/data.php');
 const controller = new AnimationController(collector, processor, 3); 
 controller.start();
