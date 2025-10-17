@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>CoinCap Animation Loop</title>
-  <style>
-    body {
-      font-family: monospace;
-      background: #111;
-      color: #0f0;
-      padding: 1em;
-    }
-    pre {
-      background: #222;
-      padding: 1em;
-      border-radius: 8px;
-      overflow-x: auto;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>CoinCap Animation Loop</title>
+<style>
+body {
+    font-family: monospace;
+    background: #000000;
+    color: #ffffff;
+    padding: 0;
+    margin:0;
+}
+#onscreen {
+    display:block; width:100vw; height:100vh;
+}
+</style>
 </head>
 <body>
-<canvas width="800" height="600" id="onscreen"></canvas>
-<h1>CoinCap Animation Loop</h1>
-<pre id="output">Initializing...</pre>
-
+<canvas id="onscreen"></canvas>
 <script>
+const canvas = document.getElementById("onscreen");
+function resizeCanvas() {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    onscreen.width  = Math.round(window.innerWidth * dpr);
+    onscreen.height = Math.round(window.innerHeight * dpr);
+    onscreen.style.width  = window.innerWidth + 'px';
+    onscreen.style.height = window.innerHeight + 'px';  
+}
 class DataCollector {
     constructor(url) {
         this.url = url;
@@ -89,7 +92,7 @@ class DefaultProcessor {
     }
 }
 
-class DefaultRenderer {
+class DefaultRenderer { me==:B_zx5SQ:7q
     draw(ctx, data) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         data.forEach((coin, i) => {
@@ -103,22 +106,22 @@ class DefaultRenderer {
             ctx.beginPath();
             // radius based on processed value
             ctx.arc(x, y, coin.radius, 0, Math.PI * 2);
-            ctx.fillStyle = 'limegreen';
+            ctx.fillStyle = "limegreen";
             ctx.fill();
 
             // optional: label
-            ctx.fillStyle = 'white';
-            ctx.font = '12px monospace';
-            ctx.textAlign = 'center';
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px monospace";
+            ctx.textAlign = "center";
             ctx.fillText(coin.symbol, x, y + coin.radius + 12);
         });
     }
 }
 
 class Processor {
-    constructor(renderer, strategy) {
-        this.renderer = renderer;
+    constructor(strategy, renderer) {
         this.strategy = strategy;
+        this.renderer = renderer;
     }
 
     process(rawData) { 
@@ -128,27 +131,28 @@ class Processor {
 }
 
 class Renderer {
-    constructor(canvasId, strategy) {
-        this.canvas = document.getElementById(canvasId);
+    constructor(canvas, strategy) {
+        this.canvas = canvas;
         this.ctx = this.canvas.getContext('2d');
         this.strategy = strategy;
-
-        // optional: set canvas size !!!!!!!!!!!!!!!!!!!!!! FIX !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        this.canvas.width = 800;
-        this.canvas.height = 600;
     }
     render(data) {
         this.strategy.draw(this.ctx, data);
     }
 }
-
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+const config = {
+    dataUrl: "http://127.0.0.1/gol/coins/data.php",
+    dataPollInterval: 3 // seconds
+};
 // Instantiate
 const processor = new Processor(
-    new Renderer("onscreen", new DefaultRenderer()),
-    new DefaultProcessor()
+    new DefaultProcessor(),
+    new Renderer(canvas, new DefaultRenderer())
 );
-const collector = new DataCollector('http://127.0.0.1/gol/coins/data.php');
-const controller = new AnimationController(collector, processor, 3); 
+const collector = new DataCollector(config.dataUrl);
+const controller = new AnimationController(collector, processor, config.dataPollInterval); 
 controller.start();
 </script>
 </body>
