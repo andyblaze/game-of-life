@@ -31,10 +31,17 @@ class DataCollector {
     constructor(url) {
         this.url = url;
         this.data = null;
+        this.token = "88432dce8cf1a1b5c01fa87a87d541f6d6a42f86fad5c4c226eddbd41854d4fb";
     }
     async fetchData() {
         try {
-            const response = await fetch(this.url);
+            const response = await fetch(this.url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${this.token}`,
+                    "Accept": "application/json"
+                }
+            });
             if ( ! response.ok ) throw new Error(`HTTP ${response.status}`);
             const json = await response.json();
             this.data = json;
@@ -74,25 +81,31 @@ class AnimationController {
     }
 }
 
-class DefaultProcessor {
+class OrbitProcessor {
     transform(data) {
-        // Convert raw coin data into renderable info
-        const coinsArray = Object.values(data);
-        const processed = Object.entries(data).map(([symbol, coin]) => {
-            const price = parseFloat(coin.price);
-            const radius = Math.max(5, Math.log10(price) * 5);
+        return Object.entries(data).map(([symbol, coin]) => {
+            const toNum = (v) => (v != null && !isNaN(v)) ? Number(v) : 0;
+
+            const price = toNum(coin.priceUsd);
+            const radius = Math.max(5, Math.log10(price || 1) * 5);
+
             return {
-                symbol,       // <-- keep it!
+                symbol,
                 id: coin.id,
-                price,
+                priceUsd: price,
+                supply: toNum(coin.supply),
+                maxSupply: coin.maxSupply ? toNum(coin.maxSupply) : null,
+                marketCapUsd: toNum(coin.marketCapUsd),
+                volumeUsd24Hr: toNum(coin.volumeUsd24Hr),
+                changePercent24Hr: toNum(coin.changePercent24Hr),
+                vwap24Hr: toNum(coin.vwap24Hr),
                 radius
             };
         });
-        return processed;
     }
 }
 
-class DefaultRenderer { me==:B_zx5SQ:7q
+class DefaultRenderer {
     draw(ctx, data) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         data.forEach((coin, i) => {
@@ -148,7 +161,7 @@ const config = {
 };
 // Instantiate
 const processor = new Processor(
-    new DefaultProcessor(),
+    new OrbitProcessor(),
     new Renderer(canvas, new DefaultRenderer())
 );
 const collector = new DataCollector(config.dataUrl);
