@@ -4,8 +4,13 @@ function pre($data) {
 }
 class CoinCap {
     private $histFile = 'history.json';
-    private $coinsFile = 'coins.json';
-    private $rangeFile = 'ranges.json';
+    private $coinsFile = 'coincap-data.json';
+    private $wanted = [
+        'id', 'rank', 'symbol', 'name',
+        'supply', 'maxSupply', 'marketCapUsd',
+        'volumeUsd24Hr', 'priceUsd',
+        'changePercent24Hr', 'vwap24Hr'
+    ];
     private $data = [];
     public function loadHistory() {
         if ( file_exists($this->histFile) ) {
@@ -15,26 +20,35 @@ class CoinCap {
         return false;
     }
     public function initialise() {
-        $coins = json_decode(file_get_contents($this->coinsFile)); 
-        $ranges = json_decode(file_get_contents($this->rangeFile));
-        foreach ( $coins as $id=>$coin ) {
-            $pricerange = $ranges[$id]->pricerange;
-            $this->data[$coin->symbol] = (object)[
-                "id"=>$coin->id,
-                "price"=>round(mt_rand($pricerange->min * 10000, $pricerange->max * 10000) / 10000, 4),
-                "changePercent24Hr"=>0
-            ];
-        } 
+        $ccdata = json_decode(file_get_contents($this->coinsFile)); 
+        foreach ( $ccdata->data as $coin ) {
+            $symbol = $coin->symbol;
+            $filtered = [];
+
+            foreach ($this->wanted as $key) {
+                if ( isset($coin->{$key}) ) {
+                    $filtered[$key] = $coin->{$key};
+                }
+            }
+            $this->data[$symbol] = (object)$filtered;
+        }
     }
     public function saveHistory() {
         file_put_contents($this->histFile, json_encode($this->data, JSON_PRETTY_PRINT));    
     }
-    public function updateData() {
+    public function updateData() { 
         foreach ( $this->data as $symbol=>$coin ) {
-            $last = $coin->price;
-            $delta = $last * (mt_rand(-100, 100) / 10000); // ±1%
-            $coin->price = round($last + $delta, 4);
-            $coin->changePercent24Hr = round(($delta / $last) * 100, 2);
+            // tiny supply drift
+            $coin->supply *= (1 + rand(-1, 1) / 1000000);
+            // small price jitter
+            $coin->priceUsd *= (1 + rand(-10, 10) / 1000);
+            // recompute dependent fields
+            $coin->marketCapUsd = $coin->priceUsd * $coin->supply;
+            $coin->vwap24Hr = $coin->priceUsd * (1 + rand(-5, 5) / 1000);
+            // realistic volume motion
+            $coin->volumeUsd24Hr *= (1 + rand(-50, 50) / 1000);
+            // expressive 24h change
+            $coin->changePercent24Hr = rand(-1500, 1500) / 100;
             $this->data->{$symbol} = $coin;
         } 
     }

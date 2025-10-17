@@ -1,252 +1,552 @@
 {
     "BTC": {
         "id": "bitcoin",
-        "price": 63412.4644,
-        "changePercent24Hr": 1
+        "rank": "1",
+        "symbol": "BTC",
+        "name": "Bitcoin",
+        "supply": 19935822.935803,
+        "maxSupply": "21000000.000000000000000000",
+        "marketCapUsd": 2085438258012.3464,
+        "volumeUsd24Hr": 93689934848.97528,
+        "priceUsd": 104607.58328,
+        "changePercent24Hr": 0.65,
+        "vwap24Hr": 104816.79844656
     },
     "ETH": {
         "id": "ethereum",
-        "price": 3070.2725,
-        "changePercent24Hr": -0.24
+        "rank": "2",
+        "symbol": "ETH",
+        "name": "Ethereum",
+        "supply": 120698693.7463178,
+        "marketCapUsd": 450395021129.47833,
+        "volumeUsd24Hr": 53209329906.011986,
+        "priceUsd": 3731.5649999999996,
+        "changePercent24Hr": 7.41,
+        "vwap24Hr": 3735.296564999999
     },
     "USDT": {
         "id": "tether",
-        "price": 1.1716,
-        "changePercent24Hr": -0.61
+        "rank": "3",
+        "symbol": "USDT",
+        "name": "Tether USDt",
+        "supply": 181555163317.195,
+        "marketCapUsd": 182116217791.7392,
+        "volumeUsd24Hr": 1411487295.5256925,
+        "priceUsd": 1.0030902699999997,
+        "changePercent24Hr": -2.48,
+        "vwap24Hr": 1.0020871797299997
     },
     "BNB": {
         "id": "binance-coin",
-        "price": 455.2929,
-        "changePercent24Hr": -0.97
-    },
-    "USDC": {
-        "id": "usd-coin",
-        "price": 0.7915,
-        "changePercent24Hr": -0.15
-    },
-    "XRP": {
-        "id": "ripple",
-        "price": 0.9823,
-        "changePercent24Hr": -0.62
-    },
-    "ADA": {
-        "id": "cardano",
-        "price": 1.2348,
-        "changePercent24Hr": 0.82
-    },
-    "DOGE": {
-        "id": "dogecoin",
-        "price": 0.243,
-        "changePercent24Hr": 0.91
-    },
-    "MATIC": {
-        "id": "polygon",
-        "price": 1.6067,
-        "changePercent24Hr": -0.74
+        "rank": "4",
+        "symbol": "BNB",
+        "name": "BNB",
+        "supply": 139180915.38894543,
+        "marketCapUsd": 143648535784.85846,
+        "volumeUsd24Hr": 7550243646.910593,
+        "priceUsd": 1032.099375,
+        "changePercent24Hr": 8.89,
+        "vwap24Hr": 1035.195673125
     },
     "SOL": {
         "id": "solana",
-        "price": 189.8716,
-        "changePercent24Hr": -0.76
+        "rank": "6",
+        "symbol": "SOL",
+        "name": "Solana",
+        "supply": 546832569.7604284,
+        "marketCapUsd": 96935303523.8135,
+        "volumeUsd24Hr": 13462126973.462336,
+        "priceUsd": 177.26688000000001,
+        "changePercent24Hr": 5.63,
+        "vwap24Hr": 177.08961312000002
     },
-    "DOT": {
-        "id": "polkadot",
-        "price": 15.5876,
-        "changePercent24Hr": 0.94
-    },
-    "LTC": {
-        "id": "litecoin",
-        "price": 130.0009,
-        "changePercent24Hr": 0.41
-    },
-    "LINK": {
-        "id": "chainlink",
-        "price": 20.7849,
-        "changePercent24Hr": -0.92
-    },
-    "XLM": {
-        "id": "stellar",
-        "price": 0.2922,
-        "changePercent24Hr": -0.98
-    },
-    "VET": {
-        "id": "vechain",
-        "price": 0.0974,
-        "changePercent24Hr": -0.45
-    },
-    "UNI": {
-        "id": "uniswap",
-        "price": 18.7007,
-        "changePercent24Hr": 0.44
-    },
-    "THETA": {
-        "id": "theta",
-        "price": 11.1203,
-        "changePercent24Hr": -0.75
+    "USDC": {
+        "id": "usd-coin",
+        "rank": "7",
+        "symbol": "USDC",
+        "name": "USDC",
+        "supply": 75976185881.50461,
+        "marketCapUsd": 76344613400.89049,
+        "volumeUsd24Hr": 5309315714.799811,
+        "priceUsd": 1.00484925,
+        "changePercent24Hr": 6.35,
+        "vwap24Hr": 1.0068589485
     },
     "TRX": {
         "id": "tron",
-        "price": 0.0867,
-        "changePercent24Hr": -0.27
+        "rank": "9",
+        "symbol": "TRX",
+        "name": "TRON",
+        "supply": 94665158606.63425,
+        "marketCapUsd": 29081902034.96628,
+        "volumeUsd24Hr": 2779855974.1495337,
+        "priceUsd": 0.3072080844,
+        "changePercent24Hr": -14.89,
+        "vwap24Hr": 0.305672043978
     },
-    "FIL": {
-        "id": "filecoin",
-        "price": 59.6166,
-        "changePercent24Hr": 1
+    "DOGE": {
+        "id": "dogecoin",
+        "rank": "10",
+        "symbol": "DOGE",
+        "name": "Dogecoin",
+        "supply": 151384724998.82886,
+        "marketCapUsd": 26691960939.345505,
+        "volumeUsd24Hr": 6094493382.192424,
+        "priceUsd": 0.17631871999999998,
+        "changePercent24Hr": -14.09,
+        "vwap24Hr": 0.17649503871999997
     },
-    "XMR": {
-        "id": "monero",
-        "price": 151.5617,
-        "changePercent24Hr": 0.59
+    "ADA": {
+        "id": "cardano",
+        "rank": "11",
+        "symbol": "ADA",
+        "name": "Cardano",
+        "supply": 35841169112.95772,
+        "maxSupply": "45000000000.000000000000000000",
+        "marketCapUsd": 21318234678.75193,
+        "volumeUsd24Hr": 1374585682.2088764,
+        "priceUsd": 0.59479741332,
+        "changePercent24Hr": -14.7,
+        "vwap24Hr": 0.59717660297328
     },
-    "ATOM": {
-        "id": "cosmos",
-        "price": 29.6556,
-        "changePercent24Hr": 0.55
+    "LINK": {
+        "id": "chainlink",
+        "rank": "17",
+        "symbol": "LINK",
+        "name": "Chainlink",
+        "supply": 678099292.3526162,
+        "maxSupply": "1000000000.000000000000000000",
+        "marketCapUsd": 10661692228.158953,
+        "volumeUsd24Hr": 1110553284.5533688,
+        "priceUsd": 15.722907173622001,
+        "changePercent24Hr": 3.01,
+        "vwap24Hr": 15.754352987969245
     },
-    "AAVE": {
-        "id": "aave",
-        "price": 266.2069,
-        "changePercent24Hr": -0.53
-    },
-    "EOS": {
-        "id": "eos",
-        "price": 7.1161,
-        "changePercent24Hr": -0.4
-    },
-    "XTZ": {
-        "id": "tezos",
-        "price": 6.2633,
-        "changePercent24Hr": 0.58
-    },
-    "MKR": {
-        "id": "maker",
-        "price": 1911.9161,
-        "changePercent24Hr": 0.43
-    },
-    "DASH": {
-        "id": "dash",
-        "price": 198.2163,
-        "changePercent24Hr": 0.27
-    },
-    "ZEC": {
-        "id": "zcash",
-        "price": 267.8888,
-        "changePercent24Hr": 0.68
-    },
-    "NEO": {
-        "id": "neo",
-        "price": 94.8904,
-        "changePercent24Hr": -0.12
-    },
-    "COMP": {
-        "id": "compound",
-        "price": 382.2626,
-        "changePercent24Hr": -0.08
-    },
-    "SUSHI": {
-        "id": "sushi",
-        "price": 2.5755,
-        "changePercent24Hr": -0.02
-    },
-    "ALGO": {
-        "id": "algorand",
-        "price": 0.6676,
-        "changePercent24Hr": 0.06
-    },
-    "EGLD": {
-        "id": "elrond",
-        "price": 161.7257,
-        "changePercent24Hr": 0.09
-    },
-    "ENJ": {
-        "id": "enjincoin",
-        "price": 2.1244,
-        "changePercent24Hr": -0.96
-    },
-    "DCR": {
-        "id": "decred",
-        "price": 72.9365,
-        "changePercent24Hr": -0.93
-    },
-    "WAVES": {
-        "id": "waves",
-        "price": 6.2707,
-        "changePercent24Hr": -0.36
-    },
-    "IOTX": {
-        "id": "iotex",
-        "price": 0.1138,
-        "changePercent24Hr": 0.12
-    },
-    "ONE": {
-        "id": "harmony",
-        "price": 0.0165,
-        "changePercent24Hr": -0.07
-    },
-    "AVAX": {
-        "id": "avalanche",
-        "price": 165.6528,
-        "changePercent24Hr": -0.01
-    },
-    "HBAR": {
-        "id": "hedera",
-        "price": 0.3289,
-        "changePercent24Hr": -0.19
-    },
-    "CHZ": {
-        "id": "chiliz",
-        "price": 0.2925,
-        "changePercent24Hr": 0.25
-    },
-    "KCS": {
-        "id": "kucoin-token",
-        "price": 28.0058,
-        "changePercent24Hr": 0.91
-    },
-    "AR": {
-        "id": "arweave",
-        "price": 64.9699,
-        "changePercent24Hr": -0.18
-    },
-    "BAT": {
-        "id": "basic-attention-token",
-        "price": 0.7642,
-        "changePercent24Hr": 0.02
+    "XLM": {
+        "id": "stellar",
+        "rank": "19",
+        "symbol": "XLM",
+        "name": "Stellar",
+        "supply": 32000715193.61129,
+        "maxSupply": "50001806812.000000000000000000",
+        "marketCapUsd": 9373764697.087315,
+        "volumeUsd24Hr": 381535124.3085052,
+        "priceUsd": 0.29292359999999995,
+        "changePercent24Hr": 12.15,
+        "vwap24Hr": 0.29350944719999994
     },
     "BCH": {
         "id": "bitcoin-cash",
-        "price": 244.0627,
-        "changePercent24Hr": -0.35
+        "rank": "20",
+        "symbol": "BCH",
+        "name": "Bitcoin Cash",
+        "supply": 19940092.5598875,
+        "maxSupply": "21000000.000000000000000000",
+        "marketCapUsd": 9252534447.439787,
+        "volumeUsd24Hr": 731875721.8814857,
+        "priceUsd": 464.01662478000003,
+        "changePercent24Hr": 14.94,
+        "vwap24Hr": 465.87269127912003
     },
-    "ELA": {
-        "id": "elastos",
-        "price": 12.4543,
-        "changePercent24Hr": -0.37
+    "AVAX": {
+        "id": "avalanche",
+        "rank": "23",
+        "symbol": "AVAX",
+        "name": "Avalanche",
+        "supply": 426415377.8165247,
+        "maxSupply": "715748719.000000000000000000",
+        "marketCapUsd": 8218785426.034813,
+        "volumeUsd24Hr": 843734425.0952808,
+        "priceUsd": 19.27413,
+        "changePercent24Hr": -7.18,
+        "vwap24Hr": 19.27413
     },
-    "ONT": {
-        "id": "ontology",
-        "price": 1.394,
-        "changePercent24Hr": 0.4
+    "LTC": {
+        "id": "litecoin",
+        "rank": "26",
+        "symbol": "LTC",
+        "name": "Litecoin",
+        "supply": 76416345.73347135,
+        "maxSupply": "84000000.000000000000000000",
+        "marketCapUsd": 6534803410.147474,
+        "volumeUsd24Hr": 7689177479.483251,
+        "priceUsd": 85.51577999999999,
+        "changePercent24Hr": 0.24,
+        "vwap24Hr": 85.60129577999999
     },
-    "RVN": {
-        "id": "ravencoin",
-        "price": 0.0632,
-        "changePercent24Hr": -0.34
+    "XMR": {
+        "id": "monero",
+        "rank": "29",
+        "symbol": "XMR",
+        "name": "Monero",
+        "supply": 18446762.520453624,
+        "marketCapUsd": 5303444224.630417,
+        "volumeUsd24Hr": 199860934.81544372,
+        "priceUsd": 287.5,
+        "changePercent24Hr": -9.5,
+        "vwap24Hr": 286.0625
     },
-    "SC": {
-        "id": "siacoin",
-        "price": 0.0405,
-        "changePercent24Hr": -0.5
+    "DOT": {
+        "id": "polkadot",
+        "rank": "33",
+        "symbol": "DOT",
+        "name": "Polkadot",
+        "supply": 1627728292.2088304,
+        "marketCapUsd": 4657126622.495845,
+        "volumeUsd24Hr": 435962062.2142769,
+        "priceUsd": 2.8611203999999995,
+        "changePercent24Hr": -13.9,
+        "vwap24Hr": 2.8468147979999996
     },
-    "LRC": {
-        "id": "loopring",
-        "price": 1.1254,
-        "changePercent24Hr": 0.33
+    "UNI": {
+        "id": "uniswap",
+        "rank": "34",
+        "symbol": "UNI",
+        "name": "Uniswap",
+        "supply": 630329897.3794723,
+        "marketCapUsd": 3724430058.138227,
+        "volumeUsd24Hr": 300688397.994116,
+        "priceUsd": 5.908699672381301,
+        "changePercent24Hr": 12,
+        "vwap24Hr": 5.890973573364158
+    },
+    "AAVE": {
+        "id": "aave",
+        "rank": "37",
+        "symbol": "AAVE",
+        "name": "Aave",
+        "supply": 15255801.888225991,
+        "marketCapUsd": 3121488403.885769,
+        "volumeUsd24Hr": 545262586.1822528,
+        "priceUsd": 204.60992,
+        "changePercent24Hr": -6.75,
+        "vwap24Hr": 204.20070016
+    },
+    "ZEC": {
+        "id": "zcash",
+        "rank": "39",
+        "symbol": "ZEC",
+        "name": "Zcash",
+        "supply": 16266430.6655448,
+        "maxSupply": "21000000.000000000000000000",
+        "marketCapUsd": 3089028688.7368455,
+        "volumeUsd24Hr": 735841459.3826075,
+        "priceUsd": 189.90205978499998,
+        "changePercent24Hr": -7.45,
+        "vwap24Hr": 189.14245154585998
+    },
+    "MATIC": {
+        "id": "polygon",
+        "rank": "56",
+        "symbol": "MATIC",
+        "name": "Polygon",
+        "supply": 10000010000,
+        "maxSupply": "10000000000.000000000000000000",
+        "marketCapUsd": 1844564844.563,
+        "volumeUsd24Hr": 3964295.5764636034,
+        "priceUsd": 0.1844563,
+        "changePercent24Hr": 6.14,
+        "vwap24Hr": 0.18537858149999997
+    },
+    "KCS": {
+        "id": "kucoin-token",
+        "rank": "57",
+        "symbol": "KCS",
+        "name": "KuCoin Token",
+        "supply": 129775721.95971541,
+        "maxSupply": "200000000.000000000000000000",
+        "marketCapUsd": 1796368512.6329308,
+        "volumeUsd24Hr": 37044323.65010387,
+        "priceUsd": 13.842099936000002,
+        "changePercent24Hr": 1.83,
+        "vwap24Hr": 13.91131043568
+    },
+    "ALGO": {
+        "id": "algorand",
+        "rank": "62",
+        "symbol": "ALGO",
+        "name": "Algorand",
+        "supply": 8811198105.867336,
+        "maxSupply": "10000000000.000000000000000000",
+        "marketCapUsd": 1518805602.1441855,
+        "volumeUsd24Hr": 92212905.54955982,
+        "priceUsd": 0.17237219999999998,
+        "changePercent24Hr": -6.24,
+        "vwap24Hr": 0.1727169444
+    },
+    "ATOM": {
+        "id": "cosmos",
+        "rank": "63",
+        "symbol": "ATOM",
+        "name": "Cosmos",
+        "supply": 473352906.64662,
+        "marketCapUsd": 1447479438.46312,
+        "volumeUsd24Hr": 96406310.0636578,
+        "priceUsd": 3.0579287,
+        "changePercent24Hr": 5.18,
+        "vwap24Hr": 3.0640445574000004
+    },
+    "VET": {
+        "id": "vechain",
+        "rank": "64",
+        "symbol": "VET",
+        "name": "VeChain",
+        "supply": 85984955191.95882,
+        "maxSupply": "86712634466.000000000000000000",
+        "marketCapUsd": 1426766042.5005236,
+        "volumeUsd24Hr": 91723535.3723185,
+        "priceUsd": 0.016593205628999998,
+        "changePercent24Hr": 7.14,
+        "vwap24Hr": 0.016609798834628996
+    },
+    "FIL": {
+        "id": "filecoin",
+        "rank": "82",
+        "symbol": "FIL",
+        "name": "Filecoin",
+        "supply": 699530956.530257,
+        "marketCapUsd": 976821530.0440682,
+        "volumeUsd24Hr": 209398831.9805377,
+        "priceUsd": 1.396395,
+        "changePercent24Hr": 5.61,
+        "vwap24Hr": 1.40198058
+    },
+    "XTZ": {
+        "id": "tezos",
+        "rank": "108",
+        "symbol": "XTZ",
+        "name": "Tezos",
+        "supply": 1062143962.5195954,
+        "marketCapUsd": 599909531.4706928,
+        "volumeUsd24Hr": 22356271.726067457,
+        "priceUsd": 0.56481,
+        "changePercent24Hr": 2.49,
+        "vwap24Hr": 0.5659396200000001
+    },
+    "THETA": {
+        "id": "theta",
+        "rank": "122",
+        "symbol": "THETA",
+        "name": "Theta Network",
+        "supply": 1000000999.9999999,
+        "maxSupply": "1000000000.000000000000000000",
+        "marketCapUsd": 508014468.01396006,
+        "volumeUsd24Hr": 35462840.54973402,
+        "priceUsd": 0.5080139600000001,
+        "changePercent24Hr": 10.68,
+        "vwap24Hr": 0.5064899181200001
+    },
+    "DASH": {
+        "id": "dash",
+        "rank": "124",
+        "symbol": "DASH",
+        "name": "Dash",
+        "supply": 12447962.615732087,
+        "maxSupply": "18900000.000000000000000000",
+        "marketCapUsd": 491583736.45413744,
+        "volumeUsd24Hr": 190457882.24924058,
+        "priceUsd": 39.4911,
+        "changePercent24Hr": -2.64,
+        "vwap24Hr": 39.6095733
+    },
+    "NEO": {
+        "id": "neo",
+        "rank": "156",
+        "symbol": "NEO",
+        "name": "Neo",
+        "supply": 70538901.538831,
+        "marketCapUsd": 341771558.790867,
+        "volumeUsd24Hr": 37094873.9278686,
+        "priceUsd": 4.845149999999999,
+        "changePercent24Hr": -13.62,
+        "vwap24Hr": 4.820924249999999
+    },
+    "COMP": {
+        "id": "compound",
+        "rank": "167",
+        "symbol": "COMP",
+        "name": "Compound",
+        "supply": 9722223.68323189,
+        "marketCapUsd": 317197756.0003078,
+        "volumeUsd24Hr": 65725526.40888846,
+        "priceUsd": 32.62605,
+        "changePercent24Hr": 4.68,
+        "vwap24Hr": 32.65867605
+    },
+    "CHZ": {
+        "id": "chiliz",
+        "rank": "169",
+        "symbol": "CHZ",
+        "name": "Chiliz",
+        "supply": 10046760921.229033,
+        "marketCapUsd": 314034318.7403046,
+        "volumeUsd24Hr": 60200279.3011708,
+        "priceUsd": 0.03125727,
+        "changePercent24Hr": 11.07,
+        "vwap24Hr": 0.031194755459999998
+    },
+    "DCR": {
+        "id": "decred",
+        "rank": "183",
+        "symbol": "DCR",
+        "name": "Decred",
+        "supply": 17072537.26740412,
+        "maxSupply": "21000000.000000000000000000",
+        "marketCapUsd": 272875177.6004295,
+        "volumeUsd24Hr": 4673824.755561669,
+        "priceUsd": 15.983282,
+        "changePercent24Hr": 5.75,
+        "vwap24Hr": 15.999265282
+    },
+    "BAT": {
+        "id": "basic-attention-token",
+        "rank": "189",
+        "symbol": "BAT",
+        "name": "Basic Attention Token",
+        "supply": 1495694561.2565486,
+        "marketCapUsd": 260536546.27678505,
+        "volumeUsd24Hr": 90849445.53188808,
+        "priceUsd": 0.17419100999999998,
+        "changePercent24Hr": -12.44,
+        "vwap24Hr": 0.17436520100999997
+    },
+    "AR": {
+        "id": "arweave",
+        "rank": "197",
+        "symbol": "AR",
+        "name": "Arweave",
+        "supply": 65652400.347534,
+        "maxSupply": "66000000.000000000000000000",
+        "marketCapUsd": 251316128.0042735,
+        "volumeUsd24Hr": 48579188.462328166,
+        "priceUsd": 3.8279808,
+        "changePercent24Hr": 11.46,
+        "vwap24Hr": 3.8279808
     },
     "ZRX": {
         "id": "0x",
-        "price": 1.2721,
-        "changePercent24Hr": 0.8
+        "rank": "239",
+        "symbol": "ZRX",
+        "name": "0x Protocol",
+        "supply": 848397411.2939067,
+        "maxSupply": "1000000000.000000000000000000",
+        "marketCapUsd": 162305636.15852034,
+        "volumeUsd24Hr": 15815214.00170702,
+        "priceUsd": 0.1913085,
+        "changePercent24Hr": -13.47,
+        "vwap24Hr": 0.19188242549999998
+    },
+    "RVN": {
+        "id": "ravencoin",
+        "rank": "253",
+        "symbol": "RVN",
+        "name": "Ravencoin",
+        "supply": 15701487997.385489,
+        "maxSupply": "21000000000.000000000000000000",
+        "marketCapUsd": 143941821.06723174,
+        "volumeUsd24Hr": 9164884.02906027,
+        "priceUsd": 0.009167400000000001,
+        "changePercent24Hr": -2.13,
+        "vwap24Hr": 0.0091949022
+    },
+    "IOTX": {
+        "id": "iotex",
+        "rank": "286",
+        "symbol": "IOTX",
+        "name": "IoTeX",
+        "supply": 9441368979,
+        "maxSupply": "10000000000.000000000000000000",
+        "marketCapUsd": 115888083.53273551,
+        "volumeUsd24Hr": 16752912.2332137,
+        "priceUsd": 0.0122745,
+        "changePercent24Hr": 7.87,
+        "vwap24Hr": 0.012311323499999999
+    },
+    "SC": {
+        "id": "siacoin",
+        "rank": "292",
+        "symbol": "SC",
+        "name": "Siacoin",
+        "supply": 56025636522.075195,
+        "marketCapUsd": 111268034.64557177,
+        "volumeUsd24Hr": 4431856.66522061,
+        "priceUsd": 0.00198602,
+        "changePercent24Hr": -14.54,
+        "vwap24Hr": 0.00198602
+    },
+    "WAVES": {
+        "id": "waves",
+        "rank": "313",
+        "symbol": "WAVES",
+        "name": "Waves",
+        "supply": 119094286,
+        "marketCapUsd": 97501420.09962597,
+        "volumeUsd24Hr": 15236927.182921037,
+        "priceUsd": 0.8186909999999998,
+        "changePercent24Hr": -7.7,
+        "vwap24Hr": 0.8170536179999999
+    },
+    "ONE": {
+        "id": "harmony",
+        "rank": "314",
+        "symbol": "ONE",
+        "name": "Harmony",
+        "supply": 14740302223.262915,
+        "marketCapUsd": 96546768.5170386,
+        "volumeUsd24Hr": 11097892.179225096,
+        "priceUsd": 0.00654985,
+        "changePercent24Hr": -12.44,
+        "vwap24Hr": 0.0065236506
+    },
+    "LRC": {
+        "id": "loopring",
+        "rank": "316",
+        "symbol": "LRC",
+        "name": "Loopring",
+        "supply": 1367106692.1285725,
+        "marketCapUsd": 91317422.66022319,
+        "volumeUsd24Hr": 8532662.67574282,
+        "priceUsd": 0.06679612,
+        "changePercent24Hr": 3.29,
+        "vwap24Hr": 0.0664621394
+    },
+    "ONT": {
+        "id": "ontology",
+        "rank": "328",
+        "symbol": "ONT",
+        "name": "Ontology",
+        "supply": 918864523,
+        "maxSupply": "1000000000.000000000000000000",
+        "marketCapUsd": 82864121.54866299,
+        "volumeUsd24Hr": 12287825.73253191,
+        "priceUsd": 0.090181,
+        "changePercent24Hr": -0.96,
+        "vwap24Hr": 0.09063190499999998
+    },
+    "MKR": {
+        "id": "maker",
+        "rank": "1118",
+        "symbol": "MKR",
+        "name": "Maker",
+        "supply": 0,
+        "maxSupply": "1000000.000000000000000000",
+        "marketCapUsd": 0,
+        "volumeUsd24Hr": 1570664.30787024,
+        "priceUsd": 1383.6778560196653,
+        "changePercent24Hr": 7.94,
+        "vwap24Hr": 1383.6778560196653
+    },
+    "EOS": {
+        "id": "eos",
+        "rank": "1163",
+        "symbol": "EOS",
+        "name": "EOS",
+        "supply": 0,
+        "maxSupply": "2100000000.000000000000000000",
+        "marketCapUsd": 0,
+        "volumeUsd24Hr": 1291599.616863893,
+        "priceUsd": 0.4528006,
+        "changePercent24Hr": -4.14,
+        "vwap24Hr": 0.45325340059999997
     }
 }
