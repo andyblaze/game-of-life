@@ -22,10 +22,11 @@ body {
 const canvas = document.getElementById("onscreen");
 function resizeCanvas() {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    onscreen.width  = Math.round(window.innerWidth * dpr);
-    onscreen.height = Math.round(window.innerHeight * dpr);
-    onscreen.style.width  = window.innerWidth + 'px';
-    onscreen.style.height = window.innerHeight + 'px';  
+    const sz = { w: window.innerWidth, h: window.innerHeight };
+    onscreen.width  = Math.round(sz.w * dpr);
+    onscreen.height = Math.round(sz.h * dpr);
+    onscreen.style.width  = sz.w + "px";
+    onscreen.style.height = sz.h + "px";  
 }
 class DataCollector {
     constructor(url) {
@@ -83,11 +84,23 @@ class AnimationController {
 
 class OrbitProcessor {
     transform(data) {
-        return Object.entries(data).map(([symbol, coin]) => {
+        return Object.entries(data).map(([symbol, coin], index) => {
             const toNum = (v) => (v != null && !isNaN(v)) ? Number(v) : 0;
 
             const price = toNum(coin.priceUsd);
-            const radius = Math.max(5, Math.log10(price || 1) * 5);
+            const marketCap = toNum(coin.marketCapUsd);
+            const change = toNum(coin.changePercent24Hr);
+
+            // --- Derived render parameters ---
+            const radius = Math.max(4, Math.log10(price || 1) * 5);
+            // Orbit distance based on rank or market cap (spread out visually)
+            const orbitRadius = Math.log10(marketCap + 1) * 15 + (index * 4);
+            // Speed: more volatile coins orbit faster
+            const orbitSpeed = 0.001 + Math.abs(change) * 0.00005;
+            // Random start angle to distribute around circle
+            const angle = Math.random() * Math.PI * 2;
+            // Color hint: green for positive, red for negative
+            const color = change >= 0 ? '#5f5' : '#f55';
 
             return {
                 symbol,
@@ -95,36 +108,73 @@ class OrbitProcessor {
                 priceUsd: price,
                 supply: toNum(coin.supply),
                 maxSupply: coin.maxSupply ? toNum(coin.maxSupply) : null,
-                marketCapUsd: toNum(coin.marketCapUsd),
+                marketCapUsd: marketCap,
                 volumeUsd24Hr: toNum(coin.volumeUsd24Hr),
-                changePercent24Hr: toNum(coin.changePercent24Hr),
+                changePercent24Hr: change,
                 vwap24Hr: toNum(coin.vwap24Hr),
-                radius
+
+                // --- orbital render properties ---
+                radius,
+                orbitRadius,
+                orbitSpeed,
+                angle,
+                color
             };
         });
     }
 }
 
-class DefaultRenderer {
+
+class OrbitRenderer {
+    constructor() {
+        this.center = null;
+    }
+    circle(ctx, x, y, r, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
     draw(ctx, data) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        data.forEach((coin, i) => {
-            // simple grid layout
-            const cols = 10;
-            const spacingX = ctx.canvas.width / cols;
-            const spacingY = 80;
-            const x = (i % cols) * spacingX + spacingX / 2;
-            const y = Math.floor(i / cols) * spacingY + spacingY / 2;
+        const { width, height } = ctx.canvas;
+        ctx.clearRect(0, 0, width, height);
 
-            ctx.beginPath();
-            // radius based on processed value
-            ctx.arc(x, y, coin.radius, 0, Math.PI * 2);
-            ctx.fillStyle = "limegreen";
-            ctx.fill();
+        if (!data.length) return;
 
-            // optional: label
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "14px monospace";
+        // Establish center and max radius we can draw within
+        const minDimension = Math.min(width, height);
+        const maxAllowedRadius = minDimension * 0.45; // 90% diameter use
+
+        this.center = { x: width / 2, y: height / 2 };
+        // Find current max orbit radius among data
+        const maxOrbit = Math.max(...data.map(c => c.orbitRadius));
+        // Compute a scaling factor to fit all orbits on screen
+        const scale = maxOrbit > 0 ? maxAllowedRadius / maxOrbit : 1;
+
+        // Draw central "sun"
+        this.circle(ctx, this.center.x, this.center.y, 8, "#ffaa00")
+
+        // Draw each coin
+        data.forEach(coin => {
+            // Apply scale
+            const orbitR = coin.orbitRadius * scale;
+            // Update angle
+            coin.angle += coin.orbitSpeed;
+            // Compute position
+            const x = this.center.x + Math.cos(coin.angle) * orbitR;
+            const y = this.center.y + Math.sin(coin.angle) * orbitR;
+            // Optional orbit path
+            /*ctx.beginPath();
+            ctx.arc(this.center.x, this.center.y, orbitR, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(255,255,255,0.05)";
+            ctx.lineWidth = 1;
+            ctx.stroke();*/
+
+            // Planet
+            this.circle(ctx, x, y, coin.radius, coin.color || "#0f0");
+            // Label
+            ctx.fillStyle = "#ccc";
+            ctx.font = "12px monospace";
             ctx.textAlign = "center";
             ctx.fillText(coin.symbol, x, y + coin.radius + 12);
         });
@@ -162,7 +212,7 @@ const config = {
 // Instantiate
 const processor = new Processor(
     new OrbitProcessor(),
-    new Renderer(canvas, new DefaultRenderer())
+    new Renderer(canvas, new OrbitRenderer())
 );
 const collector = new DataCollector(config.dataUrl);
 const controller = new AnimationController(collector, processor, config.dataPollInterval); 
