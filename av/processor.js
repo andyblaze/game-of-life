@@ -1,11 +1,9 @@
 export default class Processor {
-    constructor(strategy, renderer) {
+    constructor(strategy) {
         this.strategy = strategy;
         this.renderer = renderer;
     }
-
-    process(delta, rawData) { 
-        const processed = this.strategy.transform(rawData.data);
-        this.renderer.render(delta, processed);
+    process(rawData) { 
+        return this.strategy.transform(rawData);
     }
 }

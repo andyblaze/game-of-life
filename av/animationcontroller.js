@@ -1,33 +1,23 @@
 export default class AnimationController {
-    constructor(collector, processor, fetchIntervalSeconds = 5) {
+    constructor(collector, processor, renderer) {
         this.collector = collector;
         this.processor = processor;
-
-        this.fetchInterval = fetchIntervalSeconds;
-        this.lastFetchTime = 0;
+        this.renderer = renderer;
 
         this.lastTimestamp = 0;
-        this.accumulator = 0;
         // bind once
         this._loop = this.loop.bind(this);
     }
-    async start() {
-        await this.collector.fetchData();
+    start() {
+        this.collector.fetchData();
         requestAnimationFrame(this._loop);
     }
-    async loop(timestamp) {
+    loop(timestamp) {
         const delta = (timestamp - (this.lastTimestamp || timestamp)) / 1000;
         this.lastTimestamp = timestamp;
-        this.accumulator += delta;
-        this.processor.process(delta, {});
-        if ( this.accumulator - this.lastFetchTime >= this.fetchInterval ) {
-            this.lastFetchTime = this.accumulator;
-            const data = await this.collector.fetchData();
-            if ( data ) 
-                this.processor.process(delta, data);
-        }
-        //if ( this.processor.update ) 
-        //    this.processor.update(delta, this.accumulator);
+        const data = this.collector.fetchData();
+        const processedAudio = this.processor.process(data);
+        this.renderer.render(delta, processedAudio);
         DeltaReport.log(timestamp);
         requestAnimationFrame(this._loop); // no new function per frame
     }

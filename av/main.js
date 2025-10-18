@@ -10,15 +10,14 @@ function resizeCanvas() {
 
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
-const config = {
-    dataUrl: "http://127.0.0.1/gol/coins/data.php",
-    dataPollInterval: 3 // seconds
-};
+
 // Instantiate
+const audioCollector = new AudioCollector();
+const renderer = new Renderer(canvas, new AudioRenderer(new Perlin()))
+await audioCollector.init();   // request mic access, sets up analyser
 const processor = new Processor(
-    new AudioProcessor(),
-    new Renderer(canvas, new AudioRenderer(new Perlin()))
+    new AudioProcessor()    
 );
-const collector = new DataCollector(config.dataUrl);
-const controller = new AnimationController(collector, processor, config.dataPollInterval); 
+const collector = new DataCollector(audioCollector);
+const controller = new AnimationController(collector, processor, renderer); 
 controller.start();
