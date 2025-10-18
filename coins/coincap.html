@@ -28,6 +28,84 @@ function resizeCanvas() {
     onscreen.style.width  = sz.w + "px";
     onscreen.style.height = sz.h + "px";  
 }
+
+class DeltaReport {
+    static lastTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static elapsedSeconds = 0;
+    static report = document.getElementById("fps-report");
+    
+    static log(timestamp) {
+        this.frameCount++;
+        const delta = (timestamp - this.lastTime) / 16.67;
+        this.sum += delta;
+        this.lastTime = timestamp;
+        if ( this.frameCount === 120 ) { // every 2 seconds
+            this.elapsedSeconds += 2;
+            const minutes = Math.floor(this.elapsedSeconds / 60);
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if ( fps < this.min ) this.min = fps; 
+            if ( fps > this.max ) this.max = fps; 
+            console.log("time", `${minutes}:${this.elapsedSeconds % 60}`, " fps=", fps, " min=", this.min, " max=", this.max);
+            //this.report.innerText = fps + " " + this.min + " " + this.max;
+            this.frameCount = 0;
+            this.sum = 0;
+        }
+    }
+}
+
+class Perlin {
+  constructor() {
+    this.p = new Uint8Array(512);
+    const perm = new Uint8Array([
+      151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+      190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+      77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,
+      189,28,42,223,183,170,213,119,248,152, 2,44,154,163,70,221,153,101,155,167, 43,172,9,129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127, 4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+    ]);
+    for (let i = 0; i < 512; ++i) this.p[i] = perm[i & 255];
+  }
+
+  fade(t){ return t*t*t*(t*(t*6 -15) +10); }
+  lerp(a,b,t){ return a + t*(b-a); }
+  grad(hash, x, y, z=0) {
+    const h = hash & 15;
+    const u = h<8 ? x : y;
+    const v = h<4 ? y : (h===12||h===14 ? x : z);
+    return ((h&1)? -u : u) + ((h&2)? -v : v);
+  }
+
+  // 3D Perlin (we use third dim as time)
+  noise(x, y, z=0) {
+    const X = Math.floor(x) & 255;
+    const Y = Math.floor(y) & 255;
+    const Z = Math.floor(z) & 255;
+    x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+    const u = this.fade(x), v = this.fade(y), w = this.fade(z);
+    const p = this.p;
+
+    const A  = p[X  ]+Y, AA = p[A]+Z, AB = p[A+1]+Z;
+    const B  = p[X+1]+Y, BA = p[B]+Z, BB = p[B+1]+Z;
+
+    return this.lerp(
+      this.lerp(
+        this.lerp(this.grad(p[AA], x  , y  , z   ), this.grad(p[BA], x-1, y  , z   ), u),
+        this.lerp(this.grad(p[AB], x  , y-1, z   ), this.grad(p[BB], x-1, y-1, z   ), u),
+        v
+      ),
+      this.lerp(
+        this.lerp(this.grad(p[AA+1], x  , y  , z-1 ), this.grad(p[BA+1], x-1, y  , z-1 ), u),
+        this.lerp(this.grad(p[AB+1], x  , y-1, z-1 ), this.grad(p[BB+1], x-1, y-1, z-1 ), u),
+        v
+      ),
+      w
+    );
+  }
+}
+
 class DataCollector {
     constructor(url) {
         this.url = url;
@@ -59,31 +137,39 @@ class AnimationController {
     constructor(collector, processor, fetchIntervalSeconds = 5) {
         this.collector = collector;
         this.processor = processor;
-        this.frame = 0;
-        this.fps = 60;
-        this.fetchIntervalFrames = fetchIntervalSeconds * this.fps;
 
-        this.lastFetchFrame = -this.fetchIntervalFrames; // force immediate fetch
+        this.fetchInterval = fetchIntervalSeconds;
+        this.lastFetchTime = 0;
+
+        this.lastTimestamp = 0;
+        this.accumulator = 0;
+        // bind once
+        this._loop = this.loop.bind(this);
     }
     async start() {
         await this.collector.fetchData();
-        this.loop();
+        requestAnimationFrame(this._loop);
     }
-    async loop() {
-        this.frame++;
-        // Trigger fetch every N seconds
-        if ( this.frame - this.lastFetchFrame >= this.fetchIntervalFrames ) {
-            this.lastFetchFrame = this.frame;
+    async loop(timestamp) {
+        const delta = (timestamp - (this.lastTimestamp || timestamp)) / 1000;
+        this.lastTimestamp = timestamp;
+        this.accumulator += delta;
+        this.processor.process(delta, {});
+        if ( this.accumulator - this.lastFetchTime >= this.fetchInterval ) {
+            this.lastFetchTime = this.accumulator;
             const data = await this.collector.fetchData();
-            if (data) 
-                this.processor.process(data);
+            if ( data ) 
+                this.processor.process(delta, data);
         }
-        requestAnimationFrame(() => this.loop());
+        //if ( this.processor.update ) 
+        //    this.processor.update(delta, this.accumulator);
+        DeltaReport.log(timestamp);
+        requestAnimationFrame(this._loop); // no new function per frame
     }
 }
 
 class OrbitProcessor {
-    transform(data) {
+    transform(data) { return {};
         return Object.entries(data).map(([symbol, coin], index) => {
             const toNum = (v) => (v != null && !isNaN(v)) ? Number(v) : 0;
 
@@ -124,62 +210,68 @@ class OrbitProcessor {
     }
 }
 
-
-class OrbitRenderer {
-    constructor() {
-        this.center = null;
+class BarChartRenderer {
+    constructor(perlin) {
+        this.perlin = perlin;
+        this.width = 100;      // bar width
+        this.height = 600;     // bar height
+        this.x = 200;          // bar x position
+        this.y = 800;          // bottom of bar y position
+        this.noiseScale = 0.02; // how much noise affects the bar
+        this.sideResolution = 20; // number of points along vertical edges
+        this.topResolution = 10;  // number of points along top edge
     }
-    circle(ctx, x, y, r, color) {
+
+    draw(delta, ctx, data) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        const time = delta * 20.1;
+
+        // create gradient
+        const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y - this.height);
+        gradient.addColorStop(0, "#00ff00");
+        gradient.addColorStop(0.3, "#ffff00");
+        gradient.addColorStop(0.6, "#ff9900");
+        gradient.addColorStop(1, "#ff0000");
+        ctx.fillStyle = gradient;
+
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = color;
+
+        // bottom left (anchored)
+        ctx.moveTo(this.x, this.y);
+
+        // left vertical edge points
+        for (let i = this.sideResolution; i >= 0; i--) {
+            const t = i / this.sideResolution;
+            const noiseVal = this.perlin.noise(t * 5, time);
+            const px = this.x + noiseVal * this.noiseScale * this.width; // jitter horizontally
+            const py = this.y - t * this.height + noiseVal * this.noiseScale * this.height; // jitter vertically
+            ctx.lineTo(px, py);
+        }
+
+        // top edge points
+        for (let i = 0; i <= this.topResolution; i++) {
+            const t = i / this.topResolution;
+            const noiseVal = this.perlin.noise(t * 5 + 100, time); // offset to decorrelate
+            const px = this.x + t * this.width + noiseVal * this.noiseScale * this.width;
+            const py = this.y - this.height + noiseVal * this.noiseScale * this.height;
+            ctx.lineTo(px, py);
+        }
+
+        // right vertical edge points
+        for (let i = this.sideResolution; i >= 0; i--) {
+            const t = i / this.sideResolution;
+            const noiseVal = this.perlin.noise(t * 5 + 200, time);
+            const px = this.x + this.width + noiseVal * this.noiseScale * this.width;
+            const py = this.y - t * this.height + noiseVal * this.noiseScale * this.height;
+            ctx.lineTo(px, py);
+        }
+
+        ctx.closePath();
         ctx.fill();
     }
-    draw(ctx, data) {
-        const { width, height } = ctx.canvas;
-        ctx.clearRect(0, 0, width, height);
-
-        if (!data.length) return;
-
-        // Establish center and max radius we can draw within
-        const minDimension = Math.min(width, height);
-        const maxAllowedRadius = minDimension * 0.45; // 90% diameter use
-
-        this.center = { x: width / 2, y: height / 2 };
-        // Find current max orbit radius among data
-        const maxOrbit = Math.max(...data.map(c => c.orbitRadius));
-        // Compute a scaling factor to fit all orbits on screen
-        const scale = maxOrbit > 0 ? maxAllowedRadius / maxOrbit : 1;
-
-        // Draw central "sun"
-        this.circle(ctx, this.center.x, this.center.y, 8, "#ffaa00")
-
-        // Draw each coin
-        data.forEach(coin => {
-            // Apply scale
-            const orbitR = coin.orbitRadius * scale;
-            // Update angle
-            coin.angle += coin.orbitSpeed;
-            // Compute position
-            const x = this.center.x + Math.cos(coin.angle) * orbitR;
-            const y = this.center.y + Math.sin(coin.angle) * orbitR;
-            // Optional orbit path
-            /*ctx.beginPath();
-            ctx.arc(this.center.x, this.center.y, orbitR, 0, Math.PI * 2);
-            ctx.strokeStyle = "rgba(255,255,255,0.05)";
-            ctx.lineWidth = 1;
-            ctx.stroke();*/
-
-            // Planet
-            this.circle(ctx, x, y, coin.radius, coin.color || "#0f0");
-            // Label
-            ctx.fillStyle = "#ccc";
-            ctx.font = "12px monospace";
-            ctx.textAlign = "center";
-            ctx.fillText(coin.symbol, x, y + coin.radius + 12);
-        });
-    }
 }
+
 
 class Processor {
     constructor(strategy, renderer) {
@@ -187,9 +279,9 @@ class Processor {
         this.renderer = renderer;
     }
 
-    process(rawData) { 
+    process(delta, rawData) { 
         const processed = this.strategy.transform(rawData.data);
-        this.renderer.render(processed);
+        this.renderer.render(delta, processed);
     }
 }
 
@@ -199,8 +291,8 @@ class Renderer {
         this.ctx = this.canvas.getContext('2d');
         this.strategy = strategy;
     }
-    render(data) {
-        this.strategy.draw(this.ctx, data);
+    render(delta, data) {
+        this.strategy.draw(delta, this.ctx, data);
     }
 }
 window.addEventListener("resize", resizeCanvas);
@@ -212,7 +304,7 @@ const config = {
 // Instantiate
 const processor = new Processor(
     new OrbitProcessor(),
-    new Renderer(canvas, new OrbitRenderer())
+    new Renderer(canvas, new BarChartRenderer(new Perlin()))
 );
 const collector = new DataCollector(config.dataUrl);
 const controller = new AnimationController(collector, processor, config.dataPollInterval); 

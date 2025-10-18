@@ -116,14 +116,14 @@ function curlNoise(x, y, t, scale = 1, eps = 1e-3) {
 
 // ===== Animation Variables =====
 let time = 0;
-let radius = 30;
-let points = radius * 7;
+let radius = 80;
+let points = radius * 3;
 let centerX = canvas.width / 2;
 let centerY = canvas.height / 2;
 let offsetY = 0;
-let radiusOffset = 0.01;
+let radiusOffset = 0.0;
 
-function paint(ctx, points) {
+function paint(ctx, points, cx, cy) {
   ctx.beginPath();
 
   //const centerX = canvas.width / 2;
@@ -147,16 +147,16 @@ const noise2 = perlin.noise(x*0.05, y*0.05, time*1.5) * 0.5;
 const noise3 = perlin.noise(x*0.1, y*0.1, time*0.7) * 0.25;
 const noise = noise1 + noise2;// + noise3;
 // Use the noise to distort the radius
-x *= 1 + noise * 0.7;
-y *= 1 + noise * 0.7;
+x *= 1 + noise * 0.4;
+y *= 1 + noise * 0.4;
 
     // Apply fluid motion using curlNoise
-    const curl = curlNoise(x * 0.01, y * 0.01, time, 50);
+    const curl = curlNoise(x * 0.001, y * 0.001, time, 20);
     x += curl.x;
     y += curl.y;
 
-    const drawX = centerX + x;
-    const drawY = centerY + y + offsetY;
+    const drawX = cx + x;
+    const drawY = cy + y + offsetY;
 
     if (i === 0) ctx.moveTo(drawX, drawY);
     else ctx.lineTo(drawX, drawY);
@@ -176,9 +176,23 @@ y *= 1 + noise * 0.7;
 
 // ===== Draw Loop =====
 function draw(ts) {
-ctx.fillStyle = 'rgba(17, 17, 17, 0.01)';
+ctx.fillStyle = 'rgba(17, 17, 17, 1)';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
-    paint(ctx, points);
+    paint(ctx, points, centerX, centerY-300);
+    paint(ctx, points, centerX - 300, centerY-300);
+    paint(ctx, points, centerX + 300, centerY-300);
+    paint(ctx, points, centerX - 600, centerY-300);
+    paint(ctx, points, centerX + 600, centerY-300);
+    paint(ctx, points, centerX, centerY+300);
+    paint(ctx, points, centerX - 300, centerY+300);
+    paint(ctx, points, centerX + 300, centerY+300);
+    paint(ctx, points, centerX - 600, centerY+300);
+    paint(ctx, points, centerX + 600, centerY+300);
+    paint(ctx, points, centerX, centerY);
+    paint(ctx, points, centerX - 300, centerY);
+    paint(ctx, points, centerX + 300, centerY);
+    paint(ctx, points, centerX - 600, centerY);
+    paint(ctx, points, centerX + 600, centerY);
   /*ctx.beginPath();
 
   //const centerX = canvas.width / 2;
@@ -230,9 +244,9 @@ y *= 1 + noise * 0.7;
 
   time += 0.01;
   ///offsetY += 0.3
-  radius += radiusOffset;
+  //radius += radiusOffset;
   //radiusOffset += 0.0001;
-  points = Math.floor(radius * 3);
+  //points = Math.floor(radius * 3);
   DeltaReport.log(ts);
   requestAnimationFrame(draw);
 }
