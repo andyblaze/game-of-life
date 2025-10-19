@@ -1,0 +1,68 @@
+1. Visual Element Base Class
+class VisualElement {
+  constructor(index, drawer) {
+    this.index = index;     // which band (or special like -1 for volume)
+    this.drawer = drawer;   // instance of a drawing strategy
+    this.value = 0;         // smoothed amplitude
+  }
+
+  update(bands, volume) {
+    const target = this.index === "volume" ? volume : bands[this.index];
+    // smooth towards target
+    this.value += (target - this.value) * 0.2;
+  }
+
+  draw(ctx, delta, width, height) {
+    this.drawer.draw(ctx, this.value, width, height);
+  }
+}
+2. Drawing Strategies (pluggable)
+class CircleDrawer {
+  draw(ctx, value, width, height) {
+    const r = 50 + value * 200;
+    ctx.beginPath();
+    ctx.arc(width/2, height/2, r, 0, Math.PI * 2);
+    ctx.fillStyle = `hsl(${200 + value * 100}, 100%, 60%)`;
+    ctx.fill();
+  }
+}
+
+class TriangleDrawer {
+  draw(ctx, value, width, height) {
+    const size = 100 + value * 150;
+    const cx = width / 2, cy = height / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - size);
+    ctx.lineTo(cx - size, cy + size);
+    ctx.lineTo(cx + size, cy + size);
+    ctx.closePath();
+    ctx.fillStyle = `hsl(${100 + value * 100}, 80%, 60%)`;
+    ctx.fill();
+  }
+}
+3. AudioRenderer
+class AudioRenderer {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.elements = [
+      new VisualElement(0, new CircleDrawer()),
+      new VisualElement(1, new TriangleDrawer()),
+      new VisualElement(2, new CircleDrawer()),
+      new VisualElement(3, new TriangleDrawer()),
+      new VisualElement(4, new CircleDrawer()),
+      new VisualElement("volume", new CircleDrawer()),
+    ];
+  }
+
+  draw(delta, ctx, { frequencies, volume }) {
+    const { width, height } = ctx.canvas;
+    ctx.clearRect(0, 0, width, height);
+
+    for (const e of this.elements) {
+      e.update(frequencies, volume);
+      e.draw(ctx, delta, width, height);
+    }
+  }
+}
+Hot-Swapping Later
+renderer.elements[0].drawer = new SomeOtherDrawer();

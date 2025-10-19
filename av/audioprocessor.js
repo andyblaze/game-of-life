@@ -1,7 +1,11 @@
 export default class AudioProcessor {
+    getRMS(frequencies) {
+        const sumSquares = frequencies.reduce((sum, v) => sum + v*v, 0);
+        return Math.sqrt(sumSquares / frequencies.length) / 255; // normalized 0–1
+    }
     transform({ frequencies }) {
-        if (!frequencies || !frequencies.length) {
-            return new Array(6).fill(0);
+        if ( ! frequencies || ! frequencies.length ) {
+            return { "frequencies": new Array(6).fill(0), "volume":0 };
         }
 
         const numBands = 5;
@@ -15,8 +19,8 @@ export default class AudioProcessor {
             const avg = slice.length ? slice.reduce((a, b) => a + b, 0) / slice.length : 0;
             bands.push(avg / 255); // normalize 0–1
         }
-
-        return bands;
+        const vol = this.getRMS(bands);
+        return { "frequencies": bands, "volume":vol };
     }
 }
 

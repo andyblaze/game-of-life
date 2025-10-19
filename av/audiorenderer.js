@@ -1,16 +1,30 @@
 export default class AudioRenderer {
     constructor() {}
-    drawBass(b, ctx, width, height) {
-         const bassAmplitude = b;  // 0–1
+    drawBass(ctx, b, delta) {
+        const { width, height } = ctx.canvas;
+        const bassAmplitude = b;  // 0–1
         const maxRadius = 100;
-        const radius = bassAmplitude * maxRadius + 20; // add min radius
+        const deltaMs = delta * 100; // 16 at 60fps
+        const radius = deltaMs * bassAmplitude * maxRadius + 20; // add min radius
 
         ctx.beginPath();
         ctx.arc(width / 6, height / 2, radius, 0, Math.PI * 2);
         ctx.fillStyle = "teal";
         ctx.fill();       
     }
-    drawBar(b, ctx, width, height, i) {
+    drawVolume(ctx, vol, delta) {
+        const volume = vol;  // 0–1
+        const maxRadius = 100;
+        const deltaMs = delta * 100; // 16 at 60fps
+        const radius = deltaMs * volume * 700 * maxRadius + 20; // add min radius
+
+        ctx.beginPath();
+        ctx.arc(1000, 440, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();       
+    }
+    drawBar(ctx, b, delta, i) {
+        const { width, height } = ctx.canvas;
         const numBands = 5;
         const barWidth = width / numBands;
         const baseY = height;
@@ -21,15 +35,16 @@ export default class AudioRenderer {
             ctx.fillStyle = "limegreen";
             ctx.fillRect(x, y, barWidth, barHeight); 
     }
-    draw(delta, ctx, bands) {
+    draw(delta, ctx, data) {
         const { width, height } = ctx.canvas;
         ctx.clearRect(0, 0, width, height);
 
-
-        bands.forEach((magnitude, i) => {
+        const { frequencies, volume } = data; 
+        this.drawVolume(ctx, volume, delta);
+        frequencies.forEach((magnitude, i) => {
             if ( i === 0 ) 
-                this.drawBass(bands[0], ctx, width, height);
-            this.drawBar(bands[i], ctx, width, height, i); 
+                this.drawBass(ctx, frequencies[0], delta);
+            this.drawBar(ctx, frequencies[i], delta, i); 
             //else 
             //    this.drawBass(bands[0], ctx, width, height);
         });
