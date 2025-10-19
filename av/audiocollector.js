@@ -1,17 +1,24 @@
 export default class AudioCollector {
-    constructor() {
-        this.audioCtx = new AudioContext();
-        this.analyser = this.audioCtx.createAnalyser();
-        this.analyser.fftSize = 1024;
-        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+    constructor(audio) {
+        this.audio = audio;
+        this.ctx = new AudioContext();
+        this.analyser = this.ctx.createAnalyser();
+        this.dataArray = null;
+        this.source = null;
     }
     async init() {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const source = this.audioCtx.createMediaStreamSource(stream);
-        source.connect(this.analyser);
+        // ensure context is resumed only after user gesture
+        await this.ctx.resume();
+
+        this.source = this.ctx.createMediaElementSource(this.audio);
+        this.analyser.fftSize = 256;
+        this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+        this.source.connect(this.analyser);
+        this.analyser.connect(this.ctx.destination);
     }
     fetchData() {
         this.analyser.getByteFrequencyData(this.dataArray);
-        return { frequencies: [...this.dataArray] }; // fits your data flow
+        return { frequencies: [...this.dataArray] };
     }
 }

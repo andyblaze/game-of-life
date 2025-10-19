@@ -1,12 +1,22 @@
 export default class AudioProcessor {
     transform({ frequencies }) {
-        const bands = [0, 1, 2].map(i => {
-            const start = i * 170;
-            const end = start + 170;
+        if (!frequencies || !frequencies.length) {
+            return new Array(6).fill(0);
+        }
+
+        const numBands = 5;
+        const partSize = Math.floor(frequencies.length / numBands);
+        const bands = [];
+
+        for (let i = 0; i < numBands; i++) {
+            const start = i * partSize;
+            const end = (i === numBands - 1) ? frequencies.length : start + partSize;
             const slice = frequencies.slice(start, end);
-            const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
-            return avg / 255;
-        });
-        return { bass: bands[0], mid: bands[1], treble: bands[2] };
+            const avg = slice.length ? slice.reduce((a, b) => a + b, 0) / slice.length : 0;
+            bands.push(avg / 255); // normalize 0–1
+        }
+
+        return bands;
     }
 }
+

@@ -12,11 +12,18 @@ body {
     margin:0;
 }
 #onscreen {
-    display:block; width:100vw; height:100vh;
+    display:block; 
+    width:100vw; 
+    height:100vh;
+}
+#audio {
+    position:absolute;
+    top:0; left:0;
 }
 </style>
 </head>
 <body>
+<audio id="audio" src="mm.mp3" crossorigin="anonymous" controls="true"></audio>
 <canvas id="onscreen"></canvas>
 <script type="module" src="main.js"></script>
 </body>
