@@ -72,6 +72,8 @@ class ParticleManager {
     const pulse = Math.min(volume, 1);
 
     this.spawnCooldown -= delta; 
+    //this.dynamicScale = lerp(this.dynamicScale, 1 / (volume + 0.001), 0.01);
+    //const adjusted = volume * this.dynamicScale;
     if (this.spawnCooldown <= 0 && pulse > 0.001) {
       this.spawnParticles(bands, volume);
       this.spawnCooldown = 0.05; // ~20 spawns/sec max
@@ -127,13 +129,47 @@ export default class AudioRenderer {
     constructor() {
         this.particleManager = new ParticleManager(window.innerWidth/2, window.innerHeight/2, 100);
     }
-    
+drawPulseCore(ctx, volume, delta) {
+  const { width, height } = ctx.canvas;
+  const cx = width / 2;
+  const cy = height / 2;
+
+  // Persistent smoothed radius
+  this.smoothRadius = this.smoothRadius || 40;
+
+  // Boost volume perception — small changes in real volume become visible
+  const boosted = Math.pow(volume, 0.7) * 4.0; // nonlinear amplification
+
+  // Target radius range (adjust these numbers for bigger swing)
+  const baseRadius = 1;
+  const pulseRange = 100; // <- change amount
+  const targetRadius = baseRadius + boosted * pulseRange;
+
+  // Smooth it
+  this.smoothRadius += (targetRadius - this.smoothRadius) * 0.2;
+
+  // Color & alpha
+  const hue = (performance.now() * 0.05) % 360;
+  const alpha = 0.5 + boosted * 0.3;
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, this.smoothRadius, 0, Math.PI * 2);
+  ctx.fillStyle = `hsla(${hue}, 90%, 60%, ${alpha})`;
+  ctx.shadowBlur = 50 + boosted * 80;
+  ctx.shadowColor = ctx.fillStyle;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+   
     draw(delta, ctx, data) {
       const { frequencies, volume } = data;
       const { width, height } = ctx.canvas;
       
       ctx.fillStyle = "rgba(0,0,0,0.15)";
       ctx.fillRect(0,0,width,height); // fade trails
+      
+      this.drawPulseCore(ctx, volume, delta);
 
       this.particleManager.update(delta, frequencies, volume, ctx);
       this.particleManager.draw(ctx);
