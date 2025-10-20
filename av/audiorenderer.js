@@ -18,7 +18,7 @@ class Particle {
     // Direction — random but biased outward
     const angle = Math.random() * Math.PI * 2;
     const speedBase = 0.5 + bandEnergy * 15;
-    const bandFactor = 1 + bandIndex * 0.53; // higher bands faster
+    const bandFactor = 3 + bandIndex * 0.93; // higher bands faster
 
     this.vx = Math.cos(angle) * speedBase * bandFactor;
     this.vy = Math.sin(angle) * speedBase * bandFactor;
@@ -34,6 +34,9 @@ class Particle {
     this.x += this.vx * delta * 60; // 60fps normalized
     this.y += this.vy * delta * 60;
     this.age += delta * 60;
+  // fade alpha over lifetime
+  const lifeRatio = Math.min(this.age / this.lifetime, 1);
+  this.alpha = 1 - lifeRatio; // linear fade-out
   }
 
   isDead(width, height) {
