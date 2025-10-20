@@ -1,141 +1,107 @@
-const perlin = {
-  noise: (x, y, z = 0) => {
-    return Math.sin(x * 2 + y * 2 + z) * 0.5 + 0.5; // simple demo
+class Particle {
+  constructor(centerX, centerY, options = {}) {
+    this.centerX = centerX;
+    this.centerY = centerY;
+    this.reset(options);
   }
-};
+
+  reset({
+    bandIndex = 0,
+    bandEnergy = 0,
+    maxLifetime = 200,
+    spread = 0.5
+  } = {}) {
+    // Start near the center
+    this.x = this.centerX + (Math.random() - 0.5) * 20;
+    this.y = this.centerY + (Math.random() - 0.5) * 20;
+
+    // Direction — random but biased outward
+    const angle = Math.random() * Math.PI * 2;
+    const speedBase = 0.5 + bandEnergy * 15;
+    const bandFactor = 1 + bandIndex * 0.53; // higher bands faster
+
+    this.vx = Math.cos(angle) * speedBase * bandFactor;
+    this.vy = Math.sin(angle) * speedBase * bandFactor;
+
+    this.size = 2 + Math.random() * (3 - bandIndex * 0.3);
+    this.alpha = 0.5 + Math.random() * 0.5;
+    this.lifetime = Math.random() * maxLifetime + 50;
+    this.age = 0;
+    this.bandIndex = bandIndex;
+  }
+
+  update(delta) {
+    this.x += this.vx * delta * 60; // 60fps normalized
+    this.y += this.vy * delta * 60;
+    this.age += delta * 60;
+  }
+
+  isDead(width, height) {
+    return (
+      this.age > this.lifetime ||
+      this.x < -100 || this.x > width + 100 ||
+      this.y < -100 || this.y > height + 100
+    );
+  }
+}
+
+class ParticleManager {
+  constructor(centerX, centerY, count = 1000) {
+    this.centerX = centerX;
+    this.centerY = centerY;
+    this.particles = Array.from({ length: count }, () => new Particle(centerX, centerY));
+  }
+
+  update(delta, bands, volume, ctx) {
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+
+    // Global emission intensity from volume
+    const baseEmission = Math.floor(volume * 5) + 1;
+
+    for (let p of this.particles) {
+      p.update(delta);
+
+      if (p.isDead(width, height)) {
+        // pick a random band to respawn with
+        const bandIndex = Math.floor(Math.random() * bands.length);
+        p.reset({
+          bandIndex,
+          bandEnergy: bands[bandIndex],
+          maxLifetime: 300,
+        });
+      }
+    }
+  }
+
+  draw(ctx) {
+    for (let p of this.particles) {
+      const hue = 200 + p.bandIndex * 30;
+      ctx.fillStyle = `hsla(${hue}, 90%, 60%, ${p.alpha})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
 
 export default class AudioRenderer {
     constructor() {
-        this.time = 0;
-        this.prevBands = [];
-        this.prevVolume = 0;
-        this.damping = 0.15; // smaller = smoother 
-        this.rotation = 0; // shared rotation angle       
-    }
-    drawBass(ctx, b, delta) {
-        const { width, height } = ctx.canvas;
-        const bassAmplitude = b;  // 0–1
-        const maxRadius = 100;
-        const deltaMs = delta * 100; // 16 at 60fps
-        const radius = deltaMs * bassAmplitude * maxRadius + 20; // add min radius
-
-        ctx.beginPath();
-        ctx.arc(width / 6, height / 2, radius, 0, Math.PI * 2);
-        ctx.fillStyle = "teal";
-        ctx.fill();       
-    }
-    drawVolume(ctx, vol, delta) {
-        const volume = vol;  // 0–1
-        const maxRadius = 100;
-        const deltaMs = delta * 100; // 16 at 60fps
-        const radius = deltaMs * volume * 700 * maxRadius + 20; // add min radius
-
-        ctx.beginPath();
-        ctx.arc(1000, 440, radius, 0, Math.PI * 2);
-        ctx.fillStyle = "red";
-        ctx.fill();       
-    }
-    drawBar(ctx, b, delta, i) {
-        const { width, height } = ctx.canvas;
-        const numBands = 5;
-        const barWidth = width / numBands;
-        const baseY = height;
-            const barHeight = b * height / 3;
-            const x = i * barWidth;
-            const y = baseY - barHeight;
-
-            ctx.fillStyle = "limegreen";
-            ctx.fillRect(x, y, barWidth, barHeight); 
+        this.particles = new ParticleManager(window.innerWidth/2, window.innerHeight/2, 300);
     }
     
-  draw(delta, ctx, data) {
-    const { frequencies, volume } = data;
-    const { width, height } = ctx.canvas;
-    //ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.01)"; // lower alpha = longer trails
-    ctx.fillRect(0, 0, width, height);
+    draw(delta, ctx, data) {
+      const { frequencies, volume } = data;
+      const { width, height } = ctx.canvas;
+      
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(0,0,width,height); // fade trails
 
-    this.time += delta;
-    this.rotation += delta * 0.3; // rotation speed
-
-    // Smooth bands + volume
-    if (!this.prevBands.length) this.prevBands = [...frequencies];
-    const smoothedBands = frequencies.map((v, i) => {
-      const prev = this.prevBands[i] || 0;
-      const smooth = prev + (v - prev) * this.damping;
-      this.prevBands[i] = smooth;
-      return smooth;
-    });
-    this.prevVolume = this.prevVolume + (volume - this.prevVolume) * this.damping;
-
-    // Center + size
-    const cx = width / 2;
-    const cy = height / 2;
-    const squareSize = Math.min(width, height) * 0.6;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(this.rotation);
-
-    const hue = (performance.now() * 0.05) % 360; 
-    // --- Draw rotating square frame ---
-    ctx.strokeStyle = `hsla(${hue}, 90%, 60%, 0.6)`;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(-squareSize / 2, -squareSize / 2, squareSize, squareSize);
-
-    // --- Draw waveform inside square ---
-    this.drawWaveform(ctx, smoothedBands, this.prevVolume, squareSize);
-
-    ctx.restore();
-  }
-
-  drawWaveform(ctx, bands, volume, squareSize) {
-    const scale = squareSize * 0.99;
-    const numPoints = 200;
-    const step = squareSize / (numPoints - 1);
-    const bass = bands[0] || 0;
-
-    ctx.beginPath();
-    for (let i = 0; i < numPoints; i++) {
-      const x = -squareSize / 2 + i * step;
-      const fade = Math.max(0, 1 - Math.abs(x / (squareSize * 0.5))); // taper edges
-
-      // interpolate between bands
-      const bandIndex = (i / numPoints) * (bands.length - 1);
-      const low = Math.floor(bandIndex);
-      const high = Math.min(bands.length - 1, low + 1);
-      const blend = bandIndex - low;
-      const freq = (bands[low] * (1 - blend) + bands[high] * blend) * fade;
-
-      // add layered perlin noise for texture
-      const n1 = perlin.noise(x * 0.03, this.time * 1.0);
-      const n2 = perlin.noise(x * 0.08, this.time * 0.6) * 0.5;
-      const noise = (n1 + n2) * 25 * fade * (0.5 + bass * 0.5);
-
-      const heightBoost = freq * scale + noise * (0.5 + volume * 0.5);
-      const y = -heightBoost;
-
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      this.particles.update(delta, frequencies, volume, ctx);
+      this.particles.draw(ctx);
     }
-    const hue = (performance.now() * 0.05) % 360; 
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = `hsl(${Math.floor(volume * 300)}, 90%, 60%)`;
-    //ctx.shadowBlur = 10 + volume * 40;
-    //ctx.shadowColor = ctx.strokeStyle;
-    ctx.stroke();
-  }    
-    draw2(delta, ctx, data) {
-        const { width, height } = ctx.canvas;
-        ctx.clearRect(0, 0, width, height);
 
-        const { frequencies, volume } = data; 
-        this.drawVolume(ctx, volume, delta);
-        frequencies.forEach((magnitude, i) => {
-            if ( i === 0 ) 
-                this.drawBass(ctx, frequencies[0], delta);
-            this.drawBar(ctx, frequencies[i], delta, i); 
-            //else 
-            //    this.drawBass(bands[0], ctx, width, height);
-        });
-    }
+
+
 }
