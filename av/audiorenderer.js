@@ -8,7 +8,9 @@ export default class AudioRenderer {
     constructor() {
         this.time = 0;
         this.prevBands = [];
-        this.damping = 0.15; // smaller = smoother        
+        this.prevVolume = 0;
+        this.damping = 0.15; // smaller = smoother 
+        this.rotation = 0; // shared rotation angle       
     }
     drawBass(ctx, b, delta) {
         const { width, height } = ctx.canvas;
@@ -46,65 +48,82 @@ export default class AudioRenderer {
             ctx.fillRect(x, y, barWidth, barHeight); 
     }
     
-    draw(delta, ctx, data) {
-        const { frequencies, volume } = data;
-        const { width, height } = ctx.canvas;
-        ctx.clearRect(0, 0, width, height);
+  draw(delta, ctx, data) {
+    const { frequencies, volume } = data;
+    const { width, height } = ctx.canvas;
+    //ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.01)"; // lower alpha = longer trails
+    ctx.fillRect(0, 0, width, height);
 
-        this.time += delta * 0.8;
+    this.time += delta;
+    this.rotation += delta * 0.3; // rotation speed
 
-        // --- SMOOTH FREQUENCIES ---
-        if (!this.prevBands.length) this.prevBands = [...frequencies];
-        const smoothedBands = frequencies.map((val, i) => {
-            const prev = this.prevBands[i] || 0;
-            const smooth = prev + (val - prev) * this.damping;
-            this.prevBands[i] = smooth;
-            return smooth;
-        });
+    // Smooth bands + volume
+    if (!this.prevBands.length) this.prevBands = [...frequencies];
+    const smoothedBands = frequencies.map((v, i) => {
+      const prev = this.prevBands[i] || 0;
+      const smooth = prev + (v - prev) * this.damping;
+      this.prevBands[i] = smooth;
+      return smooth;
+    });
+    this.prevVolume = this.prevVolume + (volume - this.prevVolume) * this.damping;
 
-        // --- OPTIONAL: SMOOTH VOLUME TOO ---
-        this.prevVolume = this.prevVolume ?? volume;
-        const smoothedVolume =
-            this.prevVolume + (volume - this.prevVolume) * this.damping;
-        this.prevVolume = smoothedVolume;
+    // Center + size
+    const cx = width / 2;
+    const cy = height / 2;
+    const squareSize = Math.min(width, height) * 0.6;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(this.rotation);
 
-        // now use smoothedBands + smoothedVolume instead of raw data
-        const baseY = height * 0.85;
-        const scale = height * 1.4;
-        const numPoints = 200;
-        const step = width / (numPoints - 1);
-        const bass = smoothedBands[0] || 0;
-        const ripple = 0.5 + bass * 1.5;
+    const hue = (performance.now() * 0.05) % 360; 
+    // --- Draw rotating square frame ---
+    ctx.strokeStyle = `hsla(${hue}, 90%, 60%, 0.6)`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-squareSize / 2, -squareSize / 2, squareSize, squareSize);
 
-        ctx.beginPath();
-        for (let i = 0; i < numPoints; i++) {
-            const x = i * step;
-            const fade = Math.max(0, 1 - Math.abs((x - width / 2) / (width * 0.25)));
+    // --- Draw waveform inside square ---
+    this.drawWaveform(ctx, smoothedBands, this.prevVolume, squareSize);
 
-            const bandIndex = (i / numPoints) * (smoothedBands.length - 1);
-            const low = Math.floor(bandIndex);
-            const high = Math.min(smoothedBands.length - 1, low + 1);
-            const blend = bandIndex - low;
-            const freq =
-                (smoothedBands[low] * (1 - blend) + smoothedBands[high] * blend) * fade;
+    ctx.restore();
+  }
 
-            const n1 = perlin.noise(x * 0.02, this.time * 0.8);
-            const n2 = perlin.noise(x * 0.05, this.time * 1.2);
-            const n3 = perlin.noise(x * 0.1, this.time * 1.8);
-            const noise = (n1 + n2 * 0.5 + n3 * 0.25) * 30 * fade * ripple;
+  drawWaveform(ctx, bands, volume, squareSize) {
+    const scale = squareSize * 0.99;
+    const numPoints = 200;
+    const step = squareSize / (numPoints - 1);
+    const bass = bands[0] || 0;
 
-            const heightBoost = freq * scale + noise * (0.5 + smoothedVolume * 0.5);
-            const y = baseY - heightBoost;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
+    ctx.beginPath();
+    for (let i = 0; i < numPoints; i++) {
+      const x = -squareSize / 2 + i * step;
+      const fade = Math.max(0, 1 - Math.abs(x / (squareSize * 0.5))); // taper edges
 
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = `hsl(${Math.floor(smoothedVolume * 300)}, 80%, 60%)`;
-        //ctx.shadowBlur = 10 + smoothedVolume * 30;
-        //ctx.shadowColor = ctx.strokeStyle;
-        ctx.stroke();
-    }    
+      // interpolate between bands
+      const bandIndex = (i / numPoints) * (bands.length - 1);
+      const low = Math.floor(bandIndex);
+      const high = Math.min(bands.length - 1, low + 1);
+      const blend = bandIndex - low;
+      const freq = (bands[low] * (1 - blend) + bands[high] * blend) * fade;
+
+      // add layered perlin noise for texture
+      const n1 = perlin.noise(x * 0.03, this.time * 1.0);
+      const n2 = perlin.noise(x * 0.08, this.time * 0.6) * 0.5;
+      const noise = (n1 + n2) * 25 * fade * (0.5 + bass * 0.5);
+
+      const heightBoost = freq * scale + noise * (0.5 + volume * 0.5);
+      const y = -heightBoost;
+
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    const hue = (performance.now() * 0.05) % 360; 
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = `hsl(${Math.floor(volume * 300)}, 90%, 60%)`;
+    //ctx.shadowBlur = 10 + volume * 40;
+    //ctx.shadowColor = ctx.strokeStyle;
+    ctx.stroke();
+  }    
     draw2(delta, ctx, data) {
         const { width, height } = ctx.canvas;
         ctx.clearRect(0, 0, width, height);
