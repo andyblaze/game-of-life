@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html>
-<body style="margin:0; background:#111;">
+<head>
+<style type="text/css">
+body {
+    background:#111; 
+}
+html, body {
+    margin:0; padding:0;
+    overflow:hidden;
+}
+#art {
+    display: block;
+}
+</style>
+</head>
+<body>
 <canvas id="art"></canvas>
 
 <script>
@@ -16,9 +30,9 @@ const dt = 0.016;        // simulation step (~60fps)
 // ------------------------------
 const boardCfg = {
     stringLength: 2.2,   // meters
-    dX: 0.3,            // initial displacement (m)
+    dX: 0.10,            // initial displacement (m)
     dY: 0.0,
-    vX: 0.3,             // initial velocity (m/s)
+    vX: 0.10,             // initial velocity (m/s)
     vY: 0.0,
     damping: 0.00,
     color: "transparent",
@@ -27,8 +41,8 @@ const boardCfg = {
 
 const paintCfg = {
     stringLength: 3.40,  // meters
-    dX: 0.25,
-    dY: 0.010,
+    dX: 0.45,
+    dY: 0.10,
     vX: 0.09,
     vY: 0.7,             // small sideways push
     damping: 0.001,
@@ -93,6 +107,8 @@ class PhysicalPendulum {
 const canvas = document.getElementById("art");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+canvas.style.width  = window.innerWidth  + "px";
+canvas.style.height = window.innerHeight + "px";
 const ctx = canvas.getContext("2d");
 
 // ------------------------------
