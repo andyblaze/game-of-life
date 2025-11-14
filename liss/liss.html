@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; background:#111;">
+<canvas id="art"></canvas>
+
+<script>
+// ------------------------------
+// Global physical constants
+// ------------------------------
+const g = 9.81;          // gravity (m/s^2)
+const scale = 950;       // px per meter (tune to taste)
+const dt = 0.016;        // simulation step (~60fps)
+
+// ------------------------------
+// Configurations
+// ------------------------------
+const boardCfg = {
+    stringLength: 2.2,   // meters
+    dX: 0.3,            // initial displacement (m)
+    dY: 0.0,
+    vX: 0.3,             // initial velocity (m/s)
+    vY: 0.0,
+    damping: 0.00,
+    color: "transparent",
+    lineWidth: 0
+};
+
+const paintCfg = {
+    stringLength: 3.40,  // meters
+    dX: 0.25,
+    dY: 0.010,
+    vX: 0.09,
+    vY: 0.7,             // small sideways push
+    damping: 0.001,
+    color: "rgba(255, 0, 0, 0.6",
+    lineWidth: 1
+};
+
+// ------------------------------
+// Pendulum class (physical)
+// ------------------------------
+class PhysicalPendulum {
+    constructor(config) {
+        this.L = config.stringLength;
+
+        // Position (meters)
+        this.x = config.dX;
+        this.y = config.dY;
+
+        // Velocity (m/s)
+        this.vx = config.vX;
+        this.vy = config.vY;
+
+        this.damping = config.damping;
+        this.color = config.color;
+        this.lineWidth = config.lineWidth;
+    }
+
+    step() {
+        // Simple harmonic motion with damping
+        const k = g / this.L;
+
+        const ax = -k * this.x - this.damping * this.vx;
+        const ay = -k * this.y - this.damping * this.vy;
+
+        this.vx += ax * dt;
+        this.vy += ay * dt;
+
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+    }
+
+    // Convert pendulum position to a canvas coordinate
+    pixelPosition(originX, originY) {
+        return {
+            x: originX + this.x * scale,
+            y: originY + this.y * scale
+        };
+    }
+
+    draw(ctx, originX, originY) {
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        const p = this.pixelPosition(originX, originY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    }
+}
+
+// ------------------------------
+// Setup canvas
+// ------------------------------
+const canvas = document.getElementById("art");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const ctx = canvas.getContext("2d");
+
+// ------------------------------
+// Create pendulums
+// ------------------------------
+const board = new PhysicalPendulum(boardCfg);
+const paint = new PhysicalPendulum(paintCfg);
+
+// Origin of the board (center of canvas)
+const boardOriginX = canvas.width / 2;
+const boardOriginY = canvas.height / 2;
+
+// Begin path for paint
+ctx.beginPath();
+
+// Offscreen canvas (not added to DOM)
+const canvasScale = 2;
+const offCanvas = document.createElement("canvas");
+offCanvas.width  = canvas.width  * canvasScale;
+offCanvas.height = canvas.height * canvasScale;
+const offCtx = offCanvas.getContext("2d");
+    offCtx.strokeStyle = "rgba(255, 0, 0, 0.6";
+    offCtx.lineWidth = 2;      // stays visually the same because of scale()
+    offCtx.lineJoin = "round";
+    offCtx.lineCap  = "round";
+
+// Make drawing easier: scale the context so coordinates stay the same
+offCtx.scale(canvasScale, canvasScale);
+
+function animate() {
+    // Update physics
+    board.step();
+    paint.step();
+
+    // Board position in pixels
+    const B = board.pixelPosition(boardOriginX, boardOriginY);
+
+    // Draw paint pendulum path relative to board
+    paint.draw(offCtx, B.x, B.y);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(offCanvas, 0, 0, offCanvas.width, offCanvas.height,
+                  0, 0, canvas.width, canvas.height);
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
