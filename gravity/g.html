@@ -32,6 +32,7 @@ class Particle {
         this.vx = (Math.random()-0.5) * 2;
         this.vy = (Math.random()-0.5) * 2;
         this.color = color;
+        this.drag = 0.995;
     }
 
     update(attractors) {
@@ -43,6 +44,9 @@ class Particle {
             let force = a.strength / dist2;
             this.vx += force * dx;
             this.vy += force * dy;
+            // Apply drag
+            this.vx *= this.drag;
+            this.vy *= this.drag;
         }
         this.x += this.vx;
         this.y += this.vy;
@@ -61,14 +65,37 @@ class Particle {
         ctx.fill();
     }
 }
+function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
+
+function lerpColor(c1, c2, t) {
+    return {
+        r: lerp(c1.r, c2.r, t),
+        g: lerp(c1.g, c2.g, t),
+        b: lerp(c1.b, c2.b, t)
+    };
+}
+const COLOR_NEG = { r: 0,   g: 120, b: 255 }; // repulsor (blue)
+const COLOR_ZERO = { r: 230, g: 230, b: 230 }; // neutral (white-ish)
+const COLOR_POS = { r: 255, g: 60,  b: 60  }; // attractor (red)
 
 // --- Attractor class ---
 class Attractor {
-    constructor(x, y, strength=100, color="red") {
+    constructor(x, y, strength, color) {
         this.x = x;
         this.y = y;
+        this.vX = Math.random() - 0.9;
+        this.vY = Math.random() - 0.9;
+        if ( Math.random() < 0.5 ) {
+            this.vX = -this.vX;
+            this.vY = -this.vY;
+        }
         this.strength = strength; // positive = attract, negative = repel
+        this.baseStrength = strength;
         this.color = color;
+        this.period = Math.floor(Math.random() * 30000) + 20000;
+        this.startTime = performance.now();
     }
 
     draw(ctx) {
@@ -77,26 +104,65 @@ class Attractor {
         ctx.arc(this.x, this.y, 6, 0, Math.PI*2);
         ctx.fill();
     }
+    update() {
+        const t = performance.now() - this.startTime;
+        this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
+        // Normalize to 0..1
+        const norm = (this.strength / this.baseStrength + 1) / 2;
+        // Now lerp between negative → zero → positive
+        let c;
+        if (norm < 0.5) {
+            // Negative half: BLUE → WHITE
+            const t2 = norm / 0.5; // map 0..0.5 → 0..1
+            c = lerpColor(COLOR_NEG, COLOR_ZERO, t2);
+        } else {
+            // Positive half: WHITE → RED
+            const t2 = (norm - 0.5) / 0.5; // map 0.5..1 → 0..1
+            c = lerpColor(COLOR_ZERO, COLOR_POS, t2);
+        }
+
+        this.color = `rgb(${c.r|0},${c.g|0},${c.b|0})`; 
+        
+        this.x += this.vX;
+        this.y += this.vY;
+        // wrap around screen
+        if (this.x < 0) this.x += canvas.width;
+        if (this.x > canvas.width) this.x -= canvas.width;
+        if (this.y < 0) this.y += canvas.height;
+        if (this.y > canvas.height) this.y -= canvas.height;
+    }
 }
 
 // --- setup particles & attractors ---
 const particles = [];
-for (let i=0; i<50; i++) {
+for (let i=0; i<690; i++) {
     particles.push(new Particle(Math.random()*canvas.width, Math.random()*canvas.height));
 }
 
 const attractors = [
-    new Attractor(canvas.width*0.3, canvas.height*0.5, 200, "red"),   // attractor
-    new Attractor(canvas.width*0.7, canvas.height*0.5, -300, "blue")  // repulsor
+    new Attractor(canvas.width*0.1, canvas.height*0.5, 8.2, "rgb(255,0,0)"),   // attractor
+    new Attractor(canvas.width*0.7, canvas.height*0.9, 4.2, "rgb(255,0,0)"),   // attractor
+    new Attractor(canvas.width*0.5, canvas.height*0.3, 6.2, "rgb(255,0,0)"),   // attractor
+    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)") , // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)") , // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
+    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)")  // repulsor
 ];
 
 // --- animation loop ---
 function animate() {
     // semi-transparent background to leave trails
-    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillStyle = "rgba(0,0,0,0.05)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    for (let a of attractors) a.draw(ctx);
+    for (let a of attractors) { a.update(); a.draw(ctx); }
     for (let p of particles) {
         p.update(attractors);
         p.draw(ctx);
