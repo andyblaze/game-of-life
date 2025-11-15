@@ -18,6 +18,50 @@
 <body>
 <canvas id="sandbox"></canvas>
 <script>
+class DeltaReport {
+    static lastTime = performance.now();
+    static startTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static timeSum = 0; // total ms of frame times (not normalised)
+
+    static log(timestamp) {
+        this.frameCount++;
+        const deltaTime = timestamp - this.lastTime; // ms since last frame
+        const delta = deltaTime / 16.67; // normalised to 60fps
+
+        this.sum += delta;
+        this.timeSum += deltaTime;
+        this.lastTime = timestamp;
+
+        if (this.frameCount === 120) { // ~2 seconds at 60fps
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if (fps < this.min) this.min = fps; 
+            if (fps > this.max) this.max = fps; 
+
+            const avgFrameTime = this.timeSum / this.frameCount; // ms
+            const totalSeconds = Math.floor((timestamp - this.startTime) / 1000);
+            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+            const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+            const elapsed = minutes + ":" + seconds;
+
+            console.log(
+                "fps", fps,
+                "min=", this.min,
+                "max=", this.max,
+                "avgFrame=", avgFrameTime.toFixed(2) + "ms",
+                "elapsed=", elapsed
+            );
+
+            // reset accumulators
+            this.frameCount = 0;
+            this.sum = 0;
+            this.timeSum = 0;
+        }
+    }
+}
 const canvas = document.getElementById('sandbox');
 const ctx = canvas.getContext('2d');
 
@@ -26,7 +70,7 @@ canvas.height = window.innerHeight;
 
 // --- Particle class ---
 class Particle {
-    constructor(x, y, color="white") {
+    constructor(x, y, color="rgb(0,255,0)") {
         this.x = x;
         this.y = y;
         this.vx = (Math.random()-0.5) * 2;
@@ -80,9 +124,23 @@ const COLOR_NEG = { r: 0,   g: 120, b: 255 }; // repulsor (blue)
 const COLOR_ZERO = { r: 230, g: 230, b: 230 }; // neutral (white-ish)
 const COLOR_POS = { r: 255, g: 60,  b: 60  }; // attractor (red)
 
+function mt_rand(min, max) {
+    // Swap if parameters are reversed
+    if (max < min) [min, max] = [max, min];
+
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function mt_rand_excluding_gap(min1, max1, min2, max2) {
+    // choose which range (50/50)
+    if (Math.random() < 0.5) {
+        return Math.floor(Math.random() * (max1 - min1 + 1)) + min1;
+    } else {
+        return Math.floor(Math.random() * (max2 - min2 + 1)) + min2;
+    }
+}
 // --- Attractor class ---
 class Attractor {
-    constructor(x, y, strength, color) {
+    constructor(x, y, strength) {
         this.x = x;
         this.y = y;
         this.vX = Math.random() - 0.9;
@@ -93,7 +151,12 @@ class Attractor {
         }
         this.strength = strength; // positive = attract, negative = repel
         this.baseStrength = strength;
-        this.color = color;
+        if ( strength < 0 ) {
+            this.color = COLOR_NEG;
+        }
+        else {
+            this.color = COLOR_POS;
+        }
         this.period = Math.floor(Math.random() * 30000) + 20000;
         this.startTime = performance.now();
     }
@@ -105,6 +168,12 @@ class Attractor {
         ctx.fill();
     }
     update() {
+        let tmp;
+        if ( Math.random() < 0.01 ) {
+            tmp = this.strength;
+            this.strength = -10;
+        }
+        this.strength = tmp;
         const t = performance.now() - this.startTime;
         this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
         // Normalize to 0..1
@@ -135,29 +204,21 @@ class Attractor {
 
 // --- setup particles & attractors ---
 const particles = [];
-for (let i=0; i<690; i++) {
-    particles.push(new Particle(Math.random()*canvas.width, Math.random()*canvas.height));
+for ( let i = 0; i < 900; i++ ) {
+    particles.push(new Particle(mt_rand(0, canvas.width), mt_rand(0, canvas.height)));
 }
 
-const attractors = [
-    new Attractor(canvas.width*0.1, canvas.height*0.5, 8.2, "rgb(255,0,0)"),   // attractor
-    new Attractor(canvas.width*0.7, canvas.height*0.9, 4.2, "rgb(255,0,0)"),   // attractor
-    new Attractor(canvas.width*0.5, canvas.height*0.3, 6.2, "rgb(255,0,0)"),   // attractor
-    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.7, canvas.height*0.5, -3.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)") , // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)") , // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)"),  // repulsor
-    new Attractor(canvas.width*0.5, canvas.height*0.7, -10.5, "rgb(0,0,255)")  // repulsor
-];
+const attractors = [];
+for ( let i = 0; i < 15; i++ ) {
+    attractors.push(new Attractor(
+        mt_rand(0, canvas.width), 
+        mt_rand(0, canvas.height), 
+        mt_rand_excluding_gap(-10, -3, 3, 10)
+    ));
+}
 
 // --- animation loop ---
-function animate() {
+function animate(timestamp) {
     // semi-transparent background to leave trails
     ctx.fillStyle = "rgba(0,0,0,0.05)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -167,7 +228,7 @@ function animate() {
         p.update(attractors);
         p.draw(ctx);
     }
-
+    DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
 
