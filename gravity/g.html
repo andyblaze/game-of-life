@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gravity Sandbox</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: black;
+    }
+    canvas {
+        display: block;
+    }
+</style>
+</head>
+<body>
+<canvas id="sandbox"></canvas>
+<script>
+const canvas = document.getElementById('sandbox');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// --- Particle class ---
+class Particle {
+    constructor(x, y, color="white") {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random()-0.5) * 2;
+        this.vy = (Math.random()-0.5) * 2;
+        this.color = color;
+    }
+
+    update(attractors) {
+        for (let a of attractors) {
+            let dx = a.x - this.x;
+            let dy = a.y - this.y;
+            let dist2 = dx*dx + dy*dy;
+            if (dist2 < 1) dist2 = 1; // avoid divide by 0
+            let force = a.strength / dist2;
+            this.vx += force * dx;
+            this.vy += force * dy;
+        }
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // wrap around screen
+        if (this.x < 0) this.x += canvas.width;
+        if (this.x > canvas.width) this.x -= canvas.width;
+        if (this.y < 0) this.y += canvas.height;
+        if (this.y > canvas.height) this.y -= canvas.height;
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+// --- Attractor class ---
+class Attractor {
+    constructor(x, y, strength=100, color="red") {
+        this.x = x;
+        this.y = y;
+        this.strength = strength; // positive = attract, negative = repel
+        this.color = color;
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 6, 0, Math.PI*2);
+        ctx.fill();
+    }
+}
+
+// --- setup particles & attractors ---
+const particles = [];
+for (let i=0; i<50; i++) {
+    particles.push(new Particle(Math.random()*canvas.width, Math.random()*canvas.height));
+}
+
+const attractors = [
+    new Attractor(canvas.width*0.3, canvas.height*0.5, 200, "red"),   // attractor
+    new Attractor(canvas.width*0.7, canvas.height*0.5, -300, "blue")  // repulsor
+];
+
+// --- animation loop ---
+function animate() {
+    // semi-transparent background to leave trails
+    ctx.fillStyle = "rgba(0,0,0,0.1)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for (let a of attractors) a.draw(ctx);
+    for (let p of particles) {
+        p.update(attractors);
+        p.draw(ctx);
+    }
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>

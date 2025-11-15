@@ -9,15 +9,90 @@ html, body {
     margin:0; padding:0;
     overflow:hidden;
 }
+
+#container {
+    display: flex;
+    height: 100vh;
+}
+
+#ctrls {
+    width: 300px;        /* or whatever */
+    background: #111;
+    color: #fff;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#output {
+    flex: 1;
+    background: #111;
+    position: relative;  /* important if canvas is absolutely positioned */
+}
 #art {
     display: block;
 }
+
+
 </style>
 </head>
 <body>
-<canvas id="art"></canvas>
+<div id="container">
+    <div id="ctrls">
+        <p>Paint pot.</p>
+        <label>String length:</label>
+        <input type="range" value="2" min="1" max="4" step="0.25" data-prop="stringLength" class="cfg" />
+        <button id="reset">Reset</button>
+    </div>
+    <div id="output">
+        <canvas id="art"></canvas>
+    </div>
+</div>
 
 <script>
+class DeltaReport {
+    static lastTime = performance.now();
+    static startTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = 60;
+    static max = 0;
+    static timeSum = 0; // total ms of frame times (not normalised)
+
+    static log(timestamp) {
+        this.frameCount++;
+        const deltaTime = timestamp - this.lastTime; // ms since last frame
+        const delta = deltaTime / 16.67; // normalised to 60fps
+
+        this.sum += delta;
+        this.timeSum += deltaTime;
+        this.lastTime = timestamp;
+
+        if (this.frameCount === 120) { // ~2 seconds at 60fps
+            const fps = parseInt(60 / (this.sum / this.frameCount));
+            if (fps < this.min) this.min = fps; 
+            if (fps > this.max) this.max = fps; 
+
+            const avgFrameTime = this.timeSum / this.frameCount; // ms
+            const totalSeconds = Math.floor((timestamp - this.startTime) / 1000);
+            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+            const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+            const elapsed = minutes + ":" + seconds;
+
+            console.log(
+                "fps", fps,
+                "min=", this.min,
+                "max=", this.max,
+                "avgFrame=", avgFrameTime.toFixed(2) + "ms",
+                "elapsed=", elapsed
+            );
+
+            // reset accumulators
+            this.frameCount = 0;
+            this.sum = 0;
+            this.timeSum = 0;
+        }
+    }
+}
 // ------------------------------
 // Global physical constants
 // ------------------------------
@@ -29,32 +104,45 @@ const dt = 0.016;        // simulation step (~60fps)
 // Configurations
 // ------------------------------
 const boardCfg = {
-    stringLength: 2.2,   // meters
-    dX: 0.10,            // initial displacement (m)
-    dY: 0.0,
-    vX: 0.10,             // initial velocity (m/s)
-    vY: 0.0,
-    damping: 0.00,
+    stringLength: 0.92,   // meters
+    dX: 0.29,            // initial displacement (m)
+    dY: 0.11,
+    vX: 0.130,             // initial velocity (m/s)
+    vY: 0.09,
+    damping: 0.001,
     color: "transparent",
     lineWidth: 0
 };
 
 const paintCfg = {
-    stringLength: 3.40,  // meters
-    dX: 0.45,
-    dY: 0.10,
-    vX: 0.09,
-    vY: 0.7,             // small sideways push
-    damping: 0.001,
+    stringLength: 3.1,  // meters
+    dX: 0.23,
+    dY: 0.17,
+    vX: 0.11,
+    vY: 0.31,             // small sideways push
+    damping: 0.00,
     color: "rgba(255, 0, 0, 0.6",
     lineWidth: 1
 };
+
+document.querySelectorAll(".cfg").forEach(slider => {
+    const prop = slider.dataset.prop;
+    paintCfg[prop] = Number(slider.value);   // set initial value
+
+    slider.addEventListener("input", () => {
+        paintCfg[prop] = Number(slider.value);
+    });
+});
+
 
 // ------------------------------
 // Pendulum class (physical)
 // ------------------------------
 class PhysicalPendulum {
     constructor(config) {
+        this.init(config);
+    }
+    init(config) {
         this.L = config.stringLength;
 
         // Position (meters)
@@ -131,14 +219,26 @@ offCanvas.width  = canvas.width  * canvasScale;
 offCanvas.height = canvas.height * canvasScale;
 const offCtx = offCanvas.getContext("2d");
     offCtx.strokeStyle = "rgba(255, 0, 0, 0.6";
-    offCtx.lineWidth = 2;      // stays visually the same because of scale()
+    offCtx.lineWidth = 1;      // stays visually the same because of scale()
     offCtx.lineJoin = "round";
     offCtx.lineCap  = "round";
 
 // Make drawing easier: scale the context so coordinates stay the same
 offCtx.scale(canvasScale, canvasScale);
+let paused = false;
+document.getElementById("reset").addEventListener("click", () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
 
-function animate() {
+    paused = true;
+    paint.init(paintCfg);
+    paused = false;
+    //board.reset();
+
+    //time = 0; // or t = 0, depending on your loop
+});
+let frame = 0;
+function animate(timestamp) {
     // Update physics
     board.step();
     paint.step();
@@ -147,12 +247,19 @@ function animate() {
     const B = board.pixelPosition(boardOriginX, boardOriginY);
 
     // Draw paint pendulum path relative to board
-    paint.draw(offCtx, B.x, B.y);
+    offCtx.fillStyle = "rgba(0, 0, 0, 0.01)";
+    offCtx.fillRect(0, 0, offCanvas.width, offCanvas.height);
+
+    if ( frame++ % 2 === 0 ) 
+        paint.draw(offCtx, B.x, B.y);
+    //if ( frame > 100 ) 
+        //frame = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offCanvas, 0, 0, offCanvas.width, offCanvas.height,
                   0, 0, canvas.width, canvas.height);
+    DeltaReport.log(timestamp);
 
-    requestAnimationFrame(animate);
+    if ( false === paused ) requestAnimationFrame(animate);
 }
 
 animate();
