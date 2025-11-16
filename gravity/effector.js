@@ -1,18 +1,17 @@
 import ColorConfig from "./color-config.js";
-import { mt_rand, lerpHSL } from "./functions.js";
+import { mt_rand, lerpHSL, randomVelocityPair } from "./functions.js";
 import BaseParticle from "./base-particle.js";
 
 export default class Effector extends BaseParticle {
-    constructor(x, y, strength) {
-        super(x, y);
-        this.vX = Math.random() - 0.9;
-        this.vY = Math.random() - 0.9;
-        if ( Math.random() < 0.5 ) {
-            this.vX = -this.vX;
-            this.vY = -this.vY;
-        }
+    constructor(x, y, screenSz, strength) {
+        super(x, y, screenSz);
+        const { vx, vy } = randomVelocityPair();
+        this.vX = vx;
+        this.vY = vy;
+
         this.strength = strength; // positive = attract, negative = repel
         this.baseStrength = strength;
+        this.radius = Math.abs(strength / 1.5);
         // Pick a random palette for this Effector
         this.palette = ColorConfig.randomPalette();
         // Start color at base
@@ -25,7 +24,7 @@ export default class Effector extends BaseParticle {
     draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 6, 0, Math.PI*2);
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
         ctx.fill();
     }
     lerpColors() {

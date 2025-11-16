@@ -9,17 +9,22 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// --- setup particles & attractors ---
+// --- setup particles & effectors ---
 const particles = [];
-for ( let i = 0; i < 900; i++ ) {
-    particles.push(new Particle(mt_rand(0, canvas.width), mt_rand(0, canvas.height)));
+for ( let i = 0; i < 1200; i++ ) {
+    particles.push(new Particle(
+        mt_rand(0, canvas.width), 
+        mt_rand(0, canvas.height),
+        {width:canvas.width, height:canvas.height}
+    ));
 }
 
 const effectors = [];
-for ( let i = 0; i < 15; i++ ) {
+for ( let i = 0; i < 17; i++ ) {
     effectors.push(new Effector(
         mt_rand(0, canvas.width), 
         mt_rand(0, canvas.height), 
+        {width:canvas.width, height:canvas.height},
         mt_rand_excluding_gap(-10, -3, 3, 10)
     ));
 }

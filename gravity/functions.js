@@ -14,6 +14,22 @@ export function mt_rand_excluding_gap(min1, max1, min2, max2) {
     }
 }
 
+export function randVel() {
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    return sign * (0.4 + Math.random() * 0.6); 
+}
+
+export function randomVelocityPair(max = 0.71) {
+    let vx, vy;
+
+    do {
+        vx = (Math.random() * 2 - 1) * max; // -max .. +max
+        vy = (Math.random() * 2 - 1) * max;
+    } while (Math.abs(vx) < 0.0001 && Math.abs(vy) < 0.0001);
+
+    return { vx, vy };
+}
+
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
