@@ -1,12 +1,13 @@
 import BaseParticle from "./base-particle.js";
 
 export default class Particle extends BaseParticle {
-    constructor(x, y, screenSz ,color="rgb(0,255,0)") {
+    constructor(x, y, screenSz, color="rgb(0,255,0)") {
         super(x, y, screenSz);
         this.vx = (Math.random()-0.5) * 2;
         this.vy = (Math.random()-0.5) * 2;
         this.color = color;
         this.drag = 0.995;
+        this.radius = 2;
     }
     update(effectors) {
         for (let e of effectors) {
@@ -30,7 +31,7 @@ export default class Particle extends BaseParticle {
     draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 1, 0, Math.PI*2);
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
         ctx.fill();
     }
 }

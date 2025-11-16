@@ -19,7 +19,7 @@ export function randVel() {
     return sign * (0.4 + Math.random() * 0.6); 
 }
 
-export function randomVelocityPair(max = 0.71) {
+export function randomVelocityPair(max = 0.01) {
     let vx, vy;
 
     do {
