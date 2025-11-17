@@ -1,13 +1,17 @@
 import BaseParticle from "./base-particle.js";
 
 export default class Particle extends BaseParticle {
-    constructor(x, y, screenSz, color="rgb(0,255,0)") {
+    constructor(x, y, screenSz, color="hsl(120,80%,55%)") {
         super(x, y, screenSz);
         this.vx = (Math.random()-0.5) * 2;
         this.vy = (Math.random()-0.5) * 2;
         this.color = color;
         this.drag = 0.995;
         this.radius = 2;
+        // colors
+        this.colorPhase = 120;
+        this.hue = 120;
+        this.colorSpeed = 30;
     }
     update(effectors) {
         for (let e of effectors) {
@@ -24,6 +28,12 @@ export default class Particle extends BaseParticle {
         }
         this.x += this.vx;
         this.y += this.vy;
+        
+        // colors 
+        const t = performance.now() * 0.001; // seconds
+        this.hue = (this.colorPhase + t * this.colorSpeed) % 360;
+        // Neon: high saturation, mid-high lightness
+        this.color = `hsl(${this.hue}, 80%, 55%)`;
         
         this.screenWrap();
     }
