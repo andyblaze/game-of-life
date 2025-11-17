@@ -15,19 +15,28 @@ export default class Effector extends BaseParticle {
         this.strength = strength; // positive = attract, negative = repel
         this.baseStrength = strength;
         this.radius = Math.abs(strength / 1.5);
+        this.startTime = performance.now();
+        this.initColors();
+        this.initPerlin();
+        this.initSnapping();
+    }
+    initColors() {
         // Pick a random palette for this Effector
         this.palette = ColorConfig.randomPalette();
         // Start color at base
         this.color = { ...this.palette.base };
         this.period = mt_rand(600, 900) * 60;
         this.phase = Math.random() * 2 * Math.PI;
-        this.startTime = performance.now();
+    }
+    initPerlin() {
         // perlin 
         // get some randomness in there
         this.driftScale = 0.002 + Math.random() * 0.003;
         this.driftTimeScale = 0.0002 + Math.random() * 0.0004;
         this.driftStrength = 0.05 + Math.random() * 0.15;
         this.driftDrag = 0.87 + Math.random() * 0.02;
+    }
+    initSnapping() {
         // snapping to repulsor
         this.snapThreshold = 6;
         this.snapStrength  = -10;
@@ -77,7 +86,16 @@ export default class Effector extends BaseParticle {
         this.isSnapped = true;
         this.snapEndTime = now + this.snapDuration;
         this.strength = this.snapStrength; // apply immediately
-    }    
+    }
+    snapping(now) {
+        // --- SNAP MODE ---
+        if ( this.isSnapped ) {
+            if ( now >= this.snapEndTime ) {
+                this.isSnapped = false;
+            }
+        }
+        return this.isSnapped;
+    }
     update() {
         const now = performance.now();
         const t = now - this.startTime;
@@ -88,12 +106,7 @@ export default class Effector extends BaseParticle {
             this.applySnap(now);
         }
         // --- SNAP MODE ---
-        if ( this.isSnapped ) {
-            this.strength = this.snapStrength;
-            if (now >= this.snapEndTime) {
-                this.isSnapped = false;
-            }
-        } else 
+        if ( this.snapping(now) === false ) 
             this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
     }
 }
