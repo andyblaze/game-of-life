@@ -40,8 +40,8 @@ export default class Effector extends BaseParticle {
         // snapping to repulsor
         this.snapThreshold = 6;
         this.snapStrength  = Math.random() > 0.5 ? 20 : -20;
-        this.snapDuration  = 1000; // ms
-        this.snapChance = 0.001;
+        this.snapDuration  = 1000; 
+        this.snapChance = 1 / (5 * 60); // 1 in ( x seconds * fps )
         this.isSnapped = false;
         this.snapEndTime = 0;
     }
