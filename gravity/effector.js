@@ -29,7 +29,7 @@ export default class Effector extends BaseParticle {
         this.palette = ColorConfig.randomPalette();
         // Start color at base
         this.color = { ...this.palette.base };
-        this.period = mt_rand(600, 900) * 60;
+        this.period = mt_rand(400, 700) * 60;
         this.phase = Math.random() * 2 * Math.PI;
     }
     initPerlin() {
@@ -77,7 +77,7 @@ export default class Effector extends BaseParticle {
         this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
     }
     applyAbility(now, t) {
-        if ( this.ability.shouldActivate(now) ) {
+        if ( this.ability.shouldActivate() ) {
             this.ability.activate(now);
         }
         const stillActive = this.ability.update(now);

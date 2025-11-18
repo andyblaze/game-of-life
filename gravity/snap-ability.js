@@ -1,36 +1,26 @@
-export default class SnapAbility {
+import BaseAbility from "./base-ability.js";
+
+export default class SnapAbility extends BaseAbility {
     constructor(eff) {
+        super(eff);
+        // Activation chance per frame (e.g. once per 5 seconds ≈ 1/(5*60))
+        this.setChance(1 / (5 * 60));
+        this.setDuration(1000); // ms
         this.eff = eff;
         // State
-        this.active = false;
-        this.endTime = 0;        
         this.snapThreshold = 6;
         this.snapStrength  = Math.random() > 0.5 ? 20 : -20;
-        this.snapDuration  = 1000; //ms 
-        this.snapChance = 1 / (5 * 60); // 1 in ( x seconds * fps )
     }
-    // ---- TRIGGER ----
     shouldActivate() {
         return (
             this.eff.strength > this.snapThreshold &&
-            ! this.active &&
-            Math.random() < this.snapChance
+            false === this.active &&
+            Math.random() < this.chance
         );
     }
-    // ---- ACTIVATE ----
     activate(now) {
-        this.active = true;
-        this.endTime = now + this.snapDuration;
+        this.doActivate(now);
         this.eff.strength = this.snapStrength;
-    }
-    // ---- UPDATE WHILE ACTIVE ----
-    update(now) {
-        if ( ! this.active) return false;
-
-        if ( now >= this.endTime ) {
-            this.active = false;
-        }
-        return this.active;
     }
     restore(eff, t) {
         eff.applyStrength(t);
