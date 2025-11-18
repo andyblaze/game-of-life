@@ -80,7 +80,7 @@ export default class Effector extends BaseParticle {
         if ( this.ability.shouldActivate() ) {
             this.ability.activate(now);
         }
-        const stillActive = this.ability.update(now);
+        const stillActive = this.ability.update(now, t);
 
         if ( false === stillActive ) {
             // restore normal strength cycle

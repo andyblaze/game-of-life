@@ -4,6 +4,7 @@ import DeltaReport from "./delta-report.js";
 import { mt_rand, mt_rand_excluding_gap } from "./functions.js";
 import SnapAbility from "./snap-ability.js";
 import ZoomAbility from "./zoom-ability.js";
+import BreatherAbility from "./breather-ability.js";
 
 const canvas = document.getElementById("sandbox");
 const ctx = canvas.getContext("2d");
@@ -22,13 +23,17 @@ for ( let i = 0; i < 1200; i++ ) {
 }
 
 const effectors = [];
-effectors.push(new Effector(
-        mt_rand(0, canvas.width), 
-        mt_rand(0, canvas.height), 
-        {width:canvas.width, height:canvas.height},
-        mt_rand_excluding_gap(-0.9, 0, 0, 0.9)
-    ));
-for ( let i = 0; i < 8; i++ ) {
+for ( let i = 0; i < 3; i++ ) {
+    let e = new Effector(
+            mt_rand(0, canvas.width), 
+            mt_rand(0, canvas.height), 
+            {width:canvas.width, height:canvas.height},
+            mt_rand_excluding_gap(-0.9, 0, 0, 0.9)
+        );
+    e.addAbility(new BreatherAbility(e));
+    effectors.push(e);
+}
+/*for ( let i = 0; i < 8; i++ ) {
     effectors.push(new Effector(
         mt_rand(0, canvas.width), 
         mt_rand(0, canvas.height), 
@@ -55,7 +60,7 @@ for ( let i = 0; i < 8; i++ ) {
     );
     e.addAbility(new ZoomAbility(e));
     effectors.push(e);
-}
+}*/
 // --- animation loop ---
 function animate(timestamp) {
     // semi-transparent background to leave trails
