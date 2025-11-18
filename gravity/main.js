@@ -26,9 +26,9 @@ effectors.push(new Effector(
         mt_rand(0, canvas.width), 
         mt_rand(0, canvas.height), 
         {width:canvas.width, height:canvas.height},
-        mt_rand_excluding_gap(-0.1, 0, 0, 0.3)
+        mt_rand_excluding_gap(-0.9, 0, 0, 0.9)
     ));
-/*for ( let i = 0; i < 8; i++ ) {
+for ( let i = 0; i < 8; i++ ) {
     effectors.push(new Effector(
         mt_rand(0, canvas.width), 
         mt_rand(0, canvas.height), 
@@ -55,7 +55,7 @@ for ( let i = 0; i < 8; i++ ) {
     );
     e.addAbility(new ZoomAbility(e));
     effectors.push(e);
-}*/
+}
 // --- animation loop ---
 function animate(timestamp) {
     // semi-transparent background to leave trails
