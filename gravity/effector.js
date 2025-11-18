@@ -4,6 +4,7 @@ import BaseParticle from "./base-particle.js";
 //import { curlNoise } from "./perlin-2d.js";
 import Perlin from './Perlin.js';
 const perlin = new Perlin();
+import SnapAbility from "./snap-ability.js";
 
 export default class Effector extends BaseParticle {
     constructor(x, y, screenSz, strength) {
@@ -19,6 +20,7 @@ export default class Effector extends BaseParticle {
         this.initColors();
         this.initPerlin();
         this.initSnapping();
+        this.ability = new SnapAbility(this);
     }
     initColors() {
         // Pick a random palette for this Effector
@@ -40,7 +42,7 @@ export default class Effector extends BaseParticle {
         // snapping to repulsor
         this.snapThreshold = 6;
         this.snapStrength  = Math.random() > 0.5 ? 20 : -20;
-        this.snapDuration  = 1000; 
+        this.snapDuration  = 1000; //ms 
         this.snapChance = 1 / (5 * 60); // 1 in ( x seconds * fps )
         this.isSnapped = false;
         this.snapEndTime = 0;
@@ -61,6 +63,20 @@ export default class Effector extends BaseParticle {
     canSnap() {
         return (this.strength > this.snapThreshold && this.isSnapped === false && Math.random() < this.snapChance);
     } 
+    applySnap(now) {
+        this.isSnapped = true;
+        this.snapEndTime = now + this.snapDuration;
+        this.strength = this.snapStrength; // apply immediately
+    }
+    snapping(now) {
+        // --- SNAP MODE ---
+        if ( this.isSnapped ) {
+            if ( now >= this.snapEndTime ) {
+                this.isSnapped = false;
+            }
+        }
+        return this.isSnapped;
+    }
     // --- Perlin Drift -------------------------------------------------
     applyDrift(t) {
         // Normalize coordinates (important!)
@@ -82,19 +98,8 @@ export default class Effector extends BaseParticle {
         this.x += this.vX;
         this.y += this.vY;
     }
-    applySnap(now) {
-        this.isSnapped = true;
-        this.snapEndTime = now + this.snapDuration;
-        this.strength = this.snapStrength; // apply immediately
-    }
-    snapping(now) {
-        // --- SNAP MODE ---
-        if ( this.isSnapped ) {
-            if ( now >= this.snapEndTime ) {
-                this.isSnapped = false;
-            }
-        }
-        return this.isSnapped;
+    applyStrength(t) {
+        this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
     }
     update() {
         const now = performance.now();
@@ -102,11 +107,28 @@ export default class Effector extends BaseParticle {
         this.applyDrift(t);
         this.color = this.lerpColors();
         this.screenWrap();
-        if ( this.canSnap() ) {
+        // --- ability system ---
+        if ( null !== this.ability ) {
+            if ( this.ability.shouldActivate(now) ) {
+                this.ability.activate(now);
+            }
+            const stillActive = this.ability.update(now);
+
+            if ( false === stillActive ) {
+                // restore normal strength cycle
+                this.applyStrength(t);
+            }
+            return; // done
+        }
+
+        // Standard effector (no ability)
+        this.applyStrength(t);
+        /*if ( this.canSnap() ) {
             this.applySnap(now);
         }
         // --- SNAP MODE ---
         if ( this.snapping(now) === false ) 
-            this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
+            this.applyStrength(t);*/
+            //this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
     }
 }
