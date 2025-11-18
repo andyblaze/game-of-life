@@ -14,7 +14,7 @@ canvas.height = window.innerHeight;
 
 // --- setup particles & effectors ---
 const particles = [];
-for ( let i = 0; i < 1200; i++ ) {
+for ( let i = 0; i < 1500; i++ ) {
     particles.push(new Particle(
         mt_rand(0, canvas.width), 
         mt_rand(0, canvas.height),
@@ -33,7 +33,7 @@ for ( let i = 0; i < 3; i++ ) {
     e.addAbility(new BreatherAbility(e));
     effectors.push(e);
 }
-/*for ( let i = 0; i < 8; i++ ) {
+for ( let i = 0; i < 8; i++ ) {
     effectors.push(new Effector(
         mt_rand(0, canvas.width), 
         mt_rand(0, canvas.height), 
@@ -60,7 +60,7 @@ for ( let i = 0; i < 8; i++ ) {
     );
     e.addAbility(new ZoomAbility(e));
     effectors.push(e);
-}*/
+}
 // --- animation loop ---
 function animate(timestamp) {
     // semi-transparent background to leave trails

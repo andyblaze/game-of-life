@@ -29,7 +29,7 @@ export default class Effector extends BaseParticle {
         this.palette = ColorConfig.randomPalette();
         // Start color at base
         this.color = { ...this.palette.base };
-        this.period = mt_rand(400, 700) * 60;
+        this.period = mt_rand(100, 400) * 60;
         this.phase = Math.random() * 2 * Math.PI;
     }
     initPerlin() {
