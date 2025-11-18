@@ -19,7 +19,6 @@ export default class Effector extends BaseParticle {
         this.startTime = performance.now();
         this.initColors();
         this.initPerlin();
-        this.initSnapping();
         this.ability = new SnapAbility(this);
     }
     initColors() {
@@ -38,16 +37,6 @@ export default class Effector extends BaseParticle {
         this.driftStrength = 0.05 + Math.random() * 0.15;
         this.driftDrag = 0.87 + Math.random() * 0.02;
     }
-    initSnapping() {
-        // snapping to repulsor
-        this.snapThreshold = 6;
-        this.snapStrength  = Math.random() > 0.5 ? 20 : -20;
-        this.snapDuration  = 1000; //ms 
-        this.snapChance = 1 / (5 * 60); // 1 in ( x seconds * fps )
-        this.isSnapped = false;
-        this.snapEndTime = 0;
-    }
-
     draw(ctx) {
         ctx.fillStyle = this.color;
         ctx.beginPath();
@@ -101,6 +90,17 @@ export default class Effector extends BaseParticle {
     applyStrength(t) {
         this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
     }
+    applyAbility(now, t) {
+        if ( this.ability.shouldActivate(now) ) {
+            this.ability.activate(now);
+        }
+        const stillActive = this.ability.update(now);
+
+        if ( false === stillActive ) {
+            // restore normal strength cycle
+            this.applyStrength(t);
+        }
+    }
     update() {
         const now = performance.now();
         const t = now - this.startTime;
@@ -109,26 +109,10 @@ export default class Effector extends BaseParticle {
         this.screenWrap();
         // --- ability system ---
         if ( null !== this.ability ) {
-            if ( this.ability.shouldActivate(now) ) {
-                this.ability.activate(now);
-            }
-            const stillActive = this.ability.update(now);
-
-            if ( false === stillActive ) {
-                // restore normal strength cycle
-                this.applyStrength(t);
-            }
+            this.applyAbility(now, t);
             return; // done
         }
-
         // Standard effector (no ability)
         this.applyStrength(t);
-        /*if ( this.canSnap() ) {
-            this.applySnap(now);
-        }
-        // --- SNAP MODE ---
-        if ( this.snapping(now) === false ) 
-            this.applyStrength(t);*/
-            //this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
     }
 }

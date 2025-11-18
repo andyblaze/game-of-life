@@ -1,16 +1,13 @@
 export default class SnapAbility {
     constructor(eff) {
         this.eff = eff;
-
-        // Move all snap parameters here
-        this.snapThreshold = eff.snapThreshold;
-        this.snapChance    = eff.snapChance;
-        this.snapDuration  = eff.snapDuration;
-        this.snapStrength  = eff.snapStrength;
-
         // State
         this.active = false;
-        this.endTime = 0;
+        this.endTime = 0;        
+        this.snapThreshold = 6;
+        this.snapStrength  = Math.random() > 0.5 ? 20 : -20;
+        this.snapDuration  = 1000; //ms 
+        this.snapChance = 1 / (5 * 60); // 1 in ( x seconds * fps )
     }
     // ---- TRIGGER ----
     shouldActivate() {
