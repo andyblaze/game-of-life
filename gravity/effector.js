@@ -4,7 +4,6 @@ import BaseParticle from "./base-particle.js";
 //import { curlNoise } from "./perlin-2d.js";
 import Perlin from './Perlin.js';
 const perlin = new Perlin();
-import SnapAbility from "./snap-ability.js";
 
 export default class Effector extends BaseParticle {
     constructor(x, y, screenSz, strength) {
@@ -16,10 +15,14 @@ export default class Effector extends BaseParticle {
         this.strength = strength; // positive = attract, negative = repel
         this.baseStrength = strength;
         this.radius = Math.abs(strength / 1.5);
+        if ( this.radius < 1 ) this.radius = 7;
         this.startTime = performance.now();
         this.initColors();
         this.initPerlin();
-        this.ability = new SnapAbility(this);
+        this.ability = null;
+    }
+    addAbility(a) {
+        this.ability = a;
     }
     initColors() {
         // Pick a random palette for this Effector
@@ -48,23 +51,6 @@ export default class Effector extends BaseParticle {
         const norm = (Math.sin((t / this.period) * 2 * Math.PI + this.phase) + 1) / 2;
         const c = lerpHSL(this.palette.base, this.palette.accent, norm);
         return `hsl(${c.h},${c.s}%,${c.l}%)`;  
-    }
-    canSnap() {
-        return (this.strength > this.snapThreshold && this.isSnapped === false && Math.random() < this.snapChance);
-    } 
-    applySnap(now) {
-        this.isSnapped = true;
-        this.snapEndTime = now + this.snapDuration;
-        this.strength = this.snapStrength; // apply immediately
-    }
-    snapping(now) {
-        // --- SNAP MODE ---
-        if ( this.isSnapped ) {
-            if ( now >= this.snapEndTime ) {
-                this.isSnapped = false;
-            }
-        }
-        return this.isSnapped;
     }
     // --- Perlin Drift -------------------------------------------------
     applyDrift(t) {
@@ -98,7 +84,7 @@ export default class Effector extends BaseParticle {
 
         if ( false === stillActive ) {
             // restore normal strength cycle
-            this.applyStrength(t);
+            this.ability.restore(this, t);
         }
     }
     update() {

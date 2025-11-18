@@ -32,4 +32,7 @@ export default class SnapAbility {
         }
         return this.active;
     }
+    restore(eff, t) {
+        eff.applyStrength(t);
+    }
 }
