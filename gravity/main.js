@@ -101,13 +101,13 @@ class FinaleStar {
         this.y = y;
 
         // Configurable timings
-        this.idleDuration  = 36000;  // ms before starting next grow
-        this.growDuration  = 12000; // ms pulling (unchanged)
-        this.repelDuration = 3800;  // ms burst (unchanged)
+        this.idleDuration  = 6000;  // ms before starting next grow
+        this.growDuration  = 3000; // ms pulling (unchanged)
+        this.repelDuration = 800;  // ms burst (unchanged)
 
         // Strengths
-        this.pullStrength  = 65;     // gentle pull
-        this.repelStrength = -70;   // strong burst
+        this.pullStrength  = 85;     // gentle pull
+        this.repelStrength = -18;   // strong burst
 
         // State
         this.phase = "idle";         // idle → grow → repel → idle
@@ -183,12 +183,7 @@ function animate(timestamp) {
         p.update(effectors);
         p.draw(ctx);
     }
-    
-    /*finale[0].update(timestamp);
-    for (let p of particles) {
-        p.update(finale);
-        p.draw(ctx);
-    }*/
+
     DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
