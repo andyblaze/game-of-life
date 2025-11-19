@@ -95,6 +95,63 @@ class Scheduler {
 }
 const scheduler = new Scheduler();
 
+class FinaleStar {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+
+        // Lifecycle
+        this.active = false;
+        this.phase = "idle"; // idle → grow → repel → done
+        this.phaseStart = 0;
+
+        // Strengths & timing
+        this.pullStrength   = 2;    // gentle pull
+        this.repelStrength  = -12;  // strong burst
+        this.growDuration   = 25000; // ms pulling
+        this.repelDuration  = 3800;  // ms burst
+        this.strength = 0;
+    }
+
+    begin(now) {
+        this.active = true;
+        this.phase = "grow";
+        this.phaseStart = now;
+        this.strength = 0;
+    }
+
+    update(now) {
+        if (!this.active) return;
+
+        const t = now - this.phaseStart;
+
+        if (this.phase === "grow") {
+            const k = t / this.growDuration;
+            if ( k < 1 ) {
+                // Ease in pull
+                this.strength = this.pullStrength * k;
+
+            } else {
+                // Switch to massive repulsion
+                this.phase = "repel";
+                this.phaseStart = now;
+                this.strength = this.repelStrength;            
+            }
+        }
+
+        else if ( this.phase === "repel" ) {
+            if ( t >= this.repelDuration ) {
+                this.phase = "done";
+                this.active = false;
+                this.strength = 0;
+            }
+        }
+    }
+}
+const star = new FinaleStar(canvas.width / 2, canvas.height / 2);
+star.begin(performance.now());
+const finale = [];
+finale.push(star);
 
 let startTime = null;
 // --- animation loop ---
@@ -103,19 +160,25 @@ function animate(timestamp) {
         startTime = timestamp;
     }
     const elapsed = timestamp - startTime; // ← milliseconds since animation began
-    scheduler.launch(elapsed);
+    //scheduler.launch(elapsed);
 
     // semi-transparent background to leave trails
     ctx.fillStyle = "rgba(0,0,0,0.05)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    for (let e of effectors) { 
+    /*for (let e of effectors) { 
         e.update(); 
         e.draw(ctx); 
-    }
-    for (let p of particles) {
+    }*/
+    /*for (let p of particles) {
         //boids(p, particles);
         p.update(effectors);
+        p.draw(ctx);
+    }*/
+    finale[0].update(timestamp);
+    for (let p of particles) {
+        //boids(p, particles);
+        p.update(finale);
         p.draw(ctx);
     }
     DeltaReport.log(timestamp);
