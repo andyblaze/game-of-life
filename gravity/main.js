@@ -95,59 +95,6 @@ class Scheduler {
 }
 const scheduler = new Scheduler();
 
-class FinaleStar1 {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-
-        // Lifecycle
-        this.active = false;
-        this.phase = "idle"; // idle → grow → repel → done
-        this.phaseStart = 0;
-
-        // Strengths & timing
-        this.pullStrength   = 2;    // gentle pull
-        this.repelStrength  = -12;  // strong burst
-        this.growDuration   = 25000; // ms pulling
-        this.repelDuration  = 3800;  // ms burst
-        this.strength = 0;
-    }
-
-    begin(now) {
-        this.active = true;
-        this.phase = "grow";
-        this.phaseStart = now;
-        this.strength = 0;
-    }
-
-    update(now) {
-        if (!this.active) return;
-
-        const t = now - this.phaseStart;
-
-        if (this.phase === "grow") {
-            const k = t / this.growDuration;
-            if ( k < 1 ) {
-                // Ease in pull
-                this.strength = this.pullStrength * k;
-
-            } else {
-                // Switch to massive repulsion
-                this.phase = "repel";
-                this.phaseStart = now;
-                this.strength = this.repelStrength;            
-            }
-        }
-
-        else if ( this.phase === "repel" ) {
-            if ( t >= this.repelDuration ) {
-                this.phase = "done";
-                this.active = false;
-                this.strength = 0;
-            }
-        }
-    }
-}
 class FinaleStar {
     constructor(x, y) {
         this.x = x;
@@ -168,7 +115,6 @@ class FinaleStar {
 
         this.strength = 0;           // applied by particles
     }
-
     update(now) {
         const t = now - this.phaseStart;
 
@@ -214,8 +160,6 @@ class FinaleStar {
 }
 
 const star = new FinaleStar(canvas.width / 2, canvas.height / 2);
-//star.begin(performance.now());
-//const finale = [];
 effectors.push(star);
 
 let startTime = null;
