@@ -95,7 +95,7 @@ class Scheduler {
 }
 const scheduler = new Scheduler();
 
-class FinaleStar {
+class FinaleStar1 {
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -148,10 +148,75 @@ class FinaleStar {
         }
     }
 }
+class FinaleStar {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+
+        // Configurable timings
+        this.idleDuration  = 36000;  // ms before starting next grow
+        this.growDuration  = 12000; // ms pulling (unchanged)
+        this.repelDuration = 3800;  // ms burst (unchanged)
+
+        // Strengths
+        this.pullStrength  = 65;     // gentle pull
+        this.repelStrength = -70;   // strong burst
+
+        // State
+        this.phase = "idle";         // idle → grow → repel → idle
+        this.phaseStart = 0;
+
+        this.strength = 0;           // applied by particles
+    }
+
+    update(now) {
+        const t = now - this.phaseStart;
+
+        // --- IDLE ---
+        if (this.phase === "idle") {
+            this.strength = 0;
+
+            // Wait until idleDuration is over
+            if (t >= this.idleDuration) {
+                this.phase = "grow";
+                this.phaseStart = now;
+            }
+            return;
+        }
+
+        // --- GROW ---
+        if (this.phase === "grow") {
+            const k = t / this.growDuration;
+
+            if (k < 1) {
+                this.strength = this.pullStrength * k; // linear ease-in
+            } else {
+                // transition to repulsion
+                this.phase = "repel";
+                this.phaseStart = now;
+                this.strength = this.repelStrength;
+            }
+            return;
+        }
+
+        // --- REPEL ---
+        if (this.phase === "repel") {
+            if (t >= this.repelDuration) {
+                // back to idle
+                this.phase = "idle";
+                this.phaseStart = now;
+                this.strength = 0;
+            }
+            return;
+        }
+    }
+    draw(ctx) {}
+}
+
 const star = new FinaleStar(canvas.width / 2, canvas.height / 2);
-star.begin(performance.now());
-const finale = [];
-finale.push(star);
+//star.begin(performance.now());
+//const finale = [];
+effectors.push(star);
 
 let startTime = null;
 // --- animation loop ---
@@ -160,27 +225,26 @@ function animate(timestamp) {
         startTime = timestamp;
     }
     const elapsed = timestamp - startTime; // ← milliseconds since animation began
-    //scheduler.launch(elapsed);
+    scheduler.launch(elapsed);
 
     // semi-transparent background to leave trails
     ctx.fillStyle = "rgba(0,0,0,0.05)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    /*for (let e of effectors) { 
-        e.update(); 
+    for (let e of effectors) { 
+        e.update(timestamp); 
         e.draw(ctx); 
-    }*/
-    /*for (let p of particles) {
-        //boids(p, particles);
+    }
+    for (let p of particles) {
         p.update(effectors);
         p.draw(ctx);
-    }*/
-    finale[0].update(timestamp);
+    }
+    
+    /*finale[0].update(timestamp);
     for (let p of particles) {
-        //boids(p, particles);
         p.update(finale);
         p.draw(ctx);
-    }
+    }*/
     DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
