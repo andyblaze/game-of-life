@@ -15,11 +15,31 @@ export default class Effector extends BaseParticle {
         this.strength = strength; // positive = attract, negative = repel
         this.baseStrength = strength;
         this.radius = Math.abs(strength / 1.5);
-        if ( this.radius < 1 ) this.radius = 7;
         this.startTime = performance.now();
         this.initColors();
         this.initPerlin();
+        this.initRadius();
         this.ability = null;
+        this.active = true;
+        //this.setActive(false);
+    }
+    initRadius() {
+        this.startRadius = 0.25;                   // starts non-interactive
+        this.targetRadius = this.radius; // whatever your normal logic sets
+        this.growDuration = 8000         // ms
+        this.growStart = performance.now();             // set when introduced
+    }
+    setActive(a) {
+        this.active = a;
+        if ( false === a ) {
+            this.tmpStrength = { base: this.baseStrength, str: this.strength };
+            this.baseStrength = 0;
+            this.strength = 0;
+        }
+        else {
+            this.baseStrength = this.tmpStrength.base;
+            this.strength = this.tmpStrength.str;
+        }
     }
     addAbility(a) {
         this.ability = a;
@@ -29,7 +49,7 @@ export default class Effector extends BaseParticle {
         this.palette = ColorConfig.randomPalette();
         // Start color at base
         this.color = { ...this.palette.base };
-        this.period = mt_rand(100, 400) * 60;
+        this.period = mt_rand(100, 300) * 30;
         this.phase = Math.random() * 2 * Math.PI;
     }
     initPerlin() {
@@ -87,12 +107,20 @@ export default class Effector extends BaseParticle {
             this.ability.restore(this, t);
         }
     }
+    applyRadius() {
+        if ( this.startRadius < this.targetRadius ) { 
+            this.startRadius += 60 / this.growDuration;
+            this.radius = this.startRadius;
+        }
+    }
     update() {
         const now = performance.now();
         const t = now - this.startTime;
+        this.applyRadius();
         this.applyDrift(t);
         this.color = this.lerpColors();
         this.screenWrap();
+        //if ( false === this.active ) return; 
         // --- ability system ---
         if ( null !== this.ability ) {
             this.applyAbility(now, t);

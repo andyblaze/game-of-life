@@ -1,5 +1,5 @@
 import Particle from "./particle.js";
-import Effector from "./effector.js";
+import Effector from "./effector.js?h";
 import DeltaReport from "./delta-report.js";
 import { mt_rand, mt_rand_excluding_gap } from "./functions.js";
 import SnapAbility from "./snap-ability.js";
@@ -23,6 +23,13 @@ for ( let i = 0; i < 1500; i++ ) {
 }
 
 const effectors = [];
+class Scheduler {
+    constructor() {
+        this.delays = [
+            0, 12000, 24000, 36000
+        ];
+    }    
+}
 for ( let i = 0; i < 3; i++ ) {
     let e = new Effector(
             mt_rand(0, canvas.width), 

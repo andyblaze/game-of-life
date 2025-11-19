@@ -9,6 +9,7 @@ export default class BreatherAbility extends BaseAbility {
         eff.radius = 12;
         eff.strength = 1.5;
         eff.baseStrength = 1.5;
+        eff.initRadius();
     }
     shouldActivate() {
         return true;

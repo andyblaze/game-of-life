@@ -5,9 +5,14 @@ export default class BaseParticle {
         this.screenSz = screenSz;
     }
     screenWrap() {
-        if (this.x < 0) this.x += this.screenSz.width;
-        if (this.x > this.screenSz.width) this.x -= this.screenSz.width;
-        if (this.y < 0) this.y += this.screenSz.height;
-        if (this.y > this.screenSz.height) this.y -= this.screenSz.height;
+        const w = this.screenSz.width;
+        const h = this.screenSz.height;
+        const pad = 1; // small margin prevents jitter
+
+        if (this.x < -pad) this.x = w + pad;
+        else if (this.x > w + pad) this.x = -pad;
+
+        if (this.y < -pad) this.y = h + pad;
+        else if (this.y > h + pad) this.y = -pad;
     }
 }
