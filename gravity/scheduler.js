@@ -2,24 +2,22 @@ import Effector from "./effector.js?h";
 import SnapAbility from "./snap-ability.js";
 import ZoomAbility from "./zoom-ability.js";
 import BreatherAbility from "./breather-ability.js";
-import { mt_rand, mt_rand_excluding_gap } from "./functions.js";
+import { mt_rand, mt_rand_excluding_gap, canvasSize } from "./functions.js";
 
 function randomPosIn(cnvs) {
     return {x: mt_rand(0, cnvs.width), y: mt_rand(0, cnvs.height)};
 }
-function screenSz(cnvs) {
-    return {width:cnvs.width, height:cnvs.height};
-}
+
 function randomStrength(mid, high) {
     return mt_rand_excluding_gap(-high, -mid, mid, high);
 }
 
 class EffectorFactory {
     static create(canvas, mid, high) {
-        const {x, y} = randomPosIn(canvas);
+        const {x, y} = {...randomPosIn(canvas)};
         return new Effector(
             x, y, 
-            screenSz(canvas),
+            canvasSize(canvas),
             randomStrength(mid, high)
         );
     }

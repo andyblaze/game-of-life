@@ -12,6 +12,13 @@ export function mt_rand_excluding_gap(min1, max1, min2, max2) {
         return Math.floor(Math.random() * (max2 - min2 + 1)) + min2;
     }
 }
+export function randomPosIn(cnvs) {
+    return {x: mt_rand(0, cnvs.width), y: mt_rand(0, cnvs.height)};
+}
+
+export function canvasSize(cnvs) {
+    return {width:cnvs.width, height:cnvs.height};
+}
 
 export function randVel() {
     const sign = Math.random() < 0.5 ? -1 : 1;

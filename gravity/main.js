@@ -1,6 +1,6 @@
 import Particle from "./particle.js";
 import DeltaReport from "./delta-report.js";
-import { mt_rand } from "./functions.js";
+import { mt_rand, canvasSize, randomPosIn } from "./functions.js";
 
 import Scheduler from "./scheduler.js";
 import FinaleStar from "./finale-star.js";
@@ -14,10 +14,10 @@ canvas.height = window.innerHeight;
 // --- setup particles & effectors ---
 const particles = [];
 for ( let i = 0; i < 1500; i++ ) {
+    const {x, y} = {...randomPosIn(canvas)};
     particles.push(new Particle(
-        mt_rand(0, canvas.width), 
-        mt_rand(0, canvas.height),
-        {width:canvas.width, height:canvas.height}
+        x, y,
+        canvasSize(canvas)
     ));
 }
 
