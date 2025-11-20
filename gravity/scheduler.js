@@ -4,48 +4,49 @@ import ZoomAbility from "./zoom-ability.js";
 import BreatherAbility from "./breather-ability.js";
 import { mt_rand, mt_rand_excluding_gap } from "./functions.js";
 
-function addBreathers(canvas, effectors) {
-    for ( let i = 0; i < 3; i++ ) {
-        let e = new Effector(
-                mt_rand(0, canvas.width), 
-                mt_rand(0, canvas.height), 
-                {width:canvas.width, height:canvas.height},
-                mt_rand_excluding_gap(-0.9, 0, 0, 0.9)
-            );
+function randomPosIn(cnvs) {
+    return {x: mt_rand(0, cnvs.width), y: mt_rand(0, cnvs.height)};
+}
+function screenSz(cnvs) {
+    return {width:cnvs.width, height:cnvs.height};
+}
+function randomStrength(mid, high) {
+    return mt_rand_excluding_gap(-high, -mid, mid, high);
+}
+
+class EffectorFactory {
+    static create(canvas, mid, high) {
+        const {x, y} = randomPosIn(canvas);
+        return new Effector(
+            x, y, 
+            screenSz(canvas),
+            randomStrength(mid, high)
+        );
+    }
+}
+
+function addBreathers(n, canvas, effectors) {
+    for ( let i = 0; i < n; i++ ) {
+        let e = EffectorFactory.create(canvas, 0, 0.9);
         e.addAbility(new BreatherAbility(e));
         effectors.push(e);
     }
 }
-function addEffectors(canvas, effectors) {
-    for ( let i = 0; i < 8; i++ ) {
-        effectors.push(new Effector(
-            mt_rand(0, canvas.width), 
-            mt_rand(0, canvas.height), 
-            {width:canvas.width, height:canvas.height},
-            mt_rand_excluding_gap(-10, -3, 3, 10)
-        ));
+function addEffectors(n, canvas, effectors) {
+    for ( let i = 0; i < n; i++ ) {
+        effectors.push(EffectorFactory.create(canvas, 3, 10));
     }
 }
-function addSnappers(canvas, effectors) {
-    for ( let i = 0; i < 8; i++ ) {
-        let e = new Effector(
-            mt_rand(0, canvas.width), 
-            mt_rand(0, canvas.height), 
-            {width:canvas.width, height:canvas.height},
-            mt_rand_excluding_gap(-10, -3, 3, 10)
-        );
+function addSnappers(n, canvas, effectors) {
+    for ( let i = 0; i < n; i++ ) {
+        let e = EffectorFactory.create(canvas, 3, 10);
         e.addAbility(new SnapAbility(e));
         effectors.push(e);
     }
 }
-function addZoomers(canvas, effectors) {
-    for ( let i = 0; i < 8; i++ ) {
-        let e = new Effector(
-            mt_rand(0, canvas.width), 
-            mt_rand(0, canvas.height), 
-            {width:canvas.width, height:canvas.height},
-            mt_rand_excluding_gap(-10, -3, 3, 10)
-        );
+function addZoomers(n, canvas, effectors) {
+    for ( let i = 0; i < n; i++ ) {
+        let e = EffectorFactory.create(canvas, 3, 10);
         e.addAbility(new ZoomAbility(e));
         effectors.push(e);
     }
@@ -57,17 +58,18 @@ export default class Scheduler {
         this.effectors = effs;
         this.idx = 0;
         this.waves = [
-            {delay: 4000, func:addBreathers, done:false},
-            {delay:16000, func:addEffectors, done:false}, 
-            {delay:24000, func:addZoomers, done:false},
-            {delay:36000, func:addSnappers, done:false}
+            {delay: 4000, func:addBreathers, done:false, num:3},
+            {delay:16000, func:addEffectors, done:false, num:8}, 
+            {delay:24000, func:addZoomers, done:false, num:8},
+            {delay:36000, func:addSnappers, done:false, num:8}
         ];
     } 
     launch(elapsedTime) {
         if ( this.idx > this.waves.length -1 ) return;
-        if ( this.waves[this.idx].done === false && elapsedTime > this.waves[this.idx].delay ) {
-            this.waves[this.idx].func(this.canvas, this.effectors);
-            this.waves[this.idx].done = true;
+        const wave = this.waves[this.idx];
+        if ( wave.done === false && elapsedTime > wave.delay ) {
+            wave.func(wave.num, this.canvas, this.effectors);
+            wave.done = true;
             this.idx++;
         }        
     }
