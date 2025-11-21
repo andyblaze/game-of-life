@@ -1,6 +1,6 @@
 
 class ExcitationStrategy {
-    update(dt, df) {} // called every frame
+    update(dt, df) {} // called every frame. dt is delta, df is Dreamflow object
 }
 
 export default class RandomExcite extends ExcitationStrategy {
