@@ -12,7 +12,7 @@ import DeltaReport from "./delta-report.js";
 import { resizeCanvas } from "./functions.js";
 
 const test = [];
-for ( let i = 1; i < 1022; i++ )
+for ( let i = 1; i < 2; i++ )
     test.push(new RandomExcite(config));
 
 const dreamFlow = new DreamFlow(config, test);
