@@ -15,6 +15,15 @@ export default class RandomExcite extends ExcitationStrategy {
         this.vX = 0;
         this.vY = 0;//.00009;
         this.initPerlin();
+        this.es = [];
+        for ( let i = 1; i < 32; i ++ )
+            this.es.push({
+                x: 2,//Math.random() * 470 + 10, 
+                y: Math.random() * 260 + 10, 
+                strength: 1.5 * Math.random() - 0.5,
+                update:function() {  }
+            });
+
     }
     initPerlin() {
         // perlin 
@@ -22,7 +31,7 @@ export default class RandomExcite extends ExcitationStrategy {
         this.driftScale = 0.002 + Math.random() * 0.01;
         this.driftTimeScale = 0.0002 + Math.random() * 0.04;
         this.driftStrength = 0.05 + Math.random() * 0.015;
-        this.driftDrag = 0.87 + Math.random() * 0.002;
+        this.driftDrag = 0.77 + Math.random() * 0.02;
     }
     // --- Perlin Drift -------------------------------------------------
     applyDrift(t) {
@@ -43,6 +52,30 @@ export default class RandomExcite extends ExcitationStrategy {
         this.vY *= this.driftDrag;
 
         this.x += -0.35 + this.vX;
+        this.y += this.vY;
+    }
+    applyGravity(effectors) {
+        /*const es = [];
+        for ( let i = 1; i < 20; i ++ )
+            es.push({
+                x: Math.random() * 300 + 100, 
+                y: Math.random() * 180 + 50, 
+                strength: 0.2
+            });*/
+        for (let e of this.es) {
+            let dx = e.x - this.x;
+            let dy = e.y - this.y;
+            let dist2 = dx*dx + dy*dy;
+            if (dist2 < 1) dist2 = 1; // avoid divide by 0
+            let force = e.strength / dist2;
+            this.vX += force * dx;
+            this.vY += force * dy;
+            // Apply drag
+            //this.vx *= this.drag;
+            //this.vy *= this.drag;
+            e.x += 0.1;
+        }
+        this.x += this.vX;
         this.y += this.vY;
     }
     screenWrap() {
@@ -67,6 +100,7 @@ export default class RandomExcite extends ExcitationStrategy {
         else if (this.y > h-2) { this.y = 2; this.vY += 3; }
     }
     update(dt, df) { 
+        this.applyGravity();
         this.screenWrap();
         this.applyDrift(dt);
         //const pulses = this.cfg.excitationRate * dt * 0.01;
