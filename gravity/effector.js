@@ -17,6 +17,9 @@ export default class Effector extends BaseParticle {
         this.radius = Math.abs(strength / 1.5);
         this.startTime = performance.now();
         this.initColors();
+        this.gravityPhase = Math.random() * Math.PI * 2; // independent
+        this.gravityPeriod = mt_rand(4, 8);
+        this.gravityFrequency = 1 / this.gravityPeriod;
         this.initPerlin();
         this.initRadius();
         this.ability = null;
@@ -94,7 +97,11 @@ export default class Effector extends BaseParticle {
         this.y += this.vY;
     }
     applyStrength(t) {
-        this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI);
+        // advance independent gravity oscillator
+        this.gravityPhase += t * this.gravityFrequency * 2 * Math.PI;
+
+        // compute oscillating gravitational strength
+        this.strength = this.baseStrength * Math.sin(this.gravityPhase);
     }
     applyAbility(now, t) {
         if ( this.ability.shouldActivate() ) {
@@ -103,7 +110,7 @@ export default class Effector extends BaseParticle {
         const stillActive = this.ability.update(now, t);
 
         if ( false === stillActive ) {
-            // restore normal strength cycle
+            // restore normality
             this.ability.restore(this, t);
         }
     }

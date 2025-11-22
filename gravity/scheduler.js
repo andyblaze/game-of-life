@@ -37,12 +37,12 @@ export default class Scheduler {
         this.idx = 0;
         this.waves = [
             {delay: 4000, done:false, num:3, strength: {lo:0, hi:0.9}, type: "breather"},
-            {delay:16000, done:false, num:4, strength: {lo:4, hi:10},  type: "zoomer"},
-            {delay:24000, done:false, num:4, strength: {lo:6, hi:11},  type: "zoomer"},
-            {delay:36000, done:false, num:4, strength: {lo:3, hi:8},   type: null}, 
-            {delay:48000, done:false, num:4, strength: {lo:3, hi:9},   type: null}, 
-            {delay:56000, done:false, num:4, strength: {lo:2, hi:7},   type: "snapper"},
-            {delay:64000, done:false, num:4, strength: {lo:4, hi:10},  type: "snapper"}
+            {delay:16000, done:false, num:4, strength: {lo:4, hi:7},  type: "zoomer"},
+            {delay:24000, done:false, num:4, strength: {lo:8, hi:11},  type: "zoomer"},
+            {delay:36000, done:false, num:4, strength: {lo:3, hi:6},   type: null}, 
+            {delay:48000, done:false, num:4, strength: {lo:5, hi:8},   type: null}, 
+            {delay:56000, done:false, num:4, strength: {lo:4, hi:7},   type: "snapper"},
+            {delay:64000, done:false, num:4, strength: {lo:7, hi:10},  type: "snapper"}
         ];
     } 
     addEffectors(n, ability, strength) {

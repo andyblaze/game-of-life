@@ -8,7 +8,7 @@ export default class SnapAbility extends BaseAbility {
         this.setDuration(1000); // ms
         // State
         this.snapThreshold = 6;
-        this.snapStrength  = Math.random() > 0.5 ? 20 : -20;
+        this.snapStrength  = -90;//Math.random() > 0.5 ? 20 : -20;
     }
     shouldActivate() {
         return (
