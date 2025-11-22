@@ -124,9 +124,9 @@ export default class Effector extends BaseParticle {
             this.radius = this.startRadius;
         }
     }
-    update(dt) {
+    update(dt) { 
         const now = performance.now();
-        const t = now - this.startTime;
+        const t = now - this.startTime; console.log(dt, t, now);
         this.applyRadius();
         this.applyDrift(t);
         this.color = this.lerpColors();
@@ -138,6 +138,6 @@ export default class Effector extends BaseParticle {
             //return; // done
         }
         // Standard effector (no ability)
-        this.applyStrength(dt);
+        this.applyStrength(t);
     }
 }
