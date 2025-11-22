@@ -27,11 +27,19 @@ const scheduler = new Scheduler(canvas, effectors);
 effectors.push(new FinaleStar(canvas.width / 2, canvas.height / 2));
 
 let startTime = null;
+let lastTimestamp = null;
 // --- animation loop ---
 function animate(timestamp) {
     if ( startTime === null ) {
         startTime = timestamp;
     }
+    if (lastTimestamp === null) {
+        lastTimestamp = timestamp;
+    }
+    
+    const dt = (timestamp - lastTimestamp) / 1000; // convert ms → seconds
+    lastTimestamp = timestamp;
+    
     const elapsed = timestamp - startTime; // ← milliseconds since animation began
     scheduler.launch(elapsed);
 
@@ -40,7 +48,7 @@ function animate(timestamp) {
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     for (let e of effectors) { 
-        e.update(timestamp); 
+        e.update(lastTimestamp /1000); 
         e.draw(ctx); 
     }
     for (let p of particles) {

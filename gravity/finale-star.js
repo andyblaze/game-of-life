@@ -15,15 +15,15 @@ export default class FinaleStar {
     configure(configIdle=true) {
         // Configurable timings
         if ( true === configIdle )
-            this.idleDuration  = mt_rand(36000, 42000);  // ms before starting next grow
-        this.growDuration  = mt_rand(10000, 12000); // ms pulling 
-        this.repelDuration = mt_rand(2800, 3800);  // ms burst 
+            this.idleDuration  = mt_rand(36, 42);  // s before starting next grow
+        this.growDuration  = mt_rand(10, 12); // s pulling 
+        this.repelDuration = mt_rand(3, 4);  // s burst 
 
         // Strengths
         this.pullStrength  = mt_rand(55, 75);     // strong pull
         this.repelStrength = -mt_rand(35, 55);   // strong burst        
     }
-    update(now) {
+    update(now) { //console.log(now);
         const t = now - this.phaseStart;
 
         // --- IDLE ---
@@ -35,7 +35,7 @@ export default class FinaleStar {
             if (t >= this.idleDuration) {
                 this.phase = "grow";
                 this.phaseStart = now;
-                this.idleDuration  = mt_rand(36000, 42000);
+                this.idleDuration  = mt_rand(36, 42);
             }
             return;
         }

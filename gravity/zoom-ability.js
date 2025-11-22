@@ -6,12 +6,11 @@ export default class ZoomAbility extends BaseAbility {
         super(eff);
         // Activation chance per frame (e.g. once per 5 seconds ≈ 1/(5*60))
         this.setChance(1 / (5 * 60));
-        this.setDuration(mt_rand(3000, 6000)); // ms
+        this.setDuration(mt_rand(6000, 12000)); // ms
 
-        // Drag multiplier during zoom (0 = no drag, <1 means reduced drag)
-        this.dragFactor = mt_rand(103, 106) / 100;//1.06;
+        this.dragFactor = mt_rand(101, 106) / 100;//1.06;
         // Optional velocity boost on activation
-        this.boost = mt_rand(1,3);//2; // set to 0.5 if you want sparks
+        this.boost = mt_rand(3, 7);//2; // set to 0.5 if you want sparks
         this.baseDrag = this.eff.driftDrag;
     }
 
