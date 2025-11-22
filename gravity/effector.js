@@ -17,14 +17,14 @@ export default class Effector extends BaseParticle {
         this.radius = Math.abs(strength / 1.5);
         this.startTime = performance.now();
         this.initColors();
-        this.initGravity(8, 16);
+        this.initGravityPhase(12, 24);
         this.initPerlin();
         this.initRadius();
         this.ability = null;
         this.active = true;
         //this.setActive(false);
     }
-    initGravity(lo, hi) {
+    initGravityPhase(lo, hi) {
         this.gravityPhase = Math.random() * Math.PI * 2; // independent
         this.gravityPeriod = mt_rand(lo, hi);
         this.gravityFrequency = 1 / this.gravityPeriod;
@@ -100,6 +100,7 @@ export default class Effector extends BaseParticle {
         this.y += this.vY;
     }
     applyStrength(t) {
+        this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI); return;
         // advance independent gravity oscillator
         this.gravityPhase += t * this.gravityFrequency * 2 * Math.PI;
 
@@ -126,7 +127,7 @@ export default class Effector extends BaseParticle {
     }
     update(dt) { 
         const now = performance.now();
-        const t = now - this.startTime; console.log(dt, t, now);
+        const t = now - this.startTime; //console.log(dt, t, now);
         this.applyRadius();
         this.applyDrift(t);
         this.color = this.lerpColors();
