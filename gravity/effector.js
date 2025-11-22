@@ -17,7 +17,7 @@ export default class Effector extends BaseParticle {
         this.radius = Math.abs(strength / 1.5);
         this.startTime = performance.now();
         this.initColors();
-        this.initGravityPhase(12, 24);
+        this.initGravityPhase(6000, 12000);
         this.initPerlin();
         this.initRadius();
         this.ability = null;
@@ -100,7 +100,7 @@ export default class Effector extends BaseParticle {
         this.y += this.vY;
     }
     applyStrength(t) {
-        this.strength = this.baseStrength * Math.sin((t / this.period) * 2 * Math.PI); return;
+        this.strength = this.baseStrength * Math.sin((t / this.gravityPeriod) * 2 * Math.PI); return;
         // advance independent gravity oscillator
         this.gravityPhase += t * this.gravityFrequency * 2 * Math.PI;
 

@@ -10,7 +10,7 @@ export default class BreatherAbility extends BaseAbility {
         eff.strength = 1.5;
         eff.baseStrength = 1.5;
         eff.initRadius();
-        eff.initGravityPhase(1, 2);
+        eff.initGravityPhase(1000, 2000);
     }
     shouldActivate() {
         return true;
