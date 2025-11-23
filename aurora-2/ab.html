@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<title>Aurora Curtain Test</title>
+<meta charset="UTF-8">
+<title>Aurora Curtain – Half Width + Soft Fade</title>
 <style>
-    html, body {
+    body {
         margin: 0;
-        padding: 0;
-        background: black;
+        background: #000;
         overflow: hidden;
     }
     canvas {
@@ -16,145 +15,148 @@
 </style>
 </head>
 <body>
-
 <canvas id="c"></canvas>
 
 <script>
-// -------------------------------------------------------------
-// Resize Canvas
-// -------------------------------------------------------------
+// ------------------ CONFIG ------------------
+const CURTAIN_WIDTH_FACTOR = 0.5; // <--- 0.5 = half width (change as you like)
+const AURORA_HEIGHT = 20; // 100px thick glow area
+const TOP_NOISE_SPEED = 0.00035;
+const BOTTOM_NOISE_SPEED = 0.00029;
+const DETAIL = 280; // number of sample points across the curtain
+
+// --------------- Basic Canvas Setup ---------------
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
-let W = window.innerWidth;
-let H = window.innerHeight;
-canvas.width = W;
-canvas.height = H;
+let W, H;
 
-window.addEventListener("resize", () => {
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
-});
+function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
-// -------------------------------------------------------------
-// Simple Perlin Noise (2D) — lightweight version
-// -------------------------------------------------------------
-class Perlin2D {
+// ------------------ Perlin Noise 2D -----------------
+class PerlinNoise2D {
     constructor() {
         this.gradients = {};
         this.memory = {};
     }
-    randomVector() {
-        const theta = Math.random() * 2 * Math.PI;
+    rand_vect() {
+        let theta = Math.random() * 2 * Math.PI;
         return {x: Math.cos(theta), y: Math.sin(theta)};
     }
-    dotProdGrid(x, y, vx, vy) {
-        const g = this.gradients[[vx,vy]] || (this.gradients[[vx,vy]] = this.randomVector());
-        return (x - vx) * g.x + (y - vy) * g.y;
+    dot_prod_grid(x, y, vx, vy) {
+        let g;
+        let d = this.gradients[[vx,vy]];
+        if (!d) {
+            d = this.rand_vect();
+            this.gradients[[vx,vy]] = d;
+        }
+        return (x-vx)*d.x + (y-vy)*d.y;
     }
-    smooth(t) { return t*t*t*(t*(t*6 - 15) + 10); }
+    smootherstep(x) {
+        return 6*x**5 - 15*x**4 + 10*x**3;
+    }
+    interp(a, b, t) {
+        return a + this.smootherstep(t) * (b-a);
+    }
     get(x, y) {
-        const xf = Math.floor(x), yf = Math.floor(y);
-        const tl = this.dotProdGrid(x, y, xf, yf);
-        const tr = this.dotProdGrid(x, y, xf+1, yf);
-        const bl = this.dotProdGrid(x, y, xf, yf+1);
-        const br = this.dotProdGrid(x, y, xf+1, yf+1);
+        if (this.memory[[x,y]]) return this.memory[[x,y]];
+        let xf = Math.floor(x), yf = Math.floor(y);
+        let tl = this.dot_prod_grid(x, y, xf, yf);
+        let tr = this.dot_prod_grid(x, y, xf+1, yf);
+        let bl = this.dot_prod_grid(x, y, xf, yf+1);
+        let br = this.dot_prod_grid(x, y, xf+1, yf+1);
 
-        const xt = this.smooth(x - xf);
-        const yt = this.smooth(y - yf);
+        let xt = x - xf;
+        let yt = y - yf;
 
-        const top = tl + xt * (tr - tl);
-        const bottom = bl + xt * (br - bl);
+        let xt0 = this.interp(tl, tr, xt);
+        let xt1 = this.interp(bl, br, xt);
 
-        return top + yt * (bottom - top);
+        return this.interp(xt0, xt1, yt);
     }
 }
+const noise = new PerlinNoise2D();
 
-const perlin = new Perlin2D();
+// ------------------ Aurora Render --------------------
+function drawAurora(t){
+    const cw = W * CURTAIN_WIDTH_FACTOR;   // actual curtain width
+    const cx = (W - cw) * 0.5;             // centered X offset
 
-// -------------------------------------------------------------
-// Aurora Polyline
-// -------------------------------------------------------------
-const POINT_COUNT = 200;
-let points = new Array(POINT_COUNT).fill(0).map((_, i) => ({
-    x: i / (POINT_COUNT - 1),
-    y: 0
-}));
+    // Build top and bottom noisy lines
+    let topPoints = [];
+    let bottomPoints = [];
 
-// -------------------------------------------------------------
-// Animation Parameters
-// -------------------------------------------------------------
-let t = 0;
-const baseY = H * 0.3;          // height where the curtain bottom lives
-const amp = 160;                 // amount of vertical deformation
-const noiseScale = 1.6;         // spatial frequency
-const timeScale = 0.2;          // temporal frequency
+    for(let i=0;i<=DETAIL;i++){
+        let x = cx + (i / DETAIL) * cw;
 
-// -------------------------------------------------------------
-// Main Draw Loop
-// -------------------------------------------------------------
-function loop() {
-    ctx.clearRect(0,0,W,H);
+        let nTop = noise.get(i * 0.04, t * TOP_NOISE_SPEED);
+        let nBot = noise.get(i * 0.06, t * BOTTOM_NOISE_SPEED);
 
-    // --- compute the polyline shape ---
-    for (let i = 0; i < POINT_COUNT; i++) {
-        const px = i / (POINT_COUNT - 1);
-        const n =
-            perlin.get(px * noiseScale, t * timeScale) * 0.7 +
-            perlin.get(px * noiseScale * 2, t * timeScale * 1.5) * 0.3;
+        let topY = H/2 + nTop * 30;
+        let bottomY = topY + AURORA_HEIGHT + nBot * 20;
 
-        const y = baseY + n * amp;
-        points[i].y = y;
-        points[i].x = px * W;
+        topPoints.push({x, y: topY});
+        bottomPoints.push({x, y: bottomY});
     }
 
-    // --- draw glowing cloud ---
-    drawCurtain();
+    // Draw filled aurora shape
+    let auroraCanvas = document.createElement("canvas");
+    let ac = auroraCanvas.getContext("2d");
+    auroraCanvas.width = W;
+    auroraCanvas.height = H;
 
-    t += 0.01;
+    ac.beginPath();
+    ac.moveTo(topPoints[0].x, topPoints[0].y);
+    topPoints.forEach(p => 
+        ac.lineTo(p.x, p.y)
+    );
+    bottomPoints.reverse().forEach(p => ac.lineTo(p.x, p.y));
+    ac.closePath();
+
+    // Neon-ish green fill
+    let grad = ac.createLinearGradient(0, H/2, 0, H/2 + AURORA_HEIGHT);
+    grad.addColorStop(0, "rgba(120,255,0,1)");
+    grad.addColorStop(1, "rgba(30,240,0,0.7)");
+    ac.fillStyle = grad;
+    ac.fill();
+    /*ac.strokeStyle = "rgba(120,255,0,1)";
+    ac.lineWidth = 0.5;
+    for( const p of topPoints ) { 
+        ac.moveTo(p.x, p.y);
+        ac.lineTo(p.x, 0);
+        ac.stroke();
+    }*/
+
+    // ------------------ FADE LEFT & RIGHT EDGES ------------------
+    /*ac.save();
+    ac.globalCompositeOperation = "destination-in";
+
+    let mask = ac.createLinearGradient(cx,0,cx+cw,0);
+    mask.addColorStop(0, "rgba(0,0,0,0)");
+    mask.addColorStop(0.12,"rgba(0,0,0,1)");
+    mask.addColorStop(0.88,"rgba(0,0,0,1)");
+    mask.addColorStop(1, "rgba(0,0,0,0)");
+
+    ac.fillStyle = mask;
+    ac.fillRect(cx,0,cw,H);
+    ac.restore();*/
+
+    // Draw final to main canvas
+    ctx.drawImage(auroraCanvas,0,0);
+}
+
+// ------------------ LOOP ---------------------
+function loop(t){
+    ctx.clearRect(0,0,W,H);
+    drawAurora(t);
     requestAnimationFrame(loop);
 }
+requestAnimationFrame(loop);
 
-// -------------------------------------------------------------
-// Draw Curtain Bottom With Glow + Gradient
-// -------------------------------------------------------------
-function drawCurtain() {
-
-    // Glow behind
-    ctx.save();
-    ctx.globalAlpha = 0.5;
-    //ctx.filter = "blur(40px)";
-    ctx.fillStyle = "rgba(0,255,0,0.9)";
-    drawFilledPolyline(H-550); // extend fill way down
-    ctx.restore();
-
-    // Main bright neon edge
-    const grad = ctx.createLinearGradient(0, baseY - 50, 0, baseY + 100);
-    grad.addColorStop(0, "rgba(0,255,0,0.9)");
-    grad.addColorStop(1, "rgba(0,100,50,1)");
-    ctx.fillStyle = grad;
-
-    drawFilledPolyline(H-550);
-}
-
-// -------------------------------------------------------------
-// Helper: fill area under the polyline
-// -------------------------------------------------------------
-function drawFilledPolyline(bottomY) {
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-    }
-    ctx.lineTo(W, bottomY);
-    ctx.lineTo(0, bottomY);
-    ctx.closePath();
-    ctx.fill();
-}
-
-loop();
 </script>
-
 </body>
 </html>
