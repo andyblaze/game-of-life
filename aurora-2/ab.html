@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Aurora Curtain Test</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: black;
+        overflow: hidden;
+    }
+    canvas {
+        display: block;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+// -------------------------------------------------------------
+// Resize Canvas
+// -------------------------------------------------------------
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let W = window.innerWidth;
+let H = window.innerHeight;
+canvas.width = W;
+canvas.height = H;
+
+window.addEventListener("resize", () => {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+});
+
+// -------------------------------------------------------------
+// Simple Perlin Noise (2D) — lightweight version
+// -------------------------------------------------------------
+class Perlin2D {
+    constructor() {
+        this.gradients = {};
+        this.memory = {};
+    }
+    randomVector() {
+        const theta = Math.random() * 2 * Math.PI;
+        return {x: Math.cos(theta), y: Math.sin(theta)};
+    }
+    dotProdGrid(x, y, vx, vy) {
+        const g = this.gradients[[vx,vy]] || (this.gradients[[vx,vy]] = this.randomVector());
+        return (x - vx) * g.x + (y - vy) * g.y;
+    }
+    smooth(t) { return t*t*t*(t*(t*6 - 15) + 10); }
+    get(x, y) {
+        const xf = Math.floor(x), yf = Math.floor(y);
+        const tl = this.dotProdGrid(x, y, xf, yf);
+        const tr = this.dotProdGrid(x, y, xf+1, yf);
+        const bl = this.dotProdGrid(x, y, xf, yf+1);
+        const br = this.dotProdGrid(x, y, xf+1, yf+1);
+
+        const xt = this.smooth(x - xf);
+        const yt = this.smooth(y - yf);
+
+        const top = tl + xt * (tr - tl);
+        const bottom = bl + xt * (br - bl);
+
+        return top + yt * (bottom - top);
+    }
+}
+
+const perlin = new Perlin2D();
+
+// -------------------------------------------------------------
+// Aurora Polyline
+// -------------------------------------------------------------
+const POINT_COUNT = 200;
+let points = new Array(POINT_COUNT).fill(0).map((_, i) => ({
+    x: i / (POINT_COUNT - 1),
+    y: 0
+}));
+
+// -------------------------------------------------------------
+// Animation Parameters
+// -------------------------------------------------------------
+let t = 0;
+const baseY = H * 0.3;          // height where the curtain bottom lives
+const amp = 60;                 // amount of vertical deformation
+const noiseScale = 0.6;         // spatial frequency
+const timeScale = 0.2;          // temporal frequency
+
+// -------------------------------------------------------------
+// Main Draw Loop
+// -------------------------------------------------------------
+function loop() {
+    ctx.clearRect(0,0,W,H);
+
+    // --- compute the polyline shape ---
+    for (let i = 0; i < POINT_COUNT; i++) {
+        const px = i / (POINT_COUNT - 1);
+        const n =
+            perlin.get(px * noiseScale, t * timeScale) * 0.7 +
+            perlin.get(px * noiseScale * 2, t * timeScale * 1.5) * 0.3;
+
+        const y = baseY + n * amp;
+        points[i].y = y;
+        points[i].x = px * W;
+    }
+
+    // --- draw glowing cloud ---
+    drawCurtain();
+
+    t += 0.01;
+    requestAnimationFrame(loop);
+}
+
+// -------------------------------------------------------------
+// Draw Curtain Bottom With Glow + Gradient
+// -------------------------------------------------------------
+function drawCurtain() {
+
+    // Glow behind
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    //ctx.filter = "blur(40px)";
+    ctx.fillStyle = "rgba(0,255,0,0.9)";
+    drawFilledPolyline(H-550); // extend fill way down
+    ctx.restore();
+
+    // Main bright neon edge
+    const grad = ctx.createLinearGradient(0, baseY - 50, 0, baseY + 100);
+    grad.addColorStop(0, "rgba(0,255,0,0.9)");
+    grad.addColorStop(1, "rgba(0,100,50,0.7)");
+    ctx.fillStyle = grad;
+
+    drawFilledPolyline(H-550);
+}
+
+// -------------------------------------------------------------
+// Helper: fill area under the polyline
+// -------------------------------------------------------------
+function drawFilledPolyline(bottomY) {
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.lineTo(W, bottomY);
+    ctx.lineTo(0, bottomY);
+    ctx.closePath();
+    ctx.fill();
+}
+
+loop();
+</script>
+
+</body>
+</html>
