@@ -87,8 +87,8 @@ let points = new Array(POINT_COUNT).fill(0).map((_, i) => ({
 // -------------------------------------------------------------
 let t = 0;
 const baseY = H * 0.3;          // height where the curtain bottom lives
-const amp = 60;                 // amount of vertical deformation
-const noiseScale = 0.6;         // spatial frequency
+const amp = 160;                 // amount of vertical deformation
+const noiseScale = 1.6;         // spatial frequency
 const timeScale = 0.2;          // temporal frequency
 
 // -------------------------------------------------------------
@@ -132,7 +132,7 @@ function drawCurtain() {
     // Main bright neon edge
     const grad = ctx.createLinearGradient(0, baseY - 50, 0, baseY + 100);
     grad.addColorStop(0, "rgba(0,255,0,0.9)");
-    grad.addColorStop(1, "rgba(0,100,50,0.7)");
+    grad.addColorStop(1, "rgba(0,100,50,1)");
     ctx.fillStyle = grad;
 
     drawFilledPolyline(H-550);
