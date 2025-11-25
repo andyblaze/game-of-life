@@ -17,7 +17,7 @@
 <h1>Feistel Network Demo (Hex Output Fixed)</h1>
 
 <label for="plaintext">Plaintext:</label>
-<input type="text" id="plaintext" value="POLICE FRUITS WEASEL STOATS NOOBIE OF POLLY MOONIES GOONIES BALL">
+<input type="text" id="plaintext" value="ELEVEN GRUBBY STICKS LAYING BROKEN ON GRASSY MOUNDS SHOWING ZERO">
 
 <label for="key">Key (numeric, 0-255):</label>
 <input type="number" id="key" value="42" min="0" max="255">
@@ -95,9 +95,6 @@ class FeistelNetwork {
 
     // Encrypt 64-char string → hex
     encryptString(str) {
-        if (str.length !== this.blockSize) {
-            throw new Error(`Input must be exactly ${this.blockSize} characters`);
-        }
         const nums = this.stringToNums(str); // 0–26
         const out = this.processBlock(nums, false); // 0–255
         return this.bytesToHex(out);
@@ -111,20 +108,14 @@ class FeistelNetwork {
         return this.numsToString(nums);
     }
     bytesToHex(nums) {
-        return nums
-            .map(n => {
-                if (n === undefined || n < 0 || n > 255) {
-                    throw new Error(`Invalid byte: ${n}`);
-                }
-                return n.toString(16).padStart(2, '0');
-            })
-            .join('');
+        return nums.map(n => {
+            if (n === undefined || n < 0 || n > 255) {
+                throw new Error(`Invalid byte: ${n}`);
+            }
+            return n.toString(16).padStart(2, '0');
+        }).join('');
     }
     hexToBytes(hexStr) {
-        if (hexStr.length % 2 !== 0) {
-            throw new Error("Hex string length must be even");
-        }
-
         const out = [];
         for (let i = 0; i < hexStr.length; i += 2) {
             const n = parseInt(hexStr.slice(i, i + 2), 16);
@@ -132,33 +123,6 @@ class FeistelNetwork {
         }
         return out;
     }
-}
-
-// Convert an array of numbers 0–26 to a hex string
-function bytesToHex(nums) {
-    return nums
-        .map(n => {
-            if (n === undefined || n < 0 || n > 255) {
-                throw new Error(`Invalid byte: ${n}`);
-            }
-            return n.toString(16).padStart(2, '0');
-        })
-        .join('');
-}
-
-
-// Convert a hex string back to an array of numbers 0–26
-function hexToBytes(hexStr) {
-    if (hexStr.length % 2 !== 0) {
-        throw new Error("Hex string length must be even");
-    }
-
-    const out = [];
-    for (let i = 0; i < hexStr.length; i += 2) {
-        const n = parseInt(hexStr.slice(i, i + 2), 16);
-        out.push(n); // allow full 0–255
-    }
-    return out;
 }
 
 
@@ -180,13 +144,12 @@ function encryptDecrypt() {
     }
 
     const feistel = new FeistelNetwork(key, rounds);
-    // Encrypt
+
     const encryptedHex = feistel.encryptString(plaintext);
-    // Decrypt from hex
     const decrypted = feistel.decryptString(encryptedHex);
-    // Display results
+
     byId("encrypted").innerText = encryptedHex;
-    byId("decrypted").innerText = decrypted; // shows the original 64-character string
+    byId("decrypted").innerText = decrypted; 
 }
 
 
