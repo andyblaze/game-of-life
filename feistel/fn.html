@@ -25,134 +25,14 @@
 <label for="rounds">Number of Rounds:</label>
 <input type="number" id="rounds" value="4" min="1" max="16">
 
-<button onclick="encryptDecrypt()">Encrypt & Decrypt</button>
+<button id="encryptBtn">Encrypt & Decrypt</button>
 
 <h2>Output</h2>
 <p><label>Encrypted (hex):</label><span id="encrypted"></span></p>
 <p><label>Decrypted:</label><span id="decrypted"></span></p>
+<div id="visitor-data"></div>
 
-<script>
-class FeistelNetwork {
-    constructor(key, rounds, blockSize = 64) {
-        this.key = key & 0xFF;      // 0–255 key for XOR
-        this.rounds = rounds;
-        this.blockSize = blockSize; // must be even, fixed at 64
-
-        // Mapping A=0..Z=25, space=26
-        this.charToNum = {};
-        this.numToChar = {};
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-        [...alphabet].forEach((c, i) => {
-            this.charToNum[c] = i;
-            this.numToChar[i] = c;
-        });
-    }
-
-    // Simple reversible round function
-    roundFunction(half, round) {
-        return half.map((v, i) => (v + this.key + round + i) & 0xFF);
-    }
-
-    // TRUE Feistel: XOR, swap — always reversible
-    processBlock(block, decrypt = false) {
-        const mid = this.blockSize / 2;
-        let L = block.slice(0, mid);
-        let R = block.slice(mid);
-
-        const order = decrypt
-            ? [...Array(this.rounds).keys()].reverse()
-            : [...Array(this.rounds).keys()];
-
-        for ( let r of order)  {
-            const F = this.roundFunction(decrypt ? L : R, r);
-            
-            // !!!!!!!!!!!!!!!!!!!!! fix below into 1 liners using a method !!!!!!!!!!!!!!!!!!!!!!!
-            if ( decrypt ) {
-                // Decrypt
-                const newL = R.map((v, i) => v ^ F[i]);
-                R = L;
-                L = newL;
-            } else {
-                // Encrypt
-                const newR = L.map((v, i) => v ^ F[i]);
-                L = R;
-                R = newR;
-            }
-        }
-
-        return [...L, ...R];
-    }
-
-    // A–Z + space → nums 0–26
-    stringToNums(str) {
-        return [...str].map(c => this.charToNum[c]);
-    }
-
-    // nums → A–Z + space
-    numsToString(nums) {
-        return nums.map(n => this.numToChar[n]).join("");
-    }
-
-    // Encrypt 64-char string → hex
-    encryptString(str) {
-        const nums = this.stringToNums(str); // 0–26
-        const out = this.processBlock(nums, false); // 0–255
-        return this.bytesToHex(out);
-    }
-
-    // Decrypt hex → original 64-char string
-    decryptString(hex) {
-        const bytes = this.hexToBytes(hex); // raw 0–255
-        const out = this.processBlock(bytes, true); // 0–255
-        const nums = out.map(b => b % 27);          // map back into 0–26
-        return this.numsToString(nums);
-    }
-    bytesToHex(nums) {
-        return nums.map(n => {
-            if (n === undefined || n < 0 || n > 255) {
-                throw new Error(`Invalid byte: ${n}`);
-            }
-            return n.toString(16).padStart(2, '0');
-        }).join('');
-    }
-    hexToBytes(hexStr) {
-        const out = [];
-        for (let i = 0; i < hexStr.length; i += 2) {
-            const n = parseInt(hexStr.slice(i, i + 2), 16);
-            out.push(n); // allow full 0–255
-        }
-        return out;
-    }
-}
-
-
-function byId(id) {
-    return document.getElementById(id);
-}
-
-
-// Button function
-function encryptDecrypt() {
-    const plaintext = byId("plaintext").value; 
-    const key = parseInt(byId("key").value);
-    const rounds = parseInt(byId("rounds").value);
-
-    // Ensure plaintext is exactly 64 characters
-    if (plaintext.length !== 64) {
-        alert("Input text must be exactly 64 characters for this Feistel demo.");
-        return;
-    }
-
-    const feistel = new FeistelNetwork(key, rounds);
-
-    const encryptedHex = feistel.encryptString(plaintext);
-    const decrypted = feistel.decryptString(encryptedHex);
-
-    byId("encrypted").innerText = encryptedHex;
-    byId("decrypted").innerText = decrypted; 
-}
-
-
+<script type="module" src="main.js">
 
 </script>
 
