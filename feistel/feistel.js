@@ -117,7 +117,9 @@ export default class FeistelNetwork {
         this.emit("decrypt", "decrypted_bytes", out);
         const nums = out.map(b => b % 27);          // map back into 0–26
         this.emit("decrypt", "xored_nums", nums);
-        return this.numsToString(nums);
+        const result = this.numsToString(nums);
+        this.emit("decrypt", "decrypted_str", result);
+        return result;
     }
     bytesToHex(nums, direction) {
         const result = nums.map(n => {
