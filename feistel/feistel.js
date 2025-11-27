@@ -1,7 +1,7 @@
 export default class FeistelNetwork {
     constructor(key, rounds, visitor, blockSize = 64) {
         this.key = key & 0xFF;      // 0–255 key for XOR
-        this.rounds = rounds;
+        this.rounds = rounds; //console.log(this.rounds);
         this.visitor = visitor;
         this.blockSize = blockSize; // must be even, fixed at 64
 
@@ -31,7 +31,7 @@ export default class FeistelNetwork {
         const andValue = 0xFF;
         const result = src.map((v, i) => {
             const r = (v + this.key + round + i) & andValue;
-            emission.push({ value: v, "round": round, result: r, and_value: andValue });
+            emission.push({ value: v, "key": this.key, "round": round, "index": i, result: r, and_value: andValue });
             return r;
         });
         this.emit(direction, direction + "_and"+round, emission);

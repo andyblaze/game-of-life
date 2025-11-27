@@ -15,12 +15,13 @@ onCtx.font = "19px monospace";
 onCtx.fillStyle = "#00FF00";
 onCtx.textBaseline = "top";
 const plaintext = byId("plaintext").value; 
+const key = parseInt(byId("key").value); //console.log(key);
+const rounds = parseInt(byId("rounds").value); //console.log(rounds);
+
 const visitor = new FeistelVisitor();
 const feistel = new FeistelNetwork(key, rounds, visitor);
 
 function encryptDecrypt(msg) {    
-    const key = parseInt(byId("key").value);
-    const rounds = parseInt(byId("rounds").value);
     // Ensure plaintext is exactly 64 characters
     if ( msg.length !== 64 ) {
         alert("Input text must be exactly 64 characters for this Feistel demo.");
