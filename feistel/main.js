@@ -24,7 +24,7 @@ const feistel = new FeistelNetwork(key, rounds, visitor);
 function encryptDecrypt(msg) {    
     // Ensure plaintext is exactly 64 characters
     if ( msg.length !== 64 ) {
-        alert("Input text must be exactly 64 characters for this Feistel demo.");
+        alert("Input text must be exactly 64 characters for this Feistel demo. This has "+msg.length);
         return;
     }
     const encryptedHex = feistel.encryptString(msg);
