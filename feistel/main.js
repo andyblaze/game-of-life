@@ -36,7 +36,7 @@ function encryptDecrypt(msg) {
 encryptDecrypt(plaintext);
 
 //const message = "THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT";
-const scheduler = new Scheduler(visitor.show());
+const scheduler = new Scheduler(visitor.getData());
 const animator = new Animator(onscreen, onCtx);
 //animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
 

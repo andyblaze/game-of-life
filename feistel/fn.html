@@ -16,15 +16,17 @@
 </style>
 </head>
 <body>
+<input type="hidden" id="rounds" value="4" />
+<input type="hidden" id="key" value="42" />
 <input type="text" id="plaintext" disabled="disabled" readonly="readonly" value="THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT">
 <button id="encryptBtn">Encrypt &amp; Decrypt</button>
 <div class="hidden">
 <h1>Feistel Network Demo (Hex Output Fixed)</h1> 
 <label for="plaintext">Plaintext:</label>
 <label for="key">Key (numeric, 0-255):</label>
-<input type="number" id="key" value="42" min="0" max="255">
+<input type="number" id="nkey" value="42" min="0" max="255">
 <label for="rounds">Number of Rounds:</label>
-<input type="number" id="rounds" value="4" min="1" max="16">
+<input type="number" id="nrounds" value="4" min="1" max="16">
 
 <h2>Output</h2>
 <p><label>Encrypted (hex):</label><span id="encrypted"></span></p>
