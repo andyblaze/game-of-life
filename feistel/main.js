@@ -2,6 +2,7 @@ import { byId, addEvent } from "./functions.js";
 import FeistelVisitor from "./visitor.js";
 import FeistelNetwork from "./feistel.js";
 import { Animator, Slider} from "./animator.js";
+import Scheduler from "./scheduler.js";
 
 const onscreen = byId("onscreen");
 const onCtx = onscreen.getContext("2d");
@@ -15,14 +16,19 @@ onCtx.fillStyle = "#00FF00";
 onCtx.textBaseline = "top";
 
 const message = "THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT";
+const scheduler = new Scheduler();
 const animator = new Animator(onscreen, onCtx);
-animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
+//animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
 
-let x = onscreen.width;  // start completely off-screen right
-const y = 80;          // vertical position
-const speed = 2;       // pixels per frame
-
+let startTime = null;
+let elapsedSeconds = 0;
 function animate(timestamp) {
+    if ( null === startTime ) 
+        startTime = timestamp;
+    elapsedSeconds = Math.floor((timestamp - startTime) / 1000);
+    if ( scheduler.triggerAt(elapsedSeconds) )
+        animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
+    console.log(elapsedSeconds);
     // Clear screen (black CRT background)
     //onCtx.fillStyle = "black";
     //onCtx.fillRect(0, 0, onscreen.width, onscreen.height);
