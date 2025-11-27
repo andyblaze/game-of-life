@@ -9,7 +9,7 @@
   input, button { margin: 5px 0; width: 100%; font-size: 19px; }
   p { font-family:monospace; font-size: 21px; }
   p label { display:inline-block; width:230px; }
-  p span { text-transform: uppercase; }
+  p span { text-transform: uppercase; color:#FFF; }
   .hidden { display:none; }
   #visitor-data { color: #FFF; }
   canvas { display: block; }
@@ -27,11 +27,11 @@
 <input type="number" id="nkey" value="42" min="0" max="255">
 <label for="rounds">Number of Rounds:</label>
 <input type="number" id="nrounds" value="4" min="1" max="16">
-
+</div>
 <h2>Output</h2>
 <p><label>Encrypted (hex):</label><span id="encrypted"></span></p>
 <p><label>Decrypted:</label><span id="decrypted"></span></p>
-</div>
+
 <div id="visitor-data"></div>
 <canvas id="onscreen"></canvas>
 <script type="module" src="main.js"></script>

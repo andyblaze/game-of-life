@@ -21,16 +21,16 @@ const rounds = parseInt(byId("rounds").value); //console.log(rounds);
 const visitor = new FeistelVisitor();
 const feistel = new FeistelNetwork(key, rounds, visitor);
 
-function encryptDecrypt(msg) {    
+function encryptDecrypt(msg) {    if ( ! msg ) msg = byId("plaintext").value; 
     // Ensure plaintext is exactly 64 characters
-    if ( msg.length !== 64 ) {
+    /*if ( msg.length !== 64 ) {
         alert("Input text must be exactly 64 characters for this Feistel demo. This has "+msg.length);
         return;
-    }
+    }*/
     const encryptedHex = feistel.encryptString(msg);
     const decrypted = feistel.decryptString(encryptedHex);
-    //byId("encrypted").innerText = encryptedHex;
-    //byId("decrypted").innerText = decrypted; 
+    byId("encrypted").innerText = encryptedHex;
+    byId("decrypted").innerText = decrypted; 
     //byId("visitor-data").innerHTML = visitor.show();
 }
 
