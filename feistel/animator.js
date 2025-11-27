@@ -9,7 +9,7 @@ export class Slider {
         if ( this.cfg.x < (this.canvas.width - this.textWidth) / 2 ) 
             this.cfg.speed = 0;
         this.ctx.fillText(this.cfg.msg, this.cfg.x, this.cfg.y);
-        // Move text left each frame
+        // Move text each frame ( -x passed to constructor is left, +x is right)
         this.cfg.x += this.cfg.speed;
     }
 }

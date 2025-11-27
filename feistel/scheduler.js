@@ -1,15 +1,15 @@
 export default class Scheduler {
-    constructor() {
+    constructor(events) {
+        console.log(events);
         this.steps = [
             0
         ];
         this.running = [];
     }
-    triggerAt(seconds) {
-        const launched = (this.running.indexOf(seconds) === -1);
-        if ( false === launched && this.steps.indexOf(seconds) !== -1 ) {
-            this.running.push(seconds);
-        }
-        return launched === false;
+    triggersAt(seconds) {
+        return (this.steps.indexOf(seconds) > -1 && this.running.indexOf(seconds) === -1);
+    }
+    launch(seconds) {
+        this.running.push(seconds);
     }
 }

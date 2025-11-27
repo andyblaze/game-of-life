@@ -9,17 +9,17 @@ export default class FeistelVisitor {
         //this.t++;
     }
     show() { //console.log(this.events.decrypt.length);
-        let result = ["<b>Encrypt</b><br>"];
+        let result = [];//"<b>Encrypt</b><br>"];
         for ( const [idx, e] of this.events.encrypt.entries()) {
             e.time = idx;
             result.push(JSON.stringify(e));
         }
-        result.push("<br><b>Decrypt</b><br>");
-        for ( const [idx, e] of this.events.decrypt.entries()) {
+        //result.push("<br><b>Decrypt</b><br>");
+        /*for ( const [idx, e] of this.events.decrypt.entries()) {
             e.time = idx;
             result.push(JSON.stringify(e));
-        }
-        return result.join("<br>");
+        }*/
+        return result.join(",\n");
             //console.log(JSON.parse(JSON.stringify(d)));
     }
 }
