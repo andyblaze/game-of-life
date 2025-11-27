@@ -5,30 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Feistel Network String Demo (Hex Output Fixed)</title>
 <style>
-  body { font-family: Arial, sans-serif; padding:0; margin:0; font-size: 19px; }
+  body { font-family: Arial, sans-serif; padding:0; margin:0; font-size: 19px; background:#000; }
   input, button { margin: 5px 0; width: 100%; font-size: 19px; }
   p { font-family:monospace; font-size: 21px; }
   p label { display:inline-block; width:230px; }
   p span { text-transform: uppercase; }
   .hidden { display:none; }
+  canvas { display: block; }
 </style>
 </head>
 <body>
+<div class="hidden">
 <input type="text" id="plaintext" disabled="disabled" readonly="readonly" value="THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT">
 <button id="encryptBtn">Encrypt &amp; Decrypt</button>
-<div class="hidden">
 <h1>Feistel Network Demo (Hex Output Fixed)</h1> 
 <label for="plaintext">Plaintext:</label>
 <label for="key">Key (numeric, 0-255):</label>
 <input type="number" id="key" value="42" min="0" max="255">
 <label for="rounds">Number of Rounds:</label>
 <input type="number" id="rounds" value="4" min="1" max="16">
-</div>
+
 <h2>Output</h2>
 <p><label>Encrypted (hex):</label><span id="encrypted"></span></p>
 <p><label>Decrypted:</label><span id="decrypted"></span></p>
 <div id="visitor-data"></div>
-
+</div>
+<canvas id="onscreen"></canvas>
 <script type="module" src="main.js"></script>
 </body>
 </html>
