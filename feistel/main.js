@@ -1,7 +1,7 @@
 import { byId, addEvent } from "./functions.js";
 import FeistelVisitor from "./visitor.js";
 import FeistelNetwork from "./feistel.js";
-import Animator from "./animator.js";
+import { Animator, Slider} from "./animator.js";
 
 const onscreen = byId("onscreen");
 const onCtx = onscreen.getContext("2d");
@@ -16,6 +16,7 @@ onCtx.textBaseline = "top";
 
 const message = "THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT";
 const animator = new Animator(onscreen, onCtx);
+animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
 
 let x = onscreen.width;  // start completely off-screen right
 const y = 80;          // vertical position
@@ -31,7 +32,7 @@ function animate(timestamp) {
     //onCtx.shadowColor = "#00FF00";
     //onCtx.shadowBlur = 8;
     onCtx.fillStyle = "#00FF00";
-    animator.slideIn(message, 2, onscreen.width, 80);
+    animator.notify();
     //onCtx.fillText(message, x, y);
 
     // Move text left each frame
