@@ -1,5 +1,10 @@
 import { HorizontalTextSlider } from "./animations.js";
 
+const AnimationRegistry = {
+    [HorizontalTextSlider.type]: HorizontalTextSlider//,
+    //[FadeIn.type]: FadeIn
+};
+
 class AnimationFactory {
     constructor() {
         this.registry = {};

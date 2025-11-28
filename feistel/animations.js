@@ -8,6 +8,7 @@ class Animation {
     }
 }
 export class HorizontalTextSlider extends Animation {
+    static type = "textSliderH";
     constructor(cnvs, event, cfg) {
         super(cnvs);
         //console.log(event.data, cfg);
