@@ -1,7 +1,7 @@
 import { byId, addEvent } from "./functions.js";
 import FeistelVisitor from "./visitor.js";
 import FeistelNetwork from "./feistel.js";
-import { Animator, Slider} from "./animator.js";
+import { Animator } from "./animator.js";
 import Scheduler from "./scheduler.js";
 
 const onscreen = byId("onscreen");
@@ -47,10 +47,11 @@ function animate(timestamp) {
     if ( null === startTime ) 
         startTime = timestamp;
     elapsedSeconds = Math.floor((timestamp - startTime) / 1000);
-    if ( scheduler.triggersAt(elapsedSeconds) ) {
+    scheduler.update(elapsedSeconds);
+    /*if ( scheduler.triggersAt(elapsedSeconds) ) {
         scheduler.launch(elapsedSeconds);
         animator.add(new Slider(onscreen, plaintext, -4, 80));
-    }
+    }*/
     //console.log(elapsedSeconds);
     // Clear screen (black CRT background)
     //onCtx.fillStyle = "black";

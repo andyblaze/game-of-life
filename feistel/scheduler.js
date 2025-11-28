@@ -1,23 +1,23 @@
+import { HorizontalTextSlider } from "./animations.js";
+
 class AnimationFactory {
     constructor() {
         this.registry = {};
     }
-
     register(type, ctor) {
         this.registry[type] = ctor;
     }
-
-    create(type, data, config) {
+    create(canvas, type, data, config) {
         const Ctor = this.registry[type];
         if (!Ctor) throw new Error(`Unknown animation type: ${type}`);
-        return new Ctor(data, config);
+        return new Ctor(canvas, data, config);
     }
 }
-const factory = new AnimationFactory();
-//factory.register("slider", Slider);
+const animationFactory = new AnimationFactory();
+animationFactory.register("textSliderH", HorizontalTextSlider);
 
 const animationConfig = [
-  { t: 0,  fired:false, type: "slider", "config": {"speed": -4, "y":80} }//,
+  { t: 0,  fired:false, type: "textSliderH", "config": {"speed": -4, "y":80} }//,
   /*{ t: 2,  type: "alphabetMap",  data: visitor.transformed_input },
   { t: 5,  type: "splitBlock",   data: visitor.block_split },
   { t: 7,  type: "xorRound",     data: visitor.round0_xor },
@@ -39,15 +39,14 @@ export default class Scheduler {
     update(elapsedSeconds) {
         for ( let item of animationConfig ) {
             if ( false === item.fired && elapsedSeconds >= item.t) {
-                animator.add(animationFactory.create(item.type, this.events[item.t], item.config));
+                this.animator.add(animationFactory.create(
+                    this.animator.canvas,
+                    item.type, 
+                    this.events[item.t], 
+                    item.config
+                ));
                 item.fired = true;
             }
         }
-    }
-    triggersAt(seconds) {
-        return (this.steps.indexOf(seconds) > -1 && this.running.indexOf(seconds) === -1);
-    }
-    launch(seconds) {
-        this.running.push(seconds);
     }
 }

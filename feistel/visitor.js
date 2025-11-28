@@ -14,7 +14,7 @@ export default class FeistelVisitor {
         let result = [];//"<b>Encrypt</b><br>"];
         for ( const [idx, e] of this.events.encrypt.entries()) {
             e.time = idx;
-            result.push(JSON.stringify(e));
+            result.push(e);
         }
         //result.push("<br><b>Decrypt</b><br>");
         /*for ( const [idx, e] of this.events.decrypt.entries()) {
