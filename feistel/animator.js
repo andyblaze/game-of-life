@@ -1,16 +1,39 @@
-export class Slider {
-    constructor(cnvs, message, speed, x, y) {
+class Animation {
+    constructor(cnvs) {
         this.canvas = cnvs;
         this.ctx = cnvs.getContext("2d");
-        this.cfg = { "msg": message, "speed":speed, "x": x, "y":y };
-        this.textWidth = Math.floor(this.ctx.measureText(message).width);
     }
     run() {
-        if ( this.cfg.x < (this.canvas.width - this.textWidth) / 2 ) 
-            this.cfg.speed = 0;
-        this.ctx.fillText(this.cfg.msg, this.cfg.x, this.cfg.y);
-        // Move text each frame ( -x passed to constructor is left, +x is right)
-        this.cfg.x += this.cfg.speed;
+        console.error("Must override BaseAnimation.run()");
+    }
+}
+export class Slider extends Animation {
+    constructor(cnvs, message, speed, y) {
+        super(cnvs);
+        this.msg = message;
+        this.speed = speed;     // sign determines direction
+        this.y = y;
+        // Measure width
+        this.textWidth = Math.floor(this.ctx.measureText(message).width);
+        // Target centered position
+        this.targetX = Math.floor((this.canvas.width - this.textWidth) / 2);
+        // Decide WHERE to start based on direction
+        this.x = (speed > 0)
+            ? 0 - this.textWidth        // start off-screen left
+            : this.canvas.width;        // start off-screen right
+    }
+    run() {
+        // Stop at target
+        if ( (this.speed > 0 && this.x >= this.targetX) ||
+            (this.speed < 0 && this.x <= this.targetX) ) {
+            this.x = this.targetX;
+        }
+        // Draw
+        this.ctx.fillText(this.msg, this.x, this.y);
+        // If done, return early
+        if (this.x === this.targetX) return;
+        // Move toward target
+        this.x += this.speed;
     }
 }
 export class Animator {

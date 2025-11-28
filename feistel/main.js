@@ -37,8 +37,8 @@ function encryptDecrypt(msg) {    if ( ! msg ) msg = byId("plaintext").value;
 encryptDecrypt(plaintext);
 
 //const message = "THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT";
-const scheduler = new Scheduler(visitor.getData());
 const animator = new Animator(onscreen, onCtx);
+const scheduler = new Scheduler(animator, visitor.getData());
 //animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
 
 let startTime = null;
@@ -49,7 +49,7 @@ function animate(timestamp) {
     elapsedSeconds = Math.floor((timestamp - startTime) / 1000);
     if ( scheduler.triggersAt(elapsedSeconds) ) {
         scheduler.launch(elapsedSeconds);
-        animator.add(new Slider(onscreen, plaintext, -4, onscreen.width, 80));
+        animator.add(new Slider(onscreen, plaintext, -4, 80));
     }
     //console.log(elapsedSeconds);
     // Clear screen (black CRT background)
@@ -62,15 +62,6 @@ function animate(timestamp) {
     //onCtx.shadowBlur = 8;
     //onCtx.fillStyle = "#00FF00";
     animator.notify();
-    //onCtx.fillText(message, x, y);
-
-    // Move text left each frame
-    //x -= speed;
-
-    // Loop it when it runs off the left side
-    //const textWidth = onCtx.measureText(message).width;
-    //if (x < -textWidth) x = onscreen.width;
-
     requestAnimationFrame(animate);
 }
 

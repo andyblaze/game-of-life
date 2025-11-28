@@ -7,22 +7,42 @@ class AnimationFactory {
         this.registry[type] = ctor;
     }
 
-    create(type, data) {
+    create(type, data, config) {
         const Ctor = this.registry[type];
         if (!Ctor) throw new Error(`Unknown animation type: ${type}`);
-        return new Ctor(data);
+        return new Ctor(data, config);
     }
 }
 const factory = new AnimationFactory();
-factory.register("slideIn", SlideIn);
+//factory.register("slider", Slider);
+
+const animationConfig = [
+  { t: 0,  fired:false, type: "slider", "config": {"speed": -4, "y":80} }//,
+  /*{ t: 2,  type: "alphabetMap",  data: visitor.transformed_input },
+  { t: 5,  type: "splitBlock",   data: visitor.block_split },
+  { t: 7,  type: "xorRound",     data: visitor.round0_xor },
+  { t: 9,  type: "swap",         data: visitor.after_swap0 },
+  { t: 12, type: "xorRound",     data: visitor.round1_xor },
+  ...*/
+];
 
 export default class Scheduler {
-    constructor(events) {
-        console.log(events);
+    constructor(animator, events) {
+        this.animator = animator;
+        this.events = events;
+        //console.log(events);
         this.steps = [
             0
         ];
         this.running = [];
+    }
+    update(elapsedSeconds) {
+        for ( let item of animationConfig ) {
+            if ( false === item.fired && elapsedSeconds >= item.t) {
+                animator.add(animationFactory.create(item.type, this.events[item.t], item.config));
+                item.fired = true;
+            }
+        }
     }
     triggersAt(seconds) {
         return (this.steps.indexOf(seconds) > -1 && this.running.indexOf(seconds) === -1);
