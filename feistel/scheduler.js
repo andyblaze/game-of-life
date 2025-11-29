@@ -21,7 +21,7 @@ class AnimationFactory {
         return new A(this.canvas, data, config);
     }
 }
-const animationFactory = new AnimationFactory();
+const animationFactory = new AnimationFactory(); 
 
 const animationConfig = [
   { t: 0, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "stopAt":20, "axis": "vertical"} },
