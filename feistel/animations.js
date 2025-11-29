@@ -8,26 +8,40 @@ class Animation {
     run(dt) {
         console.error("Must override BaseAnimation.run()");
     }
-    normTo60Fps(s, dt) {
+    to60Fps(s, dt) {
         return s * (dt / 16.67); // normalize to 60fps baseline
     }
 }
-export class HorizontalTextSlider extends Animation {
-    static type = "textSliderH";
+export class TextSlider extends Animation {
+    static type = "textSlider";
     constructor(cnvs, event, cfg) {
         super(cnvs);
         this.msg = event.data;
         this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
-        this.y = cfg.y;
-        // Measure width
         this.textSz = this.measureText(this.msg);// = Math.floor(this.ctx.measureText(this.msg).width);
+        this.setFixed(cfg);
+        // Measure width
         // Target centered position
-        this.targetX = this.setTarget(cfg); //Math.floor((this.canvas.width - this.textSz.width) / 2);
+        this.target = this.setTarget(cfg); //Math.floor((this.canvas.width - this.textSz.width) / 2);
         // Decide WHERE to start based on direction
+        this.setPosition();
+    }
+    setFixed(cfg) {
+        if ( cfg.x === "mid" ) {
+            this.fixed = Math.floor((this.canvas.width - this.textSz.width) / 2);
+            return;
+        }
+        this.fixed = (this.axis === "horizontal" ? cfg.y : cfg.x);
+    }
+    setPosition() {
+        const begin = (this.axis === "horizontal" 
+            ? {"size": this.textSz.width, "max": this.canvas.width} //start off-screen left / right
+            : {"size": this.textSz.height, "max": this.canvas.height} // start off-screen top/ bottom
+        );
         this.position = (this.speed > 0)
-            ? 0 - this.textSz.width     // start off-screen left
-            : this.canvas.width;        // start off-screen right
+            ? 0 - begin.size    // left / top
+            : begin.max // right / bottom
     }
     setTarget(cfg) {
         const defaultTrgt = (this.axis === "horizontal"
@@ -62,69 +76,25 @@ export class HorizontalTextSlider extends Animation {
         );
         return { width: w, height: h};
     }
-    draw() {
-        this.ctx.fillText(this.msg, this.position, this.y);
+    draw(x, y) {
+        if ( this.axis === "vertical" )
+            [x, y] = [y, x];
+        this.ctx.fillText(this.msg, x, y);
     }
     run(dt) {
         // Stop at target
         const reached = 
-            (this.speed > 0 && this.position >= this.targetX) ||
-            (this.speed < 0 && this.position <= this.targetX);
+            (this.speed > 0 && this.position >= this.target) ||
+            (this.speed < 0 && this.position <= this.target);
+        // If done, return early
         if ( reached ) {
-            this.position = this.targetX;
-            this.draw();
+            this.position = this.target;
+            this.draw(this.position, this.fixed);
             return;
         }
-        // Draw
-        this.draw();
-        // If done, return early
-        //if (this.position === this.targetX) return;
+        this.draw(this.position, this.fixed);
         // Move toward target
-        const step = this.normTo60Fps(this.speed, dt);
+        const step = this.to60Fps(this.speed, dt);
         this.position += step;
-    }
-}
-export class VerticalTextSlider extends Animation {
-    static type = "textSliderV";
-
-    constructor(cnvs, event, cfg) {
-        super(cnvs);
-
-        this.msg = event.data;
-        this.speed = cfg.speed;   // sign determines direction
-        this.x = cfg.x;
-
-        // Measure text height – canvas can't do exact height,
-        // but this is a common practical approximation.
-        const metrics = this.ctx.measureText(this.msg);
-        this.textHeight = Math.floor(
-            metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
-        );
-
-        // Target centered position vertically
-        this.targetY = Math.floor((this.canvas.height - this.textHeight) / 2);
-
-        // Decide WHERE to start based on direction
-        this.y = (this.speed > 0)
-            ? 0 - this.textHeight     // start off-screen top
-            : this.canvas.height;     // start off-screen bottom
-    }
-
-    run(dt) {
-        // Stop at target
-        if ((this.speed > 0 && this.y >= this.targetY) ||
-            (this.speed < 0 && this.y <= this.targetY)) {
-            this.y = this.targetY;
-        }
-
-        // Draw
-        this.ctx.fillText(this.msg, this.x, this.y);
-
-        // If done, return early
-        if (this.y === this.targetY) return;
-
-        // Move toward target using dt-normalized step
-        const step = this.normTo60Fps(this.speed, dt);
-        this.y += step;
     }
 }

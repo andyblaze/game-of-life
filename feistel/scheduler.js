@@ -1,8 +1,8 @@
-import { HorizontalTextSlider, VerticalTextSlider } from "./animations.js";
+import { TextSlider } from "./animations.js";
 
 const AnimationRegistry = {
-    [HorizontalTextSlider.type]: HorizontalTextSlider,
-    [VerticalTextSlider.type]:VerticalTextSlider
+    [TextSlider.type]: TextSlider//,
+    //[VerticalTextSlider.type]:VerticalTextSlider
     //[FadeIn.type]: FadeIn
 };
 
@@ -24,9 +24,10 @@ class AnimationFactory {
 const animationFactory = new AnimationFactory();
 
 const animationConfig = [
-  { t: 0, fired:false, type: "textSliderH", "config": {"speed": -4, "y":80} },
-  { t: 1, fired:false, type: "textSliderV", "config": {"speed": 4, "x": 20, "y":40} }//,
-  /*{ t: 5,  type: "splitBlock",   data: visitor.block_split }/*,
+  { t: 0, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "stopAt":20, "axis": "vertical"} },
+  { t: 1, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "stopAt":40, "axis": "vertical"} },
+  { t: 2, fired:false, type: "textSlider", "config": {"speed": -4, "y":80} },
+  { t: 3, fired:false, type: "textSlider", "config": {"speed": 4, "y":100} } /*,
   { t: 7,  type: "xorRound",     data: visitor.round0_xor },
   { t: 9,  type: "swap",         data: visitor.after_swap0 },
   { t: 12, type: "xorRound",     data: visitor.round1_xor },
