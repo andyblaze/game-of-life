@@ -43,9 +43,14 @@ const scheduler = new Scheduler(animator, visitor.getData());
 
 let startTime = null;
 let elapsedSeconds = 0;
+let lastTime = 0;
 function animate(timestamp) {
     if ( null === startTime ) 
         startTime = timestamp;
+    if ( lastTime === 0 ) 
+        lastTime = timestamp;
+    const dt = timestamp - lastTime; // milliseconds since last frame
+    lastTime = timestamp;
     elapsedSeconds = Math.floor((timestamp - startTime) / 1000);
     scheduler.update(elapsedSeconds);
     /*if ( scheduler.triggersAt(elapsedSeconds) ) {
@@ -62,7 +67,7 @@ function animate(timestamp) {
     //onCtx.shadowColor = "#00FF00";
     //onCtx.shadowBlur = 8;
     //onCtx.fillStyle = "#00FF00";
-    animator.notify();
+    animator.notify(dt);
     requestAnimationFrame(animate);
 }
 

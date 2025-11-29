@@ -1,7 +1,8 @@
-import { HorizontalTextSlider } from "./animations.js";
+import { HorizontalTextSlider, VerticalTextSlider } from "./animations.js";
 
 const AnimationRegistry = {
-    [HorizontalTextSlider.type]: HorizontalTextSlider//,
+    [HorizontalTextSlider.type]: HorizontalTextSlider,
+    [VerticalTextSlider.type]:VerticalTextSlider
     //[FadeIn.type]: FadeIn
 };
 
@@ -24,7 +25,7 @@ const animationFactory = new AnimationFactory();
 
 const animationConfig = [
   { t: 0, fired:false, type: "textSliderH", "config": {"speed": -4, "y":80} },
-  { t: 1, fired:false, type: "textSliderH", "config": {"speed": 4, "y":40} }//,
+  { t: 1, fired:false, type: "textSliderV", "config": {"speed": 4, "x": 20, "y":40} }//,
   /*{ t: 5,  type: "splitBlock",   data: visitor.block_split }/*,
   { t: 7,  type: "xorRound",     data: visitor.round0_xor },
   { t: 9,  type: "swap",         data: visitor.after_swap0 },

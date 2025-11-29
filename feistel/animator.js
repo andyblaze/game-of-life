@@ -5,9 +5,9 @@ export class Animator {
         this.ctx = ctx;
         this.animations = [];
     }
-    notify() {
+    notify(dt) {
         for ( let a of this.animations )
-            a.run();
+            a.run(dt);
     }
     add(animation) {
         this.animations.push(animation);
