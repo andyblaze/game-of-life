@@ -1,3 +1,5 @@
+import { isString, isNumeric } from "./functions.js";
+
 class Animation {
     constructor(cnvs) {
         this.canvas = cnvs;
@@ -15,6 +17,7 @@ export class HorizontalTextSlider extends Animation {
     constructor(cnvs, event, cfg) {
         super(cnvs);
         this.msg = event.data;
+        this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
         this.y = cfg.y;
         // Measure width
@@ -27,11 +30,14 @@ export class HorizontalTextSlider extends Animation {
             : this.canvas.width;        // start off-screen right
     }
     setTarget(cfg) {
-        const defaultTrgt = Math.floor((this.canvas.width - this.textSz.width) / 2);
+        const defaultTrgt = (this.axis === "horizontal"
+            ? Math.floor((this.canvas.width - this.textSz.width) / 2)
+            : Math.floor((this.canvas.height - this.textSz.height) / 2)
+        );
         if  ( ! cfg.stopAt ) 
             return defaultTrgt;
 
-        if ( typeof cfg.stopAt !== "string" )
+        if ( isNumeric(cfg.stopAt) )
             return parseInt(cfg.stopAt);
         
         const allowed = {
