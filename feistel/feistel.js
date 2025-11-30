@@ -9,14 +9,14 @@ export default class FeistelNetwork {
         this.charToNum = {};
         this.numToChar = {};
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-        this.emit("encrypt", "construct", alphabet.split("").join(","));
-        this.emit("decrypt", "construct", alphabet.split("").join(","));
+        this.emit("encrypt", "construct", alphabet);
+        this.emit("decrypt", "construct", alphabet);
         [...alphabet].forEach((c, i) => {
             this.charToNum[c] = i;
             this.numToChar[i] = c;
         });
-        this.emit("encrypt", "construct", Object.values(this.charToNum).join(","));
-        this.emit("decrypt", "construct", Object.values(this.charToNum).join(","));
+        this.emit("encrypt", "construct", Object.values(this.charToNum).join(""));
+        this.emit("decrypt", "construct", Object.values(this.charToNum).join(""));
     }
     emit(direction, event, data) {
         this.visitor.collect(direction, event, data);

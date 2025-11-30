@@ -1,3 +1,4 @@
+import { isString, isArray } from "./functions.js";
 
 export default class FeistelVisitor {
     constructor() {
@@ -5,7 +6,13 @@ export default class FeistelVisitor {
         //this.t = 0;    // time counter
     }
     collect(direction, type, data) {
-        this.events[direction].push({time: 0, "type": type, "data": data});
+        let d;
+        if ( isString(data) )
+            d = {"string": data, "array": data.split("")};
+        else if ( isArray(data) ) 
+            d = {"string": data.join(""), "array": data};
+        else d = data;
+        this.events[direction].push({time: 0, "type": type, "data": d});
         //this.t++;
         //console.log(this.events.encrypt.length);
     }

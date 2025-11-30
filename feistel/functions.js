@@ -17,3 +17,7 @@ export function isNumeric(x) {
            !isNaN(x) &&
            isFinite(x);
 }
+
+export function isArray(x) {
+    return Array.isArray(x);
+}

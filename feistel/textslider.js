@@ -5,7 +5,7 @@ export default class TextSlider extends Animation {
     static type = "textSlider";
     constructor(cnvs, event, cfg) {
         super(cnvs);
-        this.msg = event.data;
+        this.msg = event.data.string;
         this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
         this.textSz = this.measureText(this.msg);// = Math.floor(this.ctx.measureText(this.msg).width);
