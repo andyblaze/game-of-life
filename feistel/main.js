@@ -1,7 +1,7 @@
 import { byId, addEvent } from "./functions.js";
 import FeistelVisitor from "./visitor.js";
 import FeistelNetwork from "./feistel.js";
-import { Animator } from "./animator.js";
+import Animator from "./animator.js";
 import Scheduler from "./scheduler.js";
 
 const onscreen = byId("onscreen");
@@ -11,7 +11,7 @@ onscreen.height = window.innerHeight;
 onscreen.style.width = window.innerWidth;
 onscreen.style.height = window.innerHeight;
 
-onCtx.font = "19px monospace";
+onCtx.font = "18px monospace";
 onCtx.fillStyle = "#00FF00";
 onCtx.textBaseline = "top";
 const plaintext = byId("plaintext").value; 
@@ -31,13 +31,13 @@ function encryptDecrypt(msg) {    if ( ! msg ) msg = byId("plaintext").value;
     const decrypted = feistel.decryptString(encryptedHex);
     byId("encrypted").innerText = encryptedHex;
     byId("decrypted").innerText = decrypted; 
-    //byId("visitor-data").innerHTML = visitor.show();
+    //byId("visitor-data").innerHTML = visitor.getDataStr();
 }
 
 encryptDecrypt(plaintext);
 
 //const message = "THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT";
-const animator = new Animator(onscreen, onCtx);
+const animator = new Animator(onscreen);
 const scheduler = new Scheduler(animator, visitor.getData());
 //animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
 

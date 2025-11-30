@@ -1,8 +1,8 @@
 
-export class Animator {
-    constructor(cnvs, ctx) {
+export default class Animator {
+    constructor(cnvs) {
         this.canvas = cnvs;
-        this.ctx = ctx;
+        this.ctx = cnvs.getContext("2d");
         this.animations = [];
     }
     notify(dt) {

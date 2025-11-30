@@ -1,4 +1,4 @@
-import { TextSlider } from "./animations.js";
+import TextSlider from "./textslider.js";
 
 const AnimationRegistry = {
     [TextSlider.type]: TextSlider//,
@@ -24,8 +24,8 @@ class AnimationFactory {
 const animationFactory = new AnimationFactory(); 
 
 const animationConfig = [
-  { t: 0, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "stopAt":20, "axis": "vertical"} },
-  { t: 1, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "stopAt":40, "axis": "vertical"} },
+  { t: 0, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "endAt":20, "axis": "vertical"} },
+  { t: 1, fired:false, type: "textSlider", "config": {"speed": 1, "x": "mid", "endAt":44, "axis": "vertical"} },
   { t: 2, fired:false, type: "textSlider", "config": {"speed": -4, "y":80} },
   { t: 3, fired:false, type: "textSlider", "config": {"speed": 4, "y":100} } /*,
   { t: 7,  type: "xorRound",     data: visitor.round0_xor },
