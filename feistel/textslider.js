@@ -1,13 +1,16 @@
 import { isNumeric } from "./functions.js";
 import Animation from "./animation.js";
+import LayoutRegistry from "./layout-registry.js";
 
 export default class TextSlider extends Animation {
     static type = "textSlider";
     constructor(cnvs, event, cfg) {
         super(cnvs);
+        this.event = event;
         this.msg = event.data.string;
         this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
+        this.registered = false;
         this.textSz = this.measureText(this.msg);
         this.setFixed(cfg);
         // Target centered position
@@ -79,6 +82,19 @@ export default class TextSlider extends Animation {
             [x, y] = [y, x];
         this.ctx.fillText(this.msg, x, y);
     }
+    registerLayout() {
+        if ( this.registered === true ) return;
+        LayoutRegistry.register(this.event.type, this.getBoundingRect());
+        this.registered = true;
+    }
+    getBoundingRect() {
+        return {
+            x: (this.axis === "horizontal") ? this.position : this.fixed,
+            y: (this.axis === "horizontal") ? this.fixed : this.position,
+            w: this.textSz.width,
+            h: this.textSz.height + 2
+        };
+    }
     run(dt) {
         // Stop at target
         const reached = 
@@ -88,11 +104,7 @@ export default class TextSlider extends Animation {
         if ( reached ) {
             this.position = this.target;
             this.draw(this.position, this.fixed);
-            console.log({
-                left:Math.floor(( this.canvas.width  -  this.textSz.width ) / 2), 
-                right:this.position + this.textSz.width, 
-                height:this.textSz.height
-            });
+            this.registerLayout();
             return;
         }
         this.draw(this.position, this.fixed);
