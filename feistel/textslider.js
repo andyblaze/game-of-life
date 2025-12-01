@@ -88,6 +88,11 @@ export default class TextSlider extends Animation {
         if ( reached ) {
             this.position = this.target;
             this.draw(this.position, this.fixed);
+            console.log({
+                left:Math.floor(( this.canvas.width  -  this.textSz.width ) / 2), 
+                right:this.position + this.textSz.width, 
+                height:this.textSz.height
+            });
             return;
         }
         this.draw(this.position, this.fixed);
