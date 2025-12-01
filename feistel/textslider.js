@@ -8,11 +8,10 @@ export default class TextSlider extends Animation {
         this.msg = event.data.string;
         this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
-        this.textSz = this.measureText(this.msg);// = Math.floor(this.ctx.measureText(this.msg).width);
+        this.textSz = this.measureText(this.msg);
         this.setFixed(cfg);
-        // Measure width
         // Target centered position
-        this.setTarget(cfg); //Math.floor((this.canvas.width - this.textSz.width) / 2);
+        this.setTarget(cfg); 
         // Decide WHERE to start based on direction
         this.setPosition(cfg);
     }
