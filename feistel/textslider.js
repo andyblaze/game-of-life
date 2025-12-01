@@ -96,6 +96,9 @@ export default class TextSlider extends Animation {
         };
     }
     run(dt) {
+        // Move toward target
+        const step = this.to60Fps(this.speed, dt);
+        this.position += step;
         // Stop at target
         const reached = 
             (this.speed > 0 && this.position >= this.target) ||
@@ -108,8 +111,5 @@ export default class TextSlider extends Animation {
             return;
         }
         this.draw(this.position, this.fixed);
-        // Move toward target
-        const step = this.to60Fps(this.speed, dt);
-        this.position += step;
     }
 }
