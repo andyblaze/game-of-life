@@ -9,14 +9,14 @@ export default class FeistelNetwork {
         this.charToNum = {};
         this.numToChar = {};
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
-        this.emit("encrypt", "construct", alphabet);
-        this.emit("decrypt", "construct", alphabet);
+        this.emit("encrypt", "alphabet", alphabet);
+        this.emit("decrypt", "alphabet", alphabet);
         [...alphabet].forEach((c, i) => {
             this.charToNum[c] = i;
             this.numToChar[i] = c;
         });
-        this.emit("encrypt", "construct", Object.values(this.charToNum).join(""));
-        this.emit("decrypt", "construct", Object.values(this.charToNum).join(""));
+        this.emit("encrypt", "indices", Object.values(this.charToNum).join(""));
+        this.emit("decrypt", "indices", Object.values(this.charToNum).join(""));
     }
     emit(direction, event, data) {
         this.visitor.collect(direction, event, data);
@@ -104,9 +104,9 @@ export default class FeistelNetwork {
 
     // Encrypt 64-char string → hex
     encryptString(str) {
-        this.emit("encrypt", "raw_input", str);
+        this.emit("encrypt", "plaintext", str);
         const nums = this.stringToNums(str); // 0–26
-        this.emit("encrypt", "transformed_input", nums);
+        this.emit("encrypt", "transformed_plaintext", nums);
         const out = this.processBlock(nums, false); // 0–255
         this.emit("encrypt", "encrypted_bytes", out);
         return this.bytesToHex(out, "encrypt");
