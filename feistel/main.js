@@ -31,7 +31,7 @@ function encryptDecrypt(msg) {    if ( ! msg ) msg = byId("plaintext").value;
     const decrypted = feistel.decryptString(encryptedHex);
     byId("encrypted").innerText = encryptedHex;
     byId("decrypted").innerText = decrypted; 
-    //byId("visitor-data").innerHTML = visitor.getDataStr();
+    //byId("visitor-data").innerText = visitor.getDataStr();
 }
 
 encryptDecrypt(plaintext);

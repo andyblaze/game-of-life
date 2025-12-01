@@ -3,7 +3,7 @@ import { isString, isArray } from "./functions.js";
 export default class FeistelVisitor {
     constructor() {
         this.events = {"encrypt": [], "decrypt":[]};
-        //this.t = 0;    // time counter
+        this.t = 0;    // time counter
     }
     collect(direction, type, data) {
         let d;
@@ -12,14 +12,14 @@ export default class FeistelVisitor {
         else if ( isArray(data) ) 
             d = {"string": data.join(""), "array": data};
         else d = data;
-        this.events[direction].push({time: 0, "type": type, "data": d});
-        //this.t++;
+        this.events[direction].push({time: this.t, "type": type, "data": d});
+        this.t++;
         //console.log(this.events.encrypt.length);
     }
     getDataStr() {
         let result = [];//"<b>Encrypt</b><br>"];
         for ( const [idx, e] of this.events.encrypt.entries()) {
-            e.time = idx;
+            //e.time = idx;
             result.push(JSON.stringify(e));
         }
         //result.push("<br><b>Decrypt</b><br>");
@@ -27,7 +27,7 @@ export default class FeistelVisitor {
             e.time = idx;
             result.push(JSON.stringify(e));
         }*/
-        //console.log(result.length);
+        //console.log(result);
         return result;
             //console.log(JSON.parse(JSON.stringify(d)));
     }
