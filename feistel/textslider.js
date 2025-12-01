@@ -43,13 +43,6 @@ export default class TextSlider extends Animation {
         else
             this.fixed = this.normalizePos(cfg.x, "horizontal");
     }
-    setFixed1(cfg) {
-        if ( cfg.x === "mid" ) {
-            this.fixed = Math.floor((this.canvas.width - this.textSz.width) / 2);
-            return;
-        }
-        this.fixed = (this.axis === "horizontal" ? cfg.y : cfg.x);
-    }
     setPosition(cfg) {
         // Try to use user-provided numeric or keyword position
         const userPos = (this.axis === "horizontal"
@@ -68,40 +61,9 @@ export default class TextSlider extends Animation {
             this.position = this.normalizePos(userPos);            
         }
     }
-    setPosition1() {
-        const begin = (this.axis === "horizontal" 
-            ? {"size": this.textSz.width, "max": this.canvas.width} //start off-screen left / right
-            : {"size": this.textSz.height, "max": this.canvas.height} // start off-screen top/ bottom
-        );
-        this.position = (this.speed > 0)
-            ? 0 - begin.size    // left / top
-            : begin.max // right / bottom
-    }
     setTarget(cfg) {
         this.target = this.normalizePos(cfg.endAt);
     }    
-    setTarget1(cfg) {
-        const defaultTrgt = (this.axis === "horizontal"
-            ? Math.floor((this.canvas.width - this.textSz.width) / 2)
-            : Math.floor((this.canvas.height - this.textSz.height) / 2)
-        );
-        if  ( ! cfg.endAt ) 
-            return defaultTrgt;
-
-        if ( isNumeric(cfg.endAt) )
-            return parseInt(cfg.endAt);
-        
-        const allowed = {
-            "left": 0, "top": 0, 
-            "mid": defaultTrgt, 
-            "bottom": (this.canvas.height - this.textSz.height), 
-            "right": (this.canvas.width - this.textSz.width)
-        };
-        if ( allowed.hasOwnProperty(cfg.endAt) )
-            return allowed[cfg.endAt];
-
-            return defaultTrgt;
-    }
     measureText(txt) {
         const w = Math.floor(this.ctx.measureText(this.msg).width);
         // Measure text height – canvas can't do exact height,

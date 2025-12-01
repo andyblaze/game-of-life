@@ -11,7 +11,7 @@ onscreen.height = window.innerHeight;
 onscreen.style.width = window.innerWidth;
 onscreen.style.height = window.innerHeight;
 
-onCtx.font = "18px monospace";
+onCtx.font = "19px monospace";
 onCtx.fillStyle = "#00FF00";
 onCtx.textBaseline = "top";
 const plaintext = byId("plaintext").value; 

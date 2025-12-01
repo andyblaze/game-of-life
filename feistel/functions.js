@@ -21,3 +21,11 @@ export function isNumeric(x) {
 export function isArray(x) {
     return Array.isArray(x);
 }
+
+export function isObject(x) {
+    return (
+        x !== null &&
+        typeof x === "object" &&
+        !Array.isArray(x)
+    );
+}

@@ -1,4 +1,4 @@
-import { isString, isArray } from "./functions.js";
+import { isString, isArray, isObject } from "./functions.js";
 
 export default class FeistelVisitor {
     constructor() {
@@ -9,7 +9,7 @@ export default class FeistelVisitor {
         let d;
         if ( isString(data) )
             d = {"string": data, "array": data.split("")};
-        else if ( isArray(data) ) 
+        else if ( isArray(data) && ! isObject(data[0]) ) 
             d = {"string": data.join(""), "array": data};
         else d = data;
         this.events[direction].push({time: this.t, "type": type, "data": d});
