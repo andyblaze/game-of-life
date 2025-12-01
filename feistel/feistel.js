@@ -15,8 +15,8 @@ export default class FeistelNetwork {
             this.charToNum[c] = i;
             this.numToChar[i] = c;
         });
-        this.emit("encrypt", "indices", Object.values(this.charToNum).join(""));
-        this.emit("decrypt", "indices", Object.values(this.charToNum).join(""));
+        this.emit("encrypt", "indices", Object.values(this.charToNum));
+        this.emit("decrypt", "indices", Object.values(this.charToNum));
     }
     emit(direction, event, data) {
         this.visitor.collect(direction, event, data);
