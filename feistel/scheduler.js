@@ -1,5 +1,5 @@
 import AnimationFactory from "./animation-factory.js";
-import { animationConfig } from "./animation-config.js";
+import { animationConfig, timingFor } from "./animation-config.js";
 import EventContext from "./event-context.js";
 
 const animationFactory = new AnimationFactory(); 
@@ -12,7 +12,7 @@ export default class Scheduler {
     }
     update(elapsedSeconds) {
         for ( let item of animationConfig ) {
-            if ( false === item.fired && elapsedSeconds >= item.time) {
+            if ( false === item.fired && elapsedSeconds >= timingFor[item.time]) {
                 this.animator.add(animationFactory.create(
                     item.type, 
                     this.events[item.time], 

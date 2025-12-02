@@ -95,7 +95,7 @@ export default class TextSlider extends Animation {
             h: this.textSz.height + 2
         };
     }
-    run(dt) {
+    run(dt, elapsedSeconds) {
         // Move toward target
         const step = this.to60Fps(this.speed, dt);
         this.position += step;

@@ -53,10 +53,6 @@ function animate(timestamp) {
     lastTime = timestamp;
     elapsedSeconds = Math.floor((timestamp - startTime) / 1000);
     scheduler.update(elapsedSeconds);
-    /*if ( scheduler.triggersAt(elapsedSeconds) ) {
-        scheduler.launch(elapsedSeconds);
-        animator.add(new Slider(onscreen, plaintext, -4, 80));
-    }*/
     //console.log(elapsedSeconds);
     // Clear screen (black CRT background)
     //onCtx.fillStyle = "black";
@@ -67,7 +63,7 @@ function animate(timestamp) {
     //onCtx.shadowColor = "#00FF00";
     //onCtx.shadowBlur = 8;
     //onCtx.fillStyle = "#00FF00";
-    animator.notify(dt);
+    animator.notify(dt, elapsedSeconds);
     requestAnimationFrame(animate);
 }
 
