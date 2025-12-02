@@ -19,7 +19,7 @@ export default class Underliner extends Animation {
         this.activeUnderlines = [];     // array of {x, y, w, startTime, duration}
         this.startTime = null;          // absolute time when animation started
         this.totalChars = this.tokens.length;
-        this.charWidth = Math.floor(this.layout.w / this.totalChars);
+        this.charWidth = Math.floor(this.ctx.measureText("M").width);
 
         this.baseDuration = cfg.duration;   // base duration per char in seconds
         //this.wait = cfg.wait;
@@ -48,16 +48,15 @@ export default class Underliner extends Animation {
         };
     }
 
-    run(dt, elapsedSeconds) {
+    run(dt, elapsedTime) {
         //this.wait += 60;
-        if (this.startTime === null) this.startTime = elapsedSeconds / 1000;
+        if (this.startTime === null) this.startTime = elapsedTime;
 
         // Check if we should start a new underline
         if (this.currentIndex < this.totalChars) {
-            const elapsed = (elapsedSeconds / 1000) - this.startTime;
-            console.log(elapsed, elapsedSeconds, this.startTime, this.baseDuration);
-            const nextCharTime = this.activeUnderlines
-                .reduce((sum, u) => sum + u.duration, 0);
+            const elapsed = (elapsedTime) - this.startTime;
+            console.log(elapsed, elapsedTime, this.startTime, this.baseDuration, Math.random());
+            const nextCharTime = this.activeUnderlines.reduce((sum, u) => sum + u.duration, 0);
 
             if (elapsed >= nextCharTime) {
                 // Start underline for current char
@@ -65,7 +64,7 @@ export default class Underliner extends Animation {
                 const duration = this.delayForIndex(this.currentIndex);
                 this.activeUnderlines.push({
                     ...rect,
-                    startTime: elapsedSeconds,
+                    startTime: elapsedTime,
                     duration
                 });
                 this.currentIndex++;
@@ -84,7 +83,7 @@ export default class Underliner extends Animation {
         }
 
         // Remove finished underlines
-        this.activeUnderlines = this.activeUnderlines.filter(u => elapsedSeconds - u.startTime < u.duration);
+        this.activeUnderlines = this.activeUnderlines.filter(u => elapsedTime - u.startTime < u.duration);
 
         // Returns true if animation is done
         //return this.currentIndex >= this.totalChars && this.activeUnderlines.length === 0;

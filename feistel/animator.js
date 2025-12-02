@@ -5,9 +5,9 @@ export default class Animator {
         this.ctx = cnvs.getContext("2d");
         this.animations = [];
     }
-    notify(dt, elapsedSeconds) {
+    notify(dt, elapsedTime) {
         for ( let a of this.animations )
-            a.run(dt, elapsedSeconds);
+            a.run(dt, elapsedTime);
     }
     add(animation) {
         this.animations.push(animation);
