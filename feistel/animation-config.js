@@ -9,3 +9,10 @@ export const animationConfig = [
   { t: 12, type: "xorRound",     data: visitor.round1_xor },
   ...*/
 ];
+
+export const timingsMap = {
+    "0": 0,
+    "1": 1,
+    "2": 2,
+    "3": 9
+}
