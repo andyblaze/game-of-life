@@ -70,9 +70,9 @@ class Underliner extends Animation {
         // Draw all active underlines
         for (let i = 0; i < this.activeUnderlines.length; i++) {
             const u = this.activeUnderlines[i];
-            const alpha = Math.min(1, (dt - u.startTime) / u.duration);
+            //const alpha = Math.min(1, (dt - u.startTime) / u.duration);
             this.ctx.save();
-            this.ctx.globalAlpha = alpha;
+            //this.ctx.globalAlpha = alpha;
             this.ctx.fillStyle = "yellow";
             this.ctx.fillRect(u.x, u.y, u.w, u.h);
             this.ctx.restore();
