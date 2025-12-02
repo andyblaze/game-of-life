@@ -4,7 +4,7 @@ export default class LayoutRegistry {
     static register(key, val) {
         this.data[key] = val;
     }
-    layoutFor(key) {
+    static layoutFor(key) {
         return this.data[key];
     }
 }

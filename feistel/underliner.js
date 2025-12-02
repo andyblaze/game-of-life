@@ -2,14 +2,16 @@ import Animation from "./animation.js";
 import LayoutRegistry from "./layout-registry.js";
 import EventContext from "./event-context.js";
 
-class Underliner extends Animation {
-    constructor(cnvs, duration = 0.5) {
+export default class Underliner extends Animation {
+    static type = "underliner";
+    constructor(cnvs, data=null, cfg={}) {
         super(cnvs);
         // Get plaintext string and array
         this.layout = LayoutRegistry.layoutFor("plaintext");
-        const event = EventContext.getEvent("encrypt", 2); 
+        data = EventContext.getEvent("encrypt", 2).data; 
+        console.log(this.layout, data);
         //this.plaintext = event.string;
-        this.tokens = event.array;
+        this.tokens = data.array;
 
 
         // Animation state
@@ -19,7 +21,8 @@ class Underliner extends Animation {
         this.totalChars = this.tokens.length;
         this.charWidth = Math.floor(this.layout.w / this.totalChars);
 
-        this.baseDuration = duration;   // base duration per char in seconds
+        this.baseDuration = cfg.duration;   // base duration per char in seconds
+        this.wait = cfg.wait;
     }
 
     // Simple ease-in-out function (0 → 1)
@@ -45,7 +48,8 @@ class Underliner extends Animation {
         };
     }
 
-    run(dt) {
+    run(dt) { console.log(9);
+        //this.wait += 60;
         if (this.startTime === null) this.startTime = dt;
 
         // Check if we should start a new underline
