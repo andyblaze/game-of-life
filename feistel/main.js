@@ -3,6 +3,7 @@ import FeistelVisitor from "./visitor.js";
 import FeistelNetwork from "./feistel.js";
 import Animator from "./animator.js";
 import Scheduler from "./scheduler.js";
+import EventContext from "./event-context.js";
 
 const onscreen = byId("onscreen");
 const onCtx = onscreen.getContext("2d");
@@ -36,10 +37,9 @@ function encryptDecrypt(msg) {    if ( ! msg ) msg = byId("plaintext").value;
 
 encryptDecrypt(plaintext);
 
-//const message = "THE MOONLIGHT RISES AND THE WHOLE SEA WHISPERS ITS SONG AT NIGHT";
 const animator = new Animator(onscreen);
-const scheduler = new Scheduler(animator, visitor.getData());
-//animator.add(new Slider(onscreen, message, -2, onscreen.width, 80));
+EventContext.setEvents(visitor.getData());
+const scheduler = new Scheduler(animator);
 
 let startTime = null;
 let elapsedSeconds = 0;

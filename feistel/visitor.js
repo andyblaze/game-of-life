@@ -3,7 +3,7 @@ import { isString, isArray, isObject } from "./functions.js";
 export default class FeistelVisitor {
     constructor() {
         this.events = {"encrypt": [], "decrypt":[]};
-        this.t = 0;    // time counter
+        //this.t = 0;    // time counter
     }
     collect(direction, type, data) {
         let d;
@@ -12,39 +12,32 @@ export default class FeistelVisitor {
         else if ( isArray(data) && ! isObject(data[0]) ) 
             d = {"string": data.join(""), "array": data};
         else d = data;
-        this.events[direction].push({time: this.t, "type": type, "data": d});
-        this.t++;
+        this.events[direction].push({time: 0, "type": type, "data": d});
+        //this.t++;
         //console.log(this.events.encrypt.length);
     }
     getDataStr() {
-        let result = [];//"<b>Encrypt</b><br>"];
-        for ( const [idx, e] of this.events.encrypt.entries()) {
-            //e.time = idx;
-            result.push(JSON.stringify(e));
-        }
-        //result.push("<br><b>Decrypt</b><br>");
-        /*for ( const [idx, e] of this.events.decrypt.entries()) {
-            e.time = idx;
-            result.push(JSON.stringify(e));
-        }*/
-        //console.log(result);
-        return result;
-            //console.log(JSON.parse(JSON.stringify(d)));
-    }
-    getData() { //console.log(this.events.decrypt.length);
-        
-        let result = [];//"<b>Encrypt</b><br>"];
+        let result = {"encrypt": [], "decrypt":[]};
         for ( const [idx, e] of this.events.encrypt.entries()) {
             e.time = idx;
-            result.push(e);
+            result.encrypt.push(e);
         }
-        //result.push("<br><b>Decrypt</b><br>");
-        /*for ( const [idx, e] of this.events.decrypt.entries()) {
+        for ( const [idx, e] of this.events.decrypt.entries()) {
             e.time = idx;
-            result.push(JSON.stringify(e));
-        }*/
-        //console.log(result.length);
-        return result;
-            //console.log(JSON.parse(JSON.stringify(d)));
+            result.decrypt.push(e);
+        }
+        return JSON.stringify(result);
     }
+    getData() { //console.log(this.events.decrypt.length);        
+        let result = {"encrypt": [], "decrypt":[]};
+        for ( const [idx, e] of this.events.encrypt.entries()) {
+            e.time = idx;
+            result.encrypt.push(e);
+        }
+        for ( const [idx, e] of this.events.decrypt.entries()) {
+            e.time = idx;
+            result.decrypt.push(e);
+        }
+        return result;
+   }
 }

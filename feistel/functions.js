@@ -29,3 +29,11 @@ export function isObject(x) {
         !Array.isArray(x)
     );
 }
+
+export function to5Bit(n) {
+    return n.toString(2).padStart(5, "0");
+}
+
+export function from5Bit(bin) {
+    return parseInt(bin, 2);
+}
