@@ -38,7 +38,7 @@ export default class FeistelNetwork {
             emission.push({ value: v, "key": this.key, "round": round, "index": i, result: r, and_value: andValue });
             return r;
         });
-        this.emit(direction, direction + "_and"+round, emission);
+        this.emit(direction, "and", emission);
         return result;        
     }
     xor(direction, src, F) {
@@ -48,7 +48,7 @@ export default class FeistelNetwork {
             emission.push({ value: v, func: F[i], result: r });
             return r;
         });
-        this.emit(direction, direction+"_xor", emission);
+        this.emit(direction, "xor", emission);
         return result;        
     }
     // TRUE Feistel: XOR, swap — always reversible
@@ -65,27 +65,27 @@ export default class FeistelNetwork {
         this.emit(direction, "get_order", order);
 
         for ( let r of order)  {
-            this.emit(direction, "round"+r, r);
+            this.emit(direction, "round", r);
             const F = this.roundFunction(direction, decrypt ? L : R, r);
             
             // !!!!!!!!!!!!!!!!!!!!! fix below into 1 liners using a method !!!!!!!!!!!!!!!!!!!!!!!
             if ( decrypt ) {
                 // Decrypt
-                this.emit(direction, "before_swap"+r, {"left":L, "right": R});
+                this.emit(direction, "before_swap", {"left":L, "right": R});
                 const newL = this.xor(direction, R, F);//R.map((v, i) => v ^ F[i]);
                 R = L;
                 L = newL;
-                this.emit(direction, "after_swap"+r, {"left":L, "right": R});
+                this.emit(direction, "after_swap", {"left":L, "right": R});
             } else {
                 // Encrypt
-                this.emit(direction, "before_swap"+r, {"left":L, "right": R});
+                this.emit(direction, "before_swap", {"left":L, "right": R});
                 const newR = this.xor(direction, L, F);//L.map((v, i) => v ^ F[i]); //{
                     //v ^ F[i];
                     //this.emit("xor"+i, {"value":v, "func":F[i]});
                 //});
                 L = R;
                 R = newR;
-                this.emit(direction, "after_swap"+r, {"left":L, "right": R});
+                this.emit(direction, "after_swap", {"left":L, "right": R});
             }
         }
 
@@ -122,7 +122,7 @@ export default class FeistelNetwork {
         const nums = out.map(b => b % 27);          // map back into 0–26
         this.emit("decrypt", "xored_nums", nums);
         const result = this.numsToString(nums);
-        this.emit("decrypt", "decrypted_str", result);
+        this.emit("decrypt", "plaintext", result);
         return result;
     }
     bytesToHex(nums, direction) {
