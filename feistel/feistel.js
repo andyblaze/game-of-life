@@ -38,17 +38,17 @@ export default class FeistelNetwork {
             emission.push({ value: v, "key": this.key, "round": round, "index": i, result: r, and_value: andValue });
             return r;
         });
-        this.emit(direction, "and", emission);
+        this.emit(direction, "and_"+round, emission);
         return result;        
     }
-    xor(direction, src, F) {
+    xor(direction, src, F, r) {
         let emission = [];
         const result = src.map((v, i) => {
             const r = v ^ F[i];
             emission.push({ value: v, func: F[i], result: r });
             return r;
         });
-        this.emit(direction, "xor", emission);
+        this.emit(direction, "xor_"+r, emission);
         return result;        
     }
     // TRUE Feistel: XOR, swap — always reversible
@@ -65,27 +65,27 @@ export default class FeistelNetwork {
         this.emit(direction, "get_order", order);
 
         for ( let r of order)  {
-            this.emit(direction, "round", r);
+            this.emit(direction, "round_"+r, r);
             const F = this.roundFunction(direction, decrypt ? L : R, r);
             
             // !!!!!!!!!!!!!!!!!!!!! fix below into 1 liners using a method !!!!!!!!!!!!!!!!!!!!!!!
             if ( decrypt ) {
                 // Decrypt
-                this.emit(direction, "before_swap", {"left":L, "right": R});
-                const newL = this.xor(direction, R, F);//R.map((v, i) => v ^ F[i]);
+                this.emit(direction, "before_swap_"+r, {"left":L, "right": R});
+                const newL = this.xor(direction, R, F, r);//R.map((v, i) => v ^ F[i]);
                 R = L;
                 L = newL;
-                this.emit(direction, "after_swap", {"left":L, "right": R});
+                this.emit(direction, "after_swap_"+r, {"left":L, "right": R});
             } else {
                 // Encrypt
-                this.emit(direction, "before_swap", {"left":L, "right": R});
-                const newR = this.xor(direction, L, F);//L.map((v, i) => v ^ F[i]); //{
+                this.emit(direction, "before_swap_"+r, {"left":L, "right": R});
+                const newR = this.xor(direction, L, F, r);//L.map((v, i) => v ^ F[i]); //{
                     //v ^ F[i];
                     //this.emit("xor"+i, {"value":v, "func":F[i]});
                 //});
                 L = R;
                 R = newR;
-                this.emit(direction, "after_swap", {"left":L, "right": R});
+                this.emit(direction, "after_swap_"+r, {"left":L, "right": R});
             }
         }
 

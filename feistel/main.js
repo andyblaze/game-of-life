@@ -51,7 +51,7 @@ function animate(timestamp) {
     if ( null === lastTime ) 
         lastTime = timestamp;
     const dt = timestamp - lastTime; // milliseconds since last frame
-    elapsedTime = (timestamp - startTime);// / 1000;
+    elapsedTime = timestamp - startTime;
     lastTime = timestamp;
     elapsedSeconds = Math.floor(elapsedTime / 1000);
     scheduler.update(elapsedSeconds);
