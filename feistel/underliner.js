@@ -21,7 +21,6 @@ export default class Underliner extends Animation {
         this.startTime = null;          // absolute time when animation started
         this.linger = cfg.linger; // milliseconds to keep the underline active
         this.totalChars = this.tokens.length;
-        this.charWidth = Math.floor(this.ctx.measureText("M").width);
         this.baseDuration = cfg.duration;   // base duration per char in ms
         this.computeCharPositions();
         //this.wait = cfg.wait;
