@@ -13,8 +13,8 @@ export default class TextRenderer extends Animation {
         this.msg += token;
     }
     // draw current message at (x, y)
-    draw(x = this.x, y = this.y) {
-        this.ctx.fillText(this.msg, x, y);
+    draw() {
+        this.ctx.fillText(this.msg, this.x, this.y);
     }
     // optional: clear the message
     clear() {

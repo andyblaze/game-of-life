@@ -1,9 +1,11 @@
 import TextSlider from "./textslider.js";
 import Underliner from "./underliner.js";
+import TransformMediator from "./transform-mediator.js";
 
 export const AnimationRegistry = {
     [TextSlider.type]: TextSlider,
-    [Underliner.type]: Underliner
+    [Underliner.type]: Underliner,
+    [TransformMediator.type]: TransformMediator
     //[VerticalTextSlider.type]:VerticalTextSlider
     //[FadeIn.type]: FadeIn
 };
