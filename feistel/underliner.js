@@ -61,6 +61,16 @@ export default class Underliner extends Animation {
         this.ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
         this.ctx.restore();
     } 
+    onUnderline(idx) {
+        
+    }
+    advanceIndex(rect) {
+        // draw the underline
+        this.drawUnderline(rect);
+        // fire callback
+        this.onUnderline(this.currentIndex);
+        this.currentIndex++;
+    }
     run(dt, elapsedTime) {
         // First frame: capture absolute start time
         if (this.startTime === null) {
@@ -83,8 +93,7 @@ export default class Underliner extends Animation {
         // Advance underline until we've caught up
         while (this.currentIndex < targetIndex) {
             const rect = this.getCharRect(this.currentIndex);
-            this.drawUnderline(rect);
-            this.currentIndex++;
+            this.advanceIndex(rect);
             this.lastUnderlineTime = elapsedTime; // for linger
         }
         // Linger: keep last underline visible
