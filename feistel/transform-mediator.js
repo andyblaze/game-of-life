@@ -8,13 +8,10 @@ export default class TransformMediator extends Animation {
         super(cnvs);
         this.underliner = new Underliner(cnvs, null, {"duration": 300, "linger": 200});
         this.textRenderer = new TextRenderer(cnvs, null, {"x":40, "y": 200});
-
         // bind the callback so `this` stays correct
         this.handleUnderline = this.handleUnderline.bind(this);
-
         // register callback with the underliner
         this.underliner.onUnderline = this.handleUnderline;
-
         this.dummyCounter = 0; // for generating dummy tokens
     }
     handleUnderline({ charIndex }) {
