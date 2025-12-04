@@ -9,7 +9,7 @@ export default class TransformMediator extends Animation {
         this.plaintextUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "plaintext", "duration": 300, "linger": 200});
         this.alphabetUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "alphabet", "duration": 300, "linger": 200});
         this.indicesUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "indices", "duration": 300, "linger": 200});
-        this.textRenderer = new TextRenderer(cnvs, null, {"x":40, "y": 200});
+        this.textRenderer = new TextRenderer(cnvs, null, {"direction": "encrypt", "type": "transformed_plaintext""x":40, "y": 200});
         // bind the callback so `this` stays correct
         this.handlePlaintextUnderline = this.handlePlaintextUnderline.bind(this);
         this.handleAlphabetUnderline = this.handleAlphabetUnderline.bind(this);
@@ -18,7 +18,6 @@ export default class TransformMediator extends Animation {
         this.plaintextUnderliner.onUnderline = this.handlePlaintextUnderline;
         this.alphabetUnderliner.onUnderline = this.handleAlphabetUnderline;
         this.indicesUnderliner.onUnderline = this.handleIndicesUnderline;
-        this.dummyCounter = 0; // for generating dummy tokens
     }
     handlePlaintextUnderline(token, charIndex) { 
         this.alphabetUnderliner.underlineAt(token);//, charIndex);
@@ -33,7 +32,7 @@ export default class TransformMediator extends Animation {
     handleIndicesUnderline(token, charIndex) { 
         //this.indicesUnderliner.underlineAt(token, charIndex);//, charIndex);
         // Append a new dummy token every time a char is underlined
-        this.textRenderer.append(token);
+        this.textRenderer.nextCharacter();
     }
     // animation frame driver
     run(dt, elapsedTime) {
