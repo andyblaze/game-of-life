@@ -7,19 +7,18 @@ export default class Underliner extends Animation {
     constructor(cnvs, data=null, cfg={}) {
         super(cnvs);
         // Get plaintext string and array
-        this.layout = LayoutRegistry.layoutFor("plaintext");
-        const evt = EventContext.byId("encrypt", "plaintext"); 
+        this.layout = LayoutRegistry.layoutFor(cfg.type);
+        const evt = EventContext.byId(cfg.direction, cfg.type); 
         //console.log(this.layout, data);
         //this.plaintext = event.string;
         this.tokens = evt.data.array;
 
 
         // Animation state
-        this.activeUnderlines = [];     // array of {x, y, w, startTime, duration}
         this.currentIndex = 0;          // index of char currently underlining
         this.charPositions = [];   // x positions
         this.startTime = null;          // absolute time when animation started
-        this.linger = cfg.linger; // milliseconds to keep the underline active
+        this.linger = cfg.linger ?? 0; // milliseconds to keep the underline active
         this.totalChars = this.tokens.length;
         this.baseDuration = cfg.duration;   // base duration per char in ms
         this.computeCharPositions();
@@ -52,6 +51,13 @@ export default class Underliner extends Animation {
             h: 2
         };
     }
+    underlineAt(token=null, idx=null) {
+        const index = (null === idx ? this.tokens.indexOf(token) : idx);
+        const rect = this.getCharRect(index);
+        this.drawUnderline(rect);
+        this.onUnderline(token, index);
+        this.lastUnderlineTime = performance.now();  // for future lingering
+    }
     drawUnderline(rect) {
         //console.log(rect.w, rect.x, this.currentIndex);
         this.ctx.save();
@@ -60,14 +66,27 @@ export default class Underliner extends Animation {
         this.ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
         this.ctx.restore();
     } 
-    onUnderline(idx) {
-        
+    drawLingeringLine(idx) {
+        const lastRect = this.getCharRect(idx);
+        this.drawUnderline(lastRect);        
     }
+    handleLinger(elapsedTime) {
+        if ( this.linger > 0 ) {
+            // How long since last underline was drawn?
+            const since = elapsedTime - (this.lastUnderlineTime ?? 0);
+            if ( since < this.linger ) {
+                const lastIdx = Math.min(this.currentIndex - 1, this.totalChars - 1);
+                // Re-draw the final underline during linger
+                if (lastIdx >= 0) this.drawLingeringLine(lastIdx);
+            }
+        }    
+    }
+    onUnderline(token, idx) {}
     advanceIndex(rect) {
         // draw the underline
         this.drawUnderline(rect);
         // fire callback
-        this.onUnderline(this.currentIndex);
+        this.onUnderline(this.tokens[this.currentIndex], this.currentIndex);
         this.currentIndex++;
     }
     run(dt, elapsedTime) {
@@ -75,11 +94,13 @@ export default class Underliner extends Animation {
         if (this.startTime === null) {
             this.startTime = elapsedTime;
         }
-        // No more work if finished
-        if (this.currentIndex >= this.totalChars) {
-            return;
+        const finished = this.currentIndex >= this.totalChars;
+        // ---- LINGER HANDLING ----
+        if ( finished ) {
+            this.handleLinger(elapsedTime);
+            return;  // No progress once finished (only lingering)
         }
-        // How long since this specific underliner started?
+        // How long since underliner started?
         const totalElapsed = elapsedTime - this.startTime;
         // One full pass duration (without linger)
         const totalDuration = this.baseDuration * this.totalChars;
@@ -95,10 +116,9 @@ export default class Underliner extends Animation {
             this.advanceIndex(rect);
             this.lastUnderlineTime = elapsedTime; // for linger
         }
-        // Linger: keep last underline visible
+        // Linger even while animating (keeps last underline visible)
         if (this.currentIndex > 0 && this.currentIndex <= this.totalChars) {
-            const lastRect = this.getCharRect(this.currentIndex - 1);
-            this.drawUnderline(lastRect);
+            this.drawLingeringLine(this.currentIndex - 1);
         }
     }
 }
