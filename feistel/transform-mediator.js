@@ -13,9 +13,11 @@ export default class TransformMediator extends Animation {
         // bind the callback so `this` stays correct
         this.handlePlaintextUnderline = this.handlePlaintextUnderline.bind(this);
         this.handleAlphabetUnderline = this.handleAlphabetUnderline.bind(this);
+        this.handleIndicesUnderline = this.handleIndicesUnderline.bind(this);
         // register callback with the underliner
         this.plaintextUnderliner.onUnderline = this.handlePlaintextUnderline;
         this.alphabetUnderliner.onUnderline = this.handleAlphabetUnderline;
+        this.indicesUnderliner.onUnderline = this.handleIndicesUnderline;
         this.dummyCounter = 0; // for generating dummy tokens
     }
     handlePlaintextUnderline(token, charIndex) { 
@@ -23,10 +25,15 @@ export default class TransformMediator extends Animation {
         // Append a new dummy token every time a char is underlined
         //this.textRenderer.append(this.dummyCounter++);
     }
-    handleAlphabetUnderline(token, charIndex) { console.log(token, charIndex);
+    handleAlphabetUnderline(token, charIndex) { //console.log(token, charIndex);
         this.indicesUnderliner.underlineAt(token, charIndex);//, charIndex);
         // Append a new dummy token every time a char is underlined
-        this.textRenderer.append(this.dummyCounter++);
+        //this.textRenderer.append(this.dummyCounter++);
+    }
+    handleIndicesUnderline(token, charIndex) { 
+        //this.indicesUnderliner.underlineAt(token, charIndex);//, charIndex);
+        // Append a new dummy token every time a char is underlined
+        this.textRenderer.append(token);
     }
     // animation frame driver
     run(dt, elapsedTime) {

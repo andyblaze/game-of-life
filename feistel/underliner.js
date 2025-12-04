@@ -55,7 +55,7 @@ export default class Underliner extends Animation {
         const index = (null === idx ? this.tokens.indexOf(token) : idx);
         const rect = this.getCharRect(index);
         this.drawUnderline(rect);
-        this.onUnderline(token, index);
+        this.onUnderline(this.tokens[index], index);
         this.lastUnderlineTime = performance.now();  // for future lingering
     }
     drawUnderline(rect) {
