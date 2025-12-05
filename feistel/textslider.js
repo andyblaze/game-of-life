@@ -1,6 +1,5 @@
 import { isNumeric } from "./functions.js";
 import Animation from "./animation.js";
-import LayoutRegistry from "./layout-registry.js";
 
 export default class TextSlider extends Animation {
     static type = "textSlider";
@@ -10,7 +9,6 @@ export default class TextSlider extends Animation {
         this.msg = event.data.string;
         this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
-        this.registered = false;
         this.textSz = this.measureText(this.msg);
         this.setFixed(cfg);
         // Target centered position
@@ -66,26 +64,10 @@ export default class TextSlider extends Animation {
     setTarget(cfg) {
         this.target = this.normalizePos(cfg.endAt);
     }    
-    measureText(txt) {
-        const w = Math.floor(this.ctx.measureText(this.msg).width);
-        // Measure text height – canvas can't do exact height,
-        // but this is a common practical approximation.
-        const metrics = this.ctx.measureText(this.msg);
-        const h = Math.floor(
-            metrics.actualBoundingBoxAscent + 
-            metrics.actualBoundingBoxDescent
-        );
-        return { width: w, height: h};
-    }
     draw(x, y) {
         if ( this.axis === "vertical" )
             [x, y] = [y, x];
         this.ctx.fillText(this.msg, x, y);
-    }
-    registerLayout() {
-        if ( this.registered === true ) return;
-        LayoutRegistry.register(this.event.type, this.getBoundingRect());
-        this.registered = true;
     }
     getBoundingRect() {
         return {

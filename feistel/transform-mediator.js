@@ -6,7 +6,7 @@ export default class TransformMediator extends Animation {
     static type = "ttMediator";
     constructor(cnvs) {
         super(cnvs);
-        this.plaintextUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "plaintext", "stepTime": 300, "holdTime": 500});
+        this.plaintextUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "plaintext", "stepTime": 300, "holdTime": 1500});
         this.alphabetUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "alphabet", "stepTime": 500, "holdTime": 200});
         this.indicesUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "indices", "stepTime": 500, "holdTime": 200});
         this.textRenderer = new TextRenderer(cnvs, null, {"direction": "encrypt", "type": "transformed_plaintext", "x":40, "y": 200});
