@@ -1,4 +1,5 @@
 import Animation from "./animation.js";
+import EventContext from "./event-context.js";
 
 export default class TextRenderer extends Animation {
     static type = "textRenderer";

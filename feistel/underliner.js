@@ -18,9 +18,13 @@ export default class Underliner extends Animation {
         this.currentIndex = 0;          // index of char currently underlining
         this.charPositions = [];   // x positions
         this.startTime = null;          // absolute time when animation started
-        this.linger = cfg.linger ?? 0; // milliseconds to keep the underline active
+        this.holdTime = cfg.holdTime ?? 0; // milliseconds to keep the underline active
         this.totalChars = this.tokens.length;
-        this.baseDuration = cfg.duration;   // base duration per char in ms
+        this.stepTime = cfg.stepTime;   // base step time between underline per char in ms
+        this.timeSinceLastStep = 0;
+        this.timeSinceUnderline = 0;
+        this.totalElapsed = 0;
+        this.underlining = false;
         this.computeCharPositions();
         //this.wait = cfg.wait;
     }
@@ -71,10 +75,10 @@ export default class Underliner extends Animation {
         this.drawUnderline(lastRect);        
     }
     handleLinger(elapsedTime) {
-        if ( this.linger > 0 ) {
+        if ( this.holdTime > 0 ) {
             // How long since last underline was drawn?
             const since = elapsedTime - (this.lastUnderlineTime ?? 0);
-            if ( since < this.linger ) {
+            if ( since < this.holdTime ) {
                 const lastIdx = Math.min(this.currentIndex - 1, this.totalChars - 1);
                 // Re-draw the final underline during linger
                 if (lastIdx >= 0) this.drawLingeringLine(lastIdx);
@@ -89,7 +93,40 @@ export default class Underliner extends Animation {
         this.onUnderline(this.tokens[this.currentIndex], this.currentIndex);
         this.currentIndex++;
     }
+    triggerUnderline(dt) {
+        this.totalElapsed += dt;
+        console.log(dt, this.totalElapsed, this.timeSinceLastStep, this.stepTime, this.timeSinceUnderline);
+        //this.timeSinceLastStep += this.totalElapsed;
+        const trigger = (this.totalElapsed >= this.stepTime);
+        if ( trigger ) {
+            //this.timeSinceLastStep -= this.stepTime;
+            //this.timeSinceUnderline = 0;
+            this.totalElapsed -= this.stepTime;
+        }
+        return trigger;
+    }
+    triggerHold() {
+        
+    }
     run(dt, elapsedTime) {
+        // First frame: capture absolute start time
+        if (this.startTime === null) {
+            this.startTime = elapsedTime;
+        }
+        const finished = this.currentIndex >= this.totalChars;
+        if ( finished ) {
+            // hold logic
+            return;
+        }
+        const et = elapsedTime - this.startTime;
+        if ( this.triggerUnderline(dt) ) {
+            const rect = this.getCharRect(this.currentIndex);
+            this.advanceIndex(rect);
+            //this.totalElapsed = 0;
+        }
+    }
+    run1(dt, elapsedTime) {
+        
         // First frame: capture absolute start time
         if (this.startTime === null) {
             this.startTime = elapsedTime;
@@ -102,8 +139,9 @@ export default class Underliner extends Animation {
         }
         // How long since underliner started?
         const totalElapsed = elapsedTime - this.startTime;
+        console.log(totalElapsed);
         // One full pass duration (without linger)
-        const totalDuration = this.baseDuration * this.totalChars;
+        const totalDuration = this.baseStepTime * this.totalChars;
         // Clamp progress
         const rawT = Math.min(totalElapsed / totalDuration, 1);
         // Apply easing curve
