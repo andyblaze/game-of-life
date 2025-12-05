@@ -24,6 +24,8 @@ export default class Underliner extends Animation {
         this.timeSinceLastStep = 0;
         this.timeSinceUnderline = 0;
         this.totalElapsed = 0;
+        this.triggerStepTime = 0;
+        this.triggerHoldTime = 0;
         this.underlining = false;
         this.computeCharPositions();
         //this.wait = cfg.wait;
@@ -59,6 +61,7 @@ export default class Underliner extends Animation {
         const index = (null === idx ? this.tokens.indexOf(token) : idx);
         const rect = this.getCharRect(index);
         this.drawUnderline(rect);
+        //if ( this.triggerHold(16.66) ) this.drawUnderline(rect);
         this.onUnderline(this.tokens[index], index);
         this.lastUnderlineTime = performance.now();  // for future lingering
     }
@@ -94,19 +97,26 @@ export default class Underliner extends Animation {
         this.currentIndex++;
     }
     triggerUnderline(dt) {
-        this.totalElapsed += dt;
-        console.log(dt, this.totalElapsed, this.timeSinceLastStep, this.stepTime, this.timeSinceUnderline);
+        this.triggerStepTime += dt;
+        //console.log(dt, this.totalElapsed, this.timeSinceLastStep, this.stepTime, this.timeSinceUnderline);
         //this.timeSinceLastStep += this.totalElapsed;
-        const trigger = (this.totalElapsed >= this.stepTime);
+        const trigger = (this.triggerStepTime >= this.stepTime);
         if ( trigger ) {
             //this.timeSinceLastStep -= this.stepTime;
             //this.timeSinceUnderline = 0;
-            this.totalElapsed -= this.stepTime;
+            this.triggerStepTime -= this.stepTime;
         }
         return trigger;
     }
-    triggerHold() {
-        
+    triggerHold(dt) {
+        this.triggerHoldTime += dt;
+        const trigger = (this.triggerHoldTime >= this.holdTime); console.log(trigger);
+        if ( trigger ) {
+            //this.timeSinceLastStep -= this.stepTime;
+            //this.timeSinceUnderline = 0;
+            //this.triggerHoldTime = 0;//-= this.holdTime;
+        }
+        return trigger;
     }
     run(dt, elapsedTime) {
         // First frame: capture absolute start time
@@ -119,9 +129,14 @@ export default class Underliner extends Animation {
             return;
         }
         const et = elapsedTime - this.startTime;
-        if ( this.triggerUnderline(dt) ) {
-            const rect = this.getCharRect(this.currentIndex);
+        const rect = this.getCharRect(this.currentIndex);
+        if ( this.triggerUnderline(dt) ) {            
             this.advanceIndex(rect);
+            //this.totalElapsed = 0;
+        }
+        if ( this.triggerHold(dt) ) {
+            //const rect = this.getCharRect(this.currentIndex);
+            this.drawUnderline(rect);
             //this.totalElapsed = 0;
         }
     }
