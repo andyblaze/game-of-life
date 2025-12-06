@@ -20,6 +20,8 @@ export default class Underliner extends Animation {
         this.charPositions = [];   // x positions
         this.startTime = null;          // absolute time when animation started
         this.holdTime = cfg.holdTime ?? 0; // milliseconds to keep the underline active
+        this.manualHoldTime = 0;
+        this.manualIndex = null;
         this.totalChars = this.tokens.length;
         this.stepTime = cfg.stepTime;   // base step time between underline per char in ms
         this.timeSinceLastStep = 0;
@@ -59,12 +61,24 @@ export default class Underliner extends Animation {
             h: 2
         };
     }
+    tick(dt) {
+        if ( this.manualHoldTime > 0 && this.manualIndex !== null) {
+            this.manualHoldTime -= dt;
+            const rect = this.getCharRect(this.manualIndex);
+            this.drawUnderline(rect);
+            if ( this.manualHoldTime <= 0 ) {
+                this.manualHoldTime = 0;
+                this.manualIndex = null;
+            }
+        }
+    }
     underlineAt(token=null, idx=null) {
-        const index = (null === idx ? this.tokens.indexOf(token) : idx);
-        this.startUnderline(index);
-        const rect = this.getCharRect(index);
-        this.drawUnderline(rect);
-        this.onUnderline(this.tokens[index], index);
+        this.manualHoldTime = this.holdTime;
+        this.manualIndex = (null === idx ? this.tokens.indexOf(token) : idx);
+        //this.startUnderline(index);
+       // const rect = this.getCharRect(index);
+        //this.drawUnderline(rect);
+        this.onUnderline(this.tokens[this.manualIndex], this.manualIndex);
     }
     drawUnderline(rect) {
         //console.log(rect.w, rect.x, this.currentIndex);

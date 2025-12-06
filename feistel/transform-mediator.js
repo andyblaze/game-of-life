@@ -37,6 +37,8 @@ export default class TransformMediator extends Animation {
     // animation frame driver
     run(dt, elapsedTime) {
         this.plaintextUnderliner.run(dt, elapsedTime);
+        this.alphabetUnderliner.tick(dt);
+        this.indicesUnderliner.tick(dt);
         this.textRenderer.draw();
     }
 }
