@@ -34,6 +34,8 @@ export default class TextRenderer extends Animation {
     }
     // draw current message at (x, y)
     draw() {
+        const rect = this.getBoundingRect();
+        this.x = (this.canvas.width - rect.w) / 2;
         this.ctx.fillText(this.msg, this.x, this.y);
         //console.log(this.msg);
     }
