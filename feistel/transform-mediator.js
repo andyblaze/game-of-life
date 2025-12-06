@@ -6,9 +6,10 @@ export default class TransformMediator extends Animation {
     static type = "ttMediator";
     constructor(cnvs) {
         super(cnvs);
-        this.plaintextUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "plaintext", "stepTime": 1000, "holdTime": 500});
-        this.alphabetUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "alphabet", "stepTime": 1000, "holdTime": 500});
-        this.indicesUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "indices", "stepTime": 1000, "holdTime": 500});
+        const [step, hold] = [300, 300];
+        this.plaintextUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "plaintext", "stepTime": step, "holdTime": hold});
+        this.alphabetUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "alphabet", "stepTime": step, "holdTime": hold});
+        this.indicesUnderliner = new Underliner(cnvs, null, {"direction": "encrypt", "type": "indices", "stepTime": step, "holdTime": hold});
         this.textRenderer = new TextRenderer(cnvs, null, {"direction": "encrypt", "type": "transformed_plaintext", "x":40, "y": 200});
         // bind the callback so `this` stays correct
         this.handlePlaintextUnderline = this.handlePlaintextUnderline.bind(this);
