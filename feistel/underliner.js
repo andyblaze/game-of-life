@@ -16,6 +16,7 @@ export default class Underliner extends Animation {
 
         // Animation state
         this.currentIndex = 0;          // index of char currently underlining
+        this.activeIndex = null;
         this.charPositions = [];   // x positions
         this.startTime = null;          // absolute time when animation started
         this.holdTime = cfg.holdTime ?? 0; // milliseconds to keep the underline active
@@ -23,6 +24,7 @@ export default class Underliner extends Animation {
         this.stepTime = cfg.stepTime;   // base step time between underline per char in ms
         this.timeSinceLastStep = 0;
         this.timeSinceUnderline = 0;
+        this.timeSinceStep = 0;
         this.totalElapsed = 0;
         this.triggerStepTime = 0;
         this.triggerHoldTime = 0;
@@ -59,11 +61,10 @@ export default class Underliner extends Animation {
     }
     underlineAt(token=null, idx=null) {
         const index = (null === idx ? this.tokens.indexOf(token) : idx);
+        this.startUnderline(index);
         const rect = this.getCharRect(index);
         this.drawUnderline(rect);
-        //if ( this.triggerHold(16.66) ) this.drawUnderline(rect);
         this.onUnderline(this.tokens[index], index);
-        this.lastUnderlineTime = performance.now();  // for future lingering
     }
     drawUnderline(rect) {
         //console.log(rect.w, rect.x, this.currentIndex);
@@ -74,8 +75,8 @@ export default class Underliner extends Animation {
         this.ctx.restore();
     } 
     drawLingeringLine(idx) {
-        const lastRect = this.getCharRect(idx);
-        this.drawUnderline(lastRect);        
+        const rect = this.getCharRect(idx);
+        this.drawUnderline(rect);        
     }
     handleLinger(elapsedTime) {
         if ( this.holdTime > 0 ) {
@@ -110,7 +111,7 @@ export default class Underliner extends Animation {
     }
     triggerHold(dt) {
         this.triggerHoldTime += dt;
-        const trigger = (this.triggerHoldTime >= this.holdTime); console.log(trigger);
+        const trigger = (this.triggerHoldTime >= this.holdTime); ///console.log(trigger);
         if ( trigger ) {
             //this.timeSinceLastStep -= this.stepTime;
             //this.timeSinceUnderline = 0;
@@ -118,7 +119,32 @@ export default class Underliner extends Animation {
         }
         return trigger;
     }
+    startUnderline(index) {
+        this.activeIndex = index;
+        this.timeSinceUnderline = 0;
+    }
+    doStep() {
+        const rect = this.getCharRect(this.currentIndex);
+        this.advanceIndex(rect);
+        this.startUnderline(this.currentIndex - 1); // underline the stepped char
+    }
     run(dt, elapsedTime) {
+        // update timers
+        this.timeSinceStep += dt;
+        this.timeSinceUnderline += dt;
+
+        // trigger timed stepping
+        if (this.timeSinceStep >= this.stepTime && this.currentIndex < this.totalChars) {
+            this.timeSinceStep -= this.stepTime;
+            this.doStep();
+        }
+
+        // draw underline (timed or reactive)
+        if (this.timeSinceUnderline < this.holdTime && this.activeIndex != null) {
+            this.drawLingeringLine(this.activeIndex);
+        }
+    }
+    run1(dt, elapsedTime) {
         // First frame: capture absolute start time
         if (this.startTime === null) {
             this.startTime = elapsedTime;
