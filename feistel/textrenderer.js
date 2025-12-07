@@ -29,6 +29,7 @@ export default class TextRenderer extends Animation {
         this.currentIndex++;
         if ( this.currentIndex >= this.tokens.length ) { 
             this.registerLayout();
+            this.done = true;
         }
             
     }

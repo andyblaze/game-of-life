@@ -90,6 +90,7 @@ export default class TextSlider extends Animation {
             this.position = this.target;
             this.draw(this.position, this.fixed);
             this.registerLayout();
+            this.done = true;
             return;
         }
         this.draw(this.position, this.fixed);

@@ -22,6 +22,7 @@ export default class Underliner extends Animation {
         this.holdTime = cfg.holdTime ?? 0; // milliseconds to keep the underline active
         this.manualHoldTime = 0;
         this.manualIndex = null;
+        this.manualIndexTracker = 0;
         this.totalChars = this.tokens.length;
         this.stepTime = cfg.stepTime;   // base step time between underline per char in ms
         this.timeSinceLastStep = 0;
@@ -75,6 +76,8 @@ export default class Underliner extends Animation {
     underlineAt(token=null, idx=null) {
         this.manualHoldTime = this.holdTime;
         this.manualIndex = (null === idx ? this.tokens.indexOf(token) : idx);
+        this.manualIndexTracker += 1;
+        this.done = (this.manualIndexTracker >= this.totalChars);
         //this.startUnderline(index);
        // const rect = this.getCharRect(index);
         //this.drawUnderline(rect);
@@ -157,8 +160,9 @@ export default class Underliner extends Animation {
         if (this.timeSinceUnderline < this.holdTime && this.activeIndex != null) {
             this.drawLingeringLine(this.activeIndex);
         }
+        this.done = (this.currentIndex >= this.totalChars);
     }
-    run1(dt, elapsedTime) {
+    run11(dt, elapsedTime) {
         // First frame: capture absolute start time
         if (this.startTime === null) {
             this.startTime = elapsedTime;
