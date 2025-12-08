@@ -22,7 +22,6 @@ export default class Animation {
         return s * (dt / 16.67); // normalize to 60fps baseline
     }
     measureText(txt) {
-        //const w = Math.floor(this.ctx.measureText(txt).width);
         // Measure text height – canvas can't do exact height,
         // but this is a common practical approximation.
         const metrics = this.ctx.measureText(txt);

@@ -11,9 +11,7 @@ export default class TextSlider extends Animation {
         this.speed = cfg.speed;     // sign determines direction
         this.textSz = this.measureText(this.msg);
         this.setFixed(cfg);
-        // Target centered position
         this.setTarget(cfg); 
-        // Decide WHERE to start based on direction
         this.setPosition(cfg);
     }
     normalizePos(value, dimension=null) {

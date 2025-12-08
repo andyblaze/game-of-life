@@ -4,8 +4,6 @@ import Animation from "./animation.js";
 import EventContext from "./event-context.js";
 import AnimationFactory from "./animation-factory.js";
 
-//const animationFactory = new AnimationFactory();
-
 export default class IntroMediator extends Animation {
     static type = "introMediator";
     constructor(cnvs, data, cfg) {

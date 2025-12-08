@@ -1,7 +1,7 @@
 export default class FeistelNetwork {
     constructor(key, rounds, visitor, blockSize = 64) {
         this.key = key & 0xFF;      // 0–255 key for XOR
-        this.rounds = rounds; //console.log(this.rounds);
+        this.rounds = rounds; 
         this.visitor = visitor;
         this.blockSize = blockSize; // must be even, fixed at 64
 
@@ -25,10 +25,6 @@ export default class FeistelNetwork {
     // Simple reversible round function
     roundFunction(direction, half, round) {
         return this.and(direction, half, round);
-        /*const andValue = 0xFF;
-        return half.map((v, i) => {
-            (v + this.key + round + i) & andValue;
-        });*/
     }
     and(direction, src, round) {
         let emission = [];
@@ -68,21 +64,17 @@ export default class FeistelNetwork {
             this.emit(direction, "round_"+r, r);
             const F = this.roundFunction(direction, decrypt ? L : R, r);
             
-            // !!!!!!!!!!!!!!!!!!!!! fix below into 1 liners using a method !!!!!!!!!!!!!!!!!!!!!!!
             if ( decrypt ) {
                 // Decrypt
                 this.emit(direction, "before_swap_"+r, {"left":L, "right": R});
-                const newL = this.xor(direction, R, F, r);//R.map((v, i) => v ^ F[i]);
+                const newL = this.xor(direction, R, F, r);
                 R = L;
                 L = newL;
                 this.emit(direction, "after_swap_"+r, {"left":L, "right": R});
             } else {
                 // Encrypt
                 this.emit(direction, "before_swap_"+r, {"left":L, "right": R});
-                const newR = this.xor(direction, L, F, r);//L.map((v, i) => v ^ F[i]); //{
-                    //v ^ F[i];
-                    //this.emit("xor"+i, {"value":v, "func":F[i]});
-                //});
+                const newR = this.xor(direction, L, F, r);
                 L = R;
                 R = newR;
                 this.emit(direction, "after_swap_"+r, {"left":L, "right": R});

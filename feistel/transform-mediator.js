@@ -1,46 +1,58 @@
 import Underliner from "./underliner.js";
 import TextRenderer from "./textrenderer.js";
 import Animation from "./animation.js";
+import EventContext from "./event-context.js";
+import AnimationFactory from "./animation-factory.js";
 
 export default class TransformMediator extends Animation {
     static type = "ttMediator";
-    constructor(cnvs) {
+    constructor(cnvs, data, cfg) {
         super(cnvs);
-        const [dir, step, hold] = ["encrypt", 300, 300];
-        this.plaintextUnderliner = new Underliner(cnvs, null, {"direction": dir, "type": "plaintext", "stepTime": step, "holdTime": hold});
-        this.alphabetUnderliner = new Underliner(cnvs, null, {"direction": dir, "type": "alphabet", "stepTime": step, "holdTime": hold});
-        this.indicesUnderliner = new Underliner(cnvs, null, {"direction": dir, "type": "indices", "stepTime": step, "holdTime": hold});
-        this.textRenderer = new TextRenderer(cnvs, null, {"direction": dir, "type": "transformed_plaintext", "x":40, "y": 128});
+        this.active = [];
+        this.animationFactory = new AnimationFactory();
+        this.animationFactory.init(this.canvas);
+        for ( let a of cfg.actors ) {
+            Object.assign(a.config, cfg);
+            a.config.type = a.eventId;
+            this[a.config.type] = this.animationFactory.create(
+                a.type, 
+                EventContext.byId(cfg.direction, a.eventId),
+                a.config
+            );
+        }
         // bind the callback so `this` stays correct
-        this.handlePlaintextUnderline = this.handlePlaintextUnderline.bind(this);
-        this.handleAlphabetUnderline = this.handleAlphabetUnderline.bind(this);
-        this.handleIndicesUnderline = this.handleIndicesUnderline.bind(this);
+        this.handlePlaintext = this.handlePlaintext.bind(this);
+        this.handleAlphabet = this.handleAlphabet.bind(this);
+        this.handleIndices = this.handleIndices.bind(this);
         // register callback with the underliner
-        this.plaintextUnderliner.onUnderline = this.handlePlaintextUnderline;
-        this.alphabetUnderliner.onUnderline = this.handleAlphabetUnderline;
-        this.indicesUnderliner.onUnderline = this.handleIndicesUnderline;
+        this.plaintext.onUnderline = this.handlePlaintext;
+        this.alphabet.onUnderline = this.handleAlphabet;
+        this.indices.onUnderline = this.handleIndices;
     }
     isComplete() {
-        return this.plaintextUnderliner.isComplete()
-            && this.alphabetUnderliner.isComplete()
-            && this.indicesUnderliner.isComplete()
-            && this.textRenderer.isComplete();
+        this.done = (this.plaintext.isComplete()
+            && this.alphabet.isComplete()
+            && this.indices.isComplete()
+            && this.transformed_plaintext.isComplete());
     }
-    handlePlaintextUnderline(token, charIndex) { 
-        this.alphabetUnderliner.underlineAt(token);//, charIndex);
+    handlePlaintext(token, charIndex) { 
+        this.alphabet.underlineAt(token);
     }
-    handleAlphabetUnderline(token, charIndex) { 
-        this.indicesUnderliner.underlineAt(token, charIndex);
+    handleAlphabet(token, charIndex) { 
+        this.indices.underlineAt(token, charIndex);
     }
-    handleIndicesUnderline(token, charIndex) { 
-        this.textRenderer.nextCharacter();
+    handleIndices(token, charIndex) { 
+        this.transformed_plaintext.nextCharacter();
     }
     // animation frame driver
     run(dt, elapsedTime) {
-        this.plaintextUnderliner.run(dt, elapsedTime);
-        this.alphabetUnderliner.tick(dt);
-        this.indicesUnderliner.tick(dt);
-        this.textRenderer.draw();
-        //console.log(this.isComplete());
+        if ( this.isComplete() ) {
+            this.onComplete();
+            return
+        }
+        this.plaintext.run(dt, elapsedTime);
+        this.alphabet.tick(dt);
+        this.indices.tick(dt);
+        this.transformed_plaintext.draw();
     }
 }

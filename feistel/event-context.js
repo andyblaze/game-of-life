@@ -9,7 +9,7 @@ export default class EventContext {
         this.events = es;
         this.events["encrypt"].forEach((evt, idx) => {
             const dir = "encrypt"; // "encrypt" or "decrypt"
-            this.eventMap[dir][evt.type] = idx;  // store numeric index
+            this.eventMap[dir][evt.type] = idx;  
         });
     }
     static getEvents(direction) {
@@ -19,8 +19,8 @@ export default class EventContext {
         return this.events[direction][index];
     }
     static byId(direction, type) {
-        const idx = this.eventMap[direction][type]; //console.log(idx);
-        if (idx === undefined) return null;  // or throw error
+        const idx = this.eventMap[direction][type]; 
+        if (idx === undefined) return null;  
         return this.events[direction][idx];
     }
 }
