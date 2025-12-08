@@ -6,10 +6,15 @@ export default class Animation {
         this.ctx = cnvs.getContext("2d");
         this.layoutRegistered = false;
         this.done = false;
+        this.started = false;
+    }
+    start() {
+        this.started = true;
     }
     isComplete() {
         return this.done;
     }
+    onComplete() {}
     run(dt, elapsedTime) {
         console.error("Must override BaseAnimation.run()");
     }

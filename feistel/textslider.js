@@ -78,6 +78,10 @@ export default class TextSlider extends Animation {
         };
     }
     run(dt, elapsedSeconds) {
+        if ( false === this.started || true === this.done) {
+            this.draw(this.position, this.fixed);
+            return;
+        }
         // Move toward target
         const step = this.to60Fps(this.speed, dt);
         this.position += step;
@@ -91,6 +95,7 @@ export default class TextSlider extends Animation {
             this.draw(this.position, this.fixed);
             this.registerLayout();
             this.done = true;
+            this.onComplete();
             return;
         }
         this.draw(this.position, this.fixed);
