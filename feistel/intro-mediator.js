@@ -1,16 +1,11 @@
-//import Underliner from "./underliner.js";
 import TextSlider from "./textslider.js";
-import Animation from "./animation.js";
 import EventContext from "./event-context.js";
-import AnimationFactory from "./animation-factory.js";
+import Mediator from "./mediator.js";
 
-export default class IntroMediator extends Animation {
+export default class IntroMediator extends Mediator {
     static type = "introMediator";
     constructor(cnvs, data, cfg) {
         super(cnvs);
-        this.active = [];
-        this.animationFactory = new AnimationFactory();
-        this.animationFactory.init(this.canvas);
         for ( let a of cfg.actors ) {
             this[a.eventId] = this.animationFactory.create(
                 a.type, 

@@ -5,16 +5,21 @@ import Animator from "./animator.js";
 import Scheduler from "./scheduler.js";
 import EventContext from "./event-context.js";
 
-const onscreen = byId("onscreen");
-const onCtx = onscreen.getContext("2d");
-onscreen.width = window.innerWidth;
-onscreen.height = window.innerHeight;
-onscreen.style.width = window.innerWidth;
-onscreen.style.height = window.innerHeight;
+function initCanvas(id) {
+    const onscreen = byId(id);
+    const onCtx = onscreen.getContext("2d");
+    onscreen.width = window.innerWidth;
+    onscreen.height = window.innerHeight;
+    onscreen.style.width = window.innerWidth;
+    onscreen.style.height = window.innerHeight;
 
-onCtx.font = "19px monospace";
-onCtx.fillStyle = "#00FF00";
-onCtx.textBaseline = "top";
+    onCtx.font = "19px monospace";
+    onCtx.fillStyle = "#00FF00";
+    onCtx.textBaseline = "top";
+    return [onscreen, onCtx];
+}
+const [onscreen, onCtx] = initCanvas("onscreen");
+
 const plaintext = byId("plaintext").value; 
 const key = parseInt(byId("key").value);
 const rounds = parseInt(byId("rounds").value); 
