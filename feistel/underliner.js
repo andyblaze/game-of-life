@@ -161,6 +161,8 @@ export default class Underliner extends Animation {
             this.drawLingeringLine(this.activeIndex);
         }
         this.done = (this.currentIndex >= this.totalChars);
+        if ( true === this.done )
+            this.onComplete();
     }
     run11(dt, elapsedTime) {
         // First frame: capture absolute start time
