@@ -13,8 +13,8 @@ export default class TransformMediator extends Animation {
         this.animationFactory.init(this.canvas);
         for ( let a of cfg.actors ) {
             Object.assign(a.config, cfg);
-            a.config.eventType = a.eventId;
-            this[a.config.eventType] = this.animationFactory.create(
+            a.config.type = a.eventId;
+            this[a.config.type] = this.animationFactory.create(
                 a.type, 
                 EventContext.byId(cfg.direction, a.eventId),
                 a.config
