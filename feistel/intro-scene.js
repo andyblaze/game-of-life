@@ -2,8 +2,8 @@ import TextSlider from "./textslider.js";
 import EventContext from "./event-context.js";
 import Mediator from "./mediator.js";
 
-export default class IntroMediator extends Mediator {
-    static type = "introMediator";
+export default class IntroScene extends Mediator {
+    static type = "introScene";
     constructor(cnvs, data, cfg) {
         super(cnvs);
         for ( let a of cfg.actors ) {

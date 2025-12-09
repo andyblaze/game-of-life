@@ -1,6 +1,6 @@
 
 export const animationConfig = [
-    { type: "introMediator", "config": {
+    { type: "introScene", "config": {
         direction: "encrypt",
         actors:[
             {type:"textSlider", eventId:"alphabet", config:{"speed": 1, "x": "mid", "endAt":60, "axis": "vertical"}},
@@ -8,7 +8,7 @@ export const animationConfig = [
             {type:"textSlider", eventId:"plaintext", config:{"speed": -4, "y":20}}
         ]
     } }, 
-    { type: "ttMediator", "config": {
+    { type: "transformScene", "config": {
         direction: "encrypt", stepTime:300, holdTime:300,
         actors:[
             {type:"underliner", eventId:"plaintext", config:{}},

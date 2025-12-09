@@ -3,8 +3,8 @@ import TextRenderer from "./textrenderer.js";
 import Mediator from "./mediator.js";
 import EventContext from "./event-context.js";
 
-export default class TransformMediator extends Mediator {
-    static type = "ttMediator";
+export default class TransformScene extends Mediator {
+    static type = "transformScene";
     constructor(cnvs, data, cfg) {
         super(cnvs);
         for ( let a of cfg.actors ) {
