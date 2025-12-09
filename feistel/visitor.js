@@ -11,16 +11,16 @@ export default class FeistelVisitor {
         else if ( isArray(data) && ! isObject(data[0]) ) 
             d = {"string": data.join(""), "array": data};
         else d = data;
-        this.events[direction].push({time: 0, "type": type, "data": d});
+        this.events[direction].push({"type": type, "data": d});
     }
     getDataStr() {
         let result = {"encrypt": [], "decrypt":[]};
         for ( const [idx, e] of this.events.encrypt.entries()) {
-            e.time = idx;
+            //e.time = idx;
             result.encrypt.push(e);
         }
         for ( const [idx, e] of this.events.decrypt.entries()) {
-            e.time = idx;
+            //e.time = idx;
             result.decrypt.push(e);
         }
         return JSON.stringify(result);
@@ -28,11 +28,11 @@ export default class FeistelVisitor {
     getData() { 
         let result = {"encrypt": [], "decrypt":[]};
         for ( const [idx, e] of this.events.encrypt.entries()) {
-            e.time = idx;
+            //e.time = idx;
             result.encrypt.push(e);
         }
         for ( const [idx, e] of this.events.decrypt.entries()) {
-            e.time = idx;
+            //e.time = idx;
             result.decrypt.push(e);
         }
         return result;
