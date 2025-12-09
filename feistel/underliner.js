@@ -60,7 +60,7 @@ export default class Underliner extends Animation {
         this.manualHoldTime = this.holdTime;
         this.manualIndex = (null === idx ? this.tokens.indexOf(token) : idx);
         this.manualIndexTracker += 1;
-        this.done = (this.manualIndexTracker >= this.totalChars);
+        this.animationDone = (this.manualIndexTracker >= this.totalChars);
         this.onUnderline(this.tokens[this.manualIndex], this.manualIndex);
     }
     drawUnderline(rect) {
@@ -113,8 +113,8 @@ export default class Underliner extends Animation {
         if (this.timeSinceUnderline < this.holdTime && this.activeIndex != null) {
             this.drawLingeringLine(this.activeIndex);
         }
-        this.done = (this.currentIndex >= this.totalChars);
-        if ( true === this.done )
+        this.animationDone = (this.currentIndex >= this.totalChars);
+        if ( true === this.animationDone )
             this.onComplete();
     }
 }

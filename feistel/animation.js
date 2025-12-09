@@ -5,14 +5,21 @@ export default class Animation {
         this.canvas = cnvs;
         this.ctx = cnvs.getContext("2d");
         this.layoutRegistered = false;
-        this.done = false;
+        this.animationDone = false;
         this.started = false;
+        this.finished = false;
     }
     start() {
         this.started = true;
     }
+    finish() {
+        this.finished = true;
+    }
+    isFinished() {
+        return this.finished;
+    }
     isComplete() {
-        return this.done;
+        return this.animationDone;
     }
     onComplete() {}
     run(dt, elapsedTime) {

@@ -26,7 +26,7 @@ export default class TransformMediator extends Mediator {
         this.indices.onUnderline = this.handleIndices;
     }
     isComplete() {
-        this.done = (this.plaintext.isComplete()
+        this.animationDone = (this.plaintext.isComplete()
             && this.alphabet.isComplete()
             && this.indices.isComplete()
             && this.transformed_plaintext.isComplete());

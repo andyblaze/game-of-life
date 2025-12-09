@@ -4,6 +4,7 @@ import FeistelNetwork from "./feistel.js";
 import Animator from "./animator.js";
 import Scheduler from "./scheduler.js";
 import EventContext from "./event-context.js";
+import DeltaReport from "./delta-report.js";
 
 function initCanvas(id) {
     const onscreen = byId(id);
@@ -44,9 +45,9 @@ encryptDecrypt(plaintext);
 const animator = new Animator(onscreen);
 EventContext.setEvents(visitor.getData());
 const scheduler = new Scheduler(animator);
+scheduler.start();
 
 let startTime = null;
-let elapsedSeconds = 0;
 let elapsedTime = 0;
 let lastTime = null;
 function animate(timestamp) {
@@ -57,10 +58,10 @@ function animate(timestamp) {
     const dt = timestamp - lastTime; // milliseconds since last frame
     elapsedTime = timestamp - startTime;
     lastTime = timestamp;
-    elapsedSeconds = Math.floor(elapsedTime / 1000);
-    scheduler.update(elapsedSeconds);
+    scheduler.update();
     onCtx.clearRect(0, 0, onscreen.width, onscreen.height);
     animator.notify(dt, elapsedTime);
+    DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
 

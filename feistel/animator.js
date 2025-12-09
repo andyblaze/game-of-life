@@ -4,6 +4,7 @@ export default class Animator {
         this.canvas = cnvs;
         this.ctx = cnvs.getContext("2d");
         this.animations = [];
+        this.currentScene = 0;
     }
     notify(dt, elapsedTime) {
         for ( let a of this.animations )
@@ -11,5 +12,8 @@ export default class Animator {
     }
     add(animation) {
         this.animations.push(animation);
+    }
+    isSceneComplete() {
+        return this.animations[this.currentScene].animationDone;
     }
 }

@@ -25,7 +25,7 @@ export default class IntroMediator extends Mediator {
         };
     }
     isComplete() {
-        this.done = (this.alphabet.isComplete()
+        this.animationDone = (this.alphabet.isComplete()
             && this.indices.isComplete()
             && this.plaintext.isComplete());
     }

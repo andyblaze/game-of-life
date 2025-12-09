@@ -76,7 +76,7 @@ export default class TextSlider extends Animation {
         };
     }
     run(dt, elapsedSeconds) {
-        if ( false === this.started || true === this.done) {
+        if ( false === this.started || true === this.animationDone) {
             this.draw(this.position, this.fixed);
             return;
         }
@@ -92,7 +92,7 @@ export default class TextSlider extends Animation {
             this.position = this.target;
             this.draw(this.position, this.fixed);
             this.registerLayout();
-            this.done = true;
+            this.animationDone = true;
             this.onComplete();
             return;
         }
