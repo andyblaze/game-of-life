@@ -8,10 +8,10 @@ export default class TextMover extends Animation {
         const evt = event;
         this.msg = event.data.string ?? "";
         this.speed = cfg.speed;
-        this.x = cfg.start.x;
+        /*this.x = cfg.start.x;
         this.y = cfg.start.y;
         this.targetX = cfg.target.x;
-        this.targetY = cfg.target.y;
+        this.targetY = cfg.target.y;*/
         this.textSz = this.measureText(this.msg);
     }
     setMsg(m) {
@@ -28,7 +28,7 @@ export default class TextMover extends Animation {
             h: this.textSz.height + 2
         };
     }
-    run(dt, elapsedSeconds) {
+    run(dt, elapsedSeconds) { return;
         if ( false === this.started || true === this.animationDone) {
             this.draw(this.x, this.y);
             return;
