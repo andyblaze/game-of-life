@@ -7,6 +7,8 @@ export default class BlockSplitScene extends Mediator {
     constructor(cnvs, data, cfg) {
         super(cnvs);
         const evt = EventContext.byId(cfg.direction, cfg.eventId);
+        const keys = Object.keys(evt.data);
+        console.log(evt.type, keys);
         for ( let a of cfg.actors ) {
             this[a.eventId] = this.animationFactory.create(
                 a.type, 

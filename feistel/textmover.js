@@ -5,8 +5,8 @@ export default class TextMover extends Animation {
     static type = "textMover";
     constructor(cnvs, event, cfg) {
         super(cnvs);
-        this.event = event;
-        this.msg = event.data.string;
+        const evt = event;
+        this.msg = event.data.string ?? "";
         this.speed = cfg.speed;
         this.x = cfg.start.x;
         this.y = cfg.start.y;
@@ -14,7 +14,9 @@ export default class TextMover extends Animation {
         this.targetY = cfg.target.y;
         this.textSz = this.measureText(this.msg);
     }
-    
+    setMsg(m) {
+        this.msg = m;
+    }
     draw(x, y) {
         this.ctx.fillText(this.msg, x, y);
     }
