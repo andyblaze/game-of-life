@@ -16,5 +16,11 @@ export const animationConfig = [
             {type:"underliner", eventId:"indices", config:{}},
             {type:"textRenderer", eventId:"transformed_plaintext", config:{"x":40, "y": 128}}
         ]       
-    } } 
+    } }/*,
+    { type: "blocksplitScene", "config": {
+        direction: "encrypt", "speed": 0.1, eventId:"block_split",
+        actors:[
+            {type:"textMover", eventId:"block_split", config:{target:{"x": 80, "y": 500}}}
+        ]       
+    } }  */  
 ];

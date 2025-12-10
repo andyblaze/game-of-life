@@ -38,9 +38,9 @@ export default class Animation {
         );
         return { width: Math.floor(metrics.width), height: h};
     }
-    registerLayout() {
+    registerLayout(suffix="") {
         if ( this.layoutRegistered === true ) return;
-        LayoutRegistry.register(this.event.type, this.getBoundingRect());
+        LayoutRegistry.register(this.event.type + suffix, this.getBoundingRect());
         this.layoutRegistered = true;
     }
 }
