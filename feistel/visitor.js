@@ -13,28 +13,21 @@ export default class FeistelVisitor {
         else d = data;
         this.events[direction].push({"type": type, "data": d});
     }
-    getDataStr() {
+    buildData() {
         let result = {"encrypt": [], "decrypt":[]};
-        for ( const [idx, e] of this.events.encrypt.entries()) {
-            //e.time = idx;
+        for ( let e of this.events.encrypt) {
             result.encrypt.push(e);
         }
-        for ( const [idx, e] of this.events.decrypt.entries()) {
-            //e.time = idx;
-            result.decrypt.push(e);
-        }
-        return JSON.stringify(result);
-    }
-    getData() { 
-        let result = {"encrypt": [], "decrypt":[]};
-        for ( const [idx, e] of this.events.encrypt.entries()) {
-            //e.time = idx;
-            result.encrypt.push(e);
-        }
-        for ( const [idx, e] of this.events.decrypt.entries()) {
-            //e.time = idx;
+        for ( let e of this.events.decrypt) {
             result.decrypt.push(e);
         }
         return result;
+    }
+    getDataStr() {
+        const result = this.buildData();
+        return JSON.stringify(result);
+    }
+    getData() { 
+        return this.buildData();
    }
 }
