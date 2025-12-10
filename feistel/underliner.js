@@ -9,6 +9,7 @@ export default class Underliner extends Animation {
         this.layout = LayoutRegistry.layoutFor(cfg.type);
         const evt = EventContext.byId(cfg.direction, cfg.type); 
         this.tokens = evt.data.array;
+        this.targetLength = evt.data.string.length;
         // Animation state
         this.currentIndex = 0;          // index of char currently underlining
         this.activeIndex = null;
@@ -61,7 +62,7 @@ export default class Underliner extends Animation {
         this.manualIndex = (null === idx ? this.tokens.indexOf(token) : idx);
         this.manualIndexTracker += 1;
         this.animationDone = (this.manualIndexTracker >= this.totalChars);
-        console.log("underline", this.animationDone);
+        //console.log("underline", this.manualIndexTracker , this.targetLength, this.animationDone);
         this.onUnderline(this.tokens[this.manualIndex], this.manualIndex);
     }
     drawUnderline(rect) {

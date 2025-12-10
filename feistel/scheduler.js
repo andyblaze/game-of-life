@@ -20,7 +20,7 @@ export default class Scheduler {
             scene.config
         ));
     }
-    update() { if ( this.currentIndex >= animationConfig.length ) return; console.log(this.currentIndex);
+    update() { if ( this.currentIndex >= animationConfig.length ) return; //console.log(this.currentIndex);
         if ( this.animator.isSceneComplete() ) {
             this.currentIndex++;
             if ( this.currentIndex < animationConfig.length ) {
