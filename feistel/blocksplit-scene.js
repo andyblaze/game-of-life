@@ -10,7 +10,7 @@ export default class BlockSplitScene extends Mediator {
         const evt = EventContext.byId(cfg.direction, cfg.eventId);
         const [left, right] = Object.keys(evt.data);
         const layout = LayoutRegistry.layoutFor(cfg.layout);
-        console.log(layout);
+        console.log(cfg.layout, layout);
         const actor1 = evt.type + "_" + left;
         const actor2 = evt.type + "_" + right;
         /*for ( let a of cfg.actors ) {

@@ -26,10 +26,11 @@ export default class TransformScene extends Mediator {
         this.indices.onUnderline = this.handleIndices;
     }
     isComplete() {
-        this.animationDone = (this.plaintext.isComplete()
+        this.animationDone = (/*this.plaintext.isComplete()
             && this.alphabet.isComplete()
             && this.indices.isComplete()
-            && this.transformed_plaintext.isComplete());
+            && */this.transformed_plaintext.isComplete());
+        console.log(this.animationDone);
     }
     handlePlaintext(token, charIndex) { 
         this.alphabet.underlineAt(token);
