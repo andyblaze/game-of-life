@@ -61,6 +61,7 @@ export default class Underliner extends Animation {
         this.manualIndex = (null === idx ? this.tokens.indexOf(token) : idx);
         this.manualIndexTracker += 1;
         this.animationDone = (this.manualIndexTracker >= this.totalChars);
+        console.log("underline", this.animationDone);
         this.onUnderline(this.tokens[this.manualIndex], this.manualIndex);
     }
     drawUnderline(rect) {
