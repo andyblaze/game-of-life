@@ -4,14 +4,14 @@ import Animation from "./animation.js";
 export default class TextMover extends Animation {
     static type = "textMover";
     constructor(cnvs, event, cfg) {
-        super(cnvs);
+        super(cnvs); console.log(event);
         const evt = event;
         this.msg = event.data.string ?? "";
         this.speed = cfg.speed;
-        /*this.x = cfg.start.x;
+        this.x = cfg.start.x;
         this.y = cfg.start.y;
         this.targetX = cfg.target.x;
-        this.targetY = cfg.target.y;*/
+        this.targetY = cfg.target.y;
         this.textSz = this.measureText(this.msg);
     }
     setMsg(m) {
@@ -28,7 +28,7 @@ export default class TextMover extends Animation {
             h: this.textSz.height + 2
         };
     }
-    run(dt, elapsedSeconds) { return;
+    run(dt, elapsedSeconds) { 
         if ( false === this.started || true === this.animationDone) {
             this.draw(this.x, this.y);
             return;

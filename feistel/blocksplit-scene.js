@@ -10,27 +10,34 @@ export default class BlockSplitScene extends Mediator {
         const evt = EventContext.byId(cfg.direction, cfg.eventId);
         const [left, right] = Object.keys(evt.data);
         const fakeEvts = [
-            {"name": evt.type + "_" + left,  "data": { "array": evt.data.left,  "string": evt.data.left.join("") }},
-            {"name": evt.type + "_" + right, "data": { "array": evt.data.right, "string": evt.data.right.join("") }}
+            {   "name": evt.type + "_" + left,  
+                "data": { "array": evt.data.left,  "string": evt.data.left.join("") }
+            },
+            {   "name": evt.type + "_" + right, 
+                "data": { "array": evt.data.right, "string": evt.data.right.join("") }
+            }
         ];
         
         const layout = LayoutRegistry.layoutFor(cfg.layout);
-        cfg.start1 = {"x": layout.x, "y": layout.y};
-        cfg.start2 = {"x": Math.floor(layout.x / 2), "y": layout.y};
-        console.log(fakeEvts, cfg.layout, layout);
-        const actor1 = { "type": evt.type + "_" + left,  "data": evt.data.right };
-        const actor2 = { "type": evt.type + "_" + right, "data": evt.data.left };
-        /*for ( let a of cfg.actors ) {
-            this[a.eventId] = this.animationFactory.create(
+        cfg.actors[0].config.start = {"x": layout.x, "y": layout.y};
+        cfg.actors[1].config.start = {"x": this.calcRightBlockX(layout), "y": layout.y};
+        //console.log(cfg.actors);
+        //const actor1 = { "type": evt.type + "_" + left,  "data": evt.data.right };
+        //const actor2 = { "type": evt.type + "_" + right, "data": evt.data.left };
+        for ( const [idx, a] of cfg.actors.entries() ) {
+            this[fakeEvts[idx].name] = this.animationFactory.create(
                 a.type, 
-                EventContext.byId(cfg.direction, a.eventId),
+                fakeEvts[idx],
                 a.config
             );
         }
         this.block_split_left.start();
         this.active.push(this.block_split_left);
         this.block_split_right.start();
-        this.active.push(this.block_split_right);*/
+        this.active.push(this.block_split_right);
+    }
+    calcRightBlockX(layout) {
+        return Math.floor(layout.w / 2) + layout.x;
     }
     isComplete() {
         this.animationDone = false;//this.block_split.isComplete();
