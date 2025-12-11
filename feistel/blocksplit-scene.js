@@ -21,6 +21,8 @@ export default class BlockSplitScene extends Mediator {
         const layout = LayoutRegistry.layoutFor(cfg.layout);
         cfg.actors[0].config.start = {"x": layout.x, "y": layout.y};
         cfg.actors[1].config.start = {"x": this.calcRightBlockX(layout), "y": layout.y};
+        cfg.actors[0].config.speed = cfg.speed;
+        cfg.actors[1].config.speed = cfg.speed;
         //console.log(cfg.actors);
         //const actor1 = { "type": evt.type + "_" + left,  "data": evt.data.right };
         //const actor2 = { "type": evt.type + "_" + right, "data": evt.data.left };
