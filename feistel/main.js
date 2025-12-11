@@ -61,7 +61,7 @@ function animate(timestamp) {
     scheduler.update();
     onCtx.clearRect(0, 0, onscreen.width, onscreen.height);
     animator.notify(dt, elapsedTime);
-    DeltaReport.log(timestamp);
+    //DeltaReport.log(timestamp);
     requestAnimationFrame(animate);
 }
 

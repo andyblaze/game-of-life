@@ -9,10 +9,17 @@ export default class BlockSplitScene extends Mediator {
         super(cnvs);
         const evt = EventContext.byId(cfg.direction, cfg.eventId);
         const [left, right] = Object.keys(evt.data);
+        const fakeEvts = [
+            {"name": evt.type + "_" + left,  "data": { "array": evt.data.left,  "string": evt.data.left.join("") }},
+            {"name": evt.type + "_" + right, "data": { "array": evt.data.right, "string": evt.data.right.join("") }}
+        ];
+        
         const layout = LayoutRegistry.layoutFor(cfg.layout);
-        console.log(cfg.layout, layout);
-        const actor1 = evt.type + "_" + left;
-        const actor2 = evt.type + "_" + right;
+        cfg.start1 = {"x": layout.x, "y": layout.y};
+        cfg.start2 = {"x": Math.floor(layout.x / 2), "y": layout.y};
+        console.log(fakeEvts, cfg.layout, layout);
+        const actor1 = { "type": evt.type + "_" + left,  "data": evt.data.right };
+        const actor2 = { "type": evt.type + "_" + right, "data": evt.data.left };
         /*for ( let a of cfg.actors ) {
             this[a.eventId] = this.animationFactory.create(
                 a.type, 
