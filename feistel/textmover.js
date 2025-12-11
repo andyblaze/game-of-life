@@ -4,7 +4,7 @@ import Animation from "./animation.js";
 export default class TextMover extends Animation {
     static type = "textMover";
     constructor(cnvs, event, cfg) {
-        super(cnvs); console.log(event);
+        super(cnvs); 
         const evt = event;
         this.msg = event.data.string ?? "";
         this.speed = cfg.speed;
@@ -12,6 +12,7 @@ export default class TextMover extends Animation {
         this.y = cfg.start.y;
         this.targetX = cfg.target.x;
         this.targetY = cfg.target.y;
+        console.log(this.x, this.y, this.targetX, this.targetY);
         this.textSz = this.measureText(this.msg);
     }
     setMsg(m) {
@@ -36,9 +37,12 @@ export default class TextMover extends Animation {
         // Move toward target - simple linear interpolation
         this.x += (this.targetX - this.x) * this.speed;
         this.y += (this.targetY - this.y) * this.speed;
+        console.log(this.targetX, this.targetY, this.x, this.y);
         // Stop at target
-        const reached = (Math.abs(this.x - this.targetX) < 0.5 &&
-            Math.abs(this.y - this.targetY) < 0.5);
+        const reached = (
+            Math.abs(this.x - this.targetX) < 0.5 &&
+            Math.abs(this.y - this.targetY) < 0.5
+        );
         // If done, return early
         if ( reached ) {
             this.x = this.targetX;
