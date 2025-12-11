@@ -6,13 +6,13 @@ export default class TextMover extends Animation {
     constructor(cnvs, event, cfg) {
         super(cnvs); 
         this.event = event;
-        this.msg = this.event.data.string ?? "";
+        this.msg = this.event.data.string;
         this.speed = cfg.speed;
         this.x = cfg.start.x;
         this.y = cfg.start.y;
         this.targetX = cfg.target.x;
         this.targetY = cfg.target.y;
-        console.log(this.x, this.y, this.targetX, this.targetY);
+        //console.log(this.x, this.y, this.targetX, this.targetY);
         this.textSz = this.measureText(this.msg);
     }
     setMsg(m) {
@@ -35,14 +35,14 @@ export default class TextMover extends Animation {
             return;
         }
         // Move toward target - simple linear interpolation
-        console.log("b", this.targetX, this.targetY, this.x, this.y);
+        //console.log("b", this.targetX, this.targetY, this.x, this.y);
         this.x += (this.targetX - this.x) * this.speed;
         this.y += (this.targetY - this.y) * this.speed;
-        console.log("a", this.targetX, this.targetY, this.x, this.y);
+        //console.log("a", this.targetX, this.targetY, this.x, this.y);
         // Stop at target
         const reached = (
-            Math.abs(this.x - this.targetX) < 0.5 &&
-            Math.abs(this.y - this.targetY) < 0.5
+            Math.abs(this.x - this.targetX) < 1 &&
+            Math.abs(this.y - this.targetY) < 1
         );
         // If done, return early
         if ( reached ) {

@@ -29,15 +29,19 @@ export default class TextRenderer extends Animation {
         if ( this.currentIndex >= this.tokens.length ) { 
             this.registerLayout();
             this.animationDone = true;
+            this.clear();
         }
             
     }
     draw() {
+        if ( this.msg.length === 0 ) return;
         const rect = this.getBoundingRect();
         this.x = (this.canvas.width - rect.w) / 2;
         this.ctx.fillText(this.msg, this.x, this.y);
     }
     clear() {
+        const rect = this.getBoundingRect();
+        this.ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
         this.msg = "";
     }
 }

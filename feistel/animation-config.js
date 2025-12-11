@@ -18,7 +18,7 @@ export const animationConfig = [
         ]       
     } },
     { type: "blocksplitScene", "config": {
-        direction: "encrypt", speed: 0.03, eventId:"block_split", layout: "transformed_plaintext",
+        direction: "encrypt", speed: 0.05, eventId:"block_split", layout: "transformed_plaintext",
         actors:[
             {type:"textMover", eventId:"block_split", config:{target:{"x": 80, "y": 500}}},
             {type:"textMover", eventId:"block_split", config:{target:{"x": 80, "y": 530}}}
