@@ -18,10 +18,10 @@ export const animationConfig = [
         ]       
     } },
     { type: "blocksplitScene", "config": {
-        direction: "encrypt", speed: 0.05, eventId:"block_split", layout: "transformed_plaintext",
+        direction: "encrypt", eventId:"block_split", layout: "transformed_plaintext",
         actors:[
-            {type:"textMover", eventId:"block_split", config:{target:{"x": 80, "y": 500}}},
-            {type:"textMover", eventId:"block_split", config:{target:{"x": 80, "y": 530}}}
+            {type:"textMover", eventId:"block_split_left",  config:{target:{"x": 40, "y": 128}, speed: 0.05}},
+            {type:"textMover", eventId:"block_split_right", config:{target:{"x": 40, "y": 158}, speed: 0.05}}
         ]       
     } } 
 ];

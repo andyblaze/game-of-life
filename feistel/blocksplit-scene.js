@@ -9,27 +9,22 @@ export default class BlockSplitScene extends Mediator {
         super(cnvs);
         const evt = EventContext.byId(cfg.direction, cfg.eventId);
         const [left, right] = Object.keys(evt.data);
-        const fakeEvts = [
-            {   "name": evt.type + "_" + left,  
+        const blockEvents = [
+            {   "type": "",  
                 "data": { "array": evt.data.left,  "string": evt.data.left.join("") }
             },
-            {   "name": evt.type + "_" + right, 
+            {   "type": "", 
                 "data": { "array": evt.data.right, "string": evt.data.right.join("") }
             }
         ];
         
         const layout = LayoutRegistry.layoutFor(cfg.layout);
-        cfg.actors[0].config.start = {"x": layout.x, "y": layout.y};
-        cfg.actors[1].config.start = {"x": this.calcRightBlockX(layout), "y": layout.y};
-        cfg.actors[0].config.speed = cfg.speed;
-        cfg.actors[1].config.speed = cfg.speed;
-        //console.log(cfg.actors);
-        //const actor1 = { "type": evt.type + "_" + left,  "data": evt.data.right };
-        //const actor2 = { "type": evt.type + "_" + right, "data": evt.data.left };
         for ( const [idx, a] of cfg.actors.entries() ) {
-            this[fakeEvts[idx].name] = this.animationFactory.create(
+            blockEvents[idx].type = a.eventId;
+            a.config.start = this.blockStart(layout, a.eventId);
+            this[a.eventId] = this.animationFactory.create(
                 a.type, 
-                fakeEvts[idx],
+                blockEvents[idx],
                 a.config
             );
         }
@@ -38,11 +33,15 @@ export default class BlockSplitScene extends Mediator {
         this.block_split_right.start();
         this.active.push(this.block_split_right);
     }
-    calcRightBlockX(layout) {
-        return Math.floor(layout.w / 2) + layout.x;
+    blockStart(layout, evtId) {
+        return (
+            evtId === "block_split_left" ? 
+            {"x": layout.x, "y": layout.y} : 
+            {"x": Math.floor(layout.w / 2) + layout.x, "y": layout.y}
+        );
     }
     isComplete() {
-        this.animationDone = false;//this.block_split.isComplete();
+        this.animationDone = this.block_split_right.isComplete();
     }
     // animation frame driver
     run(dt, elapsedTime) {
