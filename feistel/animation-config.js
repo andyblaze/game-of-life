@@ -14,7 +14,7 @@ export const animationConfig = [
             {type:"underliner", eventId:"plaintext", config:{}},
             {type:"underliner", eventId:"alphabet", config:{}},
             {type:"underliner", eventId:"indices", config:{}},
-            {type:"textRenderer", eventId:"transformed_plaintext", config:{"x":40, "y": 128}}
+            {type:"tokenRenderer", eventId:"transformed_plaintext", config:{"x":40, "y": 128}}
         ]       
     } },
     { type: "blocksplitScene", "config": {

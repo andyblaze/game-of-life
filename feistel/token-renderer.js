@@ -2,8 +2,8 @@ import Animation from "./animation.js";
 import EventContext from "./event-context.js";
 import LayoutRegistry from "./layout-registry.js";
 
-export default class TextRenderer extends Animation {
-    static type = "textRenderer";
+export default class TokenRenderer extends Animation {
+    static type = "tokenRenderer";
     constructor(cnvs, event, cfg) {
         super(cnvs);
         const evt = EventContext.byId(cfg.direction, cfg.type); 
@@ -30,8 +30,7 @@ export default class TextRenderer extends Animation {
             this.registerLayout();
             this.animationDone = true;
             this.clear();
-        }
-            
+        }            
     }
     draw() {
         if ( this.msg.length === 0 ) return;
