@@ -7,31 +7,32 @@ export default class BlockSplitScene extends Mediator {
     static type = "blocksplitScene";
     constructor(cnvs, data, cfg) {
         super(cnvs);
-        const evt = EventContext.byId(cfg.direction, cfg.eventId);
-        const [left, right] = Object.keys(evt.data);
-        const blockEvents = [
-            {   "type": "",  
-                "data": { "array": evt.data.left,  "string": evt.data.left.join("") }
-            },
-            {   "type": "", 
-                "data": { "array": evt.data.right, "string": evt.data.right.join("") }
-            }
-        ];
-        
+        const evt = EventContext.byId(cfg.direction, cfg.eventId);     
         const layout = LayoutRegistry.layoutFor(cfg.layout);
+        
         for ( const [idx, a] of cfg.actors.entries() ) {
-            blockEvents[idx].type = a.eventId;
+            const blockEvent = this.createBlockEvent(idx, evt, a.eventId);
             a.config.start = this.blockStart(layout, a.eventId);
             this[a.eventId] = this.animationFactory.create(
                 a.type, 
-                blockEvents[idx],
+                blockEvent,
                 a.config
             );
         }
+        
         this.block_split_left.start();
         this.active.push(this.block_split_left);
         this.block_split_right.start();
         this.active.push(this.block_split_right);
+    }
+    createBlockEvent(idx, evt, evtId) {
+        return { 
+            "type": evtId,  
+            "data": {
+                "array": idx === 0 ? evt.data.left : evt.data.right,
+                "string": idx === 0 ? evt.data.left.join("") : evt.data.right.join("")
+            }
+        };
     }
     blockStart(layout, evtId) {
         return (
