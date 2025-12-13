@@ -6,6 +6,7 @@ import TextRenderer from "./text-renderer.js";
 import TransformScene from "./transform-scene.js";
 import IntroScene from "./intro-scene.js";
 import BlockSplitScene from "./blocksplit-scene.js";
+import FeistelRunnerScene from "./feistel-runner-scene.js";
 
 export const AnimationRegistry = {
     [TextSlider.type]: TextSlider,
@@ -15,5 +16,6 @@ export const AnimationRegistry = {
     [TextRenderer.type]: TextRenderer,
     [TransformScene.type]: TransformScene,
     [IntroScene.type]: IntroScene,
-    [BlockSplitScene.type]: BlockSplitScene
+    [BlockSplitScene.type]: BlockSplitScene,
+    [FeistelRunnerScene.type]: FeistelRunnerScene
 };

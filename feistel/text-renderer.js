@@ -6,10 +6,10 @@ export default class TextRenderer extends Animation {
     static type = "textRenderer";
     constructor(cnvs, event, cfg) {
         super(cnvs);
-        const evt = EventContext.byId(cfg.direction, cfg.type); 
-        this.event = evt;
-        this.tokens = evt.data.array;
-        this.msg = evt.data.string;
+        //const evt = EventContext.byId(cfg.direction, cfg.type); 
+        this.event = event;
+        this.tokens = this.event.data.array;
+        this.msg = this.event.data.string;
         this.x = cfg.x; // default x
         this.y = cfg.y; // default y
         this.textSz = this.measureText(this.msg);
@@ -43,5 +43,12 @@ export default class TextRenderer extends Animation {
         const rect = this.getBoundingRect();
         this.ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
         this.msg = "";
+    }
+    run(dt, elapsedSeconds) {
+        if ( false === this.started || true === this.animationDone) {
+            this.draw();
+            return;
+        }
+        this.draw();
     }
 }

@@ -23,5 +23,11 @@ export const animationConfig = [
             {type:"textMover", eventId:"block_split_left",  config:{target:{"x": 40, "y": 128}, speed: 0.05}},
             {type:"textMover", eventId:"block_split_right", config:{target:{"x": 40, "y": 158}, speed: 0.05}}
         ]       
+    } }, 
+    { type: "feistelRunnerScene", "config": {
+        direction: "encrypt", eventId:"get_order",
+        actors:[
+            {type:"textRenderer", eventId:"get_order",  config:{"x": 40, "y": 228}}
+        ]       
     } } 
 ];

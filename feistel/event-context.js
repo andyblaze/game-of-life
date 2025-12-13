@@ -18,7 +18,7 @@ export default class EventContext {
     static getEvent(direction, index) {
         return this.events[direction][index];
     }
-    static byId(direction, type) {
+    static byId(direction, type) { //console.log(direction, type);
         const idx = this.eventMap[direction][type]; 
         if (idx === undefined) return null;  
         return this.events[direction][idx];
