@@ -1,49 +1,47 @@
+import EventContext from "./event-context.js";
+import LayoutRegistry from "./layout-registry.js";
+import TextRenderer from "./text-renderer.js";
 
-highlight(x, y, w) {
-    const ctx = this.ctx;
+export default class TextHiliter extends TextRenderer {
+    static type = "textHiliter";
+    constructor(cnvs, event, cfg) {
+        super(cnvs, event, cfg);
+        this.separator = cfg.separator ?? "";
+        this.msg = this.tokens.join(this.separator);
+        this.getBoundingRect(true);
+        this.sepWidth = this.ctx.measureText(this.separator).width;
+        this.hiliteIndex = cfg.hiliteIndex;
+    }
+    hilite(x, y, w) {
+        if ( ! this.hiliteBg ) return;
 
-    if (!this.highlightBg) return;
+        this.ctx.fillStyle = this.hiliteBg;
+        this.ctx.fillRect(
+            x,
+            y - this.fontSize,
+            w,
+            this.fontSize * 1.2
+        );
+    }
+    draw() {
+        for ( let i = 0; i < this.tokens.length; i++ ) {
+            const tok = String(this.tokens[i]);
+            const w = ctx.measureText(tok).width;
 
-    ctx.fillStyle = this.highlightBg;
-    ctx.fillRect(
-        x,
-        y - this.fontSize,
-        w,
-        this.fontSize * 1.2
-    );
-}
-draw() {
-    if (!this.tokens || this.tokens.length === 0) return;
+            if ( i === this.hiliteIndex ) {
+                this.hilite(this.drawX, this.y, w);
+            } 
 
-    const ctx = this.ctx;
-    ctx.font = this.font;
+            this.ctx.fillText(tok, this.drawX, this.y);
+            this.drawX += w;
 
-    this.getBoundingRect(true);
-
-    const sep = this.separator ?? "";
-    const sepWidth = sep ? ctx.measureText(sep).width : 0;
-
-    let x = this.justifyText();
-    const y = this.y;
-
-    for (let i = 0; i < this.tokens.length; i++) {
-        const tok = String(this.tokens[i]);
-        const w = ctx.measureText(tok).width;
-
-        if (i === this.highlightIndex) {
-            this.highlight(x, y, w);
-            ctx.fillStyle = this.highlightColor;
-        } else {
-            ctx.fillStyle = this.color;
+            if ( this.separator && i < this.tokens.length - 1 ) {
+                this.ctx.fillText(this.separator, this.drawX, this.y);
+                this.drawX += this.sepWidth;
+            }
         }
-
-        ctx.fillText(tok, x, y);
-        x += w;
-
-        if (sep && i < this.tokens.length - 1) {
-            ctx.fillStyle = this.color;
-            ctx.fillText(sep, x, y);
-            x += sepWidth;
-        }
+        this.getBoundingRect(true);
+        this.registerLayout();
+        this.animationDone = true;
     }
 }
