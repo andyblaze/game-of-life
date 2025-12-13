@@ -13,6 +13,7 @@ export default class FeistelRunnerScene extends Mediator {
                 a.config
             );
         }
+        this.get_order.setMsg(this.get_order.getMsg(), "Round: ");
         this.get_order.start();
         this.active.push(this.get_order);
     }

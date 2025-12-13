@@ -16,6 +16,13 @@ export default class TextRenderer extends Animation {
         this.justify = cfg.justify ?? "left";
         this.drawX = this.justifyText();
     }
+    setMsg(m, prefix="", suffix="") {
+        this.msg = prefix + m + suffix;
+        this.textSz = this.measureText(this.msg);
+    }
+    getMsg() {
+        return this.msg;
+    }
     justifyText() {
         if ( this.justify === "left" )      return this.x;
         const rect = this.getBoundingRect();
