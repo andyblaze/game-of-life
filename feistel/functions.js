@@ -34,6 +34,10 @@ export function to5Bit(n) {
     return n.toString(2).padStart(5, "0");
 }
 
+export function to8Bit(n) {
+    return n.toString(2).padStart(8, "0");
+}
+
 export function from5Bit(bin) {
     return parseInt(bin, 2);
 }

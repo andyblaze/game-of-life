@@ -58,7 +58,7 @@ export default class FeistelNetwork {
         const order = decrypt
             ? [...Array(this.rounds).keys()].reverse()
             : [...Array(this.rounds).keys()];
-        this.emit(direction, "get_order", order);
+        this.emit(direction, "round_order", order);
 
         for ( let r of order)  {
             this.emit(direction, "round_"+r, r);

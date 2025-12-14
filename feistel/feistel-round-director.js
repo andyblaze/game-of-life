@@ -14,11 +14,11 @@ export default class FeistelRoundDirector extends Mediator {
             );
         }
         //this.get_order.setMsg(this.get_order.getMsg(), "Round: ");
-        this.get_order.start();
-        this.active.push(this.get_order);
+        this.round_order.start();
+        this.active.push(this.round_order);
     }
     isComplete() {
-        this.animationDone = (this.get_order.isComplete());
+        this.animationDone = (this.round_order.isComplete());
     }
     // animation frame driver
     run(dt, elapsedTime) {

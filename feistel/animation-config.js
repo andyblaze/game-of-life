@@ -25,9 +25,9 @@ export const animationConfig = [
         ]       
     } }, 
     { type: "feistelRoundDirector", "config": {
-        direction: "encrypt", eventId:"get_order",
+        direction: "encrypt", eventId:"round_order",
         actors:[
-            {type:"textHiliter", eventId:"get_order",  config:{"x": 40, "y": 228, "hiliteIndex": 2, "separator": ", "}}
+            {type:"textHiliter", eventId:"round_order",  config:{"x": 40, "y": 228, "hiliteIndex": 2, "separator": ", "}}
         ]       
     } } 
 ];
