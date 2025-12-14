@@ -35,7 +35,7 @@ export default class TextHiliter extends TextRenderer {
         this.registerLayout();
         this.layoutDirty = false;
     }
-    hilite(x, y, w) { //console.log(x, y, w);
+    hilite(x, y, w) { 
         this.ctx.save();
         this.ctx.fillStyle = "yellow";
         this.ctx.fillRect(x, y + this.bounds.h+2, w, 2);
