@@ -40,6 +40,15 @@ function encryptDecrypt(msg) {
     //byId("visitor-data").innerText = visitor.getDataStr();
 }
 
+function saveFile() {
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(new Blob([visitor.getDataStr()], { type: 'application/json' }));
+  a.href = url;
+  a.download = 'view-data.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 encryptDecrypt(plaintext);
 
 const animator = new Animator(onscreen);
@@ -68,3 +77,4 @@ function animate(timestamp) {
 animate(performance.now());
 
 addEvent("encryptBtn", "click", encryptDecrypt);
+addEvent("saveBtn", "click", saveFile);
