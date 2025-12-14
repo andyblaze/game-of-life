@@ -2,8 +2,8 @@ import TextRenderer from "./text-renderer.js";
 import EventContext from "./event-context.js";
 import Mediator from "./mediator.js";
 
-export default class FeistelRunnerScene extends Mediator {
-    static type = "feistelRunnerScene";
+export default class FeistelRoundDirector extends Mediator {
+    static type = "feistelRoundDirector";
     constructor(cnvs, data, cfg) {
         super(cnvs); 
         for ( let a of cfg.actors ) { //console.log(cfg.direction, a.eventId);
@@ -13,7 +13,7 @@ export default class FeistelRunnerScene extends Mediator {
                 a.config
             );
         }
-        this.get_order.setMsg(this.get_order.getMsg(), "Round: ");
+        //this.get_order.setMsg(this.get_order.getMsg(), "Round: ");
         this.get_order.start();
         this.active.push(this.get_order);
     }

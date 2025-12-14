@@ -8,40 +8,47 @@ export default class TextHiliter extends TextRenderer {
         super(cnvs, event, cfg);
         this.separator = cfg.separator ?? "";
         this.msg = this.tokens.join(this.separator);
-        this.getBoundingRect(true);
+        this.bounds = this.getBoundingRect(true);
         this.sepWidth = this.ctx.measureText(this.separator).width;
+        this.tokenOffsets = [];      // x offset per token
+        this.tokenWidths = [];       // width per token
         this.hiliteIndex = cfg.hiliteIndex;
+        this.layoutDirty = true;
+        this.rebuildLayout();
     }
-    hilite(x, y, w) {
-        if ( ! this.hiliteBg ) return;
+    rebuildLayout() {
+        let x = 0;
+        this.tokenOffsets = [];
+        this.tokenWidths = [];
 
-        this.ctx.fillStyle = this.hiliteBg;
-        this.ctx.fillRect(
-            x,
-            y - this.fontSize,
-            w,
-            this.fontSize * 1.2
-        );
-    }
-    draw() {
-        for ( let i = 0; i < this.tokens.length; i++ ) {
+        for (let i = 0; i < this.tokens.length; i++) {
             const tok = String(this.tokens[i]);
-            const w = ctx.measureText(tok).width;
+            const w = this.ctx.measureText(tok).width;
 
-            if ( i === this.hiliteIndex ) {
-                this.hilite(this.drawX, this.y, w);
-            } 
+            this.tokenOffsets.push(x);
+            this.tokenWidths.push(w);
+            x += w;
 
-            this.ctx.fillText(tok, this.drawX, this.y);
-            this.drawX += w;
-
-            if ( this.separator && i < this.tokens.length - 1 ) {
-                this.ctx.fillText(this.separator, this.drawX, this.y);
-                this.drawX += this.sepWidth;
+            if (this.separator && i < this.tokens.length - 1) {
+                x += this.sepWidth;
             }
         }
         this.getBoundingRect(true);
         this.registerLayout();
-        this.animationDone = true;
+        this.layoutDirty = false;
+    }
+    hilite(x, y, w) { //console.log(x, y, w);
+        this.ctx.save();
+        this.ctx.fillStyle = "yellow";
+        this.ctx.fillRect(x, y + this.bounds.h+2, w, 2);
+        this.ctx.restore();
+    }
+    draw() {
+        if ( this.layoutDirty ) this.rebuildLayout();
+        // draw full text once
+        this.ctx.fillText(this.msg, this.drawX, this.y);
+        const x = this.drawX + this.tokenOffsets[this.hiliteIndex];
+        const w = this.tokenWidths[this.hiliteIndex];
+        this.hilite(x, this.y, w);
     }
 }

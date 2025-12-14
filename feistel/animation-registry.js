@@ -3,10 +3,11 @@ import TextMover from "./textmover.js";
 import Underliner from "./underliner.js";
 import TokenRenderer from "./token-renderer.js";
 import TextRenderer from "./text-renderer.js";
+import TextHiliter from "./text-hiliter.js";
 import TransformScene from "./transform-scene.js";
 import IntroScene from "./intro-scene.js";
 import BlockSplitScene from "./blocksplit-scene.js";
-import FeistelRunnerScene from "./feistel-runner-scene.js";
+import FeistelRoundDirector from "./feistel-round-director.js";
 
 export const AnimationRegistry = {
     [TextSlider.type]: TextSlider,
@@ -14,8 +15,9 @@ export const AnimationRegistry = {
     [Underliner.type]: Underliner,
     [TokenRenderer.type]: TokenRenderer,
     [TextRenderer.type]: TextRenderer,
+    [TextHiliter.type]: TextHiliter,
     [TransformScene.type]: TransformScene,
     [IntroScene.type]: IntroScene,
     [BlockSplitScene.type]: BlockSplitScene,
-    [FeistelRunnerScene.type]: FeistelRunnerScene
+    [FeistelRoundDirector.type]: FeistelRoundDirector
 };
