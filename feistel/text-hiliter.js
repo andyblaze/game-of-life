@@ -1,5 +1,3 @@
-import EventContext from "./event-context.js";
-import LayoutRegistry from "./layout-registry.js";
 import TextRenderer from "./text-renderer.js";
 
 export default class TextHiliter extends TextRenderer {
