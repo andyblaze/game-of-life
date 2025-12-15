@@ -4,7 +4,7 @@ $fname = 'view-data.json';
 $changes = [
     ['{"encrypt":[', "{\"encrypt\":[\n"],
     ['{"decrypt":[', "{\"decrypt\":[\n"],
-    [',{"time', ",\n{\"time"],
+    ['},{"type', "},\n{\"type"],
     ['","data"', "\",\n\"data\""],
     ['data":{"string', "data\":{\n\t\"string"],
     ['","array', "\",\n\t\"array"],

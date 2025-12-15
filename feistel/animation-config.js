@@ -9,7 +9,7 @@ export const animationConfig = [
         ]
     } }, 
     { type: "transformScene", "config": {
-        direction: "encrypt", stepTime:300, holdTime:300,
+        direction: "encrypt", stepTime:100, holdTime:100,
         actors:[
             {type:"underliner", eventId:"plaintext", config:{}},
             {type:"underliner", eventId:"alphabet", config:{}},
@@ -20,14 +20,14 @@ export const animationConfig = [
     { type: "blocksplitScene", "config": {
         direction: "encrypt", eventId:"block_split", layout: "transformed_plaintext",
         actors:[
-            {type:"textMover", eventId:"block_split_left",  config:{target:{"x": 40, "y": 128}, speed: 0.05}},
-            {type:"textMover", eventId:"block_split_right", config:{target:{"x": 40, "y": 158}, speed: 0.05}}
+            {type:"textMover", eventId:"block_split_left",  config:{target:{"x": 40, "y": 228}, speed: 0.05}},
+            {type:"textMover", eventId:"block_split_right", config:{target:{"x": 40, "y": 258}, speed: 0.05}}
         ]       
     } }, 
     { type: "feistelRoundDirector", "config": {
         direction: "encrypt", eventId:"round_order",
         actors:[
-            {type:"textHiliter", eventId:"round_order",  config:{"x": 40, "y": 228, "hiliteIndex": 0, "separator": " "}}
+            {type:"textHiliter", eventId:"round_order",  config:{"x": 40, "y": 128, "hiliteIndex": 0, "separator": " "}}
         ]       
     } } 
 ];
