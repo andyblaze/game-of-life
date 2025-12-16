@@ -1,4 +1,3 @@
-import TextMover from "./textmover.js";
 import EventContext from "./event-context.js";
 import LayoutRegistry from "./layout-registry.js";
 import Mediator from "./mediator.js";
