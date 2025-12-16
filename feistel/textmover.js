@@ -1,10 +1,12 @@
-import TextRenderer from "./text-renderer.js";
+import Animation from "./animation.js";
 
-export default class TextMover extends TextRenderer {
+export default class TextMover extends Animation {
     static type = "textMover";
 
     constructor(cnvs, event, cfg) {
-        super(cnvs, event, cfg);
+        super(cnvs);
+        this.event = event;
+        this.msg = this.event.data.string;
         this.speed = cfg.speed;
 
         this.x = cfg.start.x;
@@ -18,9 +20,23 @@ export default class TextMover extends TextRenderer {
         this.wpIndex = 0;
         this.targetX = this.waypoints[0].x;
         this.targetY = this.waypoints[0].y;
+
+        this.textSz = this.measureText(this.msg);
+    }
+    setMsg(m) {
+        this.msg = m;
+        this.textSz = this.measureText(this.msg);
     }
     draw(x, y) {
         this.ctx.fillText(this.msg, x, y);
+    }
+    getBoundingRect() {
+        return {
+            x: this.x,
+            y: this.y,
+            w: this.textSz.width,
+            h: this.textSz.height + 2
+        };
     }
     advanceWaypoint() {
         this.wpIndex++;

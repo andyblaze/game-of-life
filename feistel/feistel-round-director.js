@@ -1,4 +1,3 @@
-import TextRenderer from "./text-renderer.js";
 import EventContext from "./event-context.js";
 import Mediator from "./mediator.js";
 
@@ -13,7 +12,6 @@ export default class FeistelRoundDirector extends Mediator {
                 a.config
             );
         }
-        //this.get_order.setMsg(this.get_order.getMsg(), "Round: ");
         this.round_order.start();
         this.active.push(this.round_order);
     }
