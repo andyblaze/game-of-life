@@ -1,15 +1,13 @@
 import { isNumeric } from "./functions.js";
 import Animation from "./animation.js";
+import TextRenderer from "./text-renderer.js";
 
-export default class TextSlider extends Animation {
+export default class TextSlider extends TextRenderer {
     static type = "textSlider";
     constructor(cnvs, event, cfg) {
-        super(cnvs);
-        this.event = event;
-        this.msg = event.data.string;
+        super(cnvs, event, cfg);
         this.axis = cfg.axis || "horizontal"; // "horizontal" or "vertical"
         this.speed = cfg.speed;     // sign determines direction
-        this.textSz = this.measureText(this.msg);
         this.setFixed(cfg);
         this.setTarget(cfg); 
         this.setPosition(cfg);
@@ -66,14 +64,6 @@ export default class TextSlider extends Animation {
         if ( this.axis === "vertical" )
             [x, y] = [y, x];
         this.ctx.fillText(this.msg, x, y);
-    }
-    getBoundingRect() {
-        return {
-            x: (this.axis === "horizontal") ? this.position : this.fixed,
-            y: (this.axis === "horizontal") ? this.fixed : this.position,
-            w: this.textSz.width,
-            h: this.textSz.height + 2
-        };
     }
     run(dt, elapsedSeconds) {
         if ( false === this.started || true === this.animationDone) {
