@@ -5,7 +5,7 @@ export default class FeistelRoundDirector extends Mediator {
     static type = "feistelRoundDirector";
     constructor(cnvs, data, cfg) {
         super(cnvs); 
-        for ( let a of cfg.actors ) { //console.log(cfg.direction, a.eventId);
+        for ( let a of cfg.actors ) {
             this[a.eventId] = this.animationFactory.create(
                 a.type, 
                 EventContext.byId(cfg.direction, a.eventId),
