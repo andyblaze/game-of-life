@@ -20,7 +20,7 @@ export const animationConfig = [
     { type: "blocksplitScene", "config": {
         direction: "encrypt", eventId:"block_split", layout: "transformed_plaintext",
         actors:[
-            {type:"textMover", eventId:"block_split_left",  config:{target:{"x": 40, "y": 228}, speed: 0.05}},
+            {type:"textMover", eventId:"block_split_left",  config:{waypoints:[{"x": 500, "y": 700}, {"x": 40, "y": 228}], speed: 0.05}},
             {type:"textMover", eventId:"block_split_right", config:{target:{"x": 40, "y": 258}, speed: 0.05}}
         ]       
     } }, 
