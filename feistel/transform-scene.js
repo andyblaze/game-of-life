@@ -1,5 +1,3 @@
-import Underliner from "./underliner.js";
-import TokenRenderer from "./token-renderer.js";
 import Mediator from "./mediator.js";
 import EventContext from "./event-context.js";
 

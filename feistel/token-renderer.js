@@ -1,4 +1,3 @@
-import LayoutRegistry from "./layout-registry.js";
 import TextRenderer from "./text-renderer.js";
 
 export default class TokenRenderer extends TextRenderer {

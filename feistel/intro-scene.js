@@ -1,4 +1,3 @@
-import TextSlider from "./textslider.js";
 import EventContext from "./event-context.js";
 import Mediator from "./mediator.js";
 

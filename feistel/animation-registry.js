@@ -1,5 +1,5 @@
-import TextSlider from "./textslider.js";
-import TextMover from "./textmover.js";
+import TextSlider from "./text-slider.js";
+import TextMover from "./text-mover.js";
 import Underliner from "./underliner.js";
 import TokenRenderer from "./token-renderer.js";
 import TextRenderer from "./text-renderer.js";
