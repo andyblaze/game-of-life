@@ -1,9 +1,21 @@
-  <!-- Clickable towns: -->
-  <g class="town" id="st-ives" data-name="St Ives">
-    <circle cx="162" cy="125" r="9" fill="#e63946" />
-    <text x="168" y="125" font-size="10" fill="#333">St Ives</text>
-  </g>
-  <g class="town" id="newlyn" data-name="Newlyn">
-    <circle cx="92" cy="185" r="9" />
-    <text x="48" y="185">Newlyn</text>
-  </g>
+<!-- Clickable towns: -->
+<g class="town" id="st-ives" data-name="St Ives">
+<circle cx="136" cy="97" r="9" fill="#e63946" />
+<text x="126" y="114" font-size="10" fill="#333">SS</text>
+</g>
+<g class="town" id="newlyn" data-name="Newlyn">
+<circle cx="92" cy="185" r="9" />
+<text x="48" y="185">Newlyn</text>
+</g>
+<g class="town" id="penzance" data-name="Penzance">
+  <circle cx="111" cy="170" r="9" />
+  <text x="121" y="164">PZ</text>
+</g>
+<g class="town" id="truro" data-name="Truro">
+  <circle cx="366" cy="78" r="9" />
+  <text x="376" y="82">Truro</text>
+</g>
+<g class="town" id="falmouth" data-name="Falmouth">
+  <circle cx="373" cy="165" r="9" />
+  <text x="356" y="162">FH</text>
+</g>

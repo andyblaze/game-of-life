@@ -3,154 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>West Cornwall Board</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    :root {
-      --sea-blue: #CFE9F6;
-      --panel-bg: rgba(255, 255, 255, 0.85);
-      --panel-border: rgba(0, 0, 0, 0.1);
-      --panel-radius: 1rem;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--sea-blue);
-      overflow: hidden;
-      font-family: system-ui, sans-serif;
-    }
-
-    #game {
-      /*position: relative;*/
-      width: 100%;
-      height: 100%;
-      /*padding: 0 0 2rem 2rem;*/
-    }
-
-    /* Map */
-    #map {
-      /*position: absolute;*/
-      /*inset: 0;*/
-      /*display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1;*/
-    }
-    #svg-map {
-        /*width:100%;
-        height:100%;*/
-    }
-
-    #map img {
-      /*width: 100%;
-      height: 98%;
-      object-fit: contain;*/
-    }
-#map {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  /* padding: 0 2rem 2rem 0; left & bottom padding like you said */
-  background: #cfe9f6;
-}
-#map svg {
-  position: absolute;
-  top: 0;
-  right: 0;
-
-  width: calc(100% - 2rem);
-  height: calc(100% - 2rem);
-
-  display: block;
-}
-
-.town circle {
-  fill: #e63946;
-  cursor: pointer;
-}
-
-.town:hover circle {
-  fill: #ff7a7a;
-}
-
-.town text {
-  font-size: 0.6rem;
-  pointer-events: none;
-  fill: #000;
-}
-    /* UI panels */
-    .ui-panel {
-      position: absolute;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--panel-radius);
-      padding: 1rem;
-      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
-      z-index: 2;
-    }
-
-    #panel-top {
-      top: 2rem;
-      left: 5%;
-      /*transform: translateX(-50%);*/
-      width: min(32rem, 25vw);
-      text-align: center;
-    }
-
-    #panel-bottom-left {
-      bottom: 2rem;
-      left: 5%;
-      width: min(32rem, 25vw);
-    }
-
-    #panel-bottom-right {
-      bottom: 2rem;
-      right: 5%;
-      width: min(32rem, 25vw);
-    }
-
-    .panel-title {
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
-      opacity: 0.7;
-    }
-
-    .panel-content {
-      font-size: 0.9rem;
-    }
-#rotate-warning {
-  position: fixed;
-  inset: 0;
-  background: #cfe9f6;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-#rotate-warning .rotate-box {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 1.5rem 2rem;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
-
-.rotate-icon {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-}
-
-.rotate-text {
-  font-size: 1rem;
-  line-height: 1.4;
-}
-
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0 /">
+    <link href="css/site.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <div id="rotate-warning">
@@ -219,6 +73,39 @@
       warning.style.display = "none";
     }
   }
+  
+function getSvgCoords(evt, svg) {
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX;
+  pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+const svg = document.querySelector('#map svg');
+const townsLayer = svg.querySelector('#towns');
+
+svg.addEventListener('click', (e) => {
+  // ignore clicks on existing towns
+  if (e.target.closest('.town')) return;
+
+  let { x, y } = getSvgCoords(e, svg);
+  x = parseInt(x);
+  y = parseInt(y);
+  const name = prompt('Town name?');
+
+  if (!name) return;
+
+
+
+  console.log(`
+<g class="town" id="${name.toLowerCase()}" data-name="${name}">
+  <circle cx="${x}" cy="${y}" r="9" />
+  <text x="${(x + 10)}" y="${(y + 4)}">${name}</text>
+</g>
+`);
+});
+
+
 
   addEvent("load", resize);
   addEvent("resize", resize);
