@@ -1,0 +1,9 @@
+  <!-- Clickable towns: -->
+  <g class="town" id="st-ives" data-name="St Ives">
+    <circle cx="162" cy="125" r="9" fill="#e63946" />
+    <text x="168" y="125" font-size="10" fill="#333">St Ives</text>
+  </g>
+  <g class="town" id="newlyn" data-name="Newlyn">
+    <circle cx="92" cy="185" r="9" />
+    <text x="48" y="185">Newlyn</text>
+  </g>

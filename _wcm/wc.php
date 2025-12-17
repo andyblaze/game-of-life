@@ -24,21 +24,24 @@
     }
 
     #game {
-      /*position: relative;
-      width: 100vw;
-      height: 100vh;*/
-      padding: 0 0 2rem 2rem;
+      /*position: relative;*/
+      width: 100%;
+      height: 100%;
+      /*padding: 0 0 2rem 2rem;*/
     }
 
     /* Map */
     #map {
       /*position: absolute;*/
-      padding: 0 0 2rem 2rem;
       /*inset: 0;*/
       /*display: flex;
       align-items: center;
-      justify-content: center;*/
-      z-index: 1;
+      justify-content: center;
+      z-index: 1;*/
+    }
+    #svg-map {
+        /*width:100%;
+        height:100%;*/
     }
 
     #map img {
@@ -46,6 +49,24 @@
       height: 98%;
       object-fit: contain;*/
     }
+#map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* padding: 0 2rem 2rem 0; left & bottom padding like you said */
+  background: #cfe9f6;
+}
+#map svg {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  width: calc(100% - 2rem);
+  height: calc(100% - 2rem);
+
+  display: block;
+}
+
 .town circle {
   fill: #e63946;
   cursor: pointer;
@@ -56,9 +77,9 @@
 }
 
 .town text {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   pointer-events: none;
-  fill: #333;
+  fill: #000;
 }
     /* UI panels */
     .ui-panel {
@@ -145,7 +166,9 @@
   <div id="game">
 
     <div id="map">
-      <?php include 'wc.svg';?>
+      <?php $f = file_get_contents('wc.svg');?>
+      <?php $t = file_get_contents('towns.svg');?>
+      <?=str_replace('<!--towns-->', $t, $f);?>
     </div>
 
     <div id="panel-top" class="ui-panel">
@@ -172,18 +195,33 @@
     </div>
 
   </div>
-<script>
+<script type="text/javascript">
+    function byId(id) {
+        return document.getElementById(id);
+    }
+    function addEvent(evt, handler) {
+        window.addEventListener(evt, handler);
+    }
+    function resize() {
+        checkOrientation();
+        const g = byId("svg-map");
+        g.width = window.innerWidth;
+        g.height = window.innerHeight;
+        g.style.width = window.innerWidth;
+        g.style.height = window.innerHeight;
+    }
+    
   function checkOrientation() {
-    const warning = document.getElementById('rotate-warning');
+    const warning = byId("rotate-warning");
     if (window.innerHeight > window.innerWidth) {
-      warning.style.display = 'flex';
+      warning.style.display = "flex";
     } else {
-      warning.style.display = 'none';
+      warning.style.display = "none";
     }
   }
 
-  window.addEventListener('load', checkOrientation);
-  window.addEventListener('resize', checkOrientation);
+  addEvent("load", resize);
+  addEvent("resize", resize);
 </script>
 
 </body>
