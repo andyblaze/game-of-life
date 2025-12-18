@@ -14,6 +14,18 @@ export function addEvent(to, evt, handler) {
     to.addEventListener(evt, handler);
 }
 
+export function remClass(el, cls) {
+    el.classList.remove(cls);
+}
+
+export function addClass(el, cls) {
+    el.classList.add(cls);
+}
+
+export function setText(el, txt) {
+    el.textContent = txt;
+}
+
 export function checkOrientation() {
     const warning = byId("rotate-warning");
     const sd = (window.innerHeight > window.innerWidth ? "flex" : "none");
