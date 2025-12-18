@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>West Cornwall Board</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0 /">
+<link href="css/site.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="rotate-warning">
+  <div class="rotate-box">
+    <div class="rotate-icon">📱↻</div>
+    <div class="rotate-text">
+      Please rotate your device<br>
+      <small>(This game works best in landscape)</small>
+    </div>
+  </div>
+</div>
+
+<div id="game">
+    <div id="map">
+        {SVGS}
+    </div>
+
+    <div id="panel-top" class="ui-panel">
+      <div class="panel-title">Events</div>
+      <div class="panel-content" id="events-text">
+        The sea is calm. Nothing terrible has happened yet.
+      </div>
+    </div>
+
+    <div id="panel-bottom-left" class="ui-panel">
+      <div class="panel-title">Actions</div>
+      <div class="panel-content">
+        Roll Dice<br>
+        End Turn
+      </div>
+    </div>
+
+    <div id="panel-bottom-right" class="ui-panel">
+      <div class="panel-title">Player</div>
+      <div class="panel-content">
+        Money: £1500<br>
+        Properties: 0
+      </div>
+    </div>
+
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

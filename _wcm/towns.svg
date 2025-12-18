@@ -1,21 +1,53 @@
 <!-- Clickable towns: -->
-<g class="town" id="st-ives" data-name="St Ives">
-<circle cx="136" cy="97" r="9" fill="#e63946" />
-<text x="126" y="114" font-size="10" fill="#333">SS</text>
-</g>
-<g class="town" id="newlyn" data-name="Newlyn">
-<circle cx="92" cy="185" r="9" />
-<text x="48" y="185">Newlyn</text>
-</g>
-<g class="town" id="penzance" data-name="Penzance">
-  <circle cx="111" cy="170" r="9" />
-  <text x="121" y="164">PZ</text>
-</g>
 <g class="town" id="truro" data-name="Truro">
-  <circle cx="366" cy="78" r="9" />
-  <text x="376" y="82">Truro</text>
+    <circle cx="366" cy="78" r="9" />
+    <text x="376" y="82">Truro</text>
 </g>
 <g class="town" id="falmouth" data-name="Falmouth">
-  <circle cx="373" cy="165" r="9" />
-  <text x="356" y="162">FH</text>
+    <circle cx="373" cy="165" r="9" />
+    <text x="356" y="162">FH</text>
+</g>
+<g class="town" id="helford" data-name="Helford">
+    <circle cx="311" cy="208" r="9" />
+    <text x="296" y="224">Helford</text>
+</g>
+<g class="town" id="lizard" data-name="Lizard">
+    <circle cx="280" cy="314" r="9" />
+    <text x="292" y="320">Lizard</text>
+</g>
+<g class="town" id="poldhu" data-name="Poldhu">
+    <circle cx="244" cy="254" r="9" />
+    <text x="254" y="258">Poldhu</text>
+</g>
+<g class="town" id="helston" data-name="Helston">
+	<circle cx="243" cy="182" r="9" />
+	<text x="253" y="186">Helston</text>
+</g>
+<g class="town" id="porthleven" data-name="Porthleven">
+    <circle cx="221" cy="215" r="9" />
+    <text x="231" y="219">Port'leven</text>
+</g>
+<g class="town" id="penzance" data-name="Penzance">
+    <circle cx="111" cy="170" r="9" />
+    <text x="121" y="164">PZ</text>
+</g>
+<g class="town" id="newlyn" data-name="Newlyn">
+    <circle cx="92" cy="185" r="9" />
+    <text x="48" y="185">Newlyn</text>
+</g>
+<g class="town" id="lands end" data-name="Lands End">
+	<circle cx="9" cy="214" r="9" />
+	<text x="19" y="218">Lands End</text>
+</g>
+<g class="town" id="st-ives" data-name="St Ives">
+    <circle cx="136" cy="97" r="9" fill="#e63946" />
+    <text x="126" y="114" font-size="10" fill="#333">SS</text>
+</g>
+<g class="town" id="bucket of blood" data-name="Bucket of Blood">
+	<circle cx="174" cy="115" r="9" />
+	<text x="172" y="130">Bucket of Blood</text>
+</g>
+<g class="town" id="redruth" data-name="Redruth">
+	<circle cx="261" cy="102" r="9" />
+	<text x="271" y="106">'Druth</text>
 </g>

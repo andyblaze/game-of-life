@@ -1,24 +1,24 @@
-    :root {
-      --sea-blue: #CFE9F6;
-      --panel-bg: rgba(255, 255, 255, 0.85);
-      --panel-border: rgba(0, 0, 0, 0.1);
-      --panel-radius: 1rem;
-    }
+:root {
+  --sea-blue: #CFE9F6;
+  --panel-bg: rgba(255, 255, 255, 0.85);
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --panel-radius: 1rem;
+}
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--sea-blue);
-      overflow: hidden;
-      font-family: system-ui, sans-serif;
-    }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--sea-blue);
+  overflow: hidden;
+  font-family: Arial,Helvetica,sans-serif,sans;
+}
 
-    #game {
-      width: 100%;
-      height: 100%;
-    }
+#game {
+  width: 100%;
+  height: 100%;
+}
 
 
 #map {
@@ -50,46 +50,45 @@
   pointer-events: none;
   fill: #000;
 }
-    /* UI panels */
-    .ui-panel {
-      position: absolute;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--panel-radius);
-      padding: 1rem;
-      box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
-      z-index: 2;
-    }
+/* UI panels */
+.ui-panel {
+  position: absolute;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--panel-radius);
+  padding: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
+  z-index: 2;
+}
 
-    #panel-top {
-      top: 2rem;
-      left: 5%;
-      width: min(32rem, 25vw);
-      text-align: center;
-    }
+#panel-top {
+  top: 2rem;
+  left: 5%;
+  width: min(32rem, 25vw);
+  text-align: center;
+}
 
-    #panel-bottom-left {
-      bottom: 2rem;
-      left: 5%;
-      width: min(32rem, 25vw);
-    }
+#panel-bottom-left {
+  bottom: 2rem;
+  left: 5%;
+  width: min(32rem, 25vw);
+}
 
-    #panel-bottom-right {
-      bottom: 2rem;
-      right: 5%;
-      width: min(32rem, 25vw);
-    }
+#panel-bottom-right {
+  bottom: 2rem;
+  right: 5%;
+  width: min(32rem, 25vw);
+}
 
-    .panel-title {
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
-      opacity: 0.7;
-    }
+.panel-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
 
-    .panel-content {
-      font-size: 0.9rem;
-    }
+.panel-content {
+  font-size: 1rem;
+}
 #rotate-warning {
   position: fixed;
   inset: 0;
