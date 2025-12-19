@@ -3,9 +3,8 @@ export function randomFrom(arr) {
 }
 
 export function checkOrientation() {
-    const warning = byId("rotate-warning");
-    const sd = (window.innerHeight > window.innerWidth ? "flex" : "none");
-    warning.style.display = sd;
+    const d = (window.innerHeight > window.innerWidth ? "flex" : "none");
+    $("#rotate-warning").css("display", d);
 }
 
 export function mt_rand(min, max) {
