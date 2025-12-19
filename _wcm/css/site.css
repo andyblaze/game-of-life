@@ -137,3 +137,12 @@ html, body {
 #town-popup .town-name {
   font-weight: bold;
 }
+
+/* routes */ 
+.route {
+  stroke: #c1121f;              /* deep red */
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+  fill: none;
+  opacity: 0.85;
+}

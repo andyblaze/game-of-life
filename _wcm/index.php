@@ -1,8 +1,9 @@
 <?php 
 
-$f = file_get_contents('wc.svg');
-$t = file_get_contents('towns.svg');
-$svgs = str_replace('<!--towns-->', $t, $f);
+$map = file_get_contents('map.svg');
+$routes = file_get_contents('routes.svg');
+$towns = file_get_contents('towns.svg');
+$svgs = $map . $routes . $towns; 
 
 $view = file_get_contents('wc.html');
 $output = str_replace('{SVGS}', $svgs, $view);

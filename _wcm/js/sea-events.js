@@ -23,6 +23,7 @@ export default class SeaEvents {
             let msg = randomFrom(this.messages);
             while ( msg === this.lastMessage )
                 msg = randomFrom(this.messages);
+            this.lastMessage = msg;
             this.setMessage(msg);
         }
     }
