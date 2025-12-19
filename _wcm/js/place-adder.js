@@ -1,4 +1,3 @@
-import { addEvent, byQuery } from "./functions.js";
 
 export default class placeAdder {  
     static getSvgCoords(evt, svg) {

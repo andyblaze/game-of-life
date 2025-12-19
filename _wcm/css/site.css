@@ -64,31 +64,35 @@ html, body {
 #panel-top {
   top: 2rem;
   left: 5%;
-  width: min(32rem, 25vw);
+  width: min(36rem, 28vw);
   text-align: center;
 }
 
 #panel-bottom-left {
   bottom: 2rem;
   left: 5%;
-  width: min(32rem, 25vw);
+  width: min(36rem, 28vw);
 }
 
 #panel-bottom-right {
   bottom: 2rem;
   right: 5%;
-  width: min(32rem, 25vw);
+  width: min(36rem, 28vw);
 }
 
 .panel-title {
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   margin-bottom: 0.5rem;
 }
 
 .panel-content {
-  font-size: 1rem;
+  font-size: 1.2rem;
+  height:1.4rem;
+  min-height:1.4rem;
 }
+
+/* portrait warning stuff */
 #rotate-warning {
   position: fixed;
   inset: 0;
@@ -106,42 +110,6 @@ html, body {
   text-align: center;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
-/* animations */
-#event-text {
-  animation: none;
-}
-
-#event-text.is-changing {
-  animation: fadeOut 0.3s ease forwards;
-}
-
-#event-text.in {
-  animation: fadeIn 0.3s ease forwards;
-}
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    transform: translateY(-0.3rem);
-    filter: blur(2px);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(0.3rem);
-    filter: blur(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-
-
 .rotate-icon {
   font-size: 3rem;
   margin-bottom: 0.5rem;

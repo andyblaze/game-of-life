@@ -1,29 +1,5 @@
-export function byId(id) {
-    return document.getElementById(id);
-}
-
-export function byQuery(q) {
-    return document.querySelector(q);
-}
-
-export function wndEvent(evt, handler) {
-    window.addEventListener(evt, handler);
-}
-
-export function addEvent(to, evt, handler) {
-    to.addEventListener(evt, handler);
-}
-
-export function remClass(el, cls) {
-    el.classList.remove(cls);
-}
-
-export function addClass(el, cls) {
-    el.classList.add(cls);
-}
-
-export function setText(el, txt) {
-    el.textContent = txt;
+export function randomFrom(arr) {
+    return arr[mt_rand(0, arr.length - 1)];
 }
 
 export function checkOrientation() {
