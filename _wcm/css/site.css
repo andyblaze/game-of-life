@@ -139,7 +139,7 @@ html, body {
 }
 
 /* routes */ 
-.route {
+.route line {
   stroke: #c1121f;              /* deep red */
   stroke-width: 2;
   stroke-dasharray: 6 6;
