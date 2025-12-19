@@ -140,8 +140,8 @@ html, body {
 
 /* routes */ 
 .route line {
-  stroke: #c1121f;              /* deep red */
-  stroke-width: 2;
+  stroke: #5c380e75;              
+  stroke-width: 1;
   stroke-dasharray: 6 6;
   fill: none;
   opacity: 0.85;
