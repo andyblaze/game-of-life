@@ -1,4 +1,8 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" id="svg-towns" viewBox="0 0 573 326" preserveAspectRatio="none">
+<g class="town" id="truro" data-name="Truro">
+	<circle cx="369" cy="69" r="9" />
+	<text x="379" y="73">Truro</text>
+</g>
 <g class="town" id="falmouth" data-name="Falmouth">
     <circle cx="373" cy="165" r="9" />
     <text x="356" y="162">FH</text>
