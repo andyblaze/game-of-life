@@ -10,7 +10,7 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  background: var(--sea-blue);
+  /*background: var(--sea-blue);*/
   overflow: hidden;
   font-family: Arial,Helvetica,sans-serif,sans;
 }
@@ -25,7 +25,7 @@ html, body {
   position: relative;
   width: 100%;
   height: 100%;
-  background: #cfe9f6;
+  background-color: hsla(191, 87%, 47%, 1);
 }
 #map svg {
   position: absolute;

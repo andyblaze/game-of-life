@@ -3,48 +3,68 @@ import SeaEvents from "./sea-events.js";
 import TownPopup from "./town-popup.js";
 import EventsObservable from "./events-observable.js";
 import RafLoop from "./raf-loop.js";
-import { checkOrientation } from "./functions.js";
+import { checkOrientation, lerpColor, randomFrom } from "./functions.js";
 
 class SeaColor {
   constructor(targetSelector) {
     this.$el = $(targetSelector);
 
-    // Base colour (Cornish, sensible)
-    this.hue = 205;        // blue-grey
-    this.sat = 55;         // not tropical
-    this.light = 85;       // pale sea
-    this.alpha = 1;
+    // Sea "moods"
+    this.moods = [
+      { h: 191, s: 87, l: 47, a: 1 }, // tropical (too nice)
+      { h: 219, s: 77, l: 48, a: 1 }, // normal blue
+      { h: 224, s: 58, l: 46, a: 1 }, // deep Atlantic
+      { h: 200, s: 47, l: 37, a: 1 }  // steel grey
+    ];
 
-    // Drift configuration
-    this.hueSpeed = 0.0200; // degrees per ms (very slow)
-    this.hueMin = 190;
-    this.hueMax = 220;
-    this.direction = 1;
+    this.current = { ...this.moods[0] };
+    this.target = this.pickNewTarget();
+    this.currentIdx = 0;
+
+    this.speed = 0.00005; // lerp per ms (slow)
+  }
+
+  pickNewTarget() {
+    /*this.currentIdx++;
+    if ( this.currentIdx >= this.moods.length )
+        this.currentIdx = 0;*/
+    let next;
+    do {
+      next = randomFrom(this.moods);//[Math.floor(Math.random() * this.moods.length)];
+    } while (next === this.target);
+    return { ...next };//this.moods[this.currentIdx] };
   }
 
   notify(dt) {
-    // dt in milliseconds
-    this.hue += this.hueSpeed * dt * this.direction;
+    dt = Math.min(dt, 100);
 
-    // Gentle bounce at limits
-    if (this.hue > this.hueMax) {
-      this.hue = this.hueMax;
-      this.direction = -1;
-    } else if (this.hue < this.hueMin) {
-      this.hue = this.hueMin;
-      this.direction = 1;
-    }
+    const t = dt * this.speed;
 
+    this.current = lerpColor(this.current, this.target, t);
     this.apply();
+
+    if (this.isCloseEnough()) {
+      this.target = this.pickNewTarget();
+    }
+  }
+
+  isCloseEnough() {
+    return (
+      Math.abs(this.current.h - this.target.h) < 0.2 &&
+      Math.abs(this.current.s - this.target.s) < 0.2 &&
+      Math.abs(this.current.l - this.target.l) < 0.2
+    );
   }
 
   apply() {
+    const c = this.current;
     this.$el.css(
       "background-color",
-      `hsla(${this.hue}, ${this.sat}%, ${this.light}%, ${this.alpha})`
+      `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`
     );
   }
 }
+
 
 
 $(document).ready(function() {
@@ -52,7 +72,7 @@ $(document).ready(function() {
     p.init();    
     const ambientEvents = new EventsObservable();
     ambientEvents.add(new SeaEvents($("#events-text")));
-    const sc = new SeaColor("body");
+    const sc = new SeaColor("#map");
     const townPopup = new TownPopup("#town-popup");
     const raf = new RafLoop();
     raf.setHandler((dt) => {
