@@ -2,24 +2,20 @@ import placeAdder from "./place-adder.js";
 import SeaEvents from "./sea-events.js";
 import TownPopup from "./town-popup.js";
 import EventsObservable from "./events-observable.js";
+import RafLoop from "./raf-loop.js";
 import { checkOrientation } from "./functions.js";
 
-
-const p = new placeAdder();
-p.init();    
-const ambientEvents = new EventsObservable();
-ambientEvents.add(new SeaEvents($("#events-text")));
+$(document).ready(function() {
+    const p = new placeAdder();
+    p.init();    
+    const ambientEvents = new EventsObservable();
+    ambientEvents.add(new SeaEvents($("#events-text")));
+    const townPopup = new TownPopup("#town-popup");
+    const raf = new RafLoop();
+    raf.setHandler((dt) => {
+        ambientEvents.notify(dt);
+    });
+    raf.start();
+});
 
 $(window).on("resize", checkOrientation);
-
-const townPopup = new TownPopup("#town-popup");
-
-let lastTime = 0;
-function animate(time) {
-    const dt = (time - lastTime); // ms
-    lastTime = time;
-    ambientEvents.notify(dt);
-    requestAnimationFrame(animate);
-}
-
-animate(performance.now());
