@@ -16,8 +16,23 @@ export default class placeAdder {
             y = parseInt(y);
             const name = prompt("Town name?");
             if (!name) return;
-            const nl = "\n"; const t = "\t";
-            console.log(`${nl}<g class="town" id="${name.toLowerCase()}" data-name="${name}">${nl+t}<circle cx="${x}" cy="${y}" r="9" />${nl+t}<text x="${(x + 10)}" y="${(y + 4)}">${name}</text>${nl}</g>`);
+
+            $.post("add-town.php", {
+                "x": x,
+                "y": y,
+                placeName: name
+            })
+            .done(function (res) {
+                //console.log("Town added:", res);
+                location.reload();
+            })
+            .fail(function (xhr) {
+                console.error("Failed to add town:", xhr.responseText);
+            });
+
+
+            //const nl = "\n"; const t = "\t";
+            //console.log(`${nl}<g class="town" id="${name.toLowerCase()}" data-name="${name}">${nl+t}<circle cx="${x}" cy="${y}" r="9" />${nl+t}<text x="${(x + 10)}" y="${(y + 4)}">${name}</text>${nl}</g>`);
         });
     }
 }

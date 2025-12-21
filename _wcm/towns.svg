@@ -38,4 +38,16 @@
 <g class="town" id="redruth" data-name="Redruth">
 	<text x="271" y="106">'Druth</text>
 </g>
+<g class="town" id="hayle" data-name="Hayle">
+	<text x="159" y="150">Hayle</text>
+</g>
+<g class="town" id="mylor" data-name="Mylor">
+	<text x="358" y="112">Mylor</text>
+</g>
+<g class="town" id="ruan" data-name="Ruan">
+	<text x="328" y="280">Ruan</text>
+</g>
+<g class="town" id="rosudgeon" data-name="rosudgeon">
+	<text x="185" y="196">rosudgeon</text>
+</g>
 </svg>
