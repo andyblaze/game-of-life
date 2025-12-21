@@ -36,7 +36,7 @@ if ($svg === false) {
 
 // --- BUILD TOWN SVG ---
 $townSvg = "<g class=\"town\" id=\"{$id}\" data-name=\"{$name}\">
-\t<text x=\"{$x}\" y=\"{$y}\">{$name}</text>
+    <text x=\"{$x}\" y=\"{$y}\">{$name}</text>
 </g>\n";
 
 

@@ -28,6 +28,7 @@ export default class placeAdder {
             })
             .fail(function (xhr) {
                 console.error("Failed to add town:", xhr.responseText);
+                alert("Failed to add town");
             });
 
 
