@@ -1,6 +1,6 @@
 <?php 
 
-$map = file_get_contents('map.svg');
+$map = file_get_contents('__aaa.svg');//map.svg');
 $routes = file_get_contents('routes.svg');
 $towns = file_get_contents('towns.svg');
 $svgs = $map . $routes . $towns; 

@@ -22,5 +22,11 @@ export const config = {
         "The tide arrives early and leaves everyone disappointed.",
         "Something slaps the shoreline with intent.",
         "A foam pattern forms that spells disaster. Literally."
+    ],
+    "sea_colors": [
+        { h: 191, s: 87, l: 47, a: 1 }, // tropical (too nice)
+        { h: 219, s: 77, l: 48, a: 1 }, // normal blue
+        { h: 224, s: 58, l: 46, a: 1 }, // deep Atlantic
+        { h: 200, s: 47, l: 37, a: 1 }  // steel grey
     ]
 }
