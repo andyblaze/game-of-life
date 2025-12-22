@@ -5,7 +5,6 @@ header("Content-Type: application/json");
 
 // --- CONFIG ---
 $townsFile = 'towns.svg';
-$radius = 9;
 $labelOffsetX = 0;
 $labelOffsetY = 0;
 
