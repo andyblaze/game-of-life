@@ -1,14 +1,13 @@
-import { config } from "./config.js";
 import { lerpColor, randomFrom } from "./functions.js";
 
 export default class SeaColor {
-    constructor(targetSelector) {
+    constructor(targetSelector, cfg) {
         this.$el = targetSelector;
         // Sea moods / colors
-        this.colors = config.sea_change.colors;
+        this.colors = cfg.colors;
         this.current = { ...this.colors[0] };
         this.target = this.pickNewTarget();
-        this.speed = config.sea_change.speed;
+        this.speed = cfg.speed;
     }
     pickNewTarget() {
         let next;

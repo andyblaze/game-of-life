@@ -4,11 +4,11 @@ import { config } from "./config.js";
 export default class SeaEvents {
     messages = [];
 
-    constructor(id) {
-        this.messages = config.sea_messages;
+    constructor(id, cfg) {
+        this.messages = cfg;
         this.eventTimer = 0;
         this.nextEventTime = this.randomDelay();
-        this.eventElmt = id;
+        this.el = id;
         this.lastMessage = this.messages[0];
         this.setMessage(this.messages[0]);
     }
@@ -28,7 +28,7 @@ export default class SeaEvents {
         }
     }
     setMessage(msg) {
-        this.eventElmt.fadeOut(600, function() {
+        this.el.fadeOut(600, function() {
             $(this).text(msg).fadeIn(600);
         });
     }
