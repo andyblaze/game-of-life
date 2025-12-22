@@ -29,5 +29,29 @@ export const config = {
         { h: 224, s: 58, l: 46, a: 1 }, // deep Atlantic
         { h: 231, s: 86, l: 28, a: 1 }, // deep blue
         { h: 200, s: 47, l: 37, a: 1 }  // steel grey
-    ], "speed" : 0.00005 } // lerp per ms - bigger = faster
+    ], "speed" : 0.00005 }, // lerp per ms - bigger = faster
+    "weather_messages": [
+        "The weather is fine. This will not last.",
+        "A cloud passes overhead with purpose.",
+        "The wind adjusts itself, just to see if you notice.",
+        "Rain considers happening, then decides against it.",
+        "The air feels heavy, like it’s thinking.",
+        "A gust of wind takes something personally.",
+        "The sky adopts a colour it shouldn’t be allowed to have.",
+        "It is technically dry, but only just.",
+        "The breeze smells faintly of regret.",
+        "The sun appears briefly, as a joke.",
+        "A distant rumble suggests the weather is warming up.",
+        "The clouds gather, then remember they have elsewhere to go.",
+        "The wind comes from a direction you were not expecting.",
+        "The air pressure drops in a way that feels pointed.",
+        "A light drizzle begins, stops, and watches you.",
+        "The sky darkens slightly, for no reason it will explain.",
+        "The weather is doing that thing again.",
+        "A sudden warmth is followed by immediate disappointment.",
+        "The atmosphere feels unsettled. Emotionally.",
+        "The horizon looks threatening, but only on a technicality.",
+        "Something moves in the clouds that isn’t part of the plan."
+    ]
+
 }
