@@ -47,7 +47,16 @@
 <g class="town" id="ruan" data-name="Ruan">
 	<text x="328" y="280">Ruan</text>
 </g>
-<g class="town" id="rosudgeon" data-name="rosudgeon">
-	<text x="185" y="196">rosudgeon</text>
+<g class="town" id="rosudgeon" data-name="Rosudgeon">
+	<text x="185" y="196">Rosudgeon</text>
+</g>
+<g class="town" id="gissey" data-name="Gissey">
+    <text x="542" y="58">'Gissey</text>
+</g>
+<g class="town" id="kynancecove" data-name="KynanceCove">
+    <text x="275" y="282">KynanceCove</text>
+</g>
+<g class="town" id="coverack-bridges" data-name="Coverack Bridges">
+    <text x="241" y="197">Coverack Bridges</text>
 </g>
 </svg>

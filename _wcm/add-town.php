@@ -1,6 +1,9 @@
 <?php
 // add-town.php
 
+function ucflwr($str) {
+    return ucfirst(strtolower(trim($str)));
+}
 header("Content-Type: application/json");
 
 // --- CONFIG ---
@@ -20,7 +23,14 @@ if (!$data || !isset($data["x"], $data["y"], $data["placeName"])) {
 
 $x = (int)$data["x"];
 $y = (int)$data["y"];
-$name = trim($data["placeName"]);
+$name = ucflwr($data["placeName"]);
+if ( strpos($name, ' ') !== false ) {
+    $tmp = explode(' ', $name);
+    foreach ( $tmp as $idx=>$val ) {
+        $tmp[$idx] = ucflwr($val);
+    }
+    $name = implode(' ', $tmp);
+}
 
 // You said you'd handle sanitising → trusting you 🙂
 $id = strtolower(str_replace(" ", "-", $name));
