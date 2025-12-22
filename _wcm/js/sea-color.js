@@ -5,10 +5,10 @@ export default class SeaColor {
     constructor(targetSelector) {
         this.$el = targetSelector;
         // Sea moods / colors
-        this.colors = config.sea_colors;
+        this.colors = config.sea_change.colors;
         this.current = { ...this.colors[0] };
         this.target = this.pickNewTarget();
-        this.speed = 0.00005; // lerp per ms - bigger = faster
+        this.speed = config.sea_change.speed;
     }
     pickNewTarget() {
         let next;
