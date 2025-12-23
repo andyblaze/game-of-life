@@ -33,6 +33,9 @@ class AmbientEvents {
 
 export class SeaEvents extends AmbientEvents {}
 export class WeatherEvents extends AmbientEvents {}
+export class FishEvents extends AmbientEvents {}
+export class LandEvents extends AmbientEvents {}
+export class PeopleEvents extends AmbientEvents {}
     /*constructor(id, cfg) {
         this.messages = cfg;
         this.eventTimer = 0;

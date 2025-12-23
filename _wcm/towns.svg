@@ -53,10 +53,13 @@
 <g class="town" id="gissey" data-name="Gissey">
     <text x="542" y="58">'Gissey</text>
 </g>
-<g class="town" id="kynancecove" data-name="KynanceCove">
-    <text x="275" y="282">KynanceCove</text>
+<g class="town" id="kynance-cove" data-name="Kynance Cove">
+    <text x="275" y="282">Kynance Cove</text>
 </g>
 <g class="town" id="coverack-bridges" data-name="Coverack Bridges">
     <text x="241" y="197">Coverack Bridges</text>
+</g>
+<g class="town" id="st-keverne" data-name="St Keverne">
+    <text x="381" y="241">St Keverne</text>
 </g>
 </svg>
