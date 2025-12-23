@@ -1,65 +1,47 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" id="svg-towns" viewBox="0 0 573 326" preserveAspectRatio="none">
-<g class="town" id="truro" data-name="Truro">
-	<text x="379" y="73">Truro</text>
+<g class="town" id="bottoms" data-name="Bottoms">
+    <text x="36" y="235">Bottoms</text>
 </g>
-<g class="town" id="falmouth" data-name="Falmouth">
-    <text x="356" y="162">FH</text>
+<g class="town" id="crows-an-wra" data-name="Crows-an-wra">
+    <text x="44" y="204">Crows-an-wra</text>
 </g>
-<g class="town" id="helford" data-name="Helford">
-    <text x="296" y="224">Helford</text>
+<g class="town" id="kelynack" data-name="Kelynack">
+    <text x="21" y="193">Kelynack</text>
 </g>
-<g class="town" id="lizard" data-name="Lizard">
-    <text x="292" y="320">Lizard</text>
+<g class="town" id="kenidjack" data-name="Kenidjack">
+    <text x="17" y="176">Kenidjack</text>
 </g>
-<g class="town" id="poldhu" data-name="Poldhu">
-    <text x="254" y="258">Poldhu</text>
+<g class="town" id="grumbla" data-name="Grumbla">
+    <text x="62" y="180">Grumbla</text>
 </g>
-<g class="town" id="helston" data-name="Helston">
-	<text x="253" y="186">Helston</text>
+<g class="town" id="crowlas" data-name="Crowlas">
+    <text x="135" y="163">Crowlas</text>
 </g>
-<g class="town" id="porthleven" data-name="Porthleven">
-    <text x="231" y="219">Port'leven</text>
+<g class="town" id="kenneggy" data-name="Kenneggy">
+    <text x="186" y="184">Kenneggy</text>
 </g>
-<g class="town" id="penzance" data-name="Penzance">
-    <text x="121" y="164">PZ</text>
+<g class="town" id="kuggar" data-name="Kuggar">
+    <text x="308" y="288">Kuggar</text>
 </g>
-<g class="town" id="newlyn" data-name="Newlyn">
-    <text x="48" y="185">Newlyn</text>
+<g class="town" id="kennack" data-name="Kennack">
+    <text x="335" y="277">Kennack</text>
 </g>
-<g class="town" id="lands-end" data-name="Lands End">
-	<text x="19" y="218">Lands End</text>
+<g class="town" id="twelveheads" data-name="Twelveheads">
+    <text x="334" y="83">Twelveheads</text>
 </g>
-<g class="town" id="st-ives" data-name="St Ives">
-    <text x="126" y="114" font-size="10" fill="#333">SS</text>
+<g class="town" id="veryan" data-name="Veryan">
+    <text x="467" y="102">Veryan</text>
 </g>
-<g class="town" id="bucket-of-blood" data-name="Bucket of Blood">
-	<text x="172" y="130">Bucket of Blood</text>
+<g class="town" id="bohortha" data-name="Bohortha">
+    <text x="423" y="159">Bohortha</text>
 </g>
-<g class="town" id="redruth" data-name="Redruth">
-	<text x="271" y="106">'Druth</text>
+<g class="town" id="feock" data-name="Feock">
+    <text x="390" y="110">Feock</text>
 </g>
-<g class="town" id="hayle" data-name="Hayle">
-	<text x="159" y="150">Hayle</text>
+<g class="town" id="praze-an-beeble" data-name="Praze-an-Beeble">
+    <text x="214" y="125">Praze-an-Beeble</text>
 </g>
-<g class="town" id="mylor" data-name="Mylor">
-	<text x="358" y="112">Mylor</text>
-</g>
-<g class="town" id="ruan" data-name="Ruan">
-	<text x="328" y="280">Ruan</text>
-</g>
-<g class="town" id="rosudgeon" data-name="Rosudgeon">
-	<text x="185" y="196">Rosudgeon</text>
-</g>
-<g class="town" id="gissey" data-name="Gissey">
-    <text x="542" y="58">'Gissey</text>
-</g>
-<g class="town" id="kynance-cove" data-name="Kynance Cove">
-    <text x="275" y="282">Kynance Cove</text>
-</g>
-<g class="town" id="coverack-bridges" data-name="Coverack Bridges">
-    <text x="241" y="197">Coverack Bridges</text>
-</g>
-<g class="town" id="st-keverne" data-name="St Keverne">
-    <text x="381" y="241">St Keverne</text>
+<g class="town" id="goonhilly" data-name="Goonhilly">
+    <text x="311" y="249">Goonhilly</text>
 </g>
 </svg>
