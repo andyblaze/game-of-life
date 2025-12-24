@@ -320,6 +320,7 @@ export const config = {
         "A farmer watches you from the field edge.",
         "An elderly couple stop talking when you approach.",
         "A child asks if you live here.",
+        "A kid throws a pebble into a pond. The ripples form pentangles.",
         "A man points out a shorter route you weren’t taking.",
         "An old woman asks how long you’ll be around.",
         "A teenager looks at you, then at the road behind you.",
