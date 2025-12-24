@@ -79,7 +79,8 @@ export const config = {
         "A line is cast from shore and immediately retrieved.",
         "Someone hooks something and quietly cuts the line.",
         "The bait is taken. The hook is returned.",
-        "A fisherman claims the fish was watching him."
+        "A fisherman claims the fish was watching him.",
+        "A mackerel re-died. Twice."
     ],
     "land_messages": [
         "A field gate swings shut behind you.",

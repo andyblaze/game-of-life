@@ -39,9 +39,48 @@
     <text x="390" y="110">Feock</text>
 </g>
 <g class="town" id="praze-an-beeble" data-name="Praze-an-Beeble">
-    <text x="214" y="125">Praze-an-Beeble</text>
+    <text x="214" y="135">Praze-an-Beeble</text>
 </g>
 <g class="town" id="goonhilly" data-name="Goonhilly">
     <text x="311" y="249">Goonhilly</text>
+</g>
+<g class="town" id="bucket-of-blood" data-name="Bucket Of Blood">
+    <text x="189" y="109">Bucket o' Blood</text>
+</g>
+<g class="town" id="berepper" data-name="Berepper">
+    <text x="266" y="243">Berepper</text>
+</g>
+<g class="town" id="nancledra" data-name="Nancledra">
+    <text x="122" y="133">Nancledra</text>
+</g>
+<g class="town" id="zennor" data-name="Zennor">
+    <text x="94" y="111">Zennor</text>
+</g>
+<g class="town" id="that-house" data-name="That House">
+    <text x="114" y="120">*That* House</text>
+</g>
+<g class="town" id="perranarworthal" data-name="Perranarworthal">
+    <text x="328" y="107">Perranarworthal</text>
+</g>
+<g class="town" id="gerrans" data-name="Gerrans">
+    <text x="432" y="136">Gerrans</text>
+</g>
+<g class="town" id="rame" data-name="Rame">
+    <text x="313" y="146">Rame</text>
+</g>
+<g class="town" id="lezerea" data-name="Lezerea">
+    <text x="285" y="145">Lezerea</text>
+</g>
+<g class="town" id="troon" data-name="Troon">
+    <text x="236" y="118">Troon</text>
+</g>
+<g class="town" id="mawla" data-name="Mawla">
+    <text x="288" y="64">Mawla</text>
+</g>
+<g class="town" id="cocks" data-name="Cocks">
+    <text x="314" y="23">Cocks</text>
+</g>
+<g class="town" id="predannack" data-name="Predannack">
+    <text x="268" y="287">Predannack</text>
 </g>
 </svg>
