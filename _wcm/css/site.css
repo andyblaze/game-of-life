@@ -60,7 +60,7 @@ html, body {
   border-radius: var(--panel-radius);
   padding: 1rem;
   box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
-  z-index: 2; display: none;
+  z-index: 2; 
 }
 
 #panel-top {
