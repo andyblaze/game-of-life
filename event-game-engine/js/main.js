@@ -12,8 +12,8 @@ import MessageSystem from "./message-system.js";
 $(document).ready(function() {
     const events = new EventBus();
     const engine = new Engine();
-    engine.add(new SeaSystem(events));
-    engine.add(new MessageSystem(events, config.sea_messages));
+    engine.add(new SeaSystem(events, config.sea_messages));
+    engine.add(new MessageSystem(events));
     const raf = new RafLoop();
     raf.setHandler((dt) => {
         engine.update(dt);
