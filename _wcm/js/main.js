@@ -11,7 +11,7 @@ import SvgMap from "./svg-map.js";
 const $svg = $("#svg-map");
 const map  = new SvgMap($svg[0]);
 
- const svgm = $("#map svg");
+const svgm = $("#map svg");
 svgm.on("click", function(e) {
   const { x, y } = map.screenToWorld(e);
   console.log("World coords:", Math.floor(x), Math.floor(y));
