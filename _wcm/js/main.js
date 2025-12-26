@@ -6,11 +6,20 @@ import EventsObservable from "./events-observable.js";
 import RafLoop from "./raf-loop.js";
 import { checkOrientation } from "./functions.js";
 import SeaColor from "./sea-color.js";
+import SvgMap from "./svg-map.js";
 
+const $svg = $("#svg-map");
+const map  = new SvgMap($svg[0]);
+
+ const svgm = $("#map svg");
+svgm.on("click", function(e) {
+  const { x, y } = map.screenToWorld(e);
+  console.log("World coords:", Math.floor(x), Math.floor(y));
+});
 
 $(document).ready(function() {
-    const p = new placeAdder();
-    p.init();    
+    //const p = new placeAdder();
+    //p.init();    
     const ambientEvents = new EventsObservable();
     ambientEvents.add(new SeaEvents($("#sea-text"), config.sea_messages));
     ambientEvents.add(new WeatherEvents($("#weather-text"), config.weather_messages));
