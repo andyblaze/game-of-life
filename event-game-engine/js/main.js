@@ -14,6 +14,7 @@ import LandSystem from "./land-system.js";
 import EventBus from "./event-bus.js";
 import MessageSystem from "./message-system.js";
 import Mood from "./mood.js";
+import TextSystemBase from "./text-system-base.js";
 
 $(document).ready(function() {
     const eventBus = new EventBus();
@@ -32,4 +33,6 @@ $(document).ready(function() {
     raf.start();
 });
 
-//$(window).on("resize", checkOrientation);
+//$(window).on("resize", checkOrientation);  
+
+renderer { eventBus.on("message:emit", function(payload) { render }) }  like in TextSystemBase 
