@@ -1,7 +1,7 @@
 import { RandomItem } from "./utils.js";
 import { mt_rand } from "./functions.js";
 
-export default class SeaSystem {
+export default class WeatherSystem {
     constructor(eventBus, messages) {
         this.eventBus = eventBus;
         this.messages = messages;
@@ -30,7 +30,7 @@ export default class SeaSystem {
             this.timer = 0;
             this.nextEventTime = this.randomDelay();
             const msg = this.randomItem.getFrom(this.currentMessages);
-            this.eventBus.emit("sea:message", msg);
+            this.eventBus.emit("weather:message", msg);
         }
     }
 }

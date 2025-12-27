@@ -7,13 +7,18 @@ import { config } from "./config.js";
 import RafLoop from "./raf-loop.js";
 import Engine from "./engine.js";
 import SeaSystem from "./sea-system.js";
+import WeatherSystem from "./weather-system.js";
 import EventBus from "./event-bus.js";
 import MessageSystem from "./message-system.js";
+import Mood from "./mood.js";
+
 $(document).ready(function() {
-    const events = new EventBus();
+    const eventBus = new EventBus();
     const engine = new Engine();
-    engine.add(new SeaSystem(events, config.sea_messages));
-    engine.add(new MessageSystem(events));
+    engine.add(new SeaSystem(eventBus, config.sea_messages));
+    engine.add(new WeatherSystem(eventBus, config.weather_messages));
+    engine.add(new MessageSystem(eventBus));
+    engine.add(new Mood(eventBus, config.moods));
     const raf = new RafLoop();
     raf.setHandler((dt) => {
         engine.update(dt);

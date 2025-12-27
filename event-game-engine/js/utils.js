@@ -2,6 +2,9 @@ import { mt_rand } from "./functions.js";
 
 export class RandomItem {
     constructor(arrLength) {
+        this.reset(arrLength);
+    }
+    reset(arrLength) {
         this.recent = [];
         this.maxQueueLength = this.setQueueLength(arrLength);
     }

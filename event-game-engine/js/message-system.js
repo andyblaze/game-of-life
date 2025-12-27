@@ -1,7 +1,7 @@
 export default class MessageSystem {
-    constructor(events) {
-        events.on("sea:message", function(message) {
-            console.log(message);
+    constructor(eventBus) {
+        eventBus.on("sea:message", function(message) {
+            //console.log("sea msg", message);
         });
     }
 }
