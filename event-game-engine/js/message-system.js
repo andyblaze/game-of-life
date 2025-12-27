@@ -9,6 +9,12 @@ export default class MessageSystem {
         eventBus.on("people:message", function(message) {
             console.log("people msg", message);
         });
+         eventBus.on("land:message", function(message) {
+            console.log("land msg", message);
+        });
+         eventBus.on("fish:message", function(message) {
+            console.log("fish msg", message);
+        });
         eventBus.on("mood:changed", function(message) {
             console.log("mood msg", message);
         });
