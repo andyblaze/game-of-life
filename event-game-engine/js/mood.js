@@ -14,7 +14,7 @@ export default class Mood {
   }
   randomDelay() {
     // deliberately rough — tweak later
-    return mt_rand(2000, 6000);
+    return mt_rand(4000, 8000);
   }
   update(dt) {
     this.timer += dt;
@@ -39,10 +39,7 @@ export default class Mood {
     const prev = this.current;
     this.current = next;
 
-    this.emit("mood:changed", {
-      from: prev,
-      to: next
-    });
+    this.emit("mood:changed", { from: prev, to: next });
   }
   get() {
     return this.current;

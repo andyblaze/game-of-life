@@ -1,8 +1,8 @@
 import TextSystemBase from "./text-system-base.js";
 
-export default class SeaSystem extends TextSystemBase {
+export default class PeopleSystem extends TextSystemBase {
     constructor(eventBus, messages) {
         super(eventBus, messages);
-        this.eventType = "sea:message";
+        this.eventType = "people:message";
     }
 }
