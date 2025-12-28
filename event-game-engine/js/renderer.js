@@ -7,7 +7,7 @@ export default class Renderer {
         this.eventBus.on("sea:colorchanged", (data) => {
             this.onColorChange(data);
         });
-        this.eventBus.on("player:moving", (data) => this.drawPlayer(data));
+        this.eventBus.on("player:moved", (data) => this.drawPlayer(data));
     }
     drawPlayer(data) { 
         const canvas = $("#world-canvas")[0];

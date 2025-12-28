@@ -1,3 +1,5 @@
+import { clamp } from "./functions.js";
+
 export default class Player {
     constructor(eventBus, initial = {}) {
         this.data = { "prevX": 0, "prevY": 0, "x": 0, "y": 0, "inTown":null };
@@ -10,11 +12,14 @@ export default class Player {
     setPosition(x, y) {
         this.data.x = x;
         this.data.y = y; 
-        this.eventBus.emit("player:moved", this.getPosition());
+        this.eventBus.emit("player:moving", this.getPosition());
         
     }
     update(dt) {
-        // nothing for now, but will be used when player is on a journey
+        const speed = 0.03; // map units per ms (tweak freely)
+        const newX = clamp(this.data.x - speed * dt, 0, 573)
+        const newY = this.data.y;
+        this.setPosition(newX, newY);
     }
     // Optionally, mark which town the player is in
     setTown(townId) {

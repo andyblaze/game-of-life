@@ -6,8 +6,8 @@ export default class MessageSystem {
         eventBus.on("sea:colorchange", function(data) {
             eventBus.emit("sea:colorchanged", data);
         });
-        eventBus.on("player:moved", function(data) { 
-            eventBus.emit("player:moving", data);
+        eventBus.on("player:moving", function(data) { 
+            eventBus.emit("player:moved", data);
         });
         eventBus.on("weather:message", function(message) {
             //console.log("weather msg", message);

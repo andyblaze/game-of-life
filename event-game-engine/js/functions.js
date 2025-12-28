@@ -7,6 +7,10 @@ export function checkOrientation() {
     $("#rotate-warning").css("display", isPortrait ? "flex" : "none");
 }
 
+export function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
 export function mt_rand(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
