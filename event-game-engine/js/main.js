@@ -14,7 +14,8 @@ import LandSystem from "./land-system.js";
 import EventBus from "./event-bus.js";
 import MessageSystem from "./message-system.js";
 import Mood from "./mood.js";
-import TextSystemBase from "./text-system-base.js";
+import SeaColor from "./sea-color.js";
+import Renderer from "./renderer.js";
 
 $(document).ready(function() {
     const eventBus = new EventBus();
@@ -24,8 +25,10 @@ $(document).ready(function() {
     engine.add(new PeopleSystem(eventBus, config.people_messages));
     engine.add(new FishSystem(eventBus, config.fish_messages));
     engine.add(new LandSystem(eventBus, config.land_messages));
+    engine.add(new SeaColor(eventBus, config.sea_change));
     engine.add(new MessageSystem(eventBus));
     engine.add(new Mood(eventBus, config.moods));
+    engine.add(new Renderer(eventBus));
     const raf = new RafLoop();
     raf.setHandler((dt) => {
         engine.update(dt);
@@ -35,4 +38,3 @@ $(document).ready(function() {
 
 //$(window).on("resize", checkOrientation);  
 
-renderer { eventBus.on("message:emit", function(payload) { render }) }  like in TextSystemBase 

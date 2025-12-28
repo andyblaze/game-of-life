@@ -1,8 +1,8 @@
 import { lerpColor, randomFrom } from "./functions.js";
 
 export default class SeaColor {
-    constructor(targetSelector, cfg) {
-        this.$el = targetSelector;
+    constructor(eventBus, cfg) {
+        this.eventBus = eventBus;
         // Sea moods / colors
         this.colors = cfg.colors;
         this.current = { ...this.colors[0] };
@@ -16,7 +16,7 @@ export default class SeaColor {
         } while ( next === this.target );
         return { ...next };
     }
-    notify(dt) {
+    update(dt) {
         dt = Math.min(dt, 100);
         const t = dt * this.speed;
         this.current = lerpColor(this.current, this.target, t);
@@ -33,10 +33,11 @@ export default class SeaColor {
         );
     }
     apply() {
-        const c = this.current;
-        this.$el.css(
+        const color = { ...this.current };
+        this.eventBus.emit("sea:colorchange", { "type": "hsla", "color": color });
+        /*this.$el.css(
             "background-color",
             `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`
-        );
+        );*/
     }
 }

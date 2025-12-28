@@ -1,7 +1,10 @@
 export default class MessageSystem {
     constructor(eventBus) {
         eventBus.on("sea:message", function(message) {
-            eventBus.emit("message:emit", message);//console.log("sea msg", message);
+            eventBus.emit("message:emit", { "type": "sea-text", "msg":message } );
+        });
+        eventBus.on("sea:colorchange", function(data) {
+            eventBus.emit("sea:colorchanged", data);
         });
         eventBus.on("weather:message", function(message) {
             console.log("weather msg", message);
