@@ -19,7 +19,7 @@ export default class Renderer {
         $(selector).css("background-color", color);
     }
     onMessage(rawData) {
-        const data = {...rawData}; // copy, so no mutations
+        const data = {...rawData}; 
         let selector = "#" + data.type;
         this.updateHtml(selector, data);
         selector = "." + data.type;

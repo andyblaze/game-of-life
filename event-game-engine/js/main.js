@@ -1,33 +1,20 @@
 //import placeAdder from "./place-adder.js";
-//import { SeaEvents, WeatherEvents, FishEvents, LandEvents, PeopleEvents } from "./sea-events.js";
-//import TownPopup from "./town-popup.js";
 import { config } from "./config.js";
-//import EventsObservable from "./events-observable.js";
-//import { checkOrientation } from "./functions.js";
+import { checkOrientation } from "./functions.js";
+import { createCoreSystems } from "./systems.js";
 import RafLoop from "./raf-loop.js";
 import Engine from "./engine.js";
-import SeaSystem from "./sea-system.js";
-import WeatherSystem from "./weather-system.js";
-import PeopleSystem from "./people-system.js";
-import FishSystem from "./fish-system.js";
-import LandSystem from "./land-system.js";
 import EventBus from "./event-bus.js";
 import MessageSystem from "./message-system.js";
-import Mood from "./mood.js";
-import SeaColor from "./sea-color.js";
 import Renderer from "./renderer.js";
 
 $(document).ready(function() {
+    checkOrientation();
+    $(window).on("resize", checkOrientation); 
     const eventBus = new EventBus();
     const engine = new Engine();
-    engine.add(new SeaSystem(eventBus, config.sea_messages));
-    engine.add(new WeatherSystem(eventBus, config.weather_messages));
-    engine.add(new PeopleSystem(eventBus, config.people_messages));
-    engine.add(new FishSystem(eventBus, config.fish_messages));
-    engine.add(new LandSystem(eventBus, config.land_messages));
-    engine.add(new SeaColor(eventBus, config.sea_change));
+    createCoreSystems(eventBus, config).forEach(sys => engine.add(sys));
     engine.add(new MessageSystem(eventBus));
-    engine.add(new Mood(eventBus, config.moods));
     engine.add(new Renderer(eventBus));
     const raf = new RafLoop();
     raf.setHandler((dt) => {
@@ -35,6 +22,3 @@ $(document).ready(function() {
     });
     raf.start();
 });
-
-//$(window).on("resize", checkOrientation);  
-
