@@ -6,20 +6,23 @@ export default class MessageSystem {
         eventBus.on("sea:colorchange", function(data) {
             eventBus.emit("sea:colorchanged", data);
         });
+        eventBus.on("player:moved", function(data) { 
+            eventBus.emit("player:moving", data);
+        });
         eventBus.on("weather:message", function(message) {
-            console.log("weather msg", message);
+            //console.log("weather msg", message);
         });
         eventBus.on("people:message", function(message) {
-            console.log("people msg", message);
+            //console.log("people msg", message);
         });
          eventBus.on("land:message", function(message) {
-            console.log("land msg", message);
+            //console.log("land msg", message);
         });
          eventBus.on("fish:message", function(message) {
-            console.log("fish msg", message);
+            //console.log("fish msg", message);
         });
         eventBus.on("mood:changed", function(message) {
-            console.log("mood msg", message);
+            //console.log("mood msg", message);
         });
     }
 }

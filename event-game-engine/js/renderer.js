@@ -7,6 +7,16 @@ export default class Renderer {
         this.eventBus.on("sea:colorchanged", (data) => {
             this.onColorChange(data);
         });
+        this.eventBus.on("player:moving", (data) => this.drawPlayer(data));
+    }
+    drawPlayer(data) { 
+        const canvas = $("#world-canvas")[0];
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(data.x, data.y, 5, 0, 2 * Math.PI);     
+        ctx.fill(); 
     }
     onColorChange(rawData) {
         const data = {...rawData};
