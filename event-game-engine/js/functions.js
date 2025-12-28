@@ -3,8 +3,8 @@ export function randomFrom(arr) {
 }
 
 export function checkOrientation() {
-    const d = (window.innerHeight > window.innerWidth ? "flex" : "none");
-    $("#rotate-warning").css("display", d);
+    const isPortrait = window.innerHeight > window.innerWidth;
+    $("#rotate-warning").css("display", isPortrait ? "flex" : "none");
 }
 
 export function mt_rand(min, max) {
