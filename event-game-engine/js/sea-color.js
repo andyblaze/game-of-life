@@ -35,9 +35,5 @@ export default class SeaColor {
     apply() {
         const color = { ...this.current };
         this.eventBus.emit("sea:colorchange", { "type": "hsla", "color": color });
-        /*this.$el.css(
-            "background-color",
-            `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`
-        );*/
     }
 }
