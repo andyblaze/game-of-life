@@ -9,6 +9,9 @@ export default class MessageSystem {
         eventBus.on("player:moving", function(data) { 
             eventBus.emit("player:moved", data);
         });
+        eventBus.on("player:steer", function(data) {
+            eventBus.emit("player:steered", data);
+        });
         eventBus.on("weather:message", function(message) {
             //console.log("weather msg", message);
         });
