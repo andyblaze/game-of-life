@@ -15,13 +15,16 @@ export default class SteeringSystem {
         };
         this.cfg = {
             jitter: {
-                chancePerMs: 0.00015,   // ≈ once every ~6–7s
+                chancePerMs: 0.000015,   // ≈ once every ~6–7s
                 minDuration: 200,       // ms
                 maxDuration: 1600,       // ms
-                strength: 0.252
+                strength: 0.00252
             }
         };
-        this.eventBus.on("player:moved", (data) => { this.playerPos = { ...data }});
+        this.eventBus.on("player:moved", (data) => { 
+            if ( Math.random() < 0.1 )
+                this.playerPos = { ...data }
+        });
     }
     computeWander(dt) {
         const wanderFreq     = 0.0005;
