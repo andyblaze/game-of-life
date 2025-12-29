@@ -8,10 +8,15 @@ import EventBus from "./event-bus.js";
 import MessageSystem from "./message-system.js";
 import Renderer from "./renderer.js";
 import Player from "./player.js";
+import CanvasMap from "./canvas-map.js";
+import SvgMap from "./svg-map.js";
 
-$(document).ready(function() {
+$(document).ready( async function() {
     checkOrientation();
     $(window).on("resize", checkOrientation); 
+    //const canvas = $("#world-canvas")[0];
+    const map = new SvgMap($("#svg-map")[0]); //CanvasMap(canvas, "#svg-map");
+    await map.load();
     const eventBus = new EventBus();
     const engine = new Engine();
     engine.add(new MessageSystem(eventBus));

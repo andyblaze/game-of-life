@@ -12,7 +12,7 @@ export default class Renderer {
     drawPlayer(data) { 
         const canvas = $("#world-canvas")[0];
         const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "red";
         ctx.beginPath();
         ctx.arc(data.x, data.y, 5, 0, 2 * Math.PI);     

@@ -1,7 +1,7 @@
 export default class SvgMap {
   constructor(svgElement) {
     this.svg = svgElement;
-    this.canvas = document.createElement("canvas");
+    this.canvas = $("#world-canvas")[0];//document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d");
     this.ready = this.load();
   }

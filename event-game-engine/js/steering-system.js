@@ -93,8 +93,7 @@ export default class SteeringSystem {
         
     }
     emit(vx, vy) {
-         if ( ! Number.isFinite(vx) || ! Number.isFinite(vy) ) return;
-        // --- OUTPUT ---
+        if ( ! Number.isFinite(vx) || ! Number.isFinite(vy) ) return;
         this.eventBus.emit("player:steer", { vx, vy });
     }
     update(dt) {
@@ -113,9 +112,5 @@ export default class SteeringSystem {
         vx = v.x;
         vy = v.y; 
         this.emit(vx, vy); 
-
-        //if ( ! Number.isFinite(vx) || ! Number.isFinite(vy) ) return;
-        // --- OUTPUT ---
-        //this.eventBus.emit("player:steer", { vx, vy });
     }
 }

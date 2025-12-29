@@ -15,7 +15,7 @@ export function createCoreSystems(eventBus, config) {
         new PeopleSystem(eventBus, config.people_messages),
         new FishSystem(eventBus, config.fish_messages),
         new LandSystem(eventBus, config.land_messages),
-        new SeaColor(eventBus, config.sea_change),
+       // new SeaColor(eventBus, config.sea_change),
         new Mood(eventBus, config.moods),
         new SteeringSystem(eventBus, new Perlin())
     ];
