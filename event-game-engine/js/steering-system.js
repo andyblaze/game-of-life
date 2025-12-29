@@ -16,9 +16,9 @@ export default class SteeringSystem {
         this.cfg = {
             jitter: {
                 chancePerMs: 0.000015,   // ≈ once every ~6–7s
-                minDuration: 200,       // ms
-                maxDuration: 1600,       // ms
-                strength: 0.00252
+                minDuration: 2200,       // ms
+                maxDuration: 6600,       // ms
+                strength: 0.0052
             }
         };
         this.eventBus.on("player:moved", (data) => { 
