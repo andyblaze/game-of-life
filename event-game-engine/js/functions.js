@@ -29,3 +29,16 @@ export function lerpColor(c1, c2, t) {
         a: lerp(c1.a, c2.a, t)
     };
 }
+
+export function clampMagnitude(x, y, max) {
+    const mag = Math.hypot(x, y);
+    if (mag === 0 || mag <= max) return { x, y };
+    const s = max / mag;
+    return { x: x * s, y: y * s };
+}
+
+export function normalize(x, y) {
+    const mag = Math.hypot(x, y);
+    if (mag === 0) return { x: 0, y: 0 };
+    return { x: x / mag, y: y / mag };
+}
