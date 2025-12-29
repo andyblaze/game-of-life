@@ -26,7 +26,7 @@ export default class SteeringSystem {
                 this.playerPos = { ...data }
         });
     }
-    computeWander(dt) {
+    computeWander(dt) { 
         const wanderFreq     = 0.0005;
         const wanderStrength = 0.4;
 
