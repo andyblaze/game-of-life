@@ -15,26 +15,26 @@ export default class SteeringSystem {
         };
         this.cfg = {
             jitter: {
-                chancePerMs: 0.000015,   // ≈ once every ~6–7s
-                minDuration: 2200,       // ms
-                maxDuration: 6600,       // ms
+                chancePerMs: 0.15,   // ≈ once every ~6–7s
+                minDuration: 2000,       // ms
+                maxDuration: 7000,       // ms
                 strength: 0.0052
             }
         };
         this.eventBus.on("player:moved", (data) => { 
-            if ( Math.random() < 0.1 )
+            if ( Math.random() < 0.01 )
                 this.playerPos = { ...data }
         });
     }
     computeWander(dt) { 
         const wanderFreq     = 0.0005;
-        const wanderStrength = 0.4;
+        const wanderStrength = 0.24;
 
         // --- advance time for Perlin ---
         this.time += dt * wanderFreq;
 
         // --- WANDER (Perlin-based angle) ---
-        const n = this.perlin.noise(this.time); // assume -1..1 or 0..1
+        const n = this.perlin.noise(this.time, parseInt(Math.random() * 0.6)); // assume -1..1 or 0..1
         const angle = n * Math.PI * 2;
 
         const wanderX = Math.cos(angle) * wanderStrength;
@@ -42,7 +42,7 @@ export default class SteeringSystem {
         return { wanderX, wanderY };
     }
     computePull() {
-        const pullStrength   = 0.4;
+        const pullStrength   = 0.29;
 
         // --- PULL (towards target) ---
         const dx = this.target.x - this.playerPos.x;
