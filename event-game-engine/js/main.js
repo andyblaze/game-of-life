@@ -22,7 +22,7 @@ $(document).ready( async function() {
     engine.add(new MessageSystem(eventBus));
     engine.add(new Renderer(eventBus));
     createCoreSystems(eventBus, config).forEach(sys => engine.add(sys));
-    engine.add(new Player(eventBus, { "x": 563, "y": 118 }));
+    engine.add(new Player(eventBus, { "x": 543, "y": 68 }));
     const raf = new RafLoop();
     raf.setHandler((dt) => {
         engine.update(dt);

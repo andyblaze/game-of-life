@@ -16,11 +16,12 @@ export default class SteeringSystem {
         this.cfg = {
             jitter: {
                 chancePerMs: 0.00015,   // ≈ once every ~6–7s
-                minDuration: 1200,       // ms
-                maxDuration: 2600,       // ms
-                strength: 1.2
+                minDuration: 200,       // ms
+                maxDuration: 1600,       // ms
+                strength: 0.252
             }
         };
+        this.eventBus.on("player:moved", (data) => { this.playerPos = { ...data }});
     }
     computeWander(dt) {
         const wanderFreq     = 0.0005;
@@ -38,7 +39,7 @@ export default class SteeringSystem {
         return { wanderX, wanderY };
     }
     computePull() {
-        const pullStrength   = 0.6;
+        const pullStrength   = 0.4;
 
         // --- PULL (towards target) ---
         const dx = this.target.x - this.playerPos.x;
