@@ -1,7 +1,7 @@
 import { clampMagnitude, normalize } from "./functions.js";
 
 export default class SteeringSystem { 
-    constructor(eventBus, perlin) {
+    constructor(eventBus, perlin) { 
         this.eventBus = eventBus;
         this.perlin = perlin;
         this.target = { "x": 250, "y": 206 };
