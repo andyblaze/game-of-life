@@ -1,4 +1,18 @@
-export default class SteeringFeelers {
+export default class SteeringFeelers {  /*Summary (pin this mentally)
+
+✔ Scan quite far (80–150px)
+
+✔ 360° lookaround
+
+✔ 16–24 coarse directions
+
+✔ Score by land dominance
+
+✔ Gentle target bias (tiebreaker, not commander)
+
+✔ Set safe waypoint
+
+✔ Wander & jitter on the way there */
     constructor(map) {
         this.map = map;
 
