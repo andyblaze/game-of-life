@@ -103,19 +103,27 @@ export default class SteeringSystem {
     }
     update(dt) {
         // --- tuning values (tweak freely) ---
-        const maxSpeed       = 1.0; 
+        const maxSpeed = 1.0; 
 
-        const { wanderX, wanderY } = this.computeWander(dt);
-        const { pullX, pullY } = this.computePull();
-        const { jitterX, jitterY } = this.computeJitter(dt);
+        let { wanderX, wanderY } = this.computeWander(dt);
+        let { pullX, pullY } = this.computePull();
+        let { jitterX, jitterY } = this.computeJitter(dt);
         
 
          // --- COMBINE ---
-        let vx = wanderX + pullX + jitterX;
-        let vy = wanderY + pullY + jitterY;
-        const avoid = this.feelers.compute(this.playerPos, {vx, vy});
-        vx += avoid.ax;
-        vy += avoid.ay;
+        let vx = pullX;//wanderX + pullX + jitterX;
+        let vy = pullY; //wanderY + pullY + jitterY;
+        const avoid = this.feelers.compute(this.playerPos, { vx, vy });
+        const danger = this.feelers.computeDanger(this.playerPos, { vx, vy });
+        vx *= (1 - danger);
+        vy *= (1 - danger);
+        wanderX *= (1 - danger);
+        wanderY *= (1 - danger);
+        jitterX *= (1 - danger);
+        jitterY *= (1 - danger);
+
+        vx += (avoid.ax + wanderX + jitterX);
+        vy += (avoid.ay + wanderY + jitterY);
 
         // --- CLAMP SPEED ---
         const v = clampMagnitude(vx, vy, maxSpeed);
