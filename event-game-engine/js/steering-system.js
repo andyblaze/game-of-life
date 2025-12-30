@@ -29,7 +29,7 @@ export default class SteeringSystem {
     }
     computeWander(dt) { 
         const wanderFreq     = 0.005;
-        const wanderStrength = 0.4;//0.24;
+        const wanderStrength = 0.94;//0.24;
 
         // --- advance time for Perlin ---
         this.time += dt * wanderFreq;
@@ -43,7 +43,7 @@ export default class SteeringSystem {
         return { wanderX, wanderY };
     }
     computePull() {
-        const pullStrength = 0.35;//0.29;
+        const pullStrength = 0.835;//0.29;
 
         // --- PULL (towards target) ---
         const dx = this.target.x - this.playerPos.x;
