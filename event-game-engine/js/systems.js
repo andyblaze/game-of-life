@@ -5,8 +5,7 @@ import FishSystem from "./fish-system.js";
 import LandSystem from "./land-system.js";
 import Mood from "./mood.js";
 import SeaColor from "./sea-color.js";
-import SteeringSystem from "./steering-system.js";
-import Perlin from "./perlin.js";
+
 
 export function createCoreSystems(eventBus, config) {
     return [
@@ -16,7 +15,6 @@ export function createCoreSystems(eventBus, config) {
         new FishSystem(eventBus, config.fish_messages),
         new LandSystem(eventBus, config.land_messages),
        // new SeaColor(eventBus, config.sea_change),
-        new Mood(eventBus, config.moods),
-        new SteeringSystem(eventBus, new Perlin())
+        new Mood(eventBus, config.moods)
     ];
 }

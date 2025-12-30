@@ -27,11 +27,11 @@ export default class CanvasMap {
         const viewBox = svgDoc.documentElement.getAttribute("viewBox").split(" ").map(Number);
         const [vbX, vbY, vbWidth, vbHeight] = viewBox; 
 
-        /*this.canvas.width = vbWidth;
-        this.canvas.height = vbHeight;*/
+        this.canvas.width = vbWidth;
+        this.canvas.height = vbHeight;
 
         // Convert SVG text to an image and draw to canvas
-        console.log(svgText);
+        //console.log(svgText);
         const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
         const url = URL.createObjectURL(blob);
 
@@ -40,11 +40,25 @@ export default class CanvasMap {
             img.onload = () => {
                 this.ctx.drawImage(img, 0, 0, vbWidth, vbHeight);
                 URL.revokeObjectURL(url);
-                console.log("SVG drawn to canvas");
+                //console.log("SVG drawn to canvas");
                 resolve();
             };
             img.onerror = (e) => console.error("Failed to load SVG", e);
             img.src = url;
         });
+    }
+    isLand(x,y) {
+        // Outside map = water
+        if (x < 0 || y < 0 || x >= this.canvas.width || y >= this.canvas.height) {
+            return false;
+        }
+
+        const px = Math.floor(x);
+        const py = Math.floor(y);
+
+        const data = this.ctx.getImageData(px, py, 1, 1).data;
+
+        // land = any visible pixel (alpha > 0)
+        return data[3] > 0;        
     }
 }

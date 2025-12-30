@@ -1,9 +1,10 @@
 import { clampMagnitude, normalize } from "./functions.js";
 
 export default class SteeringSystem { 
-    constructor(eventBus, perlin) { 
+    constructor(eventBus, perlin, feelers) { 
         this.eventBus = eventBus;
         this.perlin = perlin;
+        this.feelers = feelers;
         this.target = { "x": 250, "y": 206 };
         this.playerPos = { "x": 573, "y": 118 };
         this.time = 0;
@@ -15,19 +16,19 @@ export default class SteeringSystem {
         };
         this.cfg = {
             jitter: {
-                chancePerMs: 0.15,   // ≈ once every ~6–7s
+                chancePerMs: 0.0015,   // ≈ once every ~6–7s
                 minDuration: 2000,       // ms
                 maxDuration: 7000,       // ms
                 strength: 0.0052
             }
         };
         this.eventBus.on("player:moved", (data) => { 
-            if ( Math.random() < 0.01 )
+            if ( Math.random() < 20.01 )
                 this.playerPos = { ...data }
         });
     }
     computeWander(dt) { 
-        const wanderFreq     = 0.0005;
+        const wanderFreq     = 0.005;
         const wanderStrength = 0.24;
 
         // --- advance time for Perlin ---
@@ -107,9 +108,14 @@ export default class SteeringSystem {
         const { wanderX, wanderY } = this.computeWander(dt);
         const { pullX, pullY } = this.computePull();
         const { jitterX, jitterY } = this.computeJitter(dt);
-        // --- COMBINE ---
+        
+
+         // --- COMBINE ---
         let vx = wanderX + pullX + jitterX;
         let vy = wanderY + pullY + jitterY;
+        const avoid = this.feelers.compute(this.playerPos, {vx, vy});
+        vx += avoid.ax;
+        vy += avoid.ay;
 
         // --- CLAMP SPEED ---
         const v = clampMagnitude(vx, vy, maxSpeed);
