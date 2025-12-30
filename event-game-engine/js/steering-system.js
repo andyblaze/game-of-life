@@ -29,7 +29,7 @@ export default class SteeringSystem {
     }
     computeWander(dt) { 
         const wanderFreq     = 0.005;
-        const wanderStrength = 0.94;//0.24;
+        const wanderStrength = 0.24;//0.24;
 
         // --- advance time for Perlin ---
         this.time += dt * wanderFreq;
@@ -43,7 +43,7 @@ export default class SteeringSystem {
         return { wanderX, wanderY };
     }
     computePull() {
-        const pullStrength = 0.835;//0.29;
+        const pullStrength = 0.25;//0.29;
 
         // --- PULL (towards target) ---
         const dx = this.target.x - this.playerPos.x;
@@ -117,13 +117,19 @@ export default class SteeringSystem {
         const avoid = this.feelers.compute(this.playerPos, { vx: intentX, vy: intentY });
         const danger = this.feelers.computeDanger(this.playerPos, { vx: intentX, vy: intentY });
 
+        const baseAvoid = 1.0; // tune this
+        const avoidStrength = baseAvoid * danger;
+
         // 3. Scale intent by safety
         intentX *= (1 - danger);
         intentY *= (1 - danger);
 
         // 4. Combine
-        let vx = intentX + avoid.ax;
-        let vy = intentY + avoid.ay;
+        let vx = intentX + (avoid.ax * avoidStrength);
+        let vy = intentY + (avoid.ay * avoidStrength);
+
+        //vx += avoid.ax * avoidStrength;
+        //vy += avoid.ay * avoidStrength;
         
 
          // --- COMBINE ---
