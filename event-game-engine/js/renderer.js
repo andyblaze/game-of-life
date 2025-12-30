@@ -10,7 +10,7 @@ export default class Renderer {
         this.eventBus.on("player:moved", (data) => this.drawPlayer(data));
     }
     drawPlayer(data) { 
-        const canvas = $("#world-canvas")[0];
+        const canvas = $("#screen-canvas")[0];
         const ctx = canvas.getContext("2d");
         //ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "red";
