@@ -29,7 +29,7 @@ export default class SteeringSystem {
     }
     computeWander(dt) { 
         const wanderFreq     = 0.005;
-        const wanderStrength = 0.24;
+        const wanderStrength = 0.4;//0.24;
 
         // --- advance time for Perlin ---
         this.time += dt * wanderFreq;
@@ -43,7 +43,7 @@ export default class SteeringSystem {
         return { wanderX, wanderY };
     }
     computePull() {
-        const pullStrength   = 0.29;
+        const pullStrength = 0.35;//0.29;
 
         // --- PULL (towards target) ---
         const dx = this.target.x - this.playerPos.x;
@@ -108,10 +108,26 @@ export default class SteeringSystem {
         let { wanderX, wanderY } = this.computeWander(dt);
         let { pullX, pullY } = this.computePull();
         let { jitterX, jitterY } = this.computeJitter(dt);
+
+        // 1. Compute intent (pull, wander, jitter)
+        let intentX = pullX + wanderX + jitterX;
+        let intentY = pullY + wanderY + jitterY;
+
+        // 2. Compute avoidance
+        const avoid = this.feelers.compute(this.playerPos, { vx: intentX, vy: intentY });
+        const danger = this.feelers.computeDanger(this.playerPos, { vx: intentX, vy: intentY });
+
+        // 3. Scale intent by safety
+        intentX *= (1 - danger);
+        intentY *= (1 - danger);
+
+        // 4. Combine
+        let vx = intentX + avoid.ax;
+        let vy = intentY + avoid.ay;
         
 
          // --- COMBINE ---
-        let vx = pullX;//wanderX + pullX + jitterX;
+        /*let vx = pullX;//wanderX + pullX + jitterX;
         let vy = pullY; //wanderY + pullY + jitterY;
         const avoid = this.feelers.compute(this.playerPos, { vx, vy });
         const danger = this.feelers.computeDanger(this.playerPos, { vx, vy });
@@ -123,7 +139,7 @@ export default class SteeringSystem {
         jitterY *= (1 - danger);
 
         vx += (avoid.ax + wanderX + jitterX);
-        vy += (avoid.ay + wanderY + jitterY);
+        vy += (avoid.ay + wanderY + jitterY);*/
 
         // --- CLAMP SPEED ---
         const v = clampMagnitude(vx, vy, maxSpeed);

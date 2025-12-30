@@ -2,7 +2,7 @@ export default class SteeringFeelers {
     constructor(map) {
         this.map = map;
 
-        this.length = 30;
+        this.length = 80;
         this.strength = 10;
 
         this.angles = [
