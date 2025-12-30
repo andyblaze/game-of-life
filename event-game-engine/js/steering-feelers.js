@@ -1,6 +1,6 @@
 export default class SteeringFeelers {  /*Summary (pin this mentally)
 
-✔ Scan quite far (80–150px)
+✔ Scan quite far (80–150px) 
 
 ✔ 360° lookaround
 
