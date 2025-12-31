@@ -3,15 +3,18 @@ import { dot, normalize } from "./functions.js";
 export default class WaypointScanner {
     constructor(map) {
         this.map = map;
-        this.scanRadius = 120;
         this.directions = 20;
-        this.samples = 6;
+        this.scanRadius = 60;
+        this.samples = 4 + Math.floor(this.scanRadius / 10);//this.samples = 6;
     }
 
     findWaypoint(pos, target) {
-        let bestScore = -Infinity;
-        let bestDir = null;
+        const scanResults = [];
 
+        // Precompute normalized vector to target
+        const toTarget = normalize(target.x - pos.x, target.y - pos.y);
+
+        // --- 1. Scan all directions ---
         for (let i = 0; i < this.directions; i++) {
             const angle = (i / this.directions) * Math.PI * 2;
             const dir = { x: Math.cos(angle), y: Math.sin(angle) };
@@ -28,26 +31,38 @@ export default class WaypointScanner {
                 else water++;
             }
 
-            let score = land - water * 1.5;
-
-            // gentle bias toward final target
-            const toTarget = normalize(
-                target.x - pos.x,
-                target.y - pos.y
-            );
-            score += dot(dir, toTarget) * 0.2;
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestDir = dir;
-            }
+            const landScore = land - water * 9.0; // stronger water penalty
+            scanResults.push({ dir, landScore });
         }
 
-        if (!bestDir) return null;
+        // --- 2. Filter only safe directions ---
+        const safeDirs = scanResults.filter(r => r.landScore > 0);
 
+        let bestDir;
+
+        if (safeDirs.length === 0) {
+            // fallback: pick direction with highest (least negative) landScore
+            bestDir = scanResults.reduce((best, r) => r.landScore > best.landScore ? r : best);
+        } else {
+            // --- 3. Find max land score among safe directions ---
+            const maxLandScore = Math.max(...safeDirs.map(r => r.landScore));
+
+            // --- 4. Collect directions with max land score ---
+            const bestDirs = safeDirs.filter(r => r.landScore === maxLandScore);
+
+            // --- 5. Break ties with very tiny target bias + small random tie-break ---
+            const targetBiasWeight = 0.02; // tiny
+            bestDir = bestDirs.reduce((best, r) => {
+                const scoreR = dot(r.dir, toTarget) * targetBiasWeight + Math.random() * 0.01;
+                const scoreBest = dot(best.dir, toTarget) * targetBiasWeight + Math.random() * 0.01;
+                return scoreR > scoreBest ? r : best;
+            });
+        }
+
+        // --- 6. Return waypoint ---
         return {
-            x: pos.x + bestDir.x * this.scanRadius,
-            y: pos.y + bestDir.y * this.scanRadius
+            x: pos.x + bestDir.dir.x * this.scanRadius,
+            y: pos.y + bestDir.dir.y * this.scanRadius
         };
     }
 }
