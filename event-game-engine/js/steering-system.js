@@ -1,4 +1,4 @@
-import { clampMagnitude, normalize } from "./functions.js";
+import { clampMagnitude, normalize, distance } from "./functions.js";
 
 export default class SteeringSystem { 
     constructor(eventBus, perlin, feelers, wps) { 
@@ -47,11 +47,11 @@ export default class SteeringSystem {
         const wanderY = Math.sin(angle) * wanderStrength;
         return { wanderX, wanderY };
     }
-    computePull() {
+    computePull(target) {
         const pullStrength = 0.25;//0.29;
         // --- PULL (towards target) ---
-        const dx = this.target.x - this.playerPos.x;
-        const dy = this.target.y - this.playerPos.y;
+        const dx = target.x - this.playerPos.x;
+        const dy = target.y - this.playerPos.y;
 
         const dir = normalize(dx, dy);
 
@@ -106,10 +106,52 @@ export default class SteeringSystem {
         this.eventBus.emit("player:steer", { vx, vy });
     }
     update(dt) {
-        const maxSpeed = 1.0; 
+        const maxSpeed = 1.0;
+
+        // --- 1. Compute wandering + jitter ---  
+        const { wanderX, wanderY } = this.computeWander(dt);
+        const { jitterX, jitterY } = this.computeJitter(dt);
+
+        // --- 2. Compute pull toward current waypoint or actual target ---  
+        let pullTarget = this.waypoint;
+
+        // Switch to actual target if close enough to current waypoint
+        if ( this.waypoint && distance(this.playerPos, this.waypoint ) < 4) {
+            //pullTarget = this.target;
+            // Optional: reset waypoint for next scan
+            this.waypoint = this.waypointScanner.findWaypoint(this.playerPos, this.target);
+            pullTarget = this.waypoint;
+            this.eventBus.emit("player:waypoint", this.waypoint);
+        }
+        const { pullX, pullY } = this.computePull(pullTarget); // make sure computePull() uses this.waypoint
+
+        // --- 3. Combine intent ---  
+        let intentX = pullX + wanderX + jitterX;
+        let intentY = pullY + wanderY + jitterY;
+
+        // --- 4. Compute feeler avoidance ---  
+        const avoid = this.feelers.compute(this.playerPos, { vx: intentX, vy: intentY });
+        const danger = this.feelers.computeDanger(this.playerPos, { vx: intentX, vy: intentY });
+
+        // --- 5. Apply safety scaling ---  
+        // Reduce intent in proportion to danger
+        intentX *= (1 - danger);
+        intentY *= (1 - danger);
+
+        // --- 6. Add avoidance vector ---  
+        // Avoidance is already scaled by danger in feelers; baseAvoid can stay 1.0
+        const vx = intentX + avoid.ax;
+        const vy = intentY + avoid.ay;
+
+        // --- 7. Clamp speed ---  
+        const v = clampMagnitude(vx, vy, maxSpeed);
+
+        // --- 8. Emit to eventBus ---  
+        this.emit(v.x, v.y);
+        /*const maxSpeed = 1.0; 
 
         let { wanderX, wanderY } = this.computeWander(dt);
-        let { pullX, pullY } = this.computePull();
+        let { pullX, pullY } = this.computePull(this.waypoint);
         let { jitterX, jitterY } = this.computeJitter(dt);
 
         // 1. Compute intent (pull, wander, jitter)
@@ -135,6 +177,6 @@ export default class SteeringSystem {
         const v = clampMagnitude(vx, vy, maxSpeed);
         vx = v.x;
         vy = v.y; 
-        this.emit(vx, vy); 
+        this.emit(vx, vy); */
     }
 }

@@ -25,7 +25,7 @@ export default class Renderer {
         //ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "blue";
         ctx.beginPath();
-        ctx.arc(data.x, data.y, 1.5, 0, 2 * Math.PI);     
+        ctx.arc(data.x, data.y, 4.5, 0, 2 * Math.PI);     
         ctx.fill();
     }
     onColorChange(rawData) {

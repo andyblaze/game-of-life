@@ -46,3 +46,9 @@ export function normalize(x, y) {
 export function dot(a, b) {
     return a.x * b.x + a.y * b.y;
 }
+
+export function distance(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    return Math.hypot(dx, dy); // sqrt(dx*dx + dy*dy)
+}
