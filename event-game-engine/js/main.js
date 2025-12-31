@@ -13,6 +13,7 @@ import CanvasMap from "./canvas-map.js";
 import SteeringSystem from "./steering-system.js";
 import Perlin from "./perlin.js";
 import SteeringFeelers from "./steering-feelers.js";
+import WaypointScanner from "./waypoint-scanner.js"; 
 
 $(document).ready( async function() {
     checkOrientation();
@@ -24,7 +25,7 @@ $(document).ready( async function() {
     const engine = new Engine();
     engine.add(new MessageSystem(eventBus));
     engine.add(new Renderer(eventBus));
-    engine.add(new SteeringSystem(eventBus, new Perlin(), new SteeringFeelers(map)));
+    engine.add(new SteeringSystem(eventBus, new Perlin(), new SteeringFeelers(map), new WaypointScanner(map)));
     createCoreSystems(eventBus, config).forEach(sys => engine.add(sys));
     engine.add(new Player(eventBus, { "x": 543, "y": 68 }));
     const raf = new RafLoop();

@@ -42,3 +42,7 @@ export function normalize(x, y) {
     if (mag === 0) return { x: 0, y: 0 };
     return { x: x / mag, y: y / mag };
 }
+
+export function dot(a, b) {
+    return a.x * b.x + a.y * b.y;
+}

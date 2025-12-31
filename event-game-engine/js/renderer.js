@@ -7,6 +7,7 @@ export default class Renderer {
         this.eventBus.on("sea:colorchanged", (data) => {
             this.onColorChange(data);
         });
+        this.eventBus.on("player:waypointed", (data) => this.drawWaypoint(data));
         this.eventBus.on("player:moved", (data) => this.drawPlayer(data));
     }
     drawPlayer(data) { 
@@ -17,6 +18,15 @@ export default class Renderer {
         ctx.beginPath();
         ctx.arc(data.x, data.y, 1.5, 0, 2 * Math.PI);     
         ctx.fill(); 
+    }
+    drawWaypoint(data) {
+        const canvas = $("#screen-canvas")[0];
+        const ctx = canvas.getContext("2d");
+        //ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "blue";
+        ctx.beginPath();
+        ctx.arc(data.x, data.y, 1.5, 0, 2 * Math.PI);     
+        ctx.fill();
     }
     onColorChange(rawData) {
         const data = {...rawData};

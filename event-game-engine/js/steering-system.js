@@ -1,10 +1,12 @@
 import { clampMagnitude, normalize } from "./functions.js";
 
 export default class SteeringSystem { 
-    constructor(eventBus, perlin, feelers) { 
+    constructor(eventBus, perlin, feelers, wps) { 
         this.eventBus = eventBus;
         this.perlin = perlin;
         this.feelers = feelers;
+        this.waypoint = null;
+        this.waypointScanner = wps;
         this.target = { "x": 250, "y": 206 };
         this.playerPos = { "x": 573, "y": 118 };
         this.time = 0;
@@ -16,14 +18,17 @@ export default class SteeringSystem {
         };
         this.cfg = {
             jitter: {
-                chancePerMs: 0.0015,   // ≈ once every ~6–7s
+                chancePerMs: 0.0015,   // ≈ once few s
                 minDuration: 2000,       // ms
                 maxDuration: 7000,       // ms
                 strength: 0.0052
             }
         };
+        this.waypoint = this.waypointScanner.findWaypoint(this.playerPos, this.target);
+        this.eventBus.emit("player:waypoint", this.waypoint);
+        //console.log(this.waypoint);
         this.eventBus.on("player:moved", (data) => { 
-            if ( Math.random() < 20.01 )
+            //if ( Math.random() < 20.01 )
                 this.playerPos = { ...data }
         });
     }
@@ -32,7 +37,7 @@ export default class SteeringSystem {
         const wanderStrength = 0.24;//0.24;
 
         // --- advance time for Perlin ---
-        this.time += dt * wanderFreq;
+        this.time += dt;// * wanderFreq;
 
         // --- WANDER (Perlin-based angle) ---
         const n = this.perlin.noise(this.time, parseInt(Math.random() * 0.6)); // assume -1..1 or 0..1
@@ -44,7 +49,6 @@ export default class SteeringSystem {
     }
     computePull() {
         const pullStrength = 0.25;//0.29;
-
         // --- PULL (towards target) ---
         const dx = this.target.x - this.playerPos.x;
         const dy = this.target.y - this.playerPos.y;
@@ -102,7 +106,6 @@ export default class SteeringSystem {
         this.eventBus.emit("player:steer", { vx, vy });
     }
     update(dt) {
-        // --- tuning values (tweak freely) ---
         const maxSpeed = 1.0; 
 
         let { wanderX, wanderY } = this.computeWander(dt);
@@ -127,25 +130,6 @@ export default class SteeringSystem {
         // 4. Combine
         let vx = intentX + (avoid.ax * avoidStrength);
         let vy = intentY + (avoid.ay * avoidStrength);
-
-        //vx += avoid.ax * avoidStrength;
-        //vy += avoid.ay * avoidStrength;
-        
-
-         // --- COMBINE ---
-        /*let vx = pullX;//wanderX + pullX + jitterX;
-        let vy = pullY; //wanderY + pullY + jitterY;
-        const avoid = this.feelers.compute(this.playerPos, { vx, vy });
-        const danger = this.feelers.computeDanger(this.playerPos, { vx, vy });
-        vx *= (1 - danger);
-        vy *= (1 - danger);
-        wanderX *= (1 - danger);
-        wanderY *= (1 - danger);
-        jitterX *= (1 - danger);
-        jitterY *= (1 - danger);
-
-        vx += (avoid.ax + wanderX + jitterX);
-        vy += (avoid.ay + wanderY + jitterY);*/
 
         // --- CLAMP SPEED ---
         const v = clampMagnitude(vx, vy, maxSpeed);
