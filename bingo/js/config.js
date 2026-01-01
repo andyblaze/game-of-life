@@ -86,7 +86,7 @@ export const config = {
         "Five Dozen",                 // 60
         "Baker’s Bun",                // 61
         "Turn on the Screw",          // 62
-        "Tickle Me 63",               // 63
+        "Tickle Me",                  // 63
         "Red Raw",                    // 64
         "Old Age Pension",            // 65
         "Clickety Click",             // 66

@@ -1,4 +1,4 @@
-class BingoBallDrawer {
+export default class BingoBallDrawer {
   constructor(min = 1, max = 75) {
     this.min = min;
     this.max = max;

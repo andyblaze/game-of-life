@@ -1,4 +1,4 @@
-class BingoCaller {
+export default class BingoCaller {
   constructor(drawer, engine, numberTexts) {
     this.drawer = drawer; // instance of BingoBallDrawer
     this.engine = engine; // your GameEngine
