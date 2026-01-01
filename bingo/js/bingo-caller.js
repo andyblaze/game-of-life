@@ -3,6 +3,11 @@ export default class BingoCaller {
     this.drawer = drawer; // instance of BingoBallDrawer
     this.engine = engine; // your GameEngine
     this.numberTexts = numberTexts || {}; // {1: "On its own 1", 22: "Two little ducks"}
+    this.lastNumber = 0;
+  }
+
+  getLastNumber() {
+    return this.lastNumber;
   }
 
   async drawNext() {
@@ -17,6 +22,7 @@ export default class BingoCaller {
 
     // Pick a number
     const number = this.drawer.draw();
+    this.lastNumber = number;
 
     // Show the “called” text
     const text = this.numberTexts[number] || number;

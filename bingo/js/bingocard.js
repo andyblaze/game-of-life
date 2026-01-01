@@ -1,3 +1,5 @@
+import { mt_rand } from "./functions.js"
+
 export default class BingoCard {
     constructor() {
         this.grid = [];
