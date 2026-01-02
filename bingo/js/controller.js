@@ -6,6 +6,7 @@ export default class BingoController {
         this.caller = caller;
         this.renderer = renderer;
         this.card = null;
+        this.hasWon = false;
 
         this.bindEvents();
     }
@@ -15,14 +16,14 @@ export default class BingoController {
             this.onReady();
         });
 
-        this.engine.on("state:enter:DRAW_COMPLETE", () => {
+        this.engine.on("state:enter:CHECKING", () => {
             this.onDrawComplete();
         });
     }
 
     onReady() {
         console.log("Controller: READY → creating card");
-
+        this.hasWon = false;
         this.card = new BingoCard();
         this.renderer.renderCard(this.card);
     }
@@ -30,9 +31,9 @@ export default class BingoController {
     onDrawComplete() {
         const number = this.caller.getLastNumber();
 
-        console.log("Controller: DRAW_COMPLETE → marking", number);
+        console.log("Controller: CHECKING → marking", number);
 
-        //this.card.mark(number);
+        this.card.mark(number);
         this.renderer.markCard(number);
     }
 }

@@ -39,7 +39,6 @@ export default class BingoCard {
             }
         }
     }
-
     mark(number) {
         const cell = this.lookup.get(number);
         if (!cell) return false;
@@ -47,7 +46,15 @@ export default class BingoCard {
         cell.marked = true;
         return true;
     }
-
+    hasWinningRow() {
+        for (let row of this.grid) {
+            const allMarked = row.every(cell => cell.marked === true);
+            if ( allMarked ) {
+                return true;
+            }
+        }
+        return false;
+    }
     getGrid() {
         return this.grid;
     }

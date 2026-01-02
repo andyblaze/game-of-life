@@ -16,7 +16,7 @@ export default class Renderer {
         }
         target.html(htm);
     }
-    markCard(n) { alert(9);
+    markCard(n) { 
         $("#card"+n).addClass("marked");
     }
 }

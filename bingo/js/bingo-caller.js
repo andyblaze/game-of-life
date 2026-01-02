@@ -22,15 +22,15 @@ export default class BingoCaller {
 
     // Pick a number
     const number = this.drawer.draw();
-    this.lastNumber = number;
+    this.lastNumber = number; 
 
     // Show the “called” text
     const text = this.numberTexts[number] || number;
     console.log(`Number drawn: ${number} → "${text}"`);
 
     // Wait a human-like interval
-    const delay = this.getHumanDelay(number);
-    await this.sleep(delay);
+   // const delay = this.getHumanDelay(number);
+    //await this.sleep(delay);
 
     // Signal draw complete
     this.engine.dispatch("DRAW_COMPLETE");
