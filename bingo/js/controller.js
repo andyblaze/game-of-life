@@ -38,14 +38,14 @@ export default class BingoController {
         this.card.mark(number);
         this.renderer.markCard(number);
 
-        if ( ! this.hasWon && this.card.hasWinningColumn() ) {
+        if ( !this.hasWon && this.card.hasWinningColumn() ) {
             this.hasWon = true;
             console.log("🎉 BINGO! 🎉");
 
             this.engine.dispatch("END_GAME");
             return;
         }
-        this.engine.dispatch("CHECK_COMPLETE");
+       this.engine.dispatch("CHECK_COMPLETE");
     }
 }
 

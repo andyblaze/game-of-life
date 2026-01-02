@@ -46,7 +46,7 @@ export default class BingoCard {
         cell.marked = true;
         return true;
     }
-    hasWinningColumn()() {
+    hasWinningColumn() {
         for (let row of this.grid) {
             const allMarked = row.every(cell => cell.marked === true);
             if ( allMarked ) {
