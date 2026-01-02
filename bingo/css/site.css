@@ -14,9 +14,14 @@ html, body {
   font-size: 2.5rem;
   width: 4rem;
   height: 4rem;
+  padding: 0.25rem;
+}
+#bingocard span { 
+  width: 100%;
+  height: 100%;
 }
 #bingocard div.winning {
-  background-color: blueviolet;
+  background-color: gold;
 }
 #bingocard span.marked {
   background-color: aqua;
