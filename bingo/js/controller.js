@@ -1,4 +1,5 @@
 import BingoCard from "./bingocard.js";
+import BingoScorer from "./bingo-scorer.js";
 
 export default class BingoController {
     constructor(engine, caller, renderer) {
@@ -7,6 +8,7 @@ export default class BingoController {
         this.renderer = renderer;
         this.card = null;
         this.hasWon = false;
+        this.scorer = new BingoScorer(); // default prizes
 
         this.bindEvents();
     }
@@ -37,11 +39,19 @@ export default class BingoController {
 
         this.card.mark(number);
         this.renderer.markCard(number);
+        const winningCorners = this.card.getWinningCorners();
+        if ( winningCorners.length > 0 )
+            this.renderer.markWinningCorners(this.card);
+        const winningCol = this.card.getWinningColumn();
+        if ( winningCol.length > 0 ) {
+            this.renderer.markWinningColumn(this.card);
+        }
 
-        if ( !this.hasWon && this.card.hasWinningColumn() ) {
+        const scores = this.scorer.calculate(this.card);
+        if (scores.length && !this.hasWon) {
             this.hasWon = true;
-            console.log("🎉 BINGO! 🎉");
-
+            console.log("🎉 BINGO! Patterns: ", scores);
+            console.log("Total score: ", this.scorer.totalScore(this.card));
             this.engine.dispatch("END_GAME");
             return;
         }

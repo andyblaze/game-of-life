@@ -15,6 +15,9 @@ html, body {
   width: 4rem;
   height: 4rem;
 }
-#bingocard div.marked {
+#bingocard div.winning {
+  background-color: blueviolet;
+}
+#bingocard span.marked {
   background-color: aqua;
 }
