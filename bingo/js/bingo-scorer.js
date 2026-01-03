@@ -13,42 +13,26 @@ export default class BingoScorer {
             corners: 2,
             diagonal: 3
         }, prizeMap);
+        this.scores = [];
     }
 
     /**
      * Calculate which patterns the card currently has
      * Returns an array of { pattern, prize } objects
      */
-    calculate(card) {
-        const scores = [];
-
-        if (card.hasWinningRow && card.hasWinningRow()) {
-            scores.push({ pattern: 'row', prize: this.prizeMap.row });
+    calculate(card) { 
+        const winningLines = card.getWinningLines();
+        if ( winningLines.length > 0 ) {
+            for ( const line of winningLines )
+            this.scores.push({ pattern: line.type, prize: this.prizeMap[line.type] });
         }
-
-        if (card.hasWinningColumn && card.hasWinningColumn()) {
-            scores.push({ pattern: 'column', prize: this.prizeMap.column });
-        }
-
-        if (card.hasFullCard && card.hasFullCard()) {
-            scores.push({ pattern: 'full', prize: this.prizeMap.full });
-        }
-
-        if (card.hasCorners && card.hasCorners()) {
-            scores.push({ pattern: 'corners', prize: this.prizeMap.corners });
-        }
-
-        if (card.hasWinningDiagonals && card.hasWinningDiagonals()) {
-            scores.push({ pattern: 'diagonal', prize: this.prizeMap.diagonal });
-        }
-
-        return scores;
+        return this.scores;
     }
 
     /**
      * Convenience method: total prize for current card
      */
-    totalScore(card) {
-        return this.calculate(card).reduce((sum, s) => sum + s.prize, 0);
+    totalScore() {
+        return this.scores.reduce((sum, s) => sum + s.prize, 0);
     }
 }

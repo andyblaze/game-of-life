@@ -40,27 +40,12 @@ export default class BingoController {
         this.card.mark(number);
         this.renderer.markCard(number);
         this.renderer.markWinningLines(this.card);
-        /*const winningCorners = this.card.getWinningCorners();
-        if ( winningCorners.length > 0 )
-            this.renderer.markWinningCorners(this.card);
-        const winningCol = this.card.getWinningColumn();
-        if ( winningCol.length > 0 ) {
-            this.renderer.markWinningColumn(this.card);
-        }
-        const winningRow = this.card.getWinningRow();
-        if ( winningRow.length > 0 ) {
-            this.renderer.markWinningRow(this.card);
-        }
-        const winningDiagonal = this.card.getWinningDiagonals();
-        if ( winningDiagonal.length > 0 ) {
-            this.renderer.markWinningDiagonal(this.card);
-        }*/
 
         const scores = this.scorer.calculate(this.card);
         if (scores.length && !this.hasWon) {
             this.hasWon = true;
             console.log("🎉 BINGO! Patterns: ", scores);
-            console.log("Total score: ", this.scorer.totalScore(this.card));
+            console.log("Total score: ", this.scorer.totalScore());
             this.engine.dispatch("END_GAME");
             return;
         }

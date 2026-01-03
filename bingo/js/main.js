@@ -14,10 +14,6 @@ $(document).ready(async function() {
     const renderer = new Renderer();
     const controller = new BingoController(engine, caller, renderer);
     engine.dispatch("INIT"); // IDLE → READY
-    /*for ( let i = 0; i < 75; i++ ) { 
-        if ( engine.getState() === "FINISHED" ) break;
-        await caller.drawNext(); 
-    }*/
     const autoDraw = new AutoDraw(drawer, caller, engine);
     autoDraw.autoDrawAll();
 });

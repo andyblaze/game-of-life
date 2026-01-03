@@ -40,201 +40,80 @@ export default class BingoCard {
             }
         }
     }
-getAllLines() {
-    const size = this.size;
-    const lines = [];
+    getAllLines() {
+        const size = this.size;
+        const lines = [];
 
-    // Rows
-    for (let row = 0; row < size; row++) {
-        const line = [];
-        for (let col = 0; col < size; col++) {
-            line.push({ col, row });
-        }
-        lines.push({ type: "row", index: row, cells: line });
-    }
-
-    // Columns
-    for (let col = 0; col < size; col++) {
-        const line = [];
+        // Rows
         for (let row = 0; row < size; row++) {
-            line.push({ col, row });
+            const line = [];
+            for (let col = 0; col < size; col++) {
+                line.push({ col, row });
+            }
+            lines.push({ type: "row", index: row, cells: line });
         }
-        lines.push({ type: "column", index: col, cells: line });
-    }
 
-    // Main diagonal
-    {
-        const line = [];
-        for (let i = 0; i < size; i++) {
-            line.push({ col: i, row: i });
+        // Columns
+        for (let col = 0; col < size; col++) {
+            const line = [];
+            for (let row = 0; row < size; row++) {
+                line.push({ col, row });
+            }
+            lines.push({ type: "column", index: col, cells: line });
         }
-        lines.push({ type: "diagonal", index: "main", cells: line });
-    }
 
-    // Anti-diagonal
-    {
-        const line = [];
-        for (let i = 0; i < size; i++) {
-            line.push({ col: size - 1 - i, row: i });
+        // Main diagonal
+        {
+            const line = [];
+            for (let i = 0; i < size; i++) {
+                line.push({ col: i, row: i });
+            }
+            lines.push({ type: "diagonal", index: "main", cells: line });
         }
-        lines.push({ type: "diagonal", index: "anti", cells: line });
-    }
 
-    return lines;
-}
-isLineWinning(line) {
-    return line.cells.every(
-        ({ col, row }) => this.grid[col][row].marked
-    );
-}
-getWinningLines() {
-    return this.getAllLines().filter(line => this.isLineWinning(line));
-}
-hasWinningLine() {
-    return this.getWinningLines().length > 0;
-}
-    hasWinningRow() {
-        for (let row = 0; row < 5; row++) {
-            let allMarked = true;
-
-            for (let col = 0; col < 5; col++) {
-                if (!this.grid[col][row].marked) {
-                    allMarked = false;
-                    break;
+        // Anti-diagonal
+        {
+            const line = [];
+            for (let i = 0; i < size; i++) {
+                line.push({ col: size - 1 - i, row: i });
+            }
+            lines.push({ type: "diagonal", index: "anti", cells: line });
+        }
+        // Full card (blackout)
+        {
+            const line = [];
+            for (let col = 0; col < size; col++) {
+                for (let row = 0; row < size; row++) {
+                    line.push({ col, row });
                 }
             }
-
-            if (allMarked) {
-                return true;
-            }
+            lines.push({ type: "full", index: "all", cells: line });
         }
-        return false;
+        // Four corners
+        lines.push({
+            type: "corners",
+            cells: [
+                { col: 0, row: 0 },
+                { col: size-1, row: 0 },
+                { col: 0, row: size-1 },
+                { col: size-1, row: size-1 }
+            ]
+        });
+
+        return lines;
     }
-    getWinningRow() {
-        const winningRows = [];
-
-        for (let rowIndex = 0; rowIndex < this.size; rowIndex++) {
-            let allMarked = true;
-
-            for (let colIndex = 0; colIndex < this.size; colIndex++) {
-                if (!this.grid[colIndex][rowIndex].marked) {
-                    allMarked = false;
-                    break;
-                }
-            }
-
-            if (allMarked) winningRows.push(rowIndex);
-        }
-
-        return winningRows; // [] if none, array of row indexes if some
+    isLineWinning(line) {
+        return line.cells.every(
+            ({ col, row }) => this.grid[col][row].marked
+        );
     }
-
-    /*
-    hasWinningRow() {
-    for (let row = 0; row < 5; row++) {
-        const allMarked = this.grid.every(col => col[row].marked);
-        if (allMarked) {
-            return true;
-        }
+    getWinningLines() {
+        return this.getAllLines().filter(line => this.isLineWinning(line));
     }
-    return false;
-}*/
-    hasWinningColumn() {
-        for ( let row of this.grid ) {
-            const allMarked = row.every(cell => cell.marked === true);
-            if ( allMarked ) {
-                return true;
-            }
-        }
-        return false;
+    hasWinningLine() {
+        return this.getWinningLines().length > 0;
     }
-    getWinningColumn() {
-        const winningCols = [];
-        for ( let colIndex = 0; colIndex < this.size; colIndex++ ) {
-            let allMarked = true;
-            for ( let rowIndex = 0; rowIndex < this.size; rowIndex++ ) {
-                if (!this.grid[colIndex][rowIndex].marked) {
-                    allMarked = false;
-                    break;
-                }
-            }
-            if (allMarked) winningCols.push(colIndex);
-        }
-        return winningCols; // [] if none, array of indexes if some
-    }
-hasWinningDiagonals() {
-    const size = this.size;
-
-    // Main diagonal (top-left → bottom-right)
-    let mainMarked = true;
-    for (let i = 0; i < size; i++) {
-        if (!this.grid[i][i].marked) {
-            mainMarked = false;
-            break;
-        }
-    }
-    if (mainMarked) return true;
-
-    // Anti-diagonal (top-right → bottom-left)
-    let antiMarked = true;
-    for (let i = 0; i < size; i++) {
-        if (!this.grid[size - 1 - i][i].marked) {
-            antiMarked = false;
-            break;
-        }
-    }
-
-    return antiMarked;
-}
-getWinningDiagonals() {
-    const winningDiagonals = [];
-    const size = this.size;
-
-    // Main diagonal (top-left → bottom-right)
-    let mainMarked = true;
-    for (let i = 0; i < size; i++) {
-        if (!this.grid[i][i].marked) {
-            mainMarked = false;
-            break;
-        }
-    }
-    if (mainMarked) winningDiagonals.push("main");
-
-    // Anti-diagonal (top-right → bottom-left)
-    let antiMarked = true;
-    for (let i = 0; i < size; i++) {
-        if (!this.grid[size - 1 - i][i].marked) {
-            antiMarked = false;
-            break;
-        }
-    }
-    if (antiMarked) winningDiagonals.push("anti");
-
-    return winningDiagonals; // [], ["main"], ["anti"], or ["main","anti"]
-}
-
-    hasWinningCorners() {
-        const sz = this.size - 1;
-        const tl = this.grid[0][0];
-        const tr = this.grid[sz][0];
-        const bl = this.grid[0][sz];
-        const br = this.grid[sz][sz];
-
-        return tl.marked && tr.marked && bl.marked && br.marked;
-    }
-    getWinningCorners() {
-        const corners = [];
-        const sz = this.size - 1;
-        if ( this.grid[0][0].marked && this.grid[sz][0].marked &&
-            this.grid[0][sz].marked && this.grid[sz][sz].marked ) {
-                corners.push(this.grid[0][0]);
-                corners.push(this.grid[sz][0]);
-                corners.push(this.grid[0][sz]);
-                corners.push(this.grid[sz][sz]);
-        }
-        return corners;
-    }
-   getGrid() {
+    getGrid() {
         return this.grid;
     }
     mark(number) {
