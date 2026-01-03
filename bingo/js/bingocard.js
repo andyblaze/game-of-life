@@ -40,6 +40,59 @@ export default class BingoCard {
             }
         }
     }
+getAllLines() {
+    const size = this.size;
+    const lines = [];
+
+    // Rows
+    for (let row = 0; row < size; row++) {
+        const line = [];
+        for (let col = 0; col < size; col++) {
+            line.push({ col, row });
+        }
+        lines.push({ type: "row", index: row, cells: line });
+    }
+
+    // Columns
+    for (let col = 0; col < size; col++) {
+        const line = [];
+        for (let row = 0; row < size; row++) {
+            line.push({ col, row });
+        }
+        lines.push({ type: "column", index: col, cells: line });
+    }
+
+    // Main diagonal
+    {
+        const line = [];
+        for (let i = 0; i < size; i++) {
+            line.push({ col: i, row: i });
+        }
+        lines.push({ type: "diagonal", index: "main", cells: line });
+    }
+
+    // Anti-diagonal
+    {
+        const line = [];
+        for (let i = 0; i < size; i++) {
+            line.push({ col: size - 1 - i, row: i });
+        }
+        lines.push({ type: "diagonal", index: "anti", cells: line });
+    }
+
+    return lines;
+}
+isLineWinning(line) {
+    return line.cells.every(
+        ({ col, row }) => this.grid[col][row].marked
+    );
+}
+getWinningLines() {
+    return this.getAllLines().filter(line => this.isLineWinning(line));
+}
+hasWinningLine() {
+    return this.getWinningLines().length > 0;
+}
     hasWinningRow() {
         for (let row = 0; row < 5; row++) {
             let allMarked = true;

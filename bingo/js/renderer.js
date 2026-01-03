@@ -24,6 +24,16 @@ export default class Renderer {
     markCard(n) { 
         $("#card"+n).addClass("marked");
     }
+markWinningLines(card) {
+    const winningLines = card.getWinningLines();
+
+    winningLines.forEach(line => {
+        line.cells.forEach(({ col, row }) => {
+            const cellId = `#card${col}-${row}`;
+            $(cellId).addClass('winning');
+        });
+    });
+}
     markWinningColumn(card) {
         const winningCol = card.getWinningColumn();
 
