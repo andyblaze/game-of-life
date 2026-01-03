@@ -44,7 +44,7 @@ export default class BingoController {
         const scores = this.scorer.calculate(this.card);
         if (scores.length && !this.hasWon) {
             this.hasWon = true;
-            console.log("🎉 BINGO! Patterns: ", scores);
+            console.log("🎉 BINGO!");
             console.log("Total score: ", this.scorer.totalScore());
             this.engine.dispatch("END_GAME");
             return;
