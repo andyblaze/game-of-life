@@ -5,53 +5,89 @@ export default class BingoCard {
         this.grid = [];
         this.lookup = new Map();
         this.size = 5;
-        this.generateGrid();
-    }
-
-    generateGrid() {
-        const ranges = [
+        this.ranges = [
             { min: 1,  max: 15 },
             { min: 16, max: 30 },
             { min: 31, max: 45 },
             { min: 46, max: 60 },
             { min: 61, max: 75 }
         ];
+        this.generateGrid(this.size, this.ranges);
+    }
 
-        for (let col = 0; col < this.size; col++) {
+    generateGrid(size, ranges) {
+        this.grid = Array.from({ length:size }, () => Array(size).fill(null));
+
+        for (let row = 0; row < size; row++) {
             const numbers = [];
 
-            while (numbers.length < this.size) {
-                const n = mt_rand(ranges[col].min, ranges[col].max);
-                if (!numbers.includes(n)) numbers.push(n);
+            while ( numbers.length < size ) {
+                const n = mt_rand(ranges[row].min, ranges[row].max);
+                if ( ! numbers.includes(n) ) numbers.push(n);
             }
 
             numbers.sort((a, b) => a - b);
 
-            for (let row = 0; row < this.size; row++) {
-                if (!this.grid[row]) this.grid[row] = [];
-
+            for ( let col = 0; col < size; col++ )  {
                 const cell = {
-                    "column": col, 
+                    "col": col, 
                     "row": row,
-                    "number": numbers[row],
+                    "number": numbers[col],
                     "marked": false
                 };
-
-                this.grid[row][col] = cell;
+                this.grid[col][row] = cell;
                 this.lookup.set(cell.number, cell);
             }
         }
-        console.log(this.lookup);
     }
-    mark(number) {
-        const cell = this.lookup.get(number);
-        if (!cell) return false;
+    hasWinningRow() {
+        for (let row = 0; row < 5; row++) {
+            let allMarked = true;
 
-        cell.marked = true;
-        return true;
+            for (let col = 0; col < 5; col++) {
+                if (!this.grid[col][row].marked) {
+                    allMarked = false;
+                    break;
+                }
+            }
+
+            if (allMarked) {
+                return true;
+            }
+        }
+        return false;
     }
+    getWinningRow() {
+        const winningRows = [];
+
+        for (let rowIndex = 0; rowIndex < this.size; rowIndex++) {
+            let allMarked = true;
+
+            for (let colIndex = 0; colIndex < this.size; colIndex++) {
+                if (!this.grid[colIndex][rowIndex].marked) {
+                    allMarked = false;
+                    break;
+                }
+            }
+
+            if (allMarked) winningRows.push(rowIndex);
+        }
+
+        return winningRows; // [] if none, array of row indexes if some
+    }
+
+    /*
+    hasWinningRow() {
+    for (let row = 0; row < 5; row++) {
+        const allMarked = this.grid.every(col => col[row].marked);
+        if (allMarked) {
+            return true;
+        }
+    }
+    return false;
+}*/
     hasWinningColumn() {
-        for (let row of this.grid) {
+        for ( let row of this.grid ) {
             const allMarked = row.every(cell => cell.marked === true);
             if ( allMarked ) {
                 return true;
@@ -61,11 +97,9 @@ export default class BingoCard {
     }
     getWinningColumn() {
         const winningCols = [];
-        //const size = this.grid.length; // typically 5
-
-        for (let colIndex = 0; colIndex < this.size; colIndex++) {
+        for ( let colIndex = 0; colIndex < this.size; colIndex++ ) {
             let allMarked = true;
-            for (let rowIndex = 0; rowIndex < this.size; rowIndex++) {
+            for ( let rowIndex = 0; rowIndex < this.size; rowIndex++ ) {
                 if (!this.grid[colIndex][rowIndex].marked) {
                     allMarked = false;
                     break;
@@ -73,9 +107,59 @@ export default class BingoCard {
             }
             if (allMarked) winningCols.push(colIndex);
         }
-
         return winningCols; // [] if none, array of indexes if some
     }
+hasWinningDiagonals() {
+    const size = this.size;
+
+    // Main diagonal (top-left → bottom-right)
+    let mainMarked = true;
+    for (let i = 0; i < size; i++) {
+        if (!this.grid[i][i].marked) {
+            mainMarked = false;
+            break;
+        }
+    }
+    if (mainMarked) return true;
+
+    // Anti-diagonal (top-right → bottom-left)
+    let antiMarked = true;
+    for (let i = 0; i < size; i++) {
+        if (!this.grid[size - 1 - i][i].marked) {
+            antiMarked = false;
+            break;
+        }
+    }
+
+    return antiMarked;
+}
+getWinningDiagonals() {
+    const winningDiagonals = [];
+    const size = this.size;
+
+    // Main diagonal (top-left → bottom-right)
+    let mainMarked = true;
+    for (let i = 0; i < size; i++) {
+        if (!this.grid[i][i].marked) {
+            mainMarked = false;
+            break;
+        }
+    }
+    if (mainMarked) winningDiagonals.push("main");
+
+    // Anti-diagonal (top-right → bottom-left)
+    let antiMarked = true;
+    for (let i = 0; i < size; i++) {
+        if (!this.grid[size - 1 - i][i].marked) {
+            antiMarked = false;
+            break;
+        }
+    }
+    if (antiMarked) winningDiagonals.push("anti");
+
+    return winningDiagonals; // [], ["main"], ["anti"], or ["main","anti"]
+}
+
     hasWinningCorners() {
         const sz = this.size - 1;
         const tl = this.grid[0][0];
@@ -99,5 +183,12 @@ export default class BingoCard {
     }
    getGrid() {
         return this.grid;
+    }
+    mark(number) {
+        const cell = this.lookup.get(number);
+        if (!cell) return false;
+
+        cell.marked = true;
+        return true;
     }
 }

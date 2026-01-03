@@ -16,9 +16,10 @@ export default class AutoDraw {
 
         while (this.drawer.getRemaining().length > 0) {
             // Use the caller's drawNext() to maintain human-style delays & text
+            if ( this.engine.getState() === "FINISHED" ) break;
             await this.caller.drawNext();
         }
 
-        console.log("All numbers drawn!");
+        //console.log("All numbers drawn!");
     }
 }

@@ -10,7 +10,8 @@ export default class BingoScorer {
             row: 1,
             column: 1,
             full: 10,
-            corners: 2
+            corners: 2,
+            diagonal: 3
         }, prizeMap);
     }
 
@@ -35,6 +36,10 @@ export default class BingoScorer {
 
         if (card.hasCorners && card.hasCorners()) {
             scores.push({ pattern: 'corners', prize: this.prizeMap.corners });
+        }
+
+        if (card.hasWinningDiagonals && card.hasWinningDiagonals()) {
+            scores.push({ pattern: 'diagonal', prize: this.prizeMap.diagonal });
         }
 
         return scores;

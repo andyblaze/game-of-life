@@ -29,8 +29,8 @@ export default class BingoCaller {
     console.log(`Number drawn: ${number} → "${text}"`);
 
     // Wait a human-like interval
-   // const delay = this.getHumanDelay(number);
-    //await this.sleep(delay);
+    const delay = this.getHumanDelay(number);
+    await this.sleep(delay);
 
     // Signal draw complete
     this.engine.dispatch("DRAW_COMPLETE");
@@ -38,10 +38,10 @@ export default class BingoCaller {
 
   getHumanDelay(number) {
     // Base 1–2.5 seconds per draw
-    let base = 1000 + Math.random() * 1500;
+    let base = 10 + Math.random() * 100;
 
     // Optional: longer for “special” numbers
-    if (this.numberTexts[number]) base += 500;
+    //if (this.numberTexts[number]) base += 500;
 
     return base;
   }

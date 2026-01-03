@@ -46,6 +46,14 @@ export default class BingoController {
         if ( winningCol.length > 0 ) {
             this.renderer.markWinningColumn(this.card);
         }
+        const winningRow = this.card.getWinningRow();
+        if ( winningRow.length > 0 ) {
+            this.renderer.markWinningRow(this.card);
+        }
+        const winningDiagonal = this.card.getWinningDiagonals();
+        if ( winningDiagonal.length > 0 ) {
+            this.renderer.markWinningDiagonal(this.card);
+        }
 
         const scores = this.scorer.calculate(this.card);
         if (scores.length && !this.hasWon) {
