@@ -30,7 +30,7 @@ export default class BingoController {
             //console.log("Controller: READY → creating card");
             this.hasWon = false;
             this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
-            //this.card = this.cardManager.generateUniqueCard(config.gridSize, config.ranges)
+            //this.card = new BingoCard(this.cardManager.generateUniqueCard(config.gridSize, config.ranges));
             this.renderer.renderCard(this.card);
         }
     }
