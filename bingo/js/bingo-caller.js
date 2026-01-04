@@ -2,7 +2,7 @@ export default class BingoCaller {
   constructor(drawer, engine, numberTexts) {
     this.drawer = drawer; // instance of BingoBallDrawer
     this.engine = engine; // your GameEngine
-    this.numberTexts = numberTexts || {}; // {1: "On its own 1", 22: "Two little ducks"}
+    this.numberTexts = numberTexts; 
     this.lastNumber = 0;
   }
 
@@ -11,13 +11,10 @@ export default class BingoCaller {
   }
 
   async drawNext() {
-    if (!this.drawer.getRemaining().length) {
-      console.log("All numbers drawn!");
+    if ( !this.drawer.getRemaining().length ) {
       this.engine.dispatch("END_GAME");
       return;
     }
-
-    // Enter DRAWING state
     this.engine.dispatch("DRAW");
 
     // Pick a number
@@ -25,7 +22,7 @@ export default class BingoCaller {
     this.lastNumber = number; 
 
     // Show the “called” text
-    const text = this.numberTexts[number] || number;
+    const text = this.numberTexts[number];
     console.log(`Number drawn: ${number} → "${text}"`);
 
     // Wait a human-like interval
@@ -39,10 +36,6 @@ export default class BingoCaller {
   getHumanDelay(number) {
     // Base 1–2.5 seconds per draw
     let base = 10 + Math.random() * 100;
-
-    // Optional: longer for “special” numbers
-    //if (this.numberTexts[number]) base += 500;
-
     return base;
   }
 

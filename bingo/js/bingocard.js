@@ -1,9 +1,8 @@
-import { mt_rand } from "./functions.js"
+import { mt_rand } from "./functions.js";
+import GridGenerator from "./grid-generator.js";
 
 export default class BingoCard {
     constructor() {
-        this.grid = [];
-        this.lookup = new Map();
         this.size = 5;
         this.ranges = [
             { min: 1,  max: 15 },
@@ -12,33 +11,9 @@ export default class BingoCard {
             { min: 46, max: 60 },
             { min: 61, max: 75 }
         ];
-        this.generateGrid(this.size, this.ranges);
-    }
-
-    generateGrid(size, ranges) {
-        this.grid = Array.from({ length:size }, () => Array(size).fill(null));
-
-        for (let row = 0; row < size; row++) {
-            const numbers = [];
-
-            while ( numbers.length < size ) {
-                const n = mt_rand(ranges[row].min, ranges[row].max);
-                if ( ! numbers.includes(n) ) numbers.push(n);
-            }
-
-            numbers.sort((a, b) => a - b);
-
-            for ( let col = 0; col < size; col++ )  {
-                const cell = {
-                    "col": col, 
-                    "row": row,
-                    "number": numbers[col],
-                    "marked": false
-                };
-                this.grid[col][row] = cell;
-                this.lookup.set(cell.number, cell);
-            }
-        }
+        const {grid, lookup} = GridGenerator.generate(this.size, this.ranges);
+        this.grid = grid;
+        this.lookup = lookup;
     }
     getAllLines() {
         const size = this.size;
@@ -92,6 +67,7 @@ export default class BingoCard {
         // Four corners
         lines.push({
             type: "corners",
+            index: "corners",
             cells: [
                 { col: 0, row: 0 },
                 { col: size-1, row: 0 },

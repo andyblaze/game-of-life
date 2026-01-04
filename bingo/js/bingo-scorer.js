@@ -1,9 +1,4 @@
 export default class BingoScorer {
-    /**
-     * prizeMap: map pattern names to prize/points
-     * Example:
-     * { row: 1, column: 1, full: 10, corners: 2 }
-     */
     constructor(prizeMap = {}) {
         // default prizes if none provided
         this.prizeMap = Object.assign({
