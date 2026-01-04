@@ -1,8 +1,9 @@
 import { mt_rand } from "./functions.js";
 
 export default class GridGenerator {
-    static generate(size, ranges) {
+    generate(size, ranges) {
        let grid = Array.from({ length:size }, () => Array(size).fill(null));
+       let numberGrid = Array.from({ length:size }, () => Array(size).fill(0));
        let lookup = new Map();
 
         for (let row = 0; row < size; row++) {
@@ -23,9 +24,10 @@ export default class GridGenerator {
                     "marked": false
                 };
                 grid[col][row] = cell;
+                numberGrid[col][row] = numbers[col];
                 lookup.set(cell.number, cell);
             }
         }
-        return { grid, lookup };
+        return { grid, lookup, numberGrid };
     }
 }

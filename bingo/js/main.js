@@ -5,9 +5,13 @@ import BingoCaller from "./bingo-caller.js";
 import BingoController from "./controller.js";
 import Renderer from "./renderer.js";
 import AutoDraw from "./auto-draw.js";
+import BingoCardManager from "./card-manager.js";
+import GridGenerator from "./grid-generator.js";
+//const cardManager = new BingoCardManager(new GridGenerator());
+//const cards = cardManager.generateMultipleCards(config.gridSize, config.ranges, 100);
+//console.log(cards);
 
-
-$(document).ready(async function() {
+$(document).ready(async function() { 
     const engine = new GameEngine(config);
     const drawer = new BingoBallDrawer();
     const caller = new BingoCaller(drawer, engine, config.numberTexts);
