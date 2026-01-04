@@ -27,7 +27,7 @@ export default class BingoController {
         if ( this.card === null ) {
             console.log("Controller: READY → creating card");
             this.hasWon = false;
-            this.card = new BingoCard(config.gridSize);
+            this.card = new BingoCard(config.gridSize, config.ranges);
             this.renderer.renderCard(this.card);
         }
     }

@@ -8,7 +8,7 @@ export default class BingoCardManager {
     // Convert a 2D card array into a flat string key
     static cardKey(card) {
         return card.flat().join(",");
-    }
+    } 
 
     // Generate a single unique card
     generateUniqueCard(size = 5, ranges = null, maxAttempts = 100) {

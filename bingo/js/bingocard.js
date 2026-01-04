@@ -2,15 +2,9 @@ import GridGenerator from "./grid-generator.js";
 import WinningLines from "./winning-lines.js";
 
 export default class BingoCard {
-    constructor(size=5) {
+    constructor(size, ranges) {
         this.size = size;
-        this.ranges = [
-            { min: 1,  max: 15 },
-            { min: 16, max: 30 },
-            { min: 31, max: 45 },
-            { min: 46, max: 60 },
-            { min: 61, max: 75 }
-        ];
+        this.ranges = ranges;
         const {grid, lookup} = GridGenerator.generate(this.size, this.ranges);
         this.grid = grid;
         this.lookup = lookup;

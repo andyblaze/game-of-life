@@ -38,7 +38,7 @@ export default class BingoCaller {
         //console.log(`Number drawn: ${number} → "${text}"`);
 
         // Wait a human-like interval
-        const delay = mt_rand(1000, 2500);  // ms
+        const delay = mt_rand(100, 250);  // ms
         await this.sleep(delay);
 
         // Signal draw complete

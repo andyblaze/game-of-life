@@ -8,6 +8,13 @@ export const config = {
         corners: 15,
         full: 35
     },
+    ranges: [
+        { min: 1,  max: 15 },
+        { min: 16, max: 30 },
+        { min: 31, max: 45 },
+        { min: 46, max: 60 },
+        { min: 61, max: 75 }
+    ],
     initialState: "IDLE",
 
     states: [
