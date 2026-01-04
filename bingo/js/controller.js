@@ -34,12 +34,15 @@ export default class BingoController {
 
     onDrawComplete() {
         const number = this.caller.getLastNumber();
+        const text = this.caller.getLastCall();
+        this.renderer.displayCall(text);
 
-        console.log("Controller: CHECKING → marking", number);
+        //console.log("Controller: CHECKING → marking", number);
 
         this.card.mark(number);
         this.renderer.markCard(number);
         this.renderer.markWinningLines(this.card);
+        //console.log(this.caller.getDrawn().length, this.caller.getRemaining().length);
 
         const scores = this.scorer.calculate(this.card);
         if (scores.length && !this.hasWon) {

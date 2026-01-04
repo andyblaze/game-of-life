@@ -19,7 +19,5 @@ export default class AutoDraw {
             if ( this.engine.getState() === "FINISHED" ) break;
             await this.caller.drawNext();
         }
-
-        //console.log("All numbers drawn!");
     }
 }

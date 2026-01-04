@@ -34,4 +34,7 @@ export default class Renderer {
             });
         });
     }
+    displayCall(text) {
+        $("#caller-says").html(text);
+    }
 }
