@@ -1,13 +1,7 @@
 export default class BingoScorer {
-    constructor(prizeMap = {}) {
+    constructor(prizeMap) {
         // default prizes if none provided
-        this.prizeMap = Object.assign({
-            row: 8,
-            column: 8,
-            diagonal: 12,
-            corners: 15,
-            full: 35
-        }, prizeMap);
+        this.prizeMap = prizeMap;
         this.scores = [];
     }
     /**

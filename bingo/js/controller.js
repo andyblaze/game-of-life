@@ -1,5 +1,6 @@
 import BingoCard from "./bingocard.js";
 import BingoScorer from "./bingo-scorer.js";
+import { config } from "./config.js";
 
 export default class BingoController {
     constructor(engine, caller, renderer) {
@@ -8,8 +9,7 @@ export default class BingoController {
         this.renderer = renderer;
         this.card = null;
         this.hasWon = false;
-        this.scorer = new BingoScorer(); // default prizes
-
+        this.scorer = new BingoScorer(config.prizeMap); // default prizes
         this.bindEvents();
     }
 
@@ -27,7 +27,7 @@ export default class BingoController {
         if ( this.card === null ) {
             console.log("Controller: READY → creating card");
             this.hasWon = false;
-            this.card = new BingoCard();
+            this.card = new BingoCard(config.gridSize);
             this.renderer.renderCard(this.card);
         }
     }
