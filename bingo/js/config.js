@@ -1,5 +1,13 @@
 
 export const config = {
+    gridSize: 5,
+    prizeMap: {
+        row: 8,
+        column: 8,
+        diagonal: 12,
+        corners: 15,
+        full: 35
+    },
     initialState: "IDLE",
 
     states: [

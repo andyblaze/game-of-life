@@ -4,13 +4,12 @@ export default class BingoScorer {
         this.prizeMap = Object.assign({
             row: 8,
             column: 8,
-            full: 35,
+            diagonal: 12,
             corners: 15,
-            diagonal: 12
+            full: 35
         }, prizeMap);
         this.scores = [];
     }
-
     /**
      * Calculate which patterns the card currently has
      * Returns an array of { pattern, prize } objects
@@ -23,11 +22,7 @@ export default class BingoScorer {
         }
         return this.scores;
     }
-
-    /**
-     * Convenience method: total prize for current card
-     */
-    totalScore() {
+    totalScore() { // total prize for current card
         return this.scores.reduce((sum, s) => sum + s.prize, 0);
     }
 }
