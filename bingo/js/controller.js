@@ -1,6 +1,7 @@
 import BingoCard from "./bingocard.js";
 import BingoScorer from "./bingo-scorer.js";
 import { config } from "./config.js";
+import GridGenerator from "./grid-generator.js";
 
 export default class BingoController {
     constructor(engine, caller, renderer) {
@@ -12,7 +13,9 @@ export default class BingoController {
         this.scorer = new BingoScorer(config.prizeMap); // default prizes
         this.bindEvents();
     }
-
+    setCardManager(cm) {
+        this.cardManager = cm;
+    }
     bindEvents() {
         this.engine.on("state:enter:READY", () => {
             this.onReady();
@@ -22,16 +25,15 @@ export default class BingoController {
             this.onDrawComplete();
         });
     }
-
     onReady() {
         if ( this.card === null ) {
-            console.log("Controller: READY → creating card");
+            //console.log("Controller: READY → creating card");
             this.hasWon = false;
-            this.card = new BingoCard(config.gridSize, config.ranges);
+            this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
+            //this.card = this.cardManager.generateUniqueCard(config.gridSize, config.ranges)
             this.renderer.renderCard(this.card);
         }
     }
-
     onDrawComplete() {
         const number = this.caller.getLastNumber();
         const text = this.caller.getLastCall();

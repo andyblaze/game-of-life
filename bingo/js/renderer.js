@@ -2,7 +2,7 @@ export default class Renderer {
     constructor() {}
 
     renderCard(card) {
-        console.log(card);
+        //console.log(card);
         const target = $("#bingocard");
         const grid = card.getGrid();
         let htm = "";
