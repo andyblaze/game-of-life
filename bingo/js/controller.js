@@ -30,7 +30,7 @@ export default class BingoController {
             
             this.hasWon = false;
             //this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
-            this.cards = this.cardManager.generateMultipleCards(config.gridSize, config.ranges, 2);
+            this.cards = this.cardManager.generateMultipleCards(config.gridSize, config.ranges, 100);
             //console.log(this.card);
             this.renderer.renderCards(this.cards);
         }
@@ -39,24 +39,25 @@ export default class BingoController {
         const number = this.caller.getLastNumber();
         const text = this.caller.getLastCall();
         this.renderer.displayCall(text);
-
-        //console.log("Controller: CHECKING → marking", number);
+        const winners = [];
 
         for ( const [idx, card] of this.cards.entries() ) {
             card.mark(number);
             this.renderer.markCards(number);
-            //this.renderer.markWinningLines(card);
-            //console.log(this.caller.getDrawn().length, this.caller.getRemaining().length);
 
             const scores = this.scorer.calculate(card);
             if ( scores.length && !this.hasWon ) {
-                this.renderer.markWinningLines(idx, card);
+                winners.push({ index: idx, "card": card });
+            }
+        }
+        if ( winners.length > 0 ) {
+                this.renderer.markWinningLines(winners); // bug is here i think, marks 1 card only
                 this.hasWon = true;
                 console.log("🎉 BINGO!");
                 console.log("Total score: ", this.scorer.totalScore());
                 this.engine.dispatch("END_GAME");
                 return;
-            }
+            //}
         }
        this.engine.dispatch("CHECK_COMPLETE");
     }

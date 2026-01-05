@@ -29,15 +29,17 @@ export default class Renderer {
     markCards(n) { 
         $(".card"+n).addClass("marked");
     }
-    markWinningLines(idx, card) {
-        const winningLines = card.getWinningLines();
+    markWinningLines(winners) {
+        for ( let winner of winners ) {
+        const winningLines = winner.card.getWinningLines();
 
         winningLines.forEach(line => {
             line.cells.forEach(({ col, row }) => {
-                const cell = `#card${idx} .card${col}-${row}`;
+                const cell = `#card${winner.index} .card${col}-${row}`;
                 $(cell).addClass('winning');
             });
         });
+        }
     }
     displayCall(text) {
         $("#caller-says").html(text);
