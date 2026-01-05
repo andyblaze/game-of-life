@@ -1,5 +1,5 @@
 export default class WinningLines {
-    static get(size) { //console.log(size);
+    get(size) { //console.log(size);
         const lines = [];
 
         // Rows

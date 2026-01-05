@@ -8,9 +8,10 @@ export default class BingoCard {
         this.lookup = lookup;
         //this.numberGrid = numberGrid;
         this.size = this.grid[0].length;
+        this.winningLines = new WinningLines();
     }
     getAllLines() {
-        return WinningLines.get(this.size);
+        return this.winningLines.get(this.size);
     }
     isLineWinning(line) {
         return line.cells.every(

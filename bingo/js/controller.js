@@ -8,7 +8,7 @@ export default class BingoController {
         this.engine = engine;
         this.caller = caller;
         this.renderer = renderer;
-        this.card = null;
+        this.cards = [];
         this.hasWon = false;
         this.scorer = new BingoScorer(config.prizeMap); // default prizes
         this.bindEvents();
@@ -26,13 +26,13 @@ export default class BingoController {
         });
     }
     onReady() {
-        if ( this.card === null ) {
+        if ( this.cards.length === 0 ) {
             
             this.hasWon = false;
             //this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
-            this.card = this.cardManager.generateUniqueCard(config.gridSize, config.ranges);
+            this.cards = this.cardManager.generateMultipleCards(config.gridSize, config.ranges, 2);
             //console.log(this.card);
-            this.renderer.renderCard(this.card);
+            this.renderer.renderCards(this.cards);
         }
     }
     onDrawComplete() {
@@ -42,18 +42,21 @@ export default class BingoController {
 
         //console.log("Controller: CHECKING → marking", number);
 
-        this.card.mark(number);
-        this.renderer.markCard(number);
-        this.renderer.markWinningLines(this.card);
-        //console.log(this.caller.getDrawn().length, this.caller.getRemaining().length);
+        for ( const [idx, card] of this.cards.entries() ) {
+            card.mark(number);
+            this.renderer.markCards(number);
+            //this.renderer.markWinningLines(card);
+            //console.log(this.caller.getDrawn().length, this.caller.getRemaining().length);
 
-        const scores = this.scorer.calculate(this.card);
-        if (scores.length && !this.hasWon) {
-            this.hasWon = true;
-            console.log("🎉 BINGO!");
-            console.log("Total score: ", this.scorer.totalScore());
-            this.engine.dispatch("END_GAME");
-            return;
+            const scores = this.scorer.calculate(card);
+            if ( scores.length && !this.hasWon ) {
+                this.renderer.markWinningLines(idx, card);
+                this.hasWon = true;
+                console.log("🎉 BINGO!");
+                console.log("Total score: ", this.scorer.totalScore());
+                this.engine.dispatch("END_GAME");
+                return;
+            }
         }
        this.engine.dispatch("CHECK_COMPLETE");
     }

@@ -1,11 +1,13 @@
 export default class Renderer {
     constructor() {}
 
-    renderCard(card) {
+    renderCards(cards) {
         //console.log(card);
         const target = $("#bingocards");
+        let htm = "";
+        for ( const [idx, card] of cards.entries() ) {
         const grid = card.getGrid();
-        let htm = `<div class="bingocard">`;
+        htm += `<div class="bingocard" id="card${idx}">`;
         let number = 0;
         for ( let y = 0; y < 5; y++ ) {
             htm += `<div class="row">`;
@@ -20,17 +22,19 @@ export default class Renderer {
             htm += "</div>";
         }
         htm += "</div>";
+        }
         target.html(htm);
+       // }
     }
-    markCard(n) { 
+    markCards(n) { 
         $(".card"+n).addClass("marked");
     }
-    markWinningLines(card) {
+    markWinningLines(idx, card) {
         const winningLines = card.getWinningLines();
 
         winningLines.forEach(line => {
             line.cells.forEach(({ col, row }) => {
-                const cell = `.card${col}-${row}`;
+                const cell = `#card${idx} .card${col}-${row}`;
                 $(cell).addClass('winning');
             });
         });
