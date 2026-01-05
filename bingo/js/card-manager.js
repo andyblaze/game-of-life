@@ -1,3 +1,5 @@
+import BingoCard from "./bingocard.js";
+
 export default class BingoCardManager {
     constructor(gridGenerator) {
         this.gridGenerator = gridGenerator; // your GridGenerator instance
@@ -20,7 +22,7 @@ export default class BingoCardManager {
             if ( !this.existingCards.has(key) ) {
                 this.existingCards.add(key);
                 this.cards.push(candidate);
-                return candidate;
+                return new BingoCard(candidate);
             }
             attempts++;
         }

@@ -6,13 +6,13 @@ html, body {
   /*background: var(--sea-blue);*/
   overflow: hidden;
   font-family: Arial,Helvetica,sans-serif,sans;
-}
+} 
 
-#bingocard .row {
+.bingocard .row {
   display: flex;
 }
 
-#bingocard .cell {
+.bingocard .cell {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,7 +21,7 @@ html, body {
   padding: 0.25rem;
 }
 
-#bingocard span {
+.bingocard span {
   display: block;
   font-size: 2.5rem;
   line-height: 4rem;
@@ -29,9 +29,9 @@ html, body {
   height: 100%;
   text-align: center;
 }
-#bingocard div.winning {
+.bingocard div.winning {
   background-color: gold;
 }
-#bingocard span.marked {
+.bingocard span.marked {
   background-color: aqua;
 }

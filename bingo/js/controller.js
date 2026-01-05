@@ -27,10 +27,11 @@ export default class BingoController {
     }
     onReady() {
         if ( this.card === null ) {
-            //console.log("Controller: READY → creating card");
+            
             this.hasWon = false;
-            this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
-            //this.card = new BingoCard(this.cardManager.generateUniqueCard(config.gridSize, config.ranges));
+            //this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
+            this.card = this.cardManager.generateUniqueCard(config.gridSize, config.ranges);
+            //console.log(this.card);
             this.renderer.renderCard(this.card);
         }
     }

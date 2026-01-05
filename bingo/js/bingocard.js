@@ -2,13 +2,12 @@ import GridGenerator from "./grid-generator.js";
 import WinningLines from "./winning-lines.js";
 
 export default class BingoCard {
-    constructor(size, ranges, gridGen) {
-        this.size = size;
-        this.ranges = ranges;
-        const {grid, lookup, numberGrid} = gridGen.generate(this.size, this.ranges);
+    constructor(props) {
+        const {grid, lookup} = props;
         this.grid = grid;
         this.lookup = lookup;
-        this.numberGrid = numberGrid;
+        //this.numberGrid = numberGrid;
+        this.size = this.grid[0].length;
     }
     getAllLines() {
         return WinningLines.get(this.size);
