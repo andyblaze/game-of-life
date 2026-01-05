@@ -1,0 +1,81 @@
+Move this into one or more classes:
+
+Example high-level classes
+
+BingoGame
+
+Owns: card manager, caller, scorer, renderer, engine
+
+Methods: startRound(), callNextNumber(), endRound(), resetGame()
+
+Handles: wiring buttons, updating balances, triggering renderer
+
+UIController
+
+Owns: DOM elements, buttons, displays
+
+Methods: bindButtons(game), updateBalance(amount), showCalledNumber(text), highlightWinningCards(winners)
+
+Engine / EventDispatcher (optional, you may already have)
+
+Handles: game events, “END_GAME”, “CHECK_COMPLETE”, etc.
+
+Then $(document).ready() just becomes:
+
+$(document).ready(() => {
+    const game = new BingoGame(config);
+    game.init(); // sets up UI, generates first round
+});
+
+
+All the heavy lifting lives in classes — no inline procedural code anymore.
+
+3️⃣ Workflow after refactor
+
+game.startRound()
+
+Resets all state
+
+Generates new cards
+
+Clears renderer
+
+Resets number pool
+
+game.callNextNumber()
+
+Draws next number from pool
+
+Marks all cards
+
+Checks winners
+
+Renderer highlights winners
+
+game.endRound()
+
+Updates balances
+
+Marks winners
+
+Enables “New Round” button
+
+Optional: game.resetGame()
+
+Resets everything, including virtual currency
+
+Starts over clean
+
+This gives you clear separation of concerns:
+
+Bingo logic lives in BingoGame and its collaborators
+
+UI manipulation lives in UIController
+
+Event wiring is minimal and only in init()
+
+And every stateful object knows how to reset itself, so you avoid messy global resets or hidden side effects.
+
+If you like, I can sketch a rough class diagram / skeleton showing BingoGame, UIController, BingoCardManager, Caller, Scorer, and how reset() flows across them — so you can just drop your logic in.
+
+Do you want me to do that?

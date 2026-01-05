@@ -10,7 +10,7 @@ export default class BingoScorer {
      */
     calculate(card) { 
         const winningLines = card.getWinningLines();
-        if ( winningLines.length > 0 ) {
+        if ( winningLines.length > 0 ) { //console.log(winningLines);
             for ( const line of winningLines )
             this.scores.push({ pattern: line.type, prize: this.prizeMap[line.type] });
         }

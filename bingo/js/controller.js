@@ -30,7 +30,7 @@ export default class BingoController {
             
             this.hasWon = false;
             //this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
-            this.cards = this.cardManager.generateMultipleCards(config.gridSize, config.ranges, 100);
+            this.cards = this.cardManager.generateMultipleCards(config.gridSize, config.ranges, 18);
             //console.log(this.card);
             this.renderer.renderCards(this.cards);
         }
@@ -46,7 +46,7 @@ export default class BingoController {
             this.renderer.markCards(number);
 
             const scores = this.scorer.calculate(card);
-            if ( scores.length && !this.hasWon ) {
+            if ( scores.length ) { //console.log(scores);
                 winners.push({ index: idx, "card": card });
             }
         }

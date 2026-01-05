@@ -29,7 +29,7 @@ export default class Renderer {
     markCards(n) { 
         $(".card"+n).addClass("marked");
     }
-    markWinningLines(winners) {
+    markWinningLines(winners) { //console.log(winners);
         for ( let winner of winners ) {
         const winningLines = winner.card.getWinningLines();
 
