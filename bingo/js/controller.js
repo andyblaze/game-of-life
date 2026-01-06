@@ -26,7 +26,7 @@ export default class BingoController {
         });
     }
     onReady() {
-        if ( this.cards.length === 0 ) {
+        if ( this.cards.length === 0 ) {  this.scorer.incoming += 18;
             
             this.hasWon = false;
             //this.card = new BingoCard(config.gridSize, config.ranges, new GridGenerator(config.gridSize, config.ranges));
@@ -51,7 +51,8 @@ export default class BingoController {
             }
         }
         if ( winners.length > 0 ) {
-                this.renderer.markWinningLines(winners); // bug is here i think, marks 1 card only
+                this.renderer.markWinningLines(winners); 
+                this.renderer.showProfit(this.scorer.getProfit());
                 this.hasWon = true;
                 console.log("🎉 BINGO!");
                 console.log("Total score: ", this.scorer.totalScore());
@@ -60,6 +61,11 @@ export default class BingoController {
             //}
         }
        this.engine.dispatch("CHECK_COMPLETE");
+    }
+    reset() {
+        this.cards = [];
+        this.cardManager.reset();
+        this.scorer.reset();
     }
 }
 

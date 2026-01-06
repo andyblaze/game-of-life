@@ -1,8 +1,11 @@
-export default class BingoScorer {
+export default class BingoScorer { 
     constructor(prizeMap) {
         // default prizes if none provided
         this.prizeMap = prizeMap;
         this.scores = [];
+        this.incoming = 0;
+        this.outgoing = 0;
+        this.profit = 0;
     }
     /**
      * Calculate which patterns the card currently has
@@ -16,7 +19,16 @@ export default class BingoScorer {
         }
         return this.scores;
     }
-    totalScore() { // total prize for current card
-        return this.scores.reduce((sum, s) => sum + s.prize, 0);
+    totalScore() { // total prize for current card(s)
+        const s = this.scores.reduce((sum, s) => sum + s.prize, 0);
+        this.outgoing += s;
+        return s;
+    }
+    reset() {
+        this.scores = [];
+    }
+    getProfit() {
+        const p = this.incoming - this.outgoing;
+        return `Income: ${this.incoming}, Outgoings: ${this.outgoing}, Profit: ${p}`;
     }
 }

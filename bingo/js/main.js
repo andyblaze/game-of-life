@@ -19,8 +19,9 @@ class BingoRound {
         this.autoDraw = new AutoDraw(this.drawer, this.caller, this.engine);
     }
     init() { 
-        this.drawer.reset();   
-        this.engine.dispatch("INIT");   
+        this.controller.reset();  
+        this.drawer.reset(); 
+        this.engine.dispatch("RESET");   
         this.autoDraw.autoDrawAll();
     }
 }
@@ -29,5 +30,5 @@ class BingoRound {
 $(document).ready(async function() { 
     const round = new BingoRound(config);
     $("#new-round").on("click", round.init.bind(round));
-    round.init();
+    //round.init();
 });
