@@ -7,19 +7,27 @@ import Renderer from "./renderer.js";
 import AutoDraw from "./auto-draw.js";
 import BingoCardManager from "./card-manager.js";
 import GridGenerator from "./grid-generator.js";
-const cardManager = new BingoCardManager(new GridGenerator());
-//const cards = cardManager.generateMultipleCards(config.gridSize, config.ranges, 100);
-const card = cardManager.generateUniqueCard(config.gridSize, config.ranges);
-//console.log(cards);
+
+class BingoRound {
+    constructor(config) {
+        this.engine = new GameEngine(config);
+        this.drawer = new BingoBallDrawer();
+        this.caller = new BingoCaller(this.drawer, this.engine, config.numberTexts);
+        this.renderer = new Renderer();
+        this.controller = new BingoController(this.engine, this.caller, this.renderer);
+        this.controller.setCardManager(new BingoCardManager(new GridGenerator()));
+        this.autoDraw = new AutoDraw(this.drawer, this.caller, this.engine);
+    }
+    init() { 
+        this.drawer.reset();   
+        this.engine.dispatch("INIT");   
+        this.autoDraw.autoDrawAll();
+    }
+}
+
 
 $(document).ready(async function() { 
-    const engine = new GameEngine(config);
-    const drawer = new BingoBallDrawer();
-    const caller = new BingoCaller(drawer, engine, config.numberTexts);
-    const renderer = new Renderer();
-    const controller = new BingoController(engine, caller, renderer);
-    controller.setCardManager(new BingoCardManager(new GridGenerator()));
-    engine.dispatch("INIT"); // IDLE → READY
-    const autoDraw = new AutoDraw(drawer, caller, engine);
-    autoDraw.autoDrawAll();
+    const round = new BingoRound(config);
+    $("#new-round").on("click", round.init.bind(round));
+    round.init();
 });
