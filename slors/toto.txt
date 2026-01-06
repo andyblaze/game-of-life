@@ -1,0 +1,171 @@
+Short answer: you’re in exactly the right ballpark.
+Longer answer: old one-armed bandits usually had far fewer distinct symbols than people think, but many more total symbol positions.
+
+Let’s untangle that, because it matters a lot for your design.
+
+Distinct symbols (the icons you draw)
+
+Classic machines typically had 6–10 distinct symbols:
+
+Very common set:
+
+Cherry
+
+Lemon
+
+Orange
+
+Plum
+
+Bell
+
+BAR
+
+Seven (later / higher-end machines)
+
+Some had:
+
+Horseshoes
+
+Stars
+
+Watermelons
+
+So 16 distinct icons is actually generous, not restrictive.
+
+You won’t need that many — but having them gives you tuning freedom.
+
+Total symbols per reel (this is the important bit)
+
+Each reel had a physical strip, often:
+
+20–30 stops per reel
+
+sometimes more on later machines
+
+Example (very realistic):
+
+Reel 1: 20 symbols
+
+Reel 2: 22 symbols
+
+Reel 3: 24 symbols
+
+But those symbols repeat.
+
+So a reel might look like:
+
+8 cherries
+
+5 lemons
+
+4 plums
+
+2 bells
+
+1 seven
+
+That distribution is the odds.
+
+Why jackpots felt impossible
+
+The famous trick was:
+
+Jackpot symbol appears once on reel 3
+
+Maybe twice on reel 1
+
+Maybe three times on reel 2
+
+So:
+
+You constantly see two sevens
+
+The third is rare by construction
+
+No software trickery needed.
+
+How this maps to your 16 icons
+
+You have two excellent options:
+
+Option A (most authentic)
+
+Use ~8–10 icons
+
+Repeat them heavily across reels
+
+Keep strips around 20–25 long
+
+This will feel old-school immediately.
+
+Option B (educational, flexible)
+
+Use all 16 icons
+
+Some appear once
+
+Some appear many times
+
+Many will never realistically win
+
+This is actually great for experimentation.
+
+A concrete, period-accurate starting point
+
+If you want something that feels right:
+
+3 reels
+
+24 stops per reel
+
+8 symbols total
+
+Example per reel:
+
+8 × Cherry
+
+6 × Lemon
+
+4 × Plum
+
+3 × Orange
+
+2 × Bell
+
+1 × BAR
+
+(And only one reel has a Seven.)
+
+That alone will teach you everything.
+
+One key insight you’ll discover
+
+You’ll realise very quickly:
+
+Changing one symbol on one reel
+does more than changing any payout value.
+
+That’s the old-school magic.
+
+TL;DR
+
+Old machines: ~6–10 distinct symbols
+
+Reel strips: ~20–30 total positions
+
+Repetition, not variety, controlled odds
+
+Your 16 icons are more than enough
+
+Scarcity is the real lever
+
+If you want, next we can:
+
+design a historically plausible reel strip
+
+calculate jackpot odds from it
+
+or decide which icons should be “lies” (present but never realistically winning)
+
+You’re building this very authentically already.
