@@ -1,4 +1,5 @@
 import PayoutEvaluator from "./payout-evaluator.js";
+import { randomFrom } from "./functions.js";
 
 export default class SpinSimulator {
     constructor(spins = 10000, betPerSpin = 1, config) {
@@ -19,8 +20,7 @@ export default class SpinSimulator {
         this.symbolCounts = {}; // symbol -> count
     }
     spinReel(reel) {
-        const index = Math.floor(Math.random() * reel.length);
-        return reel[index];
+        return randomFrom(reel);
     }
     go() {
         for (let i = 0; i < this.spins; i++) {
