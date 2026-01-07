@@ -12,23 +12,23 @@ export default class SlotController {
 
     bindEvents() {
         this.engine.on("state:enter:SPINNING", () => {
-            this.onSpinning();
+            this.onSpinning().catch(console.error);
         });
 
         this.engine.on("state:enter:EVALUATING", () => {
-            this.onEvaluating();
+            this.onEvaluating().catch(console.error);
         });
 
         this.engine.on("state:enter:PAYOUT", () => {
-            this.onPayout();
+            this.onPayout().catch(console.error);
         });
     }
 
     async onSpinning() { 
         this.result = this.machine.spin();
-        await this.ui.animateSpin(this.result, () => {
+        await this.ui.animateSpin(this.result);//, () => {
             this.engine.dispatch("SPIN_COMPLETE", this.result); 
-        });
+        //});
     }
 
     async onEvaluating() { 
@@ -37,9 +37,9 @@ export default class SlotController {
     }
 
     async onPayout() {
-        await this.ui.animatePayout(this.payout, () => {
+       await this.ui.animatePayout(this.payout);//, () => {
             this.engine.dispatch("PAYOUT_COMPLETE");
-        });
+       // });
     }
 
     reset() {

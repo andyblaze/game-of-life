@@ -6,14 +6,14 @@ import SlotMachine from "./slot-machine.js";
 import Renderer from "./renderer.js";
 //import SpinSimulator from "./spin-simulator.js";
 
-$(document).ready(async function() { 
+$(document).ready(function() { 
     const engine = new GameEngine(config);
     const machine = new SlotMachine(config);
     const evaluator = new PayoutEvaluator(config);
     const renderer = new Renderer();
     const controller = new SlotController(engine, machine, renderer, evaluator);
     $("#new-round").on("click", function() {
-      engine.dispatch("SPIN");
+        engine.dispatch("SPIN");
     });
     //const result = machine.spin();
     //const payout = evaluator.evaluate(result);
