@@ -20,7 +20,7 @@ export default class GameEngine {
   }
 
   emit(eventName, payload) {
-    console.log(eventName, payload);
+    //console.log(eventName, payload);
     const handlers = this.listeners[eventName] || [];
     handlers.forEach(fn => fn(payload));
   }
