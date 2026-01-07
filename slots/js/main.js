@@ -12,6 +12,9 @@ $(document).ready(async function() {
     const evaluator = new PayoutEvaluator(config);
     const renderer = new Renderer();
     const controller = new SlotController(engine, machine, renderer, evaluator);
+    $("#new-round").on("click", function() {
+      engine.dispatch("SPIN");
+    });
     //const result = machine.spin();
     //const payout = evaluator.evaluate(result);
     //console.log(result, payout); //  line, 
