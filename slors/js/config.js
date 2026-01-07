@@ -32,5 +32,20 @@ export const config = {
         ANY: {
             ERROR: { to: "ERROR" }
         }
+    },
+    payoutModel: {
+        type: "FIXED",      // FIXED | MULTIPLIER | TABLE
+        betUnit: 1
+    },
+    prizeTiers: [
+        "SMALL",
+        "MEDIUM",
+        "LARGE",
+        "JACKPOT"
+    ],
+    prizes: {
+        enabled: true,
+        model: "REEL_BASED",   // outcome emerges from reels
+        allowMultipleWins: false
     }
 };

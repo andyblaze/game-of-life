@@ -73,8 +73,12 @@ export default class GameEngine {
     return this.state;
   }
 
-  can(eventName) {
+  /*can(eventName) {
     const stateTransitions = this.transitions[this.state];
     return !!(stateTransitions && stateTransitions[eventName]);
-  }
+  }*/
+can(eventName) {
+  const stateTransitions = this.transitions[this.state];
+  return Boolean(stateTransitions?.[eventName]);
+}
 }
