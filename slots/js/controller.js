@@ -1,8 +1,11 @@
 export default class SlotController {
-    constructor(engine, machine, ui) {
+    constructor(engine, machine, ui, evaluator) {
         this.engine = engine;
         this.machine = machine;
         this.ui = ui;
+        this.evaluator = evaluator;
+        this.result = [];
+        this.payout = {};
 
         this.bindEvents();
     }
@@ -22,18 +25,19 @@ export default class SlotController {
     }
 
     onSpinning() {
-        const result = this.machine.spin();
-        this.ui.animateSpin(result, () => {
-            this.engine.dispatch("SPIN_COMPLETE", result);
+        this.result = this.machine.spin();
+        this.ui.animateSpin(this.result, () => {
+            this.engine.dispatch("SPIN_COMPLETE", this.result);
         });
     }
 
     onEvaluating() {
+        this.payout = this.evaluator.evaluate(this.result);
         this.engine.dispatch("EVALUATE_COMPLETE");
     }
 
     onPayout() {
-        this.ui.animatePayout(() => {
+        this.ui.animatePayout(this.payout, () => {
             this.engine.dispatch("PAYOUT_COMPLETE");
         });
     }
