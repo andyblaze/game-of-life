@@ -24,20 +24,20 @@ export default class SlotController {
         });
     }
 
-    onSpinning() {
+    async onSpinning() { 
         this.result = this.machine.spin();
-        this.ui.animateSpin(this.result, () => {
-            this.engine.dispatch("SPIN_COMPLETE", this.result);
+        await this.ui.animateSpin(this.result, () => {
+            this.engine.dispatch("SPIN_COMPLETE", this.result); 
         });
     }
 
-    onEvaluating() {
-        this.payout = this.evaluator.evaluate(this.result);
-        this.engine.dispatch("EVALUATE_COMPLETE");
+    async onEvaluating() { 
+        this.payout = this.evaluator.evaluate(this.result); 
+        this.engine.dispatch("EVALUATE_COMPLETE", this.payout); 
     }
 
-    onPayout() {
-        this.ui.animatePayout(this.payout, () => {
+    async onPayout() {
+        await this.ui.animatePayout(this.payout, () => {
             this.engine.dispatch("PAYOUT_COMPLETE");
         });
     }

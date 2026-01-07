@@ -20,10 +20,10 @@ export const config = {
         },
         PAYOUT: {
             PAYOUT_COMPLETE: { to: "IDLE" }
-        },
+        }/*,
         ANY: {
             ERROR: { to: "ERROR" }
-        }
+        }*/
     },
     payoutModel: {
         calculation: "FIXED",  // FIXED | MULTIPLIER | TABLE
