@@ -16,12 +16,18 @@ export default class SpinSimulator {
         this.currentLosingStreak = 0;
         this.longestLosingStreak = 0;
 
-        this.hitCounts = {};   // payout key -> count
+        // NEW
+        this.totalLosingStreakLength = 0;
+        this.losingStreakCount = 0;
+
+        this.hitCounts = {};    // payout key -> count
         this.symbolCounts = {}; // symbol -> count
     }
+
     spinReel(reel) {
         return randomFrom(reel);
     }
+
     go() {
         for (let i = 0; i < this.spins; i++) {
             this.totalWagered += this.betPerSpin;
@@ -31,29 +37,37 @@ export default class SpinSimulator {
 
             // Track symbol frequency
             result.forEach(sym => {
-            this.symbolCounts[sym] = (this.symbolCounts[sym] || 0) + 1;
+                this.symbolCounts[sym] = (this.symbolCounts[sym] || 0) + 1;
             });
 
             // Evaluate payout
             const outcome = this.evaluator.evaluate(result);
 
             if (outcome.win) {
-            this.wins++;
-            this.totalPaid += outcome.amount;
-            this.currentLosingStreak = 0;
+                this.wins++;
+                this.totalPaid += outcome.amount;
 
-            const key = result.join(",");
-            this.hitCounts[key] = (this.hitCounts[key] || 0) + 1;
+                // NEW: record completed losing streak
+                if (this.currentLosingStreak > 0) {
+                    this.totalLosingStreakLength += this.currentLosingStreak;
+                    this.losingStreakCount++;
+                }
+
+                this.currentLosingStreak = 0;
+
+                const key = result.join(",");
+                this.hitCounts[key] = (this.hitCounts[key] || 0) + 1;
             } else {
-            this.losses++;
-            this.currentLosingStreak++;
-            this.longestLosingStreak = Math.max(
-                this.longestLosingStreak,
-                this.currentLosingStreak
-            );
+                this.losses++;
+                this.currentLosingStreak++;
+                this.longestLosingStreak = Math.max(
+                    this.longestLosingStreak,
+                    this.currentLosingStreak
+                );
             }
-        }        
+        }
     }
+
     stats() {
         return {
             spins: this.spins,
@@ -65,21 +79,30 @@ export default class SpinSimulator {
             losses: this.losses,
             winRate: this.wins / this.spins,
             longestLosingStreak: this.longestLosingStreak,
+
+            // NEW
+            averageLosingStreak:
+                this.losingStreakCount === 0
+                    ? 0
+                    : this.totalLosingStreakLength / this.losingStreakCount,
+
             hitCounts: this.hitCounts,
             symbolCounts: this.symbolCounts
-        };        
+        };
     }
+
     log() {
         this.go();
         const stats = this.stats();
         console.table({
-        Spins: stats.spins,
-        Wagered: stats.totalWagered,
-        Paid: stats.totalPaid,
-        Profit: stats.profit,
-        RTP: stats.rtp.toFixed(4),
-        WinRate: stats.winRate.toFixed(4),
-        LongestLosingStreak: stats.longestLosingStreak
+            Spins: stats.spins,
+            Wagered: stats.totalWagered,
+            Paid: stats.totalPaid,
+            Profit: stats.profit,
+            RTP: stats.rtp.toFixed(4),
+            WinRate: stats.winRate.toFixed(4),
+            LongestLosingStreak: stats.longestLosingStreak,
+            AverageLosingStreak: stats.averageLosingStreak.toFixed(2)
         });
         console.log("Hit counts:", stats.hitCounts);
         console.log("Symbol counts:", stats.symbolCounts);
