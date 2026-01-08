@@ -100,6 +100,14 @@ export const config = {
             "WILD", "WILD", "WILD"                                                           // 1
         ]
 
+    },
+    symbolMap: {
+        CHERRY: "img/cherry.jpg",
+        LEMON: "img/lemon.jpg",
+        PLUM: "img/plum.jpg",
+        ORANGE: "img/orange.jpg",
+        BELL: "img/bell.jpg",
+        SEVEN: "img/seven.jpg",
+        WILD: "img/wild.jpg"
     }
-
 };
