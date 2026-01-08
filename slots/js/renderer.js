@@ -2,7 +2,7 @@ export default class Renderer {
     constructor(animator) {
         this.animator = animator;
     }
-    renderRow(row) { console.log(row);
+    renderRow(row) { //console.log(row);
         let htm = `<div class="payout-row"><span>${row.payout}</span>`;
         for ( let img of row.images ) {
             htm += `<img src="${img}" />`;
@@ -21,7 +21,10 @@ export default class Renderer {
         ]);
     }
     animatePayout(payout) {
-        $("#payout").html(payout.amount);
-        return Promise.resolve();
+        return new Promise(resolve => {
+            $("#payout").fadeOut(150, function () {
+                $(this).html(payout.amount).fadeIn(150, resolve); // resolve AFTER fadeIn
+            });
+        });
     }
 }
