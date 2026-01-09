@@ -26,9 +26,8 @@ export default class SlotController {
 
     async onSpinning() { 
         this.result = this.machine.spin();
-        await this.ui.animateSpin(this.result.indices);//, () => {
-            this.engine.dispatch("SPIN_COMPLETE", this.result); 
-        //});
+        await this.ui.animateSpin(this.result.indices);
+        this.engine.dispatch("SPIN_COMPLETE", this.result); 
     }
 
     async onEvaluating() { 
@@ -37,7 +36,7 @@ export default class SlotController {
     }
 
     async onPayout() {
-       await this.ui.animatePayout(this.payout);//, () => {
+       await this.ui.animatePayout(this.payout);
             this.engine.dispatch("PAYOUT_COMPLETE");
        // });
     }
