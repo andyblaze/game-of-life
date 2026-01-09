@@ -1,6 +1,5 @@
 
 export const CfgTrainer = {
-  count: 3, // number of trainers to create
   attributes: {
     skill: {
       distribution: "normal",

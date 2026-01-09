@@ -1,6 +1,5 @@
 
 export const CfgTrack = {
-  count: 2, // number of tracks to create
   distances: [1000, 1500, 2000],
   surfaces: [0, 1, 2], // 0=soft,1=good,2=hard
   attributes: {
