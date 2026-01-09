@@ -43,7 +43,7 @@ function createRace(id, tracks, horses, trainers) {
         const h = randomFrom(horses);
         if ( !entrants.includes(h) ) entrants.push(h);
     }
-    return new Race(0, track, distance, entrants, trainers);
+    return new Race(id, track, distance, entrants, trainers);
 }
 
 $(document).ready(function() { 
