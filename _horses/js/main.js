@@ -1,5 +1,6 @@
 import { CfgHorseGenetics } from "./cfg-horse-genetics.js";
 import { CfgTrainer } from "./cfg-trainer.js";
+import { CfgNames } from "./cfg-names.js";
 import Trainer from "./cls-trainer.js";
 import Horse from "./cls-horse.js";
 import { CfgTrack } from "./cfg-track.js";
@@ -11,7 +12,7 @@ import Race from "./cls-race.js";
 function createTracks(num, cfg) {
     const result = [];
     for (let i = 0; i < num; i++) {
-        const track = new Track(i, cfg);
+        const track = new Track(i, cfg, randomFrom(CfgNames.tracks));
         result.push(track);
     }
     return result;
@@ -19,7 +20,7 @@ function createTracks(num, cfg) {
 function createTrainers(num, cfg) {
     const result = [];
     for (let i = 0; i < num; i++) {
-        const trainer = new Trainer(i, cfg);
+        const trainer = new Trainer(i, cfg, randomFrom(CfgNames.trainers));
         result.push(trainer);
     }
     return result;
@@ -28,7 +29,7 @@ function createHorses(num, cfg, trainers) {
     const result = [];
     for (let i = 0; i < num; i++) {
         const trainer = trainers[i % trainers.length]; // round-robin
-        const horse = new Horse(i, trainer.id, cfg);
+        const horse = new Horse(i, trainer.id, cfg, randomFrom(CfgNames.horses));
         trainer.addHorse(horse);
         result.push(horse);
     }
@@ -39,7 +40,7 @@ function createRace(id, tracks, horses, trainers) {
     const track = randomFrom(tracks);
     const distance = track.distance;
     const entrants = [];
-    while ( entrants.length < 4 ) {
+    while ( entrants.length < 7 ) {
         const h = randomFrom(horses);
         if ( !entrants.includes(h) ) entrants.push(h);
     }
@@ -56,7 +57,7 @@ const results = race.run();
 
 console.log("Race Results:");
 results.forEach((r, i) => {
-  console.log(`${i + 1}: Horse ${r.horse.id}, Performance: ${r.performance.toFixed(2)}`);
+  console.log(`${i + 1}: ${r.horse.name}, Performance: ${r.performance.toFixed(2)}`);
 });
 
 });

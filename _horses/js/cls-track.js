@@ -1,10 +1,11 @@
 import { randomNormal, randomUniform, clamp, randomFrom } from "./functions.js";
 
 export default class Track {
-  constructor(id, config) {
+  constructor(id, config, name) {
     this.id = id;
     this.distance = randomFrom(config.distances);
     this.surface = randomFrom(config.surfaces);
+    this.name = name;
 
     this.attributes = this.generateAttributes(config.attributes);
   }

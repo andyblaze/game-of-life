@@ -1,0 +1,59 @@
+function runSeason(numRaces, tracks, horses, trainers) {
+  for (let i = 0; i < numRaces; i++) {
+    const race = createRace(i, tracks, horses, trainers);
+    race.run();
+  }
+} 
+
+runSeason(1000, tracks, horses, trainers);
+
+class FormBook {
+  static winCount(horse) {
+    return horse.history.filter(r => r.position === 1).length;
+  }
+
+  static averagePosition(horse) {
+    if (horse.history.length === 0) return null;
+    return horse.history.reduce((a, r) => a + r.position, 0) / horse.history.length;
+  }
+}
+
+getWinCount() {
+  return this.history.filter(r => r.position === 1).length;
+}
+
+getAveragePosition() {
+  if (this.history.length === 0) return null;
+  const sum = this.history.reduce((a, r) => a + r.position, 0);
+  return sum / this.history.length;
+}
+
+horses
+  .slice()
+  .sort((a, b) => a.getAveragePosition() - b.getAveragePosition())
+  .slice(0, 10)
+  .forEach(h => {
+    console.log(
+      `Horse ${h.id} avg pos: ${h.getAveragePosition().toFixed(2)} wins: ${h.getWinCount()}`
+    );
+  });
+
+class Bookie {
+  constructor(id) {
+    this.id = id;
+    this.models = {}; // horseId -> belief score
+  }
+
+  observeRace(results) {
+    results.forEach((r, i) => {
+      const hId = r.horse.id;
+      if (!this.models[hId]) this.models[hId] = 0;
+      this.models[hId] += (results.length - i); // reward finishing high
+    });
+  }
+
+  getOdds(horseId) {
+    const score = this.models[horseId] || 1;
+    return 1 / score;
+  }
+}

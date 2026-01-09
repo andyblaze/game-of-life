@@ -1,8 +1,9 @@
 import { randomNormal, randomUniform, clamp } from "./functions.js";
 
 export default class Trainer {
-  constructor(id, config) {
+  constructor(id, config, name) {
     this.id = id;
+    this.name = name;
 
     // Hidden attributes
     this.attributes = this.generateAttributes(config.attributes);

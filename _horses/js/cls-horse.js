@@ -1,9 +1,10 @@
 import { randomNormal, randomUniform, clamp } from "./functions.js";
 
 export default class Horse {
-  constructor(id, trainerId, geneticsConfig) {
+  constructor(id, trainerId, geneticsConfig, name) {
     this.id = id;
     this.trainerId = trainerId;
+    this.name = name;
 
     // Hidden, intrinsic attributes
     this.attributes = this.generateAttributes(geneticsConfig.attributes);
