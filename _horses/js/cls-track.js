@@ -4,6 +4,7 @@ export default class Track {
   constructor(id, config) {
     this.id = id;
     this.distance = randomFrom(config.distances);
+    this.surface = randomFrom(config.surfaces);
 
     this.attributes = this.generateAttributes(config.attributes);
   }
