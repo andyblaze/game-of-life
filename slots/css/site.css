@@ -6,8 +6,8 @@
   --reel-count: 3;
 
   /* Window sizing */
-  --window-width: calc(var(--img-width) * var(--reel-count) + 4);
-  --window-height: calc(var(--img-height) * 3 + 4);
+  --window-width: calc((var(--img-width) * var(--reel-count)) + 16px);
+  --window-height: calc(var(--reel-height) + 4px);
 }
 html, body {
   margin: 0;
