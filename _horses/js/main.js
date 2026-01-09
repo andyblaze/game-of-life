@@ -5,6 +5,8 @@ import Horse from "./cls-horse.js";
 import { CfgTrack } from "./cfg-track.js";
 import Track from "./cls-track.js";
 import { config } from "./cfg-main.js";
+import { randomFrom } from "./functions.js";
+import Race from "./cls-race.js";
 
 function createTracks(num, cfg) {
     const result = [];
@@ -33,15 +35,28 @@ function createHorses(num, cfg, trainers) {
     return result;
 }
 
+function createRace(id, tracks, horses, trainers) {
+    const track = randomFrom(tracks);
+    const distance = track.distance;
+    const entrants = [];
+    while ( entrants.length < 4 ) {
+        const h = randomFrom(horses);
+        if ( !entrants.includes(h) ) entrants.push(h);
+    }
+    return new Race(0, track, distance, entrants, trainers);
+}
+
 $(document).ready(function() { 
 const tracks = createTracks(config.numTracks, CfgTrack);
-console.log(tracks);
-
 const trainers = createTrainers(config.numTrainers, CfgTrainer);
-console.log(trainers);
-
-// Example: assign horses evenly to trainers
 const horses = createHorses(config.numHorses, CfgHorseGenetics, trainers);
-console.log(horses);
+
+const race = createRace(0, tracks, horses, trainers);
+const results = race.run();
+
+console.log("Race Results:");
+results.forEach((r, i) => {
+  console.log(`${i + 1}: Horse ${r.horse.id}, Performance: ${r.performance.toFixed(2)}`);
+});
 
 });

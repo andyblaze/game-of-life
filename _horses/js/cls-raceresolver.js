@@ -1,11 +1,13 @@
+import { randomUniform } from "./functions.js";
+
 export default class RaceResolver {
-  static resolve(track, distance, entrants) {
+  static resolve(track, distance, entrants, trainers) {
     const results = entrants.map(horse => {
       // Base performance = horse speed * endurance
       let performance = horse.attributes.speed * 0.5 + horse.attributes.endurance * 0.5;
 
       // Apply trainer effect
-      const trainerSkill = horse.trainerId != null ? Trainers[horse.trainerId].attributes.skill : 1.0;
+      const trainerSkill = trainers[horse.trainerId].attributes.skill;
       performance *= trainerSkill;
 
       // Track bias
