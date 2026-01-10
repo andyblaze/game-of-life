@@ -1,5 +1,5 @@
 export const config = {
-    numTracks: 3,
-    numTrainers: 3,
-    numHorses: 12
+    numTracks: 8,
+    numTrainers: 8,
+    numHorses: 120
 };

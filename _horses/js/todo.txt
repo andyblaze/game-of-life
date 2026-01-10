@@ -7,7 +7,7 @@ function runSeason(numRaces, tracks, horses, trainers) {
 
 runSeason(1000, tracks, horses, trainers); 
 
-class FormBook {  observers
+class FormBook {  observers,  place out of field - entrants / place or vice versa ?
   this.byDistance = new Map();
   this.byTrackDistance = new Map(); // `${trackId}:${distance}`
   this.byHorseTrack = new Map();

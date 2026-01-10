@@ -2,7 +2,7 @@ import { CfgNames } from "./cfg-names.js";
 import Trainer from "./cls-trainer.js";
 import Horse from "./cls-horse.js";
 import Track from "./cls-track.js";
-import { randomFrom } from "./functions.js";
+import { randomFrom, mt_rand } from "./functions.js";
 import Race from "./cls-race.js";
 
 //console.log("Horse.type in main:", Horse.type);
@@ -56,7 +56,8 @@ export default class WorldFactory {
         const track = randomFrom(tracks);
         const distance = track.distance;
         const entrants = [];
-        while ( entrants.length < 7 ) {
+        const numEntrants = mt_rand(7, 13); 
+        while ( entrants.length < numEntrants ) {
             const h = randomFrom(horses);
             if ( !entrants.includes(h) ) entrants.push(h);
         }

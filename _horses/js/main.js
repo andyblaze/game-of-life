@@ -11,7 +11,7 @@ function runSeason(numRaces, world, formbook) {
     const results = race.run();
     formbook.addRaceResult(results);
   }
-} 
+}  
 
 $(document).ready(function() { 
 const world = new WorldFactory();
@@ -20,7 +20,7 @@ const trainers = world.create("trainers", config.numTrainers, CfgTrainer);
 const horses = world.create("horses", config.numHorses, CfgHorseGenetics);
 const formbook = new FormBook();
 
-runSeason(50, world, formbook);
+runSeason(60, world, formbook);
 
 /*const race =  world.create("race", 0);
 const results = race.run();
