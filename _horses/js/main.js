@@ -1,67 +1,26 @@
 import { CfgHorseGenetics } from "./cfg-horse-genetics.js";
 import { CfgTrainer } from "./cfg-trainer.js";
-import { CfgNames } from "./cfg-names.js";
-import Trainer from "./cls-trainer.js";
-import Horse from "./cls-horse.js";
 import { CfgTrack } from "./cfg-track.js";
-import Track from "./cls-track.js";
 import { config } from "./cfg-main.js";
-import { randomFrom } from "./functions.js";
-import Race from "./cls-race.js";
-
-class WorldFactory {
-    
-}
-
-function createTracks(num, cfg) {
-    const result = [];
-    for (let i = 0; i < num; i++) {
-        const track = new Track(i, cfg, CfgNames.tracks[i]);
-        result.push(track);
-    }
-    return result;
-}
-function createTrainers(num, cfg) {
-    const result = [];
-    for (let i = 0; i < num; i++) {
-        const trainer = new Trainer(i, cfg, CfgNames.trainers[i]);
-        result.push(trainer);
-    }
-    return result;
-}
-function createHorses(num, cfg, trainers) {
-    const result = [];
-    for (let i = 0; i < num; i++) {
-        const trainer = trainers[i % trainers.length]; // round-robin
-        const horse = new Horse(i, trainer.id, cfg, CfgNames.horses[i]);
-        trainer.addHorse(horse);
-        result.push(horse);
-    }
-    return result;
-}
-
-function createRace(id, tracks, horses, trainers) {
-    const track = randomFrom(tracks);
-    const distance = track.distance;
-    const entrants = [];
-    while ( entrants.length < 7 ) {
-        const h = randomFrom(horses);
-        if ( !entrants.includes(h) ) entrants.push(h);
-    }
-    return new Race(id, track, distance, entrants, trainers);
-}
+import WorldFactory from "./cls-world-factory.js";
+import FormBook from "./cls-formbook.js";
 
 $(document).ready(function() { 
-const tracks = createTracks(config.numTracks, CfgTrack);
-const trainers = createTrainers(config.numTrainers, CfgTrainer);
-const horses = createHorses(config.numHorses, CfgHorseGenetics, trainers);
+const world = new WorldFactory();
+const tracks = world.create("tracks", config.numTracks, CfgTrack);
+const trainers = world.create("trainers", config.numTrainers, CfgTrainer);
+const horses = world.create("horses", config.numHorses, CfgHorseGenetics);
+const formbook = new FormBook();
 
-const race = createRace(0, tracks, horses, trainers);
+const race =  world.create("race", 0);
 const results = race.run();
+formbook.addRaceResult(results);
 
-console.log("Race Results:");
+console.log(formbook);
+
+/*console.log("Race Results:"); 
 results.forEach((r, i) => {
   console.log(`${i + 1}: ${r.horse.name}, Performance: ${r.performance.toFixed(2)}`);
-});
+});*/
 
 });

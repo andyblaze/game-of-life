@@ -1,6 +1,7 @@
 import RaceResolver from "./cls-raceresolver.js";
 
 export default class Race {
+    static type = "race";
   constructor(id, track, distance, entrants, trainers) {
     this.id = id;
     this.track = track;        // Track object
@@ -14,18 +15,23 @@ export default class Race {
   run() {
     // Use RaceResolver to compute results
     this.results = RaceResolver.resolve(this.track, this.distance, this.entrants, this.trainers);
-
+    //console.log(this.results);
     // Update horse race histories
-    this.results.forEach((horseResult, index) => {
-      horseResult.horse.addRaceResult({
-        track: this.track.name,
+    const form = {
+        trackId: this.track.id,
         raceId: this.id,
-        position: index + 1,
         distance: this.distance,
-        trackId: this.track.id
+        results: [] 
+      };
+    for ( const[index, result] of this.results.entries() ) //.forEach((horse, index) => {      
+        form.results.push({
+          horseId: result.horse.id,
+          trainerId: result.horse.trainerId,
+          position: index + 1,
       });
-    });
+    
+    //formboook.addRaceResult(form);
 
-    return this.results;
+    return form;//this.results;
   }
 }

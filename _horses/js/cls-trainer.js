@@ -1,6 +1,7 @@
 import { randomNormal, randomUniform, clamp } from "./functions.js";
 
 export default class Trainer {
+    static type = "trainers";
   constructor(id, config, name) {
     this.id = id;
     this.name = name;

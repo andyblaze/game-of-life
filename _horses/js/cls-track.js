@@ -1,6 +1,7 @@
 import { randomNormal, randomUniform, clamp, randomFrom } from "./functions.js";
 
 export default class Track {
+    static type = "tracks";
   constructor(id, config, name) {
     this.id = id;
     this.distance = randomFrom(config.distances);

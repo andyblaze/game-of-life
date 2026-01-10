@@ -1,6 +1,7 @@
 import { randomNormal, randomUniform, clamp } from "./functions.js";
 
 export default class Horse {
+    static type = "horses";
   constructor(id, trainerId, geneticsConfig, name) {
     this.id = id;
     this.trainerId = trainerId;
@@ -60,3 +61,4 @@ export default class Horse {
     this.raceHistory.push(result);
   }
 }
+//console.log("Horse.type at module end:", Horse.type);
