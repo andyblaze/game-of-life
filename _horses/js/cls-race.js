@@ -18,6 +18,7 @@ export default class Race {
     // Update horse race histories
     this.results.forEach((horseResult, index) => {
       horseResult.horse.addRaceResult({
+        track: this.track.name,
         raceId: this.id,
         position: index + 1,
         distance: this.distance,

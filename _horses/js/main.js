@@ -9,10 +9,14 @@ import { config } from "./cfg-main.js";
 import { randomFrom } from "./functions.js";
 import Race from "./cls-race.js";
 
+class WorldFactory {
+    
+}
+
 function createTracks(num, cfg) {
     const result = [];
     for (let i = 0; i < num; i++) {
-        const track = new Track(i, cfg, randomFrom(CfgNames.tracks));
+        const track = new Track(i, cfg, CfgNames.tracks[i]);
         result.push(track);
     }
     return result;
@@ -20,7 +24,7 @@ function createTracks(num, cfg) {
 function createTrainers(num, cfg) {
     const result = [];
     for (let i = 0; i < num; i++) {
-        const trainer = new Trainer(i, cfg, randomFrom(CfgNames.trainers));
+        const trainer = new Trainer(i, cfg, CfgNames.trainers[i]);
         result.push(trainer);
     }
     return result;
@@ -29,7 +33,7 @@ function createHorses(num, cfg, trainers) {
     const result = [];
     for (let i = 0; i < num; i++) {
         const trainer = trainers[i % trainers.length]; // round-robin
-        const horse = new Horse(i, trainer.id, cfg, randomFrom(CfgNames.horses));
+        const horse = new Horse(i, trainer.id, cfg, CfgNames.horses[i]);
         trainer.addHorse(horse);
         result.push(horse);
     }

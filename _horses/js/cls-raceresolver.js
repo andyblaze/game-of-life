@@ -1,32 +1,38 @@
 import { randomUniform } from "./functions.js";
+import { CfgRaceModel } from "./cfg-racemodel.js";
 
 export default class RaceResolver {
   static resolve(track, distance, entrants, trainers) {
+    const cfg = CfgRaceModel;
+
     const results = entrants.map(horse => {
-      // Base performance = horse speed * endurance
-      let performance = horse.attributes.speed * 0.5 + horse.attributes.endurance * 0.5;
+      let performance =
+        horse.attributes.speed * cfg.baseWeights.speed +
+        horse.attributes.endurance * cfg.baseWeights.endurance;
 
-      // Apply trainer effect
-      const trainerSkill = trainers[horse.trainerId].attributes.skill;
-      performance *= trainerSkill;
-
-      // Track bias
-      performance *= track.attributes.bias;
-
-      // Optional: horse distance affinity
-      if (horse.affinities.distance && horse.affinities.distance[distance]) {
-        performance *= 1 + 0.1 * horse.affinities.distance[distance]; // small multiplier
+      if (cfg.trainerEffect.enabled) {
+        performance *= trainers[horse.trainerId].attributes.skill;
       }
 
-      // Noise
-      performance *= randomUniform(0.95, 1.05);
+      if (cfg.trackEffect.enabled) {
+        performance *= track.attributes.bias;
+      }
+
+      if (
+        cfg.distanceAffinity.enabled &&
+        horse.affinities.distance &&
+        horse.affinities.distance[distance]
+      ) {
+        performance *= 1 + cfg.distanceAffinity.multiplier *
+          horse.affinities.distance[distance];
+      }
+
+      performance *= randomUniform(cfg.noise.min, cfg.noise.max);
 
       return { horse, performance };
     });
 
-    // Sort descending = higher performance wins
     results.sort((a, b) => b.performance - a.performance);
-
     return results;
   }
 }
