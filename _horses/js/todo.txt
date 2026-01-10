@@ -5,9 +5,9 @@ function runSeason(numRaces, tracks, horses, trainers) {
   }
 } 
 
-runSeason(1000, tracks, horses, trainers);
+runSeason(1000, tracks, horses, trainers); 
 
-class FormBook {
+class FormBook {  observers
   this.byDistance = new Map();
   this.byTrackDistance = new Map(); // `${trackId}:${distance}`
   this.byHorseTrack = new Map();
