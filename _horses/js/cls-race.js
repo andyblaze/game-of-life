@@ -15,18 +15,12 @@ export default class Race {
   run() {
     // Use RaceResolver to compute results
    /// this.results = RaceResolver.resolve(this.track, this.distance, this.entrants, this.trainers);
-    const form = {
+    const result = {
         trackId: this.track.id,
         raceId: this.id,
         distance: this.distance,
         results: RaceResolver.resolve(this.track, this.distance, this.entrants, this.trainers)
       };
-    /*for ( const[index, result] of this.results.entries() ) //.forEach((horse, index) => {      
-        form.results.push({
-          horseId: result.horse.id,
-          trainerId: result.horse.trainerId,
-          position: index + 1,
-      });*/
-    return form;//this.results;
+    return result;
   }
 }
