@@ -8,11 +8,16 @@ function runSeason(numRaces, tracks, horses, trainers) {
 runSeason(1000, tracks, horses, trainers);
 
 class FormBook {
-  static winCount(horse) {
+  
+    addRaceResult(result) {
+    this.raceHistory.push(result);
+  }
+
+  winCount(horse) {
     return horse.history.filter(r => r.position === 1).length;
   }
 
-  static averagePosition(horse) {
+  averagePosition(horse) {
     if (horse.history.length === 0) return null;
     return horse.history.reduce((a, r) => a + r.position, 0) / horse.history.length;
   }

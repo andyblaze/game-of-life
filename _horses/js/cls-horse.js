@@ -61,4 +61,3 @@ export default class Horse {
     this.raceHistory.push(result);
   }
 }
-//console.log("Horse.type at module end:", Horse.type);

@@ -1,18 +1,43 @@
 export default class FormBook {
-    constructor() {
-        this.raceHistory = [];
-    }
-  
-    addRaceResult(result) {
-        this.raceHistory.push(result);
-    }
+  constructor() {
+    //this.raceHistory = [];
 
-  winCount(horse) {
-    return this.raceHistory.filter(r => r.position === 1).length;
+    this.byHorse = new Map();    // horseId -> [entries]
+    this.byTrainer = new Map();  // trainerId -> [entries]
+    this.byTrack = new Map();    // trackId -> [entries]
   }
 
-  averagePosition(horse) {
-    if ( this.raceHistory.length === 0 ) return null;
-    return this.raceHistory.reduce((a, r) => a + r.position, 0) / this.raceHistory.length;
+  addRaceResult(form) { console.log(form);
+    //this.raceHistory.push(form);
+
+    for ( const [index, result] of form.results.entries() ) {
+      this._index(this.byHorse, result.horseId, {
+        raceId: form.raceId,
+        trackId: form.trackId,
+        distance: form.distance,
+        position: result.position
+      });
+
+      this._index(this.byTrainer, result.trainerId, {
+        raceId: form.raceId,
+        trackId: form.trackId,
+        distance: form.distance,
+        position: result.position,
+        horseId: result.horseId
+      });
+
+      this._index(this.byTrack, form.trackId, {
+        raceId: form.raceId,
+        distance: form.distance,
+        position: result.position,
+        horseId: result.horseId,
+        trainerId: result.trainerId
+      });
+    }
+  }
+
+  _index(map, key, entry) {
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(entry);
   }
 }

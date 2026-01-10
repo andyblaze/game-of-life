@@ -16,7 +16,7 @@ const race =  world.create("race", 0);
 const results = race.run();
 formbook.addRaceResult(results);
 
-console.log(formbook);
+//console.log(formbook);
 
 /*console.log("Race Results:"); 
 results.forEach((r, i) => {
