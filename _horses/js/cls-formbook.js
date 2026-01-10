@@ -7,33 +7,34 @@ export default class FormBook {
     this.byTrack = new Map();    // trackId -> [entries]
   }
 
-  addRaceResult(form) { console.log(form);
+  addRaceResult(form) { //console.log(form);
     //this.raceHistory.push(form);
 
     for ( const [index, result] of form.results.entries() ) {
-      this._index(this.byHorse, result.horseId, {
+      this._index(this.byHorse, result.horse.id, {
         raceId: form.raceId,
         trackId: form.trackId,
         distance: form.distance,
-        position: result.position
+        position: index + 1
       });
 
-      this._index(this.byTrainer, result.trainerId, {
+      this._index(this.byTrainer, result.horse.trainerId, {
         raceId: form.raceId,
         trackId: form.trackId,
         distance: form.distance,
-        position: result.position,
-        horseId: result.horseId
+        position: index + 1,
+        horseId: result.horse.id
       });
 
       this._index(this.byTrack, form.trackId, {
         raceId: form.raceId,
         distance: form.distance,
-        position: result.position,
-        horseId: result.horseId,
-        trainerId: result.trainerId
+        position: index + 1,
+        horseId: result.horse.id,
+        trainerId: result.horse.trainerId
       });
     }
+    //console.log(this);
   }
 
   _index(map, key, entry) {
