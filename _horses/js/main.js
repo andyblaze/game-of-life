@@ -33,6 +33,6 @@ const race =  world.create("race", 0);
 const odds = bookie.priceRace(race);
 const results = race.run();
 bookie.settleRace(results.placings, odds);
-console.log(bookie);
+console.log(odds, bookie);
 
 });
