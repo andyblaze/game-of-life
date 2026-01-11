@@ -1,7 +1,9 @@
 import { normalisedScore } from "./functions.js";
 
 export default class FormBook {
+   
   constructor(tracks, trainers, horses) {
+    this.observers = [];
     this.tracks = tracks;
     this.trainers = trainers;
     this.horses = horses;
@@ -10,6 +12,9 @@ export default class FormBook {
     this.byHorse = new Map();    // horseId -> [entries]
     this.byTrainer = new Map();  // trainerId -> [entries]
     this.byTrack = new Map();    // trackId -> [entries]
+  }
+  addObserver(o) {
+    this.observers.push(o);
   }
 
   addRaceResult(data) { //console.log(form);
@@ -50,6 +55,11 @@ export default class FormBook {
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(entry);
   }
+  notify() {
+    for ( let o of this.observers )
+        o.update(this);
+  }
+  /* api */
   getHorseName(id) {
     return this.horses[id].name;
   }
@@ -59,4 +69,38 @@ export default class FormBook {
   getTrackName(id) {
     return this.tracks[id].name;
   }
+    placingsFor(horseId, maxPlace=1) {
+        if ( maxPlace < 1 ) return 0;
+        const entries = this.byHorse.get(horseId); 
+        if ( !entries ) return 0;
+
+        return entries.reduce((count, entry) => {
+            return count + (entry.position <= maxPlace ? 1 : 0);
+        }, 0);
+    }
+    runsFor(horseId) {
+        const entries = this.byHorse.get(horseId); 
+        return entries.length;
+    }
+    topTrainersByPlacings(maxPlace = 3, limit = 3) {
+    const stats = [];
+
+    for (const [trainerId, entries] of this.byTrainer.entries()) {
+        let placings = 0;
+
+        for (const e of entries) {
+        if (e.position <= maxPlace) placings++;
+        }
+
+        stats.push({
+        trainerId,
+        placings
+        });
+    }
+
+    stats.sort((a, b) => b.placings - a.placings);
+
+    return stats.slice(0, limit);
+    }
+
 }
