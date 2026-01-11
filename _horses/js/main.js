@@ -5,6 +5,7 @@ import { config } from "./cfg-main.js";
 import WorldFactory from "./cls-world-factory.js";
 import FormBook from "./cls-formbook.js";
 import Newspaper from "./cls-newspaper.js";
+import Bookie from "./cls-bookie.js";
 
 function runSeason(numRaces, world, formbook) {
   for (let i = 0; i < numRaces; i++) {
@@ -25,7 +26,13 @@ const horses = world.getHorses();
 const formbook = new FormBook(tracks, trainers, horses);
 formbook.addObserver(new Newspaper());
 
-runSeason(1000, world, formbook);
-formbook.notify();
+//runSeason(1000, world, formbook);
+//formbook.notify();
+const bookie = new Bookie(0);
+const race =  world.create("race", 0);
+const odds = bookie.priceRace(race);
+const results = race.run();
+bookie.settleRace(results.placings, odds);
+console.log(bookie);
 
 });
