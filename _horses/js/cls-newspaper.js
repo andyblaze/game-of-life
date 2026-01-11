@@ -11,7 +11,7 @@ export default class Newspaper {
             "from",
             formBook.runsFor(id)
         );
-        const topTrainers = formBook.topTrainersByPlacings();
+        const topTrainers = formBook.topTrainersByPlacings(3, 8);
         let result = "";
         for ( let t of topTrainers )
             result += formBook.getTrainerName(t.trainerId) + " " + t.placings + "\n";
