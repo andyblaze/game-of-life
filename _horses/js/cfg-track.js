@@ -1,6 +1,6 @@
 
 export const CfgTrack = {
-  distances: [1000, 1500, 2000],
+  distances: [1000, 1500, 2000, 4000],
   surfaces: [0, 1, 2], // 0=soft,1=good,2=hard
   attributes: {
     bias: { // hidden factor affecting performance (multiplier)

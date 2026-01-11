@@ -5,8 +5,10 @@ export default class Newspaper {
 
     printSummary(formBook) {
         const id = 34;
+        const horse = formBook.getHorse(id);
         console.log(
-            formBook.getHorseName(id),
+            horse.name,
+            formBook.getTrainerName(horse.trainerId),
             formBook.placingsFor(id, 3),
             "from",
             formBook.runsFor(id)

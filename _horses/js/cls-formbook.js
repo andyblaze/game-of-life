@@ -60,6 +60,9 @@ export default class FormBook {
         o.update(this);
   }
   /* api */
+  getHorse(id) {
+    return this.horses[id];
+  }
   getHorseName(id) {
     return this.horses[id].name;
   }
