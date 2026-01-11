@@ -19,7 +19,8 @@ export default class Race {
         trackId: this.track.id,
         raceId: this.id,
         distance: this.distance,
-        results: RaceResolver.resolve(this.track, this.distance, this.entrants, this.trainers)
+        fieldLength: this.entrants.length,
+        placings: RaceResolver.resolve(this.track, this.distance, this.entrants, this.trainers)
       };
     return result;
   }

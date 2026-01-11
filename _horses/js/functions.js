@@ -24,3 +24,7 @@ export function randomNormal(mean = 0, stddev = 1) {
 export function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
+
+export function normalisedScore(position, fieldLength) {
+  return 1 - (position - 1) / (fieldLength - 1);
+}

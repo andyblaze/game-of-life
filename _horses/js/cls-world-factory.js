@@ -63,4 +63,13 @@ export default class WorldFactory {
         }
         return new T(id, track, distance, entrants, trainers);
     }
+    getHorses() {
+        return this.repository.horses;
+    }
+    getTrainers() {
+        return this.repository.trainers;
+    }
+    getTracks() {
+        return this.repository.tracks;
+    }
 }

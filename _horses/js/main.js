@@ -15,10 +15,13 @@ function runSeason(numRaces, world, formbook) {
 
 $(document).ready(function() { 
 const world = new WorldFactory();
-const tracks = world.create("tracks", config.numTracks, CfgTrack);
-const trainers = world.create("trainers", config.numTrainers, CfgTrainer);
-const horses = world.create("horses", config.numHorses, CfgHorseGenetics);
-const formbook = new FormBook();
+world.create("tracks", config.numTracks, CfgTrack);
+world.create("trainers", config.numTrainers, CfgTrainer);
+world.create("horses", config.numHorses, CfgHorseGenetics);
+const tracks = world.getTracks();
+const trainers = world.getTrainers();
+const horses = world.getHorses();
+const formbook = new FormBook(tracks, trainers, horses);
 
 runSeason(60, world, formbook);
 

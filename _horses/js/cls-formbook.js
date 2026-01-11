@@ -1,5 +1,10 @@
+import { normalisedScore } from "./functions.js";
+
 export default class FormBook {
-  constructor() {
+  constructor(tracks, trainers, horses) {
+    this.tracks = tracks;
+    this.trainers = trainers;
+    this.horses = horses;
     //this.raceHistory = [];
 
     this.byHorse = new Map();    // horseId -> [entries]
@@ -7,28 +12,32 @@ export default class FormBook {
     this.byTrack = new Map();    // trackId -> [entries]
   }
 
-  addRaceResult(form) { //console.log(form);
+  addRaceResult(data) { //console.log(form);
     //this.raceHistory.push(form);
 
-    for ( const [index, result] of form.results.entries() ) {
+    for ( const [index, result] of data.placings.entries() ) {
       this._index(this.byHorse, result.horse.id, {
-        raceId: form.raceId,
-        trackId: form.trackId,
-        distance: form.distance,
-        position: index + 1
+        raceId: data.raceId,
+        trackId: data.trackId,
+        distance: data.distance,
+        fieldLength: data.fieldLength,
+        position: index + 1,
+        normalisedScore: normalisedScore(index + 1, data.fieldLength)
       });
 
       this._index(this.byTrainer, result.horse.trainerId, {
-        raceId: form.raceId,
-        trackId: form.trackId,
-        distance: form.distance,
+        raceId: data.raceId,
+        trackId: data.trackId,
+        distance: data.distance,
+        fieldLength: data.fieldLength,
         position: index + 1,
         horseId: result.horse.id
       });
 
-      this._index(this.byTrack, form.trackId, {
-        raceId: form.raceId,
-        distance: form.distance,
+      this._index(this.byTrack, data.trackId, {
+        raceId: data.raceId,
+        distance: data.distance,
+        fieldLength: data.fieldLength,
         position: index + 1,
         horseId: result.horse.id,
         trainerId: result.horse.trainerId
@@ -40,5 +49,14 @@ export default class FormBook {
   _index(map, key, entry) {
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(entry);
+  }
+  getHorseName(id) {
+    return this.horses[id].name;
+  }
+  getTrainerName(id) {
+    return this.trainers[id].name;
+  }
+  getTrackName(id) {
+    return this.tracks[id].name;
   }
 }
