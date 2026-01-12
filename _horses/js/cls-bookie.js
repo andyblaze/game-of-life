@@ -6,12 +6,12 @@ export default class Bookie {
     this.totalPayout = 0;
     this.overround = 1.05;
     this.baseWeight = 0.15;
+    this.odds = {};
   }
 
 priceRace(race, formAPI) {
   const entrants = race.entrants;
-  const odds = {};
-  let stake = mt_rand(20, 100);
+  this.odds = {};
   const overround = this.overround;
 
   // get form scores
@@ -39,15 +39,12 @@ priceRace(race, formAPI) {
     let fairProb = weight / totalWeight;          // 0..1
     fairProb *= overround;     //console.log(fairProb);                   // inflate for bookie profit
     const decimalOdds = 1 / fairProb;
-    const basestake = mt_rand(2, 10);
-    odds[horse.id] = {
-      odds: decimalOdds,
-      stake: basestake * (1 / decimalOdds)
+    this.odds[horse.id] = {
+      odds: decimalOdds
     };
-    this.totalStaked += basestake * (1 / decimalOdds);
   });
 //console.log(odds);
-  return odds;
+  return this.odds;
 }
 
 
