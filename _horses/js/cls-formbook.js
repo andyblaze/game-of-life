@@ -109,16 +109,23 @@ normalisedScoresFor(horseIds) {
   const scores = new Map();
 
   horseIds.forEach(horseId => {
-    const entry = this.byHorse.get(horseId);
+    const entries = this.byHorse.get(horseId);
 
-    scores.set(
-      horseId,
-      entry ? entry.normalisedScore : null
-    );
+    if (!entries || entries.length === 0) {
+      scores.set(horseId, 0); 
+      return;
+    }
+
+    const avg =
+      entries.reduce((sum, e) => sum + e.normalisedScore, 0) /
+      entries.length;
+
+    scores.set(horseId, avg);
   });
 
   return scores;
 }
+
 
 
 }
