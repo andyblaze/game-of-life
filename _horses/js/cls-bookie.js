@@ -3,28 +3,29 @@ export default class Bookie {
     this.id = id;
     this.totalStaked = 0;
     this.totalPayout = 0;
+    this.overround = 1.05;
   }
 
-  priceRace(race, formbook) {
+  priceRace(race, formAPI) {
   const entrants = race.entrants;
   const odds = {};
   const stake = 1;
   const n = entrants.length;
-
-  const overround = this.overround || 1.05; // 5% edge by default
-
-  const price = n / overround;
   const entrantIds = [];
-  
   entrants.forEach(horse => {
     entrantIds.push(horse.id);
+  });
+  const form = formAPI.normalisedScoresFor(entrantIds);
+
+  const price = n / this.overround; // 1.05
+  
+  entrants.forEach(horse => {
     odds[horse.id] = {
       odds: price,
       stake: stake
     };
     this.totalStaked += stake;
   });
-  console.log(formbook.normalisedScoresFor(entrantIds));
   return odds;
 }
 
