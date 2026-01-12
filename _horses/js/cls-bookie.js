@@ -46,7 +46,7 @@ priceRace(race, formAPI) {
     };
     this.totalStaked += basestake * (1 / decimalOdds);
   });
-console.log(odds);
+//console.log(odds);
   return odds;
 }
 
