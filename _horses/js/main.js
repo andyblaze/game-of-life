@@ -23,7 +23,7 @@ world.create("tracks", config.numTracks, CfgTrack);
 world.create("trainers", config.numTrainers, CfgTrainer);
 world.create("horses", config.numHorses, CfgHorseGenetics);
 const tracks = world.getTracks();
-const trainers = world.getTrainers();
+const trainers = world.getTrainers(); 
 const horses = world.getHorses();
 const formbook = new FormBook(tracks, trainers, horses);
 const formAPI = new FormApi(formbook);
