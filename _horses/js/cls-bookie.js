@@ -5,7 +5,7 @@ export default class Bookie {
     this.totalPayout = 0;
   }
 
-  priceRace(race) {
+  priceRace(race, formbook) {
   const entrants = race.entrants;
   const odds = {};
   const stake = 1;
@@ -14,15 +14,17 @@ export default class Bookie {
   const overround = this.overround || 1.05; // 5% edge by default
 
   const price = n / overround;
-
+  const entrantIds = [];
+  
   entrants.forEach(horse => {
+    entrantIds.push(horse.id);
     odds[horse.id] = {
       odds: price,
       stake: stake
     };
     this.totalStaked += stake;
   });
-
+  console.log(formbook.normalisedScoresFor(entrantIds));
   return odds;
 }
 

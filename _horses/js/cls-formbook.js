@@ -48,7 +48,7 @@ export default class FormBook {
         trainerId: result.horse.trainerId
       });
     }
-    //console.log(this);
+    console.log(this.byHorse);
   }
 
   _index(map, key, entry) {
@@ -105,5 +105,20 @@ export default class FormBook {
 
     return stats.slice(0, limit);
     }
+normalisedScoresFor(horseIds) {
+  const scores = new Map();
+
+  horseIds.forEach(horseId => {
+    const entry = this.byHorse.get(horseId);
+
+    scores.set(
+      horseId,
+      entry ? entry.normalisedScore : null
+    );
+  });
+
+  return scores;
+}
+
 
 }
