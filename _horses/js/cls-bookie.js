@@ -1,33 +1,55 @@
+import { mt_rand } from "./functions.js";
 export default class Bookie {
   constructor(id) {
     this.id = id;
     this.totalStaked = 0;
     this.totalPayout = 0;
     this.overround = 1.05;
+    this.baseWeight = 0.15;
   }
 
-  priceRace(race, formAPI) {
+priceRace(race, formAPI) {
   const entrants = race.entrants;
   const odds = {};
-  const stake = 1;
-  const n = entrants.length;
-  const entrantIds = [];
-  entrants.forEach(horse => {
-    entrantIds.push(horse.id);
-  });
-  const form = formAPI.normalisedScoresFor(entrantIds);
+  let stake = mt_rand(20, 100);
+  const overround = this.overround;
 
-  const price = n / this.overround; // 1.05
-  
+  // get form scores
+  const entrantIds = entrants.map(h => h.id);
+  const scores = formAPI.normalisedScoresFor(entrantIds);
+
+  // compute weights for each horse
+  const weights = new Map();
+  let totalWeight = 0;
+  //const epsilon = 0.01; // tiny baseline for zero-score horses
+
   entrants.forEach(horse => {
-    odds[horse.id] = {
-      odds: price,
-      stake: stake
-    };
-    this.totalStaked += stake;
+    const runs = formAPI.runsFor(horse.id);
+    const confidence = Math.min(1, runs / 5);
+    const score = scores.get(horse.id) || 0; // 0 if no form
+    const weight = score * confidence + this.baseWeight;
+    //const weight = score + epsilon;
+    weights.set(horse.id, weight);
+    totalWeight += weight;
   });
+
+  // compute odds
+  entrants.forEach(horse => {
+    const weight = weights.get(horse.id);
+    let fairProb = weight / totalWeight;          // 0..1
+    fairProb *= overround;     //console.log(fairProb);                   // inflate for bookie profit
+    const decimalOdds = 1 / fairProb;
+    const basestake = mt_rand(2, 10);
+    odds[horse.id] = {
+      odds: decimalOdds,
+      stake: basestake * (1 / decimalOdds)
+    };
+    this.totalStaked += basestake * (1 / decimalOdds);
+  });
+console.log(odds);
   return odds;
 }
+
 
 
   settleRace(results, odds) {

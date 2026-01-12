@@ -27,7 +27,7 @@ getHorse(id) {
     runsFor(horseId) {
         const data = this.formbook.byHorse;
         const entries = data.get(horseId); 
-        return entries.length;
+        return (!entries ? 0 : entries.length);
     }
     topTrainersByPlacings(maxPlace = 3, limit = 3) {
     const stats = [];

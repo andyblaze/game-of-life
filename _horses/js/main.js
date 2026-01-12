@@ -31,16 +31,20 @@ formbook.addObserver(new Newspaper());
 //runSeason(1000, world, formbook);
 //formbook.notify();
 const bookie = new Bookie(0);
-let race =  world.create("race", 0);
+for ( let i = 0; i < 500; i++ ) {
+let race =  world.create("race", i);
 let odds = bookie.priceRace(race, formAPI);
+//console.log(odds);
 let results = race.run();
 bookie.settleRace(results.placings, odds);
 formbook.addRaceResult(results);
-race =  world.create("race", 1);
+race =  world.create("race", i);
 odds = bookie.priceRace(race, formAPI);
+//console.log(odds);
 results = race.run();
 bookie.settleRace(results.placings, odds);
 formbook.addRaceResult(results);
-//console.log(odds, bookie, formbook.byHorse);
+}
+console.log(bookie.getProfit());
 
 });
