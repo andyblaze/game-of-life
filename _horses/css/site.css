@@ -1,3 +1,11 @@
 #odds {
     font-size: 2rem;
 }
+#odds table {
+    border: 1px solid #000;
+    border-collapse: collapse;
+}
+#odds table td, #odds table th {
+    padding:8px;
+    border: 1px solid #000;
+}
