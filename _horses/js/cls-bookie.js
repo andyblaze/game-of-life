@@ -4,7 +4,7 @@ export default class Bookie {
     this.id = id;
     this.totalStaked = 0;
     this.totalPayout = 0;
-    this.overround = 1.05;
+    this.overround = 1.1;
     this.baseWeight = 0.15;
     this.odds = {};
   }
@@ -52,8 +52,8 @@ priceRace(race, formAPI) {
   settleRace(results, odds) {
     const winner = results[0].horse.id;
 
-    if (odds[winner]) {
-      const bet = odds[winner];
+    if (this.odds[winner]) {
+      const bet = this.odds[winner];
       const payout = bet.stake * bet.odds;
       this.totalPayout += payout;
     }
