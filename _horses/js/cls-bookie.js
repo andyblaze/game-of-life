@@ -16,11 +16,13 @@ export default class Bookie {
     this.overround = 1.1;
     this.baseWeight = 0.15;
     this.odds = {};
+    this.stakes = {};
   }
 
 priceRace(race, formAPI) {
-  const entrants = race.entrants;
+  const entrants = race.entrants; 
   this.odds = {};
+  this.stakes = {};
   const overround = this.overround;
 
   // get form scores
@@ -33,14 +35,22 @@ priceRace(race, formAPI) {
   //const epsilon = 0.01; // tiny baseline for zero-score horses
 
   entrants.forEach(horse => {
+    this.stakes[horse.id] = 0;
     const runs = formAPI.runsFor(horse.id);
     const confidence = Math.min(1, runs / 5);
     let score = scores.get(horse.id) || 0; // 0 if no form
     score =  powerTransformScore(score, 2);
-    let placeRate = placingsFor(horseId, 3) / runs;
+    // reliability (top-3 placings)
+    let placeRate = runs > 0
+      ? formAPI.placingsFor(horse.id, 3) / runs
+      : 0;
     placeRate = clamp(placeRate, 0, 1);
-    let weight = score * confidence + this.baseWeight;
-    weight = exponentiateWeight(weight, 1.6);
+  // 👇 THIS IS THE IMPORTANT LINE
+  const reliabilityBoost = 1 + (placeRate * 0.75); // tunable, < 1
+    let weight =
+    (score * reliabilityBoost) * confidence
+    + this.baseWeight;
+    //weight = exponentiateWeight(weight, 1.6);
     //const weight = score + epsilon;
     weights.set(horse.id, weight);
     totalWeight += weight;
@@ -57,18 +67,66 @@ priceRace(race, formAPI) {
     };
   });
 //console.log(odds);
-  return this.odds;
+  return { odds: this.odds, stakes: this.stakes };
+}
+    adjustOdds1(horseId, stake) {
+        this.stakes[horseId] += stake;
+        this.totalStaked += stake;
+    }
+adjustOdds(horseId, stake) {
+    // ensure odds exist
+    if (!this.odds[horseId]) {
+        console.warn(`Horse ${horseId} has no odds yet, initializing to 10`);
+        this.odds[horseId] = { odds: 10 }; // default starting odds
+    }
+
+    // ensure stakes exist
+    if (!this.stakes[horseId]) this.stakes[horseId] = 0;
+
+    this.stakes[horseId] += stake;
+    this.totalStaked += stake;
+
+    // compute total probability safely
+    let totalProb = 0;
+    Object.values(this.odds).forEach(o => {
+        const prob = 1 / (o.odds || 10); // fallback if odds missing
+        totalProb += prob;
+    });
+
+    // compute new probability for this horse
+    const currentProb = 1 / this.odds[horseId].odds;
+    const weight = 0.05 * (stake / this.totalStaked);
+    let newProb = currentProb + weight;
+    newProb = Math.min(newProb, 0.99);
+
+    this.odds[horseId].odds = 1 / newProb;
+
+    // adjust others safely
+    const others = Object.keys(this.odds).filter(id => parseInt(id) !== horseId);
+    const adjustment = weight / others.length;
+    others.forEach(id => {
+        const prob = 1 / this.odds[id].odds;
+        const newOtherProb = Math.max(prob - adjustment, 0.01);
+        this.odds[id].odds = 1 / newOtherProb;
+    });
+
+    return { odds: this.odds, stakes: this.stakes };
 }
 
 
 
-  settleRace(results, odds) {
+
+  settleRace(results) {
     const winner = results[0].horse.id;
 
-    if (this.odds[winner]) {
-      const bet = this.odds[winner];
-      const payout = bet.stake * bet.odds;
+    if (this.odds[winner]) { 
+      //const bet = this.stakes[winner];
+      const payout = this.stakes[winner] * this.odds[winner].odds;
       this.totalPayout += payout;
+      console.log(
+        winner, this.stakes[winner] , this.odds[winner].odds,
+        payout, this.totalPayout, this.totalStaked, this.totalStaked - payout
+      );
     }
   }
 

@@ -8,6 +8,7 @@ import Newspaper from "./cls-newspaper.js";
 import Bookie from "./cls-bookie.js";
 import FormApi from "./cls-formbook-api.js";
 import Renderer from "./cls-renderer.js";
+import { randomFrom, mt_rand } from "./functions.js";
 
 function runSeason(numRaces, world, formbook) {
   for (let i = 0; i < numRaces; i++) {
@@ -32,15 +33,31 @@ formbook.addObserver(new Newspaper());
 
 //runSeason(1000, world, formbook);
 //formbook.notify();
+
+/* generate form */
+let data = {};
 const bookie = new Bookie(0);
-for ( let i = 0; i < 792; i++ ) {
+for ( let i = 0; i < 7; i++ ) {
 let race =  world.create("race", i);
-let odds = bookie.priceRace(race, formAPI);
-renderer.renderOdds(odds, world.getHorses());
+//data = bookie.priceRace(race, formAPI);
+
 let results = race.run();
-bookie.settleRace(results.placings, odds);
+//bookie.settleRace(results.placings, data.odds);
 formbook.addRaceResult(results);
 }
+/* run an actual race */
+let race =  world.create("race", 9);
+data = bookie.priceRace(race, formAPI);
+const entrantIds = race.entrants.map(h => h.id);
+for ( let n = 0; n < 20; n++ ) {
+  const h = randomFrom(entrantIds);
+  const b = mt_rand(1, 5)
+  data = bookie.adjustOdds(h, b)
+}
+let results = race.run();
+bookie.settleRace(results.placings, data.odds);
+formbook.addRaceResult(results);
+renderer.renderOdds(data, world.getHorses());
 /*race =  world.create("race", i);
 odds = bookie.priceRace(race, formAPI);
 //console.log(odds);
