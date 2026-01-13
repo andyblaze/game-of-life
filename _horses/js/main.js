@@ -52,7 +52,7 @@ const renderer = new Renderer();
 renderer.renderOdds(data, world.getHorses()); // redraw immediately
 const entrantIds = race.entrants.map(h => h.id);
 let n = 0;
-const maxBets = 40;
+const maxBets = 180;
 const interval = setInterval(() => {
     if (n >= maxBets) {
         clearInterval(interval);
@@ -60,11 +60,11 @@ const interval = setInterval(() => {
     }
     const h = randomFrom(entrantIds);
     let b = mt_rand(1, 5);
-    if ( Math.random() < 0.05 ) b = mt_rand(1, 3) * 10;
+    if ( Math.random() < 0.25 ) b = mt_rand(10, 13) * 10;
     data = bookie.adjustOdds(h, b);
     renderer.renderOdds(data, world.getHorses()); // redraw immediately
     n++;
-}, 1000); // 100 ms between bets
+}, 500); // 100 ms between bets
 
 /*const entrantIds = race.entrants.map(h => h.id);
 for ( let n = 0; n < 20; n++ ) {
