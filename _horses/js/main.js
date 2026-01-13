@@ -28,7 +28,7 @@ const trainers = world.getTrainers();
 const horses = world.getHorses();
 const formbook = new FormBook(tracks, trainers, horses);
 const formAPI = new FormApi(formbook);
-const renderer = new Renderer();
+//const renderer = new Renderer();
 formbook.addObserver(new Newspaper());
 
 //runSeason(1000, world, formbook);
@@ -48,7 +48,25 @@ formbook.addRaceResult(results);
 /* run an actual race */
 let race =  world.create("race", 9);
 data = bookie.priceRace(race, formAPI);
+const renderer = new Renderer();
+renderer.renderOdds(data, world.getHorses()); // redraw immediately
 const entrantIds = race.entrants.map(h => h.id);
+let n = 0;
+const maxBets = 40;
+const interval = setInterval(() => {
+    if (n >= maxBets) {
+        clearInterval(interval);
+        return;
+    }
+    const h = randomFrom(entrantIds);
+    let b = mt_rand(1, 5);
+    if ( Math.random() < 0.05 ) b = mt_rand(1, 3) * 10;
+    data = bookie.adjustOdds(h, b);
+    renderer.renderOdds(data, world.getHorses()); // redraw immediately
+    n++;
+}, 1000); // 100 ms between bets
+
+/*const entrantIds = race.entrants.map(h => h.id);
 for ( let n = 0; n < 20; n++ ) {
   const h = randomFrom(entrantIds);
   const b = mt_rand(1, 5)
@@ -57,7 +75,8 @@ for ( let n = 0; n < 20; n++ ) {
 let results = race.run();
 bookie.settleRace(results.placings, data.odds);
 formbook.addRaceResult(results);
-renderer.renderOdds(data, world.getHorses());
+renderer.renderOdds(data, world.getHorses());*/
+
 /*race =  world.create("race", i);
 odds = bookie.priceRace(race, formAPI);
 //console.log(odds);
