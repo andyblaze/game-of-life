@@ -33,7 +33,7 @@ formbook.addObserver(new Newspaper());
 //runSeason(1000, world, formbook);
 //formbook.notify();
 const bookie = new Bookie(0);
-for ( let i = 0; i < 2; i++ ) {
+for ( let i = 0; i < 792; i++ ) {
 let race =  world.create("race", i);
 let odds = bookie.priceRace(race, formAPI);
 renderer.renderOdds(odds, world.getHorses());

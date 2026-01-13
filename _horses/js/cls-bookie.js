@@ -1,4 +1,13 @@
-import { mt_rand } from "./functions.js";
+import { clamp, mt_rand } from "./functions.js";
+
+function exponentiateWeight(weight, exponent = 1.5) {
+  return Math.pow(weight, exponent);
+}
+function powerTransformScore(score, power = 2) {
+  return Math.pow(score, power);
+}
+
+
 export default class Bookie {
   constructor(id) {
     this.id = id;
@@ -26,8 +35,12 @@ priceRace(race, formAPI) {
   entrants.forEach(horse => {
     const runs = formAPI.runsFor(horse.id);
     const confidence = Math.min(1, runs / 5);
-    const score = scores.get(horse.id) || 0; // 0 if no form
-    const weight = score * confidence + this.baseWeight;
+    let score = scores.get(horse.id) || 0; // 0 if no form
+    score =  powerTransformScore(score, 2);
+    let placeRate = placingsFor(horseId, 3) / runs;
+    placeRate = clamp(placeRate, 0, 1);
+    let weight = score * confidence + this.baseWeight;
+    weight = exponentiateWeight(weight, 1.6);
     //const weight = score + epsilon;
     weights.set(horse.id, weight);
     totalWeight += weight;
