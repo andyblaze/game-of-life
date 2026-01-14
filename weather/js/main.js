@@ -1,51 +1,13 @@
-class WeatherCollator {
-  constructor() {
-    this.observers = [];
-    this.weather = {};
-  }
-  addObserver(o) {
-    this.observers.push(o);
-  }
-  update(data) {
-    this.weather[data.type] = data;
-    this.notify();
-    
-  }
-  notify() {
-    for ( let o of this.observers )
-      o.update(this.weather);
-  }
-}
-
-class ConsoleObserver {
-  update(weather) {
-    console.log(weather);
-  }
-}
+import WeatherCollator from "./weather-collator.js";
+import { TempReader, WindReader } from "./sensor-readers.js";
+import { TempConversionStrategy, WindConversionStrategy } from "./conversion-strategies.js";
+import { ConsoleObserver } from "./observers.js";
 
 const weatherCollator = new WeatherCollator();
 weatherCollator.addObserver(new ConsoleObserver());
 
-class SensorReader {
-  constructor(collator) {
-    this.collator = collator;
-  }
-  read(value) {
-    console.log(value)
-  }
-}
-class TempReader extends SensorReader {
-  read(value) {
-    const result = { type:'temp', data: value, unit:'C' };
-    this.collator.update(result);
-  }
-}
-class WindReader extends SensorReader {
-  read(value) {
-    const result = { type:'wind', data: value, unit:'MPH' };
-    this.collator.update(result);
-  }
-}
+weatherCollator.registerStrategy('temp', new TempConversionStrategy());
+weatherCollator.registerStrategy('wind', new WindConversionStrategy());
 
 const cfg = {
   "temp": new TempReader(weatherCollator),
