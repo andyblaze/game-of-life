@@ -1,0 +1,11 @@
+1.  Fix this : 
+export class TempConversionStrategy extends ConversionStrategy {
+  convert(reading) {
+    return {
+      ...reading,
+      F: reading.data * 9/5 + 32
+    };
+  }
+}
+so convert returns C:reading number + the F.  i.e. use the default unit from the .js sensor reader
+do it for wind too.

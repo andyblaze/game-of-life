@@ -12,10 +12,10 @@ export default class WeatherCollator {
   }
   update(data) {
     this.readings[data.type] = data;
-    const strategy = this.strategies[reading.type];
-    const converted = strategy ? strategy.convert(reading) : reading;
+    const strategy = this.strategies[data.type];
+    const converted = strategy ? strategy.convert(data) : data;
 
-    this.readings[reading.type] = converted;
+    this.readings[data.type] = converted;
     this.notify();
     
   }

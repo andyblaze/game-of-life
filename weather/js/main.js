@@ -16,11 +16,11 @@ const cfg = {
 
 $(document).ready(function() {
 const host = 'ws://127.0.0.1:8080/weather.php';
-        var socket = new WebSocket(host);
-        socket.onmessage = function(e) {
-           const data = JSON.parse(e.data);
-           for ( const index in data ) {
-            cfg[index].read(data[index]);
-           }
-        };
+    const socket = new WebSocket(host);
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        for ( const index in data ) {
+          cfg[index].read(data[index]);
+        }
+    };
 });
