@@ -1,38 +1,45 @@
 <?php
 
 class Sensor {
-    protected string $name;
-
-    public function __construct(string $name) {
-        $this->name = $name;
-    }
-
+    public function __construct() {}
     // Generates a new reading (to be overridden)
-    public function read(): array {
+    public function read(): int {
         // Base version returns nothing meaningful
-        return [
-            'name' => $this->name,
-            'value' => null,
-            'timestamp' => time()
-        ];
+        return 0;
     }
 }
 
 class TemperatureSensor extends Sensor {
+    public function read(): int {
+        return mt_rand(-10, 30);
+    }
+}
 
-    public function read(): array {
-        $temp = rand(-100, 350) / 10; // -10°C to 35°C
-        return [
-            'name' => $this->name,
-            'value' => $temp,
-            'unit' => 'C',
-            'timestamp' => time()
-        ];
+class WindspeedSensor extends Sensor {
+    public function read(): int {
+        return round(mt_rand(1, 30) / 0.44704);
+    }
+}
+
+class SensorArray {
+    private $sensors = [];
+    public function __construct(array $sensors) {
+        $this->sensors = $sensors;
+    }
+    public function read():string {
+        $result = [];
+        foreach ( $this->sensors as $label=>$s ) {
+            $result[$label] = $s->read(); 
+        }
+        return json_encode($result);
     }
 }
 
 // Usage
-$tempSensor = new TemperatureSensor('Temp1');
+$sensors = new SensorArray([
+    'temp'=>new TemperatureSensor(),
+    'wind'=>new WindspeedSensor()
+]);
 
 $address = '127.0.0.1';
 $port = 8080;
@@ -62,7 +69,7 @@ socket_write($client, $headers, strlen($headers));
 // Send messages into WebSocket in a loop.
 while (true) {
     sleep(1);
-    $content = $tempSensor->read();
+    $content = $sensors->read();
     $response = chr(129) . chr(strlen($content)) . $content;
     socket_write($client, $response);
 }
