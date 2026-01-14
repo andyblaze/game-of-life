@@ -1,4 +1,4 @@
-export default class WeatherCollator {
+export default class SensorsCollator {
   constructor() {
     this.observers = [];
     this.readings = {};
