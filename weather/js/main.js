@@ -6,21 +6,32 @@ import { ConsoleObserver } from "./observers.js";
 const sensorsCollator = new SensorsCollator();
 sensorsCollator.addObserver(new ConsoleObserver());
 
-sensorsCollator.registerStrategy('temp', new TempConversionStrategy());
-sensorsCollator.registerStrategy('wind', new WindConversionStrategy());
-
 const cfg = { 
-  "temp": new TempReader(sensorsCollator),
-  "wind": new WindReader(sensorsCollator)
+  "readers": {
+    "temp": new TempReader(sensorsCollator),
+    "wind": new WindReader(sensorsCollator)
+  },
+  "converters": {
+    "temp": new TempConversionStrategy(),
+    "wind": new WindConversionStrategy()
+  }
 };
+
+
+const sensorConverters = cfg.converters;
+for ( const index in sensorConverters )
+  sensorsCollator.registerStrategy(index, sensorConverters[index]);
+
+
 
 $(document).ready(function() {
 const host = 'ws://127.0.0.1:8080/sensors-server.php';
     const socket = new WebSocket(host);
+    const sensorReaders = cfg.readers;
     socket.onmessage = function(e) {
         const readings = JSON.parse(e.data);
         for ( const index in readings ) {
-          cfg[index].read(readings[index]);
+          sensorReaders[index].read(readings[index]);
         }
     };
 });
