@@ -9,7 +9,7 @@ $(document).ready(function() {
     const sensorReaders = new SensorReadersArray(config.readers, sensorsCollator);
 
     sensorsCollator.setStrategies(config.converters);
-    sensorsCollator.addObserver(new ConsoleObserver());
+    //sensorsCollator.addObserver(new ConsoleObserver());
 
     const host = 'ws://127.0.0.1:8080/sensors-server.php';
     const socket = new WebSocket(host);

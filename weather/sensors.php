@@ -21,6 +21,18 @@ class WindspeedSensor extends Sensor {
     }
 }
 
+class CloudCoverSensor extends Sensor {
+    public function read(): int {
+        return mt_rand(0, 100);
+    }
+}
+
+class PressureSensor extends Sensor {
+    public function read(): int {
+        return mt_rand(970, 1030);
+    }
+}
+
 class SensorArray {
     private $sensors = [];
     public function __construct(array $sensors) {

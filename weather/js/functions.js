@@ -3,6 +3,20 @@ export function mt_rand(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+export function makeTimestamp() {
+  const d = new Date();
+
+  const pad = n => String(n).padStart(2, '0');
+
+  return (
+    d.getFullYear() +
+    pad(d.getMonth() + 1) +
+    pad(d.getDate()) +
+    pad(d.getHours()) +
+    pad(d.getMinutes()) +
+    pad(d.getSeconds())
+  );
+}
 
 export function randomFrom(arr) {
     return arr[mt_rand(0, arr.length - 1)];

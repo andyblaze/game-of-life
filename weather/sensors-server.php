@@ -6,7 +6,9 @@ require_once('websocket.php');
 // Usage
 $sensors = new SensorArray([
     'temp'=>new TemperatureSensor(),
-    'wind'=>new WindspeedSensor()
+    'wind'=>new WindspeedSensor(),
+    'cloud'=>new CloudCoverSensor(),
+    'press'=>new PressureSensor()
 ]);
  
 $address = '127.0.0.1';

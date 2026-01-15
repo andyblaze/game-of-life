@@ -14,7 +14,7 @@ export default class SensorsCollator {
     for ( const data of readings ) {
       this.readings[data.type] = data;
       const strategy = this.strategies[data.type];
-      const converted = strategy ? strategy.convert(data) : data;
+      const converted = strategy.convert(data); console.log(converted);
       this.readings[data.type] = converted;
     }
     this.notify();

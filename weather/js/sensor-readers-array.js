@@ -1,3 +1,5 @@
+import { makeTimestamp } from "./functions.js";
+
 export default class SensorReadersArray {
   constructor(sensors, collator) {
     this.sensors = sensors;
@@ -9,7 +11,8 @@ export default class SensorReadersArray {
     const readings = JSON.parse(e.data);
     for ( const type in readings ) {
       const data = this.sensors[type].read(readings[type]);
-      this.sensorData.push(data);//[data.type] = data;
+      data["timestamp"] = makeTimestamp();
+      this.sensorData.push(data);
     }
     this.collator.update(this.sensorData);
   }

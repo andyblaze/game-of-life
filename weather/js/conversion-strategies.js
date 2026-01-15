@@ -9,7 +9,8 @@ export class TempConversionStrategy extends ConversionStrategy {
     convert(reading) {
         return {
             ...reading,
-            F: reading.data * 9/5 + 32
+            "C": reading.data,
+            "F": reading.data * 9/5 + 32
         };
     }
 }
@@ -18,9 +19,34 @@ export class WindConversionStrategy extends ConversionStrategy {
     convert(reading) {
         return {
             ...reading,
-            kmh: reading.data * 3.6,
-            mph: reading.data * 2.23694,
-            knots: reading.data * 1.94384
+            "MPS": reading.data,
+            "KMH": reading.data * 3.6,
+            "MPH": reading.data * 2.23694,
+            "KNOTS": reading.data * 1.94384
+        };
+    }
+}
+
+export class CloudConversionStrategy extends ConversionStrategy {
+    convert(reading) {
+        return {
+            ...reading,
+            "PC": reading.data//,
+            /*"KMH": reading.data * 3.6,
+            "MPH": reading.data * 2.23694,
+            "KNOTS": reading.data * 1.94384*/
+        };
+    }
+}
+
+export class PressureConversionStrategy extends ConversionStrategy {
+    convert(reading) {
+        return {
+            ...reading,
+            "MB": reading.data//,
+           /* "KMH": reading.data * 3.6,
+            "MPH": reading.data * 2.23694,
+            "KNOTS": reading.data * 1.94384*/
         };
     }
 }
