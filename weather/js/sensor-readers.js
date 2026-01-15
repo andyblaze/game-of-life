@@ -1,6 +1,5 @@
 class SensorReader {
-  constructor(collator) {
-    this.collator = collator;
+  constructor() {
   }
   read(value) {
     console.log(value)
@@ -9,12 +8,12 @@ class SensorReader {
 export class TempReader extends SensorReader {
   read(value) {
     const result = { type:'temp', data: value, unit:'C' };
-    this.collator.update(result);
+    return result;
   }
 }
 export class WindReader extends SensorReader {
   read(value) {
     const result = { type:'wind', data: value, unit:'mps' };
-    this.collator.update(result);
+    return result;
   }
 }

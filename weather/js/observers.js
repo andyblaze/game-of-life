@@ -1,6 +1,6 @@
 
 export class ConsoleObserver { 
-  update(weather) {
-    console.log(weather);
-  }
+    update(weather) {
+      console.log(weather);
+    }
 }

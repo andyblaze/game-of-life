@@ -7,15 +7,16 @@ export default class SensorsCollator {
   addObserver(o) {
     this.observers.push(o);
   }
-  registerStrategy(sensorType, strategy) {
-    this.strategies[sensorType] = strategy;
+  setStrategies(strategies) {
+    this.strategies = strategies;
   }
-  update(data) {
-    this.readings[data.type] = data;
-    const strategy = this.strategies[data.type];
-    const converted = strategy ? strategy.convert(data) : data;
-
-    this.readings[data.type] = converted;
+  update(readings) {  
+    for ( const data of readings ) {
+      this.readings[data.type] = data;
+      const strategy = this.strategies[data.type];
+      const converted = strategy ? strategy.convert(data) : data;
+      this.readings[data.type] = converted;
+    }
     this.notify();
     
   }

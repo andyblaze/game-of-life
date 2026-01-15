@@ -9,7 +9,7 @@ export function randomFrom(arr) {
 }
 
 export function randomUniform(min, max) {
-  return min + Math.random() * (max - min);
+    return min + Math.random() * (max - min);
 }
 
 // Box–Muller transform
