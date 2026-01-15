@@ -33,3 +33,10 @@ export class PressureReader extends SensorReader {
     return result;
   }
 }
+
+export class RainReader extends SensorReader {
+  read(value) {
+    const result = { type:'rain', data: value, unit:'MMH' };
+    return result;
+  }
+}

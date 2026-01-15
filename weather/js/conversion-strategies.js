@@ -31,10 +31,7 @@ export class CloudConversionStrategy extends ConversionStrategy {
     convert(reading) {
         return {
             ...reading,
-            "PC": reading.data//,
-            /*"KMH": reading.data * 3.6,
-            "MPH": reading.data * 2.23694,
-            "KNOTS": reading.data * 1.94384*/
+            "PC": reading.data
         };
     }
 }
@@ -43,10 +40,17 @@ export class PressureConversionStrategy extends ConversionStrategy {
     convert(reading) {
         return {
             ...reading,
-            "MB": reading.data//,
-           /* "KMH": reading.data * 3.6,
-            "MPH": reading.data * 2.23694,
-            "KNOTS": reading.data * 1.94384*/
+            "MB": reading.data
+        };
+    }
+}
+
+export class RainConversionStrategy extends ConversionStrategy {
+    convert(reading) {
+        return {
+            ...reading,
+            "MMH": reading.data,
+            "INH": reading.data / 25.4
         };
     }
 }

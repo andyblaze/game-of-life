@@ -33,6 +33,12 @@ class PressureSensor extends Sensor {
     }
 }
 
+class RainSensor extends Sensor {
+    public function read(): int {
+        return mt_rand(0, 10);
+    }
+}
+
 class SensorArray {
     private $sensors = [];
     public function __construct(array $sensors) {
