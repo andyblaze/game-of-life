@@ -8,7 +8,8 @@ $sensors = new SensorArray([
     'temp'=>new TemperatureSensor(),
     'wind'=>new WindspeedSensor(),
     'cloud'=>new CloudCoverSensor(),
-    'press'=>new PressureSensor()
+    'press'=>new PressureSensor(),
+    'rain'=>new RainSensor()
 ]);
  
 $address = '127.0.0.1';

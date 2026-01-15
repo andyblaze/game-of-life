@@ -29,7 +29,7 @@ export class CloudCoverReader extends SensorReader {
 
 export class PressureReader extends SensorReader {
   read(value) {
-    const result = { type:'press', data: value, unit:'MB' };
+    const result = { type:'pressure', data: value, unit:'MB' };
     return result;
   }
 }

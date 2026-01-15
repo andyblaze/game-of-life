@@ -9,14 +9,14 @@ export const config = {
         "temp": new TempReader(),
         "wind": new WindReader(),
         "cloud": new CloudCoverReader(),
-        "press": new PressureReader(),
+        "pressure": new PressureReader(),
         "rain": new RainReader()
     },
     "converters": {
         "temp": new TempConversionStrategy(),
         "wind": new WindConversionStrategy(),
         "cloud": new CloudConversionStrategy(),
-        "press": new PressureConversionStrategy(),
+        "pressure": new PressureConversionStrategy(),
         "rain": new RainConversionStrategy(),
     }
 };
