@@ -34,8 +34,8 @@ export class WindConversionStrategy extends ConversionStrategy {
 }
 
 export class CloudConversionStrategy extends ConversionStrategy {
-    const cloud = new CloudClassifier();
     convert(reading) {
+        const cloud = new CloudClassifier();
         return {
             ...reading,
             "PC": reading.data,
