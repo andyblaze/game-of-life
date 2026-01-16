@@ -1,6 +1,7 @@
 <?php
 
 require_once('sensors.php');
+require_once('weather-sim.php');
 require_once('websocket.php');
 
 // Usage
@@ -8,7 +9,7 @@ $sensors = new SensorArray([
     'temp'=>new TemperatureSensor(),
     'wind'=>new WindspeedSensor(),
     'cloud'=>new CloudCoverSensor(),
-    'press'=>new PressureSensor(),
+    'pressure'=>new PressureSensor(),
     'rain'=>new RainSensor()
 ]);
  

@@ -18,6 +18,11 @@ export function makeTimestamp() {
   );
 }
 
+export function round(value, decimals = 2) {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
 export function randomFrom(arr) {
     return arr[mt_rand(0, arr.length - 1)];
 }

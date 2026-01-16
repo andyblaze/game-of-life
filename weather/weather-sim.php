@@ -78,6 +78,6 @@ class WeatherGenerator {
             $readings[$type] = $this->state->$method();
         }
 
-        return $readings;
+        return json_encode($readings);
     }
 }

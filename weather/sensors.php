@@ -51,4 +51,7 @@ class SensorArray {
         }
         return json_encode($result);
     }
+    public function getAll() {
+        return $this->sensors;
+    }
 }
