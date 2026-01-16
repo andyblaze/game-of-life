@@ -39,7 +39,7 @@ export class CloudConversionStrategy extends ConversionStrategy {
         return {
             ...reading,
             "PC": reading.data,
-            "CLOUD": this.cloud.classify(reading.data)
+            "CLOUD": cloud.classify(reading.data)
         };
     }
 }

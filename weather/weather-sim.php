@@ -77,6 +77,7 @@ class WeatherGenerator {
             $method = 'get' . ucfirst($type);
             $readings[$type] = $this->state->$method();
         }
+        //error_log($readings['wind']);
 
         return json_encode($readings);
     }
