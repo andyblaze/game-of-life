@@ -1,3 +1,7 @@
 body {
     font-size: 2rem;
 }
+#wind-arrow {
+  display: inline-block;
+  transition: transform 0.75s ease;
+}

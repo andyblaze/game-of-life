@@ -23,5 +23,6 @@ export class Simpleton {
         this.container.find("#wind-dir").html(this.state["wind_dir"].DEG + "&deg;");
         this.container.find("#cloud").html(this.state["cloud"].PC + "%");
         this.container.find("#rain").html(this.state["rain"].INH + " Inches per hour");
+        $("#wind-arrow").css("transform",`rotate(${this.state["wind_dir"].DEG}deg)`);
     }        
 }
