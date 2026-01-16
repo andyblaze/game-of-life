@@ -10,7 +10,7 @@ $(document).ready(function() {
 
     sensorsCollator.setStrategies(config.converters);
     sensorsCollator.addObserver(new ConsoleObserver());
-    sensorsCollator.addObserver(new Simpleton($("#temp")));
+    sensorsCollator.addObserver(new Simpleton($("#weather")));
 
     const host = 'ws://127.0.0.1:8080/sensors-server.php';
     const socket = new WebSocket(host);
