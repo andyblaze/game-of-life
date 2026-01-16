@@ -20,6 +20,13 @@ export class WindReader extends SensorReader {
   }
 }
 
+export class WindDirReader extends SensorReader {
+  read(value) {
+    const result = { type:'wind_dir', data: value, unit:'DEG' };
+    return result;
+  }
+}
+
 export class CloudCoverReader extends SensorReader {
   read(value) {
     const result = { type:'cloud', data: value, unit:'PC' };

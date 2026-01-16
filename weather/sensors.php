@@ -1,41 +1,51 @@
 <?php
 
-class Sensor {
+/*class Sensor {
     public function __construct() {}
     // Generates a new reading (to be overridden)
-    public function read(): int {
+    public function read($weather) {
         // Base version returns nothing meaningful
         return 0;
     }
+}*/
+
+interface Sensor {
+    public function read(WeatherState $state): float;
 }
 
-class TemperatureSensor extends Sensor {
-    public function read(): int {
-        return mt_rand(-10, 30);
+class TemperatureSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getTemp();
     }
 }
 
-class WindspeedSensor extends Sensor {
-    public function read(): int {
-        return round(mt_rand(1, 30) / 0.44704);
+class WindspeedSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getWind();
     }
 }
 
-class CloudCoverSensor extends Sensor {
-    public function read(): int {
-        return mt_rand(0, 100);
+class WindDirSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getWindDir();
     }
 }
 
-class PressureSensor extends Sensor {
-    public function read(): int {
-        return mt_rand(970, 1030);
+class CloudCoverSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getCloud();
     }
 }
 
-class RainSensor extends Sensor {
-    public function read(): int {
-        return mt_rand(0, 10);
+class PressureSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getPressure();
+    }
+}
+
+class RainSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getRain();
     }
 }
 

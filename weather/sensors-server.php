@@ -8,10 +8,13 @@ require_once('websocket.php');
 $sensors = new SensorArray([
     'temp'=>new TemperatureSensor(),
     'wind'=>new WindspeedSensor(),
+    'wind_dir'=>new WindDirSensor(),
     'cloud'=>new CloudCoverSensor(),
     'pressure'=>new PressureSensor(),
     'rain'=>new RainSensor()
 ]);
+
+$sim = new WeatherGenerator($sensors);
  
 $address = '127.0.0.1';
 $port = 8080;
@@ -24,6 +27,6 @@ $server->handshake();
 // Send messages into WebSocket in a loop.
 while ($running) {
     sleep(1);
-    $readings = $sensors->read();
+    $readings = $sim->tick(); //$sensors->read();
     $server->write($readings);
 }

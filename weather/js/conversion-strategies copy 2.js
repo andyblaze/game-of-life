@@ -18,16 +18,6 @@ export class TempConversionStrategy extends ConversionStrategy {
     }
 }
 
-export class WindDirConverter extends ConversionStrategy {
-    convert(reading) {
-        const cardinal = new WindDirectionClassifier();
-        return {
-            ...reading,
-            "DEG": reading.data,
-            "CARDINAL": cardinal.classify(reading.data)
-        };
-    }
-}
 export class WindConversionStrategy extends ConversionStrategy {
     convert(reading) {
         const beaufort = new BeaufortClassifier();
@@ -59,6 +49,17 @@ export class PressureConversionStrategy extends ConversionStrategy {
         return {
             ...reading,
             "MB": reading.data
+        };
+    }
+}
+
+export class WindDirConverter extends ConversionStrategy {
+    convert(reading) {
+        const cardinal = new WindDirectionClassifier();
+        return {
+            ...reading,
+            "DEG": reading.data,
+            "CARDINAL": cardinal.classify(reading.data)
         };
     }
 }

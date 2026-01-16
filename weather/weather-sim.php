@@ -20,6 +20,9 @@ class CalmState extends WeatherState {
     public function getWind(): float {
         return 2 + rand(0, 3);
     }
+    public function getWindDir(): int {
+        return rand(0, 359);
+    }
     public function getCloud(): float {
         return rand(0, 20);
     }
@@ -42,6 +45,9 @@ class StormState extends WeatherState {
     }
     public function getWind(): float {
         return 15 + rand(0, 10);
+    }
+    public function getWindDir(): int {
+        return rand(0, 359);
     }
     public function getCloud(): float {
         return rand(80, 100);
@@ -68,14 +74,15 @@ class WeatherGenerator {
         $this->state = new CalmState(); // start point
     }
 
-    public function tick(): array {
+    public function tick(): string {
         $this->state = $this->state->nextState(); // maybe change state
 
         $readings = [];
         foreach ($this->sensors->getAll() as $type => $sensor) {
             // sensor just asks state for value
-            $method = 'get' . ucfirst($type);
-            $readings[$type] = $this->state->$method();
+            //$method = 'get' . ucfirst($type);
+            //$actualWeather = $this->state->$method();
+            $readings[$type] = $sensor->read($this->state);
         }
         //error_log($readings['wind']);
 

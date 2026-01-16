@@ -1,5 +1,5 @@
 import { round } from "./functions.js";
-import { BeaufortClassifier, CloudClassifier, WindDirectionClassifier } from "./classifiers.js";
+import { BeaufortClassifier, CloudClassifier } from "./classifiers.js";
 
 class ConversionStrategy {
     convert(reading) {
@@ -18,16 +18,6 @@ export class TempConversionStrategy extends ConversionStrategy {
     }
 }
 
-export class WindDirConverter extends ConversionStrategy {
-    convert(reading) {
-        const cardinal = new WindDirectionClassifier();
-        return {
-            ...reading,
-            "DEG": reading.data,
-            "CARDINAL": cardinal.classify(reading.data)
-        };
-    }
-}
 export class WindConversionStrategy extends ConversionStrategy {
     convert(reading) {
         const beaufort = new BeaufortClassifier();

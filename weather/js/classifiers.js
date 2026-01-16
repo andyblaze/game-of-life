@@ -33,3 +33,16 @@ export class CloudClassifier {
     return levels.find(l => percent <= l.max).label;
   }
 }
+
+export class WindDirectionClassifier {
+  classify(deg) {
+    const dirs = [
+      "N","NNE","NE","ENE",
+      "E","ESE","SE","SSE",
+      "S","SSW","SW","WSW",
+      "W","WNW","NW","NNW","N"
+    ];
+    const idx = Math.round(deg / 22.5);
+    return dirs[idx];
+  }
+}
