@@ -8,7 +8,7 @@ export default class SensorReadersArray {
   }
   read(e) {
     this.sensorData = [];
-    const readings = JSON.parse(e.data); console.log(readings);
+    const readings = JSON.parse(e.data); 
     for ( const type in readings ) {
       const data = this.sensors[type].read(readings[type]);
       data["timestamp"] = makeTimestamp();

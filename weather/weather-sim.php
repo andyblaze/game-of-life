@@ -6,6 +6,7 @@ abstract class WeatherState {
     abstract public function getCloud(): float;
     abstract public function getPressure(): float;
     abstract public function getRain(): float;
+    abstract public function getWindDir(): int;
 
     // optional: return next state
     public function nextState(): WeatherState {
