@@ -48,14 +48,18 @@ class Perlin1D {
 $perlin = new Perlin1D();
 $time = 0;
 
+function clamp(float $value, float $min, float $max): float {
+    return max($min, min($max, $value));
+}
+
 while (true) {
     // scale and shift Perlin output into pressure range
-    $noise = $perlin->noise($time * 0.1); // adjust speed
+    $noise = $perlin->noise($time * 0.05); // adjust speed
     $noise = ($noise + 1) / 2;           // convert -1..1 to 0..1
 
-    $pressure = 970 + ($noise * (1020 - 970));
+    $pressure = 970 + ($noise * (1030 - 970));
 
-    echo round($pressure, 2) . PHP_EOL;
+    echo clamp(round($pressure), 970, 1030) . PHP_EOL;
 
     $time += 1;
     sleep(1);
