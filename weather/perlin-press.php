@@ -44,23 +44,36 @@ class Perlin1D {
     }
 }
 
-// ---- Simulation ----
-$perlin = new Perlin1D();
-$time = 0;
-
 function clamp(float $value, float $min, float $max): float {
     return max($min, min($max, $value));
 }
 
+class Pressure {
+    private $perlin = null;
+    private $buffer = [];
+    private $bufferSz = 5;
+    private $time = 0;
+    public function __construct(Perlin1D $p) {
+        $this->perlin = $p;
+    }
+     public function tick() {
+        // scale and shift Perlin output into pressure range
+        $noise = $this->perlin->noise($this->time * 0.05); // adjust speed
+        $noise = ($noise + 1) / 2;           // convert -1..1 to 0..1
+        $pressure = 970 + ($noise * (1030 - 970));
+        $this->buffer[] = $pressure;
+        if ( count($this->buffer) > $this->bufferSz )
+            array_shift($this->buffer);
+        $this->time += 1;
+        return clamp(round($pressure), 970, 1030) . ' ' . implode(',', $this->buffer) . PHP_EOL;
+    }
+}
+
+// ---- Simulation ----
+$pressure = new Pressure(new Perlin1D());
+
+
 while (true) {
-    // scale and shift Perlin output into pressure range
-    $noise = $perlin->noise($time * 0.05); // adjust speed
-    $noise = ($noise + 1) / 2;           // convert -1..1 to 0..1
-
-    $pressure = 970 + ($noise * (1030 - 970));
-
-    echo clamp(round($pressure), 970, 1030) . PHP_EOL;
-
-    $time += 1;
+    echo $pressure->tick();
     sleep(1);
 }
