@@ -1,9 +1,6 @@
 <?php
 require_once('perlin.php');
-
-function clamp(float $value, float $min, float $max): float {
-    return max($min, min($max, $value));
-}
+require_once('functions.php');
 
 class Pressure {
     private $perlin = null;
@@ -13,7 +10,7 @@ class Pressure {
     public function __construct(Perlin1D $p) {
         $this->perlin = $p;
     }
-     public function tick() {
+    public function tick() { 
         // scale and shift Perlin output into pressure range
         $noise = $this->perlin->noise($this->time * 0.05); // adjust speed
         $noise = ($noise + 1) / 2;           // convert -1..1 to 0..1
@@ -29,6 +26,8 @@ class Pressure {
 
 class Wind {
     private $pressure = null;
+    private $buffer = [];
+    private $bufferSz = 5;
     public function __construct(Pressure $p) {
         $this->pressure = $p; 
     }
