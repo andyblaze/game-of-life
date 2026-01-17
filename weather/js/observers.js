@@ -32,12 +32,11 @@ class HtmlRenderer {
     }
     output(state, index) { 
         const { id, unit, suffix } = { ...this.conf[index] }; 
-        if ( index === "sea_state" && unit === "TXT" ) console.log(state[index], index, id, unit, suffix);
         const data = state[index][unit];
         $(id).html(data + suffix);
     }
-    drawWindArrow(css) {
-        $("#wind-arrow").css(css.key, css.var);
+    applyCss(id, css) {
+        $(id).css(css.key, css.var);
     }
 }
 
@@ -57,7 +56,10 @@ export class Simpleton {
         this.renderer.output(this.state, "cloud");
         this.renderer.output(this.state, "rain");
         this.renderer.output(this.state, "wind_dir");
-        this.renderer.drawWindArrow({ key: "transform", var: `rotate(${this.state["wind_dir"].DEG}deg)` });
+        this.renderer.applyCss(
+            "#wind-arrow", 
+            { key: "transform", var: `rotate(${this.state["wind_dir"].DEG}deg)` }
+        );
     }        
 }
 export class Shipping {
