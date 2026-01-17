@@ -19,7 +19,7 @@ export default class SensorsCollator {
       const converted = strategy.convert(data);
       this.readings[data.type] = converted;
       this.readings["sea_state"] = SeaStateClassifier.classify();
-      this.readings["visibilty"] = VisibilityClassifier.classify();
+      this.readings["visibility"] = VisibilityClassifier.classify();
     }
     this.notify();
     

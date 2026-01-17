@@ -52,13 +52,15 @@ export class WindDirectionClassifier {
 export class SeaStateClassifier {
     static classify() {
         const states = ["Calm", "Slight", "Moderate", "Rough", "Very rough"];
-        return { type: "sea_state", unit: "TXT", data: randomFrom(states) };
+        const state = randomFrom(states);
+        return { type: "sea_state", unit: "TXT", data: state, "TXT": state };
     }
 }
 
 export class VisibilityClassifier {
     static classify() {
         const states = ["Good", "Moderate", "Poor", "Very poor"];
-        return { type: "vis", unit: "TXT", data: randomFrom(states) };
+        const state = randomFrom(states);
+        return { type: "sea_state", unit: "TXT", data: state, "TXT": state };
     }    
 }
