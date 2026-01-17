@@ -1,3 +1,5 @@
+import { randomFrom } from "./functions.js";
+
 export class BeaufortClassifier {
   classify(mph) {
     const scale = [
@@ -45,4 +47,18 @@ export class WindDirectionClassifier {
     const idx = Math.round(deg / 22.5);
     return dirs[idx];
   }
+}
+
+export class SeaStateClassifier {
+    static classify() {
+        const states = ["Calm", "Slight", "Moderate", "Rough", "Very rough"];
+        return { type: "sea_state", unit: "TXT", data: randomFrom(states) };
+    }
+}
+
+export class VisibilityClassifier {
+    static classify() {
+        const states = ["Good", "Moderate", "Poor", "Very poor"];
+        return { type: "vis", unit: "TXT", data: randomFrom(states) };
+    }    
 }

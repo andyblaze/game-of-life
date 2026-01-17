@@ -1,6 +1,12 @@
 body {
     font-size: 2rem;
 }
+table {
+    width: 100%;
+}
+td {
+    width: 50%;
+}
 #wind-arrow {
   display: inline-block;
   transition: transform 0.75s ease;

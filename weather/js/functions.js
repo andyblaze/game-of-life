@@ -3,6 +3,11 @@ export function mt_rand(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+export function randomFrom(arr) {
+  return arr[mt_rand(0, arr.length - 1)];
+}
+
 export function makeTimestamp() {
   const d = new Date();
   const pad = n => String(n).padStart(2, '0');

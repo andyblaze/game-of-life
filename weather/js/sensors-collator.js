@@ -1,3 +1,5 @@
+import { SeaStateClassifier, VisibilityClassifier } from "./classifiers.js";
+
 export default class SensorsCollator {
   constructor() {
     this.observers = [];
@@ -16,6 +18,8 @@ export default class SensorsCollator {
       const strategy = this.strategies[data.type];
       const converted = strategy.convert(data);
       this.readings[data.type] = converted;
+      this.readings["sea_state"] = SeaStateClassifier.classify();
+      this.readings["visibilty"] = VisibilityClassifier.classify();
     }
     this.notify();
     
