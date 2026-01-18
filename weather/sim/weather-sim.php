@@ -2,18 +2,19 @@
 
 class WeatherSim {
     private $sensors;
-    private $cfg = null;
-    public function __construct(SensorArray $sensors, $conf) {
+    private $weather = null;
+    public function __construct(SensorArray $sensors, $weather) {
         $this->sensors = $sensors;
-        $this->cfg = $conf;
+        $this->weather = $weather;
     }
     public function tick(): string {
-        foreach( $this->cfg as $weather )
-            $weather->tick();
+        foreach( $this->weather as $w )
+            $w->tick();
         $readings = [];
         foreach ($this->sensors->getAll() as $type => $sensor) {
-            $readings[$type] = $sensor->read($this->cfg[$type]);
+            $readings[$type] = $sensor->read($this->weather[$type]);
         }
-        return json_encode($readings);
+        return json_encode($readings); 
     }
 }
+ 

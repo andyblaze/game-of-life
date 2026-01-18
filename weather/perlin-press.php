@@ -23,9 +23,7 @@ $wind = new Wind($pressure);
 $cloud = new Cloud($pressure, $wind);
 $rain = new Rain($pressure, $wind, $cloud);
 $temp = new Temperature($pressure, $wind);
-
-
-$cfg = [
+$weather = [ 
     'pressure'=>$pressure,
     'wind'=>$wind,
     'wind_dir'=>$wind,
@@ -34,8 +32,7 @@ $cfg = [
     'temp'=>$temp
 ];
 
-$sim = new WeatherSim($sensors, $cfg);
-
+$sim = new WeatherSim($sensors, $weather);
 
 while (true) {
     $readings = $sim->tick();
