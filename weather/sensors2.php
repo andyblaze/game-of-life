@@ -1,18 +1,5 @@
 <?php
 
-/*class Sensor {
-    public function __construct() {}
-    // Generates a new reading (to be overridden)
-    public function read($weather) {
-        // Base version returns nothing meaningful
-        return 0;
-    }
-}*/
-
-/*interface Sensor {
-    public function read(WeatherState $state): float;
-}*/
-
 class TemperatureSensor {
     public function read(Temperature $t): float {
         return $t->getCurrent();
