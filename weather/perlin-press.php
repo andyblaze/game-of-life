@@ -22,6 +22,10 @@ class Pressure {
         $this->time += 1;
         return $pressure . ' ' . implode(',', $this->buffer) . PHP_EOL;
     }
+    public function trend(): int {
+        if (count($this->buffer) < 2) return 0;
+        return $this->buffer[0] - $this->buffer[count($this->buffer) - 1];
+    }
 }
 
 class Wind {
