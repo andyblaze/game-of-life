@@ -27,6 +27,10 @@ class Pressure {
         if (count($this->buffer) < 2) return 0;
         return $this->buffer[0] - $this->buffer[count($this->buffer) - 1];
     }
+
+    public function getCurrent() {
+        return $this->buffer[0];
+    }
 }
 
 class Wind {
@@ -34,7 +38,8 @@ class Wind {
     private $dir;
     private $speed = 0;
     private $minSpeed = 0;
-    private $maxSpeed = 30;
+    private $maxSpeed = 50;
+    private $gust = 0;
     private $buffer = [];
     private $bufferSz = 5;
 
@@ -71,22 +76,78 @@ class Wind {
             $this->speed += rand(-1, 1);
         }
         $this->speed = clamp($this->speed, $this->minSpeed, $this->maxSpeed);
+        $this->gust = $this->speed;
+        $gustChance = min(80, $this->speed * 3); // %
+        if (rand(0, 100) < $gustChance) {
+            $this->gust += rand(
+                1,
+                max(2, intdiv($this->speed, 2))
+            );
+        }
+        $this->gust = clamp(
+            $this->gust,
+            $this->speed,
+            $this->maxSpeed + 10
+        );
 
         array_unshift($this->buffer, $this->dir);
         if (count($this->buffer) > $this->bufferSz)
             array_pop($this->buffer);
 
-        return [$this->dir, $this->speed];
+        return [$this->dir, $this->speed, $this->gust];
+    }
+    public function getSpeed() {
+        return $this->speed;
     }
 }
 
+class Cloud {
+    private $pressure;
+    private $wind;
+    private $cloud = 40;
+
+    public function __construct(Pressure $p, Wind $w) {
+        $this->pressure = $p;
+        $this->wind = $w;
+    }
+
+    public function tick(): int {
+        $pressure = $this->pressure->getCurrent();
+        $trend = $this->pressure->trend();
+        $windSpeed = $this->wind->getSpeed();
+
+        // base
+        $cloud = $this->cloud;
+
+        // pressure influence (low pressure = more cloud)
+        $cloud += (1030 - $pressure) / 2;
+
+        // trend influence (falling pressure = more cloud)
+        if ($trend < -2) {
+            $cloud += rand(1, 6);
+        }
+
+        // wind influence (windy = more cloud)
+        $cloud += intdiv($windSpeed, 2);
+
+        // noise
+        $cloud += rand(-3, 3);
+
+        // clamp
+        $cloud = clamp($cloud, 0, 100);
+
+        $this->cloud = $cloud;
+        return $cloud;
+    }
+}
 
 // ---- Simulation ----
 $pressure = new Pressure(new Perlin1D());
 $wind = new Wind($pressure);
+$cloud = new Cloud($pressure, $wind);
 
 while (true) {
     echo $pressure->tick();
-    echo ' , ' . implode(' , ', $wind->tick()) . PHP_EOL;
+    echo "\t" . implode(' , ', $wind->tick()) . ' , ' . $cloud->tick() . PHP_EOL;
     sleep(1);
 }
