@@ -41,13 +41,6 @@ class SensorArray {
     public function __construct(array $sensors) {
         $this->sensors = $sensors;
     }
-    public function read():string {
-        $result = [];
-        foreach ( $this->sensors as $label=>$s ) {
-            $result[$label] = $s->read(); 
-        }
-        return json_encode($result);
-    }
     public function getAll() {
         return $this->sensors;
     }
