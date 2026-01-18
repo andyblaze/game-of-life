@@ -1,0 +1,32 @@
+<?php
+require_once('perlin.php');
+
+class Pressure {
+    private $perlin = null;
+    private $buffer = [];
+    private $bufferSz = 5;
+    private $time = 0;
+    public function __construct(Perlin1D $p) {
+        $this->perlin = $p;
+    }
+    public function tick(): void { 
+        // scale and shift Perlin output into pressure range
+        $noise = $this->perlin->noise($this->time * 0.05); // adjust speed
+        $noise = ($noise + 1) / 2;           // convert -1..1 to 0..1
+        $pressure = 970 + ($noise * (1030 - 970));
+        $pressure = clamp(round($pressure), 970, 1030);
+        array_unshift($this->buffer, $pressure);
+        if ( count($this->buffer) > $this->bufferSz )
+            array_pop($this->buffer);
+        $this->time += 1;
+    }
+
+    public function trend(): int {
+        if (count($this->buffer) < 2) return 0;
+        return $this->buffer[0] - $this->buffer[count($this->buffer) - 1];
+    }
+
+    public function getCurrent() {
+        return $this->buffer[0];
+    }
+}

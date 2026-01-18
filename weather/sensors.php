@@ -9,13 +9,13 @@
     }
 }*/
 
-/*interface Sensor {
+interface Sensor {
     public function read(WeatherState $state): float;
-}*/
+}
 
-class TemperatureSensor {
-    public function read(Temperature $t): float {
-        return $t->getCurrent();
+class TemperatureSensor implements Sensor {
+    public function read(WeatherState $state): float {
+        return $state->getTemp();
     }
 }
 
