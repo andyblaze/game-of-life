@@ -68,4 +68,7 @@ class Wind {
     public function getDir() {
         return $this->dir;
     }
+    public function getGust() {
+        return $this->gust; 
+    }
 }

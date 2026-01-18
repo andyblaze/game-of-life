@@ -41,15 +41,15 @@ class WeatherGenerator {
         $this->cfg = $conf;
     }
     public function tick(): string {
+        $pressure->tick();
+        $wind->tick();
+        $cloud->tick();
+        $rain->tick();
+        $temp->tick();
         $readings = [];
         foreach ($this->sensors->getAll() as $type => $sensor) {
-            // sensor just asks state for value
-            //$method = 'get' . ucfirst($type);
-            //$actualWeather = $this->state->$method();
             $readings[$type] = $sensor->read($this->cfg[$type]);
         }
-        //error_log($readings['wind']);
-
         return json_encode($readings, JSON_PRETTY_PRINT) . PHP_EOL;//json_encode($readings);
     }
 }
@@ -58,11 +58,6 @@ $sim = new WeatherGenerator($sensors, $cfg);
 
 
 while (true) {
-    $pressure->tick();
-    $wind->tick();
-    $cloud->tick();
-    $rain->tick();
-    $temp->tick();
     echo $sim->tick();
     sleep(1);
 }
