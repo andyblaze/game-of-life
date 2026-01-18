@@ -20,8 +20,9 @@ class Pressure {
         if ( count($this->buffer) > $this->bufferSz )
             array_pop($this->buffer);
         $this->time += 1;
-        return $pressure . ' ' . implode(',', $this->buffer) . PHP_EOL;
+        return $pressure;
     }
+
     public function trend(): int {
         if (count($this->buffer) < 2) return 0;
         return $this->buffer[0] - $this->buffer[count($this->buffer) - 1];
@@ -29,16 +30,56 @@ class Pressure {
 }
 
 class Wind {
-    private $pressure = null;
+    private $pressure;
+    private $dir;
+    private $speed = 0;
+    private $minSpeed = 0;
+    private $maxSpeed = 30;
     private $buffer = [];
     private $bufferSz = 5;
-    public function __construct(Pressure $p) {
-        $this->pressure = $p; 
-    }
-    public function tick() {
 
+    public function __construct(Pressure $p) {
+        $this->pressure = $p;
+        $this->dir = 225; // initial direction
+    }
+
+    public function tick() {
+        $trend = $this->pressure->trend();
+        /* ------------- direction ----------- */
+        // base drift
+        $drift = rand(-5, 5);
+
+        if ($trend < -3) {
+            // pressure falling → backing W-> SW -> S -> SE)
+            $drift -= rand(3, 10);
+        } elseif ($trend > 3) {
+            // pressure rising → veering
+            $drift += rand(3, 10);
+        }
+
+        $this->dir = ($this->dir + $drift) % 360;
+        if ($this->dir < 0) $this->dir += 360;
+
+        /* ------------- speed ---------------- */
+        if ($trend < -2) {
+            $this->speed += rand(1, 3);
+        }
+        elseif ($trend > 2) {
+            $this->speed -= rand(1, 2);
+        }
+        else {
+            $this->speed += rand(-1, 1);
+        }
+        $this->speed = clamp($this->speed, $this->minSpeed, $this->maxSpeed);
+
+        array_unshift($this->buffer, $this->dir);
+        if (count($this->buffer) > $this->bufferSz)
+            array_pop($this->buffer);
+
+        return [$this->dir, $this->speed];
     }
 }
+
 
 // ---- Simulation ----
 $pressure = new Pressure(new Perlin1D());
@@ -46,5 +87,6 @@ $wind = new Wind($pressure);
 
 while (true) {
     echo $pressure->tick();
+    echo ' , ' . implode(' , ', $wind->tick()) . PHP_EOL;
     sleep(1);
 }
