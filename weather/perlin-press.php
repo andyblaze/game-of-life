@@ -5,7 +5,16 @@ require_once('sim/wind.php');
 require_once('sim/cloud.php');
 require_once('sim/rain.php');
 require_once('sim/temp.php');
+require_once('sensors2.php');
 
+$sensors = new SensorArray([
+    'temp'=>new TemperatureSensor(),
+    'wind'=>new WindspeedSensor(),
+    'wind_dir'=>new WindDirSensor(),
+    'cloud'=>new CloudCoverSensor(),
+    'pressure'=>new PressureSensor(),
+    'rain'=>new RainSensor()
+]);
 
 // ---- Simulation ----
 $pressure = new Pressure(new Perlin1D());
@@ -13,6 +22,7 @@ $wind = new Wind($pressure);
 $cloud = new Cloud($pressure, $wind);
 $rain = new Rain($pressure, $wind, $cloud);
 $temp = new Temperature($pressure, $wind);
+
 
 $cfg = [
     'pressure'=>$pressure,
@@ -25,8 +35,10 @@ $cfg = [
 
 class WeatherGenerator {
     private $sensors;
-    public function __construct(SensorArray $sensors) {
+    private $cfg = null;
+    public function __construct(SensorArray $sensors, $conf) {
         $this->sensors = $sensors;
+        $this->cfg = $conf;
     }
     public function tick(): string {
         $readings = [];
@@ -34,13 +46,16 @@ class WeatherGenerator {
             // sensor just asks state for value
             //$method = 'get' . ucfirst($type);
             //$actualWeather = $this->state->$method();
-            $readings[$type] = $sensor->read($cfg[$type]);
+            $readings[$type] = $sensor->read($this->cfg[$type]);
         }
         //error_log($readings['wind']);
 
-        return json_encode($readings);
+        return json_encode($readings, JSON_PRETTY_PRINT) . PHP_EOL;//json_encode($readings);
     }
 }
+
+$sim = new WeatherGenerator($sensors, $cfg);
+
 
 while (true) {
     $pressure->tick();
@@ -48,11 +63,6 @@ while (true) {
     $cloud->tick();
     $rain->tick();
     $temp->tick();
-    echo $pressure->getCurrent() . "\t" .
-    $wind->getSpeed() . "\t" .
-    $wind->getDir() . "\t" .
-    $cloud->getCurrent() . "\t" .
-    $rain->getCurrent() . "\t" .
-    $temp->getCurrent() . PHP_EOL;
+    echo $sim->tick();
     sleep(1);
 }

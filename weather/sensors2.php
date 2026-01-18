@@ -27,7 +27,7 @@ class WindspeedSensor {
 
 class WindDirSensor {
     public function read(Wind $w): float {
-        return $w->geDir();
+        return $w->getDir();
     }
 }
 
