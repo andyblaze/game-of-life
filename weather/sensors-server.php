@@ -24,9 +24,8 @@ $server = new WebSocket();
 $server->create($address, $port);
 $server->handshake();
 
-// Send messages into WebSocket in a loop.
 while ($running) {
     sleep(1);
-    $readings = $sim->tick(); //$sensors->read();
+    $readings = $sim->tick(); 
     $server->write($readings);
 }
