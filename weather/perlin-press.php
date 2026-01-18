@@ -10,7 +10,7 @@ class Pressure {
     public function __construct(Perlin1D $p) {
         $this->perlin = $p;
     }
-    public function tick() { 
+    public function tick(): void { 
         // scale and shift Perlin output into pressure range
         $noise = $this->perlin->noise($this->time * 0.05); // adjust speed
         $noise = ($noise + 1) / 2;           // convert -1..1 to 0..1
@@ -20,7 +20,6 @@ class Pressure {
         if ( count($this->buffer) > $this->bufferSz )
             array_pop($this->buffer);
         $this->time += 1;
-        return $pressure;
     }
 
     public function trend(): int {
@@ -48,7 +47,7 @@ class Wind {
         $this->dir = 225; // initial direction
     }
 
-    public function tick() {
+    public function tick(): void { 
         $trend = $this->pressure->trend();
         /* ------------- direction ----------- */
         // base drift
@@ -94,7 +93,6 @@ class Wind {
         if (count($this->buffer) > $this->bufferSz)
             array_pop($this->buffer);
 
-        return [$this->dir, $this->speed, $this->gust];
     }
     public function getSpeed() {
         return $this->speed;
@@ -114,7 +112,7 @@ class Cloud {
         $this->wind = $w;
     }
 
-    public function tick(): int {
+    public function tick(): void { 
         $pressure = $this->pressure->getCurrent();
         $trend = $this->pressure->trend();
         $windSpeed = $this->wind->getSpeed();
@@ -156,8 +154,6 @@ class Cloud {
 
         // clamp
         $this->cloud = clamp($this->cloud, 0, 100);
-
-        return round($this->cloud);
     }  
     public function getCurrent() {
         return $this->cloud;
@@ -193,7 +189,7 @@ class Rain {
         return round($rate);
     }
 
-    public function tick(): int {
+    public function tick(): void { 
         $pressure = $this->pressure->getCurrent();
         $trend = $this->pressure->trend();
         $windSpeed = $this->wind->getSpeed();
@@ -222,14 +218,16 @@ class Rain {
         }
 
         $this->rain = clamp($this->rain, 0, 100);
-        return $this->intensityToMmPerHour($this->rain);
+    }
+    public function getCurrent() {
+        $this->intensityToMmPerHour($this->rain);
     }
 }
 
 class Temperature {
     private $pressure;
     private $wind;
-
+    private $temp = 0;
     private $baseTemp = 12; // Cornwall-ish baseline
 
     public function __construct(Pressure $p, Wind $w) {
@@ -237,7 +235,7 @@ class Temperature {
         $this->wind = $w;
     }
 
-    public function tick(): int {
+    public function tick(): void {
         $pressure = $this->pressure->getCurrent();
         $trend = $this->pressure->trend();
         $windDir = $this->wind->getDir();
@@ -265,9 +263,10 @@ class Temperature {
         // 5) Random noise
         $noise = rand(-1, 1);
 
-        $temp = $this->baseTemp + $pressureEffect + $trendEffect + $windEffect + $windSpeedEffect + $noise;
-
-        return round($temp);
+        $this->temp = $this->baseTemp + $pressureEffect + $trendEffect + $windEffect + $windSpeedEffect + $noise;
+    }
+    public function getCurrent() {
+        return round($this->temp);
     }
 }
 
@@ -279,8 +278,10 @@ $rain = new Rain($pressure, $wind, $cloud);
 $temp = new Temperature($pressure, $wind);
 
 while (true) {
-    echo $pressure->tick();
-    echo "\t" . implode("\t", $wind->tick()) . "\t" . $cloud->tick() . "\t" . 
-    $rain->tick() . "\t" . $temp->tick() . PHP_EOL;
+    $pressure->tick();
+    $wind->tick();
+    $cloud->tick();
+    $rain->tick();
+    $temp->tick();
     sleep(1);
 }

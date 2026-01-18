@@ -23,7 +23,7 @@ class WindspeedSensor implements Sensor {
     public function read(WeatherState $state): float {
         return $state->getWind();
     }
-}
+} 
 
 class WindDirSensor implements Sensor {
     public function read(WeatherState $state): float {
