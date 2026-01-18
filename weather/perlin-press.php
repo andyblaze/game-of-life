@@ -8,12 +8,12 @@ require_once('sim/temp.php');
 require_once('sensors2.php');
 
 $sensors = new SensorArray([
-    'temp'=>new TemperatureSensor(),
+    'pressure'=>new PressureSensor(),
     'wind'=>new WindspeedSensor(),
     'wind_dir'=>new WindDirSensor(),
     'cloud'=>new CloudCoverSensor(),
-    'pressure'=>new PressureSensor(),
-    'rain'=>new RainSensor()
+    'rain'=>new RainSensor(),
+    'temp'=>new TemperatureSensor() 
 ]);
 
 // ---- Simulation ----
@@ -41,11 +41,13 @@ class WeatherGenerator {
         $this->cfg = $conf;
     }
     public function tick(): string {
-        $pressure->tick();
+        foreach( $this->cfg as $weather )
+            $weather->tick();
+        /*$pressure->tick();
         $wind->tick();
         $cloud->tick();
         $rain->tick();
-        $temp->tick();
+        $temp->tick();*/ 
         $readings = [];
         foreach ($this->sensors->getAll() as $type => $sensor) {
             $readings[$type] = $sensor->read($this->cfg[$type]);
