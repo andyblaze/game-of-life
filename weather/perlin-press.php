@@ -99,6 +99,9 @@ class Wind {
     public function getSpeed() {
         return $this->speed;
     }
+    public function getDir() {
+        return $this->dir;
+    }
 }
 
 class Cloud {
@@ -116,28 +119,155 @@ class Cloud {
         $trend = $this->pressure->trend();
         $windSpeed = $this->wind->getSpeed();
 
-        // base
-        $cloud = $this->cloud;
-
-        // pressure influence (low pressure = more cloud)
-        $cloud += (1030 - $pressure) / 2;
-
-        // trend influence (falling pressure = more cloud)
-        if ($trend < -2) {
-            $cloud += rand(1, 6);
+        // -------------------------
+        // DECAY (clearing)
+        // -------------------------
+        if ($trend > 2 && $windSpeed > 10) {
+            // strong wind + rising pressure clears fast
+            $this->cloud -= rand(13, 16);
+        } elseif ($trend > 2) {
+            // rising pressure clears slowly
+            $this->cloud -= rand(1, 3);
+        } elseif ($pressure > 1015 && $windSpeed < 5) {
+            // high pressure + calm tends to clear
+            $this->cloud -= rand(1, 2);
         }
 
-        // wind influence (windy = more cloud)
-        $cloud += intdiv($windSpeed, 2);
+        // -------------------------
+        // BUILD (cloud forming)
+        // -------------------------
+        if ($pressure < 1005) {
+            // low pressure builds cloud
+            $this->cloud += rand(4, 8);
+        }
 
-        // noise
-        $cloud += rand(-3, 3);
+        if ($trend < -2) {
+            // falling pressure builds cloud
+            $this->cloud += rand(1, 4);
+        }
+
+        if ($windSpeed > 12) {
+            // strong wind can increase cloudiness
+            $this->cloud += rand(0, 2);
+        }
+
+        // small random drift
+        $this->cloud += rand(-1, 1);
 
         // clamp
-        $cloud = clamp($cloud, 0, 100);
+        $this->cloud = clamp($this->cloud, 0, 100);
 
-        $this->cloud = $cloud;
-        return $cloud;
+        return round($this->cloud);
+    }  
+    public function getCurrent() {
+        return $this->cloud;
+    }     
+}
+
+class Rain {
+    private $pressure;
+    private $wind;
+    private $cloud;
+    private $rain = 0;
+
+    public function __construct(Pressure $p, Wind $w, Cloud $c) {
+        $this->pressure = $p;
+        $this->wind = $w;
+        $this->cloud = $c;
+    }
+    public function intensityToMmPerHour(int $intensity): int {
+        $maxMmPerHour = 50;
+
+        $normalized = $intensity / 100;
+
+        $tuner1 = 2.0;
+        // softer curve
+        $rate = pow($normalized, $tuner1) * $maxMmPerHour;
+
+        $tuner2 = 0.5;
+        // floor for non-zero intensity
+        if ($intensity > 0 && $rate < $tuner2) {
+            $rate = $tuner2;
+        }
+
+        return round($rate);
+    }
+
+    public function tick(): int {
+        $pressure = $this->pressure->getCurrent();
+        $trend = $this->pressure->trend();
+        $windSpeed = $this->wind->getSpeed();
+        $cloud = $this->cloud->getCurrent();
+
+        // base chance based on cloud
+        $chance = 0;
+        if ($cloud > 50) $chance += ($cloud - 50);
+        if ($trend < -2) $chance += 15;
+        if ($windSpeed > 15) $chance += 10;
+
+        // If it's already raining, keep it raining more easily
+        if ($this->rain > 0) $chance += 10;
+
+        if (rand(0, 100) < $chance) {
+            // rain builds
+            $this->rain += rand(5, 10);
+
+            // extra kick if stormy
+            if ($pressure < 990 && $cloud > 90) {
+                $this->rain += rand(10, 30);
+            }
+        } else {
+            // rain decays
+            $this->rain -= rand(12, 24);
+        }
+
+        $this->rain = clamp($this->rain, 0, 100);
+        return $this->intensityToMmPerHour($this->rain);
+    }
+}
+
+class Temperature {
+    private $pressure;
+    private $wind;
+
+    private $baseTemp = 12; // Cornwall-ish baseline
+
+    public function __construct(Pressure $p, Wind $w) {
+        $this->pressure = $p;
+        $this->wind = $w;
+    }
+
+    public function tick(): int {
+        $pressure = $this->pressure->getCurrent();
+        $trend = $this->pressure->trend();
+        $windDir = $this->wind->getDir();
+        $windSpeed = $this->wind->getSpeed();
+
+        // 1) Pressure effect (higher pressure → warmer)
+        $pressureEffect = ($pressure - 1000) * 0.03;
+        if ( $pressure > 1020 )
+            $pressureEffect += rand(1,3);
+
+        // 2) Trend effect (falling pressure → cooler)
+        $trendEffect = ($trend < 0) ? $trend * 0.2 : $trend * 0.1;
+
+        // 3) Wind direction effect
+        $windEffect = 0;
+        if ($windDir >= 180 && $windDir <= 300) {
+            $windEffect += 1.5;  // SW/W = warmer
+        } elseif ($windDir >= 0 && $windDir <= 90) {
+            $windEffect -= 1.5;  // NE/N = cooler
+        }
+
+        // 4) Wind speed effect (strong wind slightly cools)
+        $windSpeedEffect = -($windSpeed * 0.02);
+
+        // 5) Random noise
+        $noise = rand(-1, 1);
+
+        $temp = $this->baseTemp + $pressureEffect + $trendEffect + $windEffect + $windSpeedEffect + $noise;
+
+        return round($temp);
     }
 }
 
@@ -145,9 +275,12 @@ class Cloud {
 $pressure = new Pressure(new Perlin1D());
 $wind = new Wind($pressure);
 $cloud = new Cloud($pressure, $wind);
+$rain = new Rain($pressure, $wind, $cloud);
+$temp = new Temperature($pressure, $wind);
 
 while (true) {
     echo $pressure->tick();
-    echo "\t" . implode(' , ', $wind->tick()) . ' , ' . $cloud->tick() . PHP_EOL;
+    echo "\t" . implode("\t", $wind->tick()) . "\t" . $cloud->tick() . "\t" . 
+    $rain->tick() . "\t" . $temp->tick() . PHP_EOL;
     sleep(1);
 }
