@@ -5,18 +5,10 @@ require_once('sim/wind.php');
 require_once('sim/cloud.php');
 require_once('sim/rain.php');
 require_once('sim/temp.php');
-require_once('sensors2.php');
+require_once('sim/sensors.php');
 require_once('sim/weather-sim.php');
+require_once('websocket.php');
 
-/*
-$sensors = new SensorArray([
-    'pressure'=>new PressureSensor(),
-    'wind'=>new WindspeedSensor(),
-    'wind_dir'=>new WindDirSensor(),
-    'cloud'=>new CloudCoverSensor(),
-    'rain'=>new RainSensor(),
-    'temp'=>new TemperatureSensor()
-]);*/
 $sensors = new SensorArray([
     new PressureSensor(),
     new WindspeedSensor(),
@@ -43,8 +35,16 @@ $weather = [
 
 $sim = new WeatherSim($sensors, $weather);
 
-while (true) {
-    $readings = $sim->tick();
-    echo $readings;
+$address = '127.0.0.1';
+$port = 8080;
+$running = true;
+
+$server = new WebSocket();
+$server->create($address, $port);
+$server->handshake();
+
+while ($running) {
     sleep(1);
+    $readings = $sim->tick(); 
+    $server->write($readings);
 }

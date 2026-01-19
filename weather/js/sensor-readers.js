@@ -15,7 +15,7 @@ export class TempReader extends SensorReader {
 
 export class WindReader extends SensorReader {
   read(value) {
-    const result = { type:'wind', data: value, unit:'MPS' };
+    const result = { type:'wind', data: value, unit:'MPH' };
     return result;
   }
 }

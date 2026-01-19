@@ -62,4 +62,4 @@ class Rain {
     public function getCurrent() {
         return $this->intensityToMmPerHour($this->rain);
     }
-}
+} 

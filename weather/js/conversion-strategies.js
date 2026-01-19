@@ -31,14 +31,14 @@ export class WindDirConverter extends ConversionStrategy {
 export class WindConversionStrategy extends ConversionStrategy {
     convert(reading) {
         const beaufort = new BeaufortClassifier();
-        const mph = Math.round(reading.data * 2.23694)
+        const mps = Math.round(reading.data * 0.44704);
         return {
             ...reading,
-            "MPS": reading.data,
+            "MPH": reading.data,
+            "MPS": mps,
             "KMH": Math.round(reading.data * 3.6),
-            "MPH": mph,
             "KNOTS": Math.round(reading.data * 1.94384),
-            "BEAUFORT": beaufort.classify(mph)
+            "BEAUFORT": beaufort.classify(reading.data)
         };
     }
 }

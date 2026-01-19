@@ -13,7 +13,7 @@ $(document).ready(function() {
     sensorsCollator.addObserver(new Simpleton());
     sensorsCollator.addObserver(new Shipping());
 
-    const host = 'ws://127.0.0.1:8080/sensors-server.php';
+    const host = 'ws://127.0.0.1:8080/sim-server.php';
     const socket = new WebSocket(host);
     socket.onmessage = sensorReaders.read.bind(sensorReaders);
 });
