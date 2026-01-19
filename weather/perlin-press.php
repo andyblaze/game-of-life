@@ -8,6 +8,7 @@ require_once('sim/temp.php');
 require_once('sensors2.php');
 require_once('sim/weather-sim.php');
 
+/*
 $sensors = new SensorArray([
     'pressure'=>new PressureSensor(),
     'wind'=>new WindspeedSensor(),
@@ -15,6 +16,14 @@ $sensors = new SensorArray([
     'cloud'=>new CloudCoverSensor(),
     'rain'=>new RainSensor(),
     'temp'=>new TemperatureSensor()
+]);*/
+$sensors = new SensorArray([
+    new PressureSensor(),
+    new WindspeedSensor(),
+    new WindDirSensor(),
+    new CloudCoverSensor(),
+    new RainSensor(),
+    new TemperatureSensor()
 ]);
 
 // ---- Simulation ----

@@ -11,8 +11,9 @@ class WeatherSim {
         foreach( $this->weather as $w )
             $w->tick();
         $readings = [];
-        foreach ($this->sensors->getAll() as $type => $sensor) {
-            $readings[$type] = $sensor->read($this->weather[$type]);
+        foreach ( $this->sensors->getAll() as $sensor ) {
+            $type = $sensor->type();
+            $readings[$type] = $sensor->read($this->weather[$type]); 
         }
         return json_encode($readings); 
     }
