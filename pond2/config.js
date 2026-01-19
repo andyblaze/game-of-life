@@ -16,12 +16,12 @@ export default class Config {
             width: window.innerWidth,   // canvas width
             height: window.innerHeight, // canvas height
             framesPerTick: 1,          // update frequency (higher = slower updates, lower CPU)
-            numCritters:80,
-            predatorPercentage: 0.05,
-            numFood:350,
+            numCritters:20,
+            predatorPercentage: 0,
+            numFood:0,
             foodEnergy:10,
             isStationary:0.6,
-            propulsionKick:0.5
+            propulsionKick:0
         },
         predator: [
             { energyCap: 250, reproductionCost: 180, 
@@ -46,11 +46,11 @@ export default class Config {
         ],
         prey: [ 
             { energyCap: 150, reproductionCost: 50, 
-                reproductionThreshold: 90, movementCost:0.025,
-                speedEnergyCost:0.002, spawnChance:0.999,
+                reproductionThreshold: 90, movementCost:0,
+                speedEnergyCost:0, spawnChance:0,
                 maxRadius:20, maxSpeed:2.5, minSpeed:1,
-                minLifespan:1, maxLifespan:1.5, // minutes
-                propulsionThreshold:80, propulsionCost:10,
+                minLifespan:100, maxLifespan:1000, // minutes
+                propulsionThreshold:80, propulsionCost:0,
                 color:[46, 178, 178, 0.5], type:"Prey",
                 name:"Prey", dragCoefficient:0.0006
             },
