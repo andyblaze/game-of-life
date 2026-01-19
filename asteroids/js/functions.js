@@ -1,0 +1,19 @@
+export function mt_rand(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function randomFrom(arr) {
+  return arr[mt_rand(0, arr.length - 1)];
+}
+
+export function round(value, decimals = 2) {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+export function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
