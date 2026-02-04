@@ -1,5 +1,7 @@
 // Grab sliders and color pickers
+const angleSlider = document.getElementById('angle-slider');
 const sizeSlider = document.getElementById('size-slider');
+const angleVal = document.getElementById('angle-val');
 const sizeVal = document.getElementById('size-val');
 const lifetimeSlider = document.getElementById('lifetime-slider');
 const lifetimeVal = document.getElementById('lifetime-val');
@@ -15,6 +17,7 @@ const colorMid = document.getElementById('color-mid');
 const colorEnd = document.getElementById('color-end');
 
 // Update slider display
+angleSlider.oninput = () => angleVal.textContent = angleSlider.value;
 sizeSlider.oninput = () => sizeVal.textContent = sizeSlider.value;
 lifetimeSlider.oninput = () => lifetimeVal.textContent = lifetimeSlider.value;
 speedSlider.oninput = () => speedVal.textContent = speedSlider.value;
@@ -47,10 +50,17 @@ function lerpColor(c1, c2, t) {
 
 // Spawn a particle
 function spawnParticle() {
-  const angle = (Math.random() - 0.5) * spreadSlider.value * (Math.PI/180);
+  // Base angle from slider (degrees → radians)
+  const baseAngle = parseFloat(angleSlider.value) * (Math.PI / 180);
+
+  // Spread: random offset from base angle
+  const offset = (Math.random() - 0.5) * spreadSlider.value * (Math.PI / 180);
+
+  const angle = baseAngle + offset;
+
   particles.push({
-    x: canvas.width/2,
-    y: canvas.height/2,
+    x: canvas.width / 2,
+    y: canvas.height / 2,
     vx: Math.cos(angle) * speedSlider.value,
     vy: Math.sin(angle) * speedSlider.value,
     size: parseFloat(sizeSlider.value),
@@ -65,38 +75,52 @@ function updateParticles() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const startRgb = hexToRgb(colorStart.value);
-  const midRgb = hexToRgb(colorMid.value);
-  const endRgb = hexToRgb(colorEnd.value);
+  const midRgb   = hexToRgb(colorMid.value);
+  const endRgb   = hexToRgb(colorEnd.value);
 
-  for (let i = particles.length-1; i >= 0; i--) {
+  for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
 
     // Move
     p.x += p.vx;
     p.y += p.vy;
 
-    // Fade life
+    // Age
     p.life--;
     if (p.life <= 0) {
       particles.splice(i, 1);
       continue;
     }
 
-    // Compute t for color interpolation (0=start, 0.5=mid, 1=end)
-    let t = 1 - p.life / p.maxLife;
+    // Lifetime ratios
+    const lifeRatio = p.life / p.maxLife;       // 1 → 0
+    const t = 1 - lifeRatio;                    // 0 → 1
+
+    // Color interpolation
     let color;
     if (t < 0.5) {
-      color = lerpColor(startRgb, midRgb, t*2);
+      color = lerpColor(startRgb, midRgb, t * 2);
     } else {
-      color = lerpColor(midRgb, endRgb, (t-0.5)*2);
+      color = lerpColor(midRgb, endRgb, (t - 0.5) * 2);
     }
 
-    ctx.fillStyle = `rgba(${Math.round(color.r)},${Math.round(color.g)},${Math.round(color.b)},${p.alpha})`;
+    // Alpha over lifetime (ease-out)
+    const fade = lifeRatio * lifeRatio;
+    const alpha = p.alpha * fade;
+
+    ctx.fillStyle = `rgba(
+      ${Math.round(color.r)},
+      ${Math.round(color.g)},
+      ${Math.round(color.b)},
+      ${alpha}
+    )`;
+
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
     ctx.fill();
   }
 }
+
 
 // Animation loop
 function animate() {
