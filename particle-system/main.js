@@ -9,6 +9,8 @@ const speedSlider = document.getElementById('speed-slider');
 const speedVal = document.getElementById('speed-val');
 const spreadSlider = document.getElementById('spread-slider');
 const spreadVal = document.getElementById('spread-val');
+const startOffsetSlider = document.getElementById('start-offset-slider');
+const startOffsetVal = document.getElementById('start-offset-val');
 const alphaSlider = document.getElementById('alpha-slider');
 const alphaVal = document.getElementById('alpha-val');
 
@@ -22,6 +24,7 @@ sizeSlider.oninput = () => sizeVal.textContent = sizeSlider.value;
 lifetimeSlider.oninput = () => lifetimeVal.textContent = lifetimeSlider.value;
 speedSlider.oninput = () => speedVal.textContent = speedSlider.value;
 spreadSlider.oninput = () => spreadVal.textContent = spreadSlider.value;
+startOffsetSlider.oninput = () => startOffsetVal.textContent = startOffsetSlider.value;
 alphaSlider.oninput = () => alphaVal.textContent = alphaSlider.value;
 
 // Canvas setup
@@ -57,10 +60,11 @@ function spawnParticle() {
   const offset = (Math.random() - 0.5) * spreadSlider.value * (Math.PI / 180);
 
   const angle = baseAngle + offset;
+  const startOffset = parseFloat(startOffsetSlider.value);
 
   particles.push({
     x: canvas.width / 2,
-    y: canvas.height / 2,
+    y: (canvas.height / 2) + ((Math.random() - 0.5) * startOffset),
     vx: Math.cos(angle) * speedSlider.value,
     vy: Math.sin(angle) * speedSlider.value,
     size: parseFloat(sizeSlider.value),
