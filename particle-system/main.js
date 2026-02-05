@@ -1,35 +1,51 @@
-// Grab sliders and color pickers
-const angleSlider = document.getElementById('angle-slider');
-const sizeSlider = document.getElementById('size-slider');
-const angleVal = document.getElementById('angle-val');
-const sizeVal = document.getElementById('size-val');
-const lifetimeSlider = document.getElementById('lifetime-slider');
-const lifetimeVal = document.getElementById('lifetime-val');
-const speedSlider = document.getElementById('speed-slider');
-const speedVal = document.getElementById('speed-val');
-const spreadSlider = document.getElementById('spread-slider');
-const spreadVal = document.getElementById('spread-val');
-const startOffsetSlider = document.getElementById('start-offset-slider');
-const startOffsetVal = document.getElementById('start-offset-val');
-const alphaSlider = document.getElementById('alpha-slider');
-const alphaVal = document.getElementById('alpha-val');
+function byId(id) {
+    return document.getElementById(id);
+}
 
-const colorStart = document.getElementById('color-start');
-const colorMid = document.getElementById('color-mid');
-const colorEnd = document.getElementById('color-end');
+function labelSynch(label, ctrl) {
+    label.textContent = ctrl.value;
+}
+
+// Grab sliders and color pickers
+const angleSlider = byId("angle-slider");
+const sizeSlider = byId("size-slider");
+const angleVal = byId("angle-val");
+const sizeVal = byId("size-val");
+const lifetimeSlider = byId("lifetime-slider");
+const lifetimeVal = byId("lifetime-val");
+const speedSlider = byId("speed-slider");
+const speedVal = byId("speed-val");
+const spreadSlider = byId("spread-slider");
+const spreadVal = byId("spread-val");
+const startOffsetSlider = byId("start-offset-slider");
+const startOffsetVal = byId("start-offset-val");
+const alphaSlider = byId("alpha-slider");
+const alphaVal = byId("alpha-val");
+
+const colorStart = byId("color-start");
+const colorMid = byId("color-mid");
+const colorEnd = byId("color-end");
 
 // Update slider display
-angleSlider.oninput = () => angleVal.textContent = angleSlider.value;
-sizeSlider.oninput = () => sizeVal.textContent = sizeSlider.value;
-lifetimeSlider.oninput = () => lifetimeVal.textContent = lifetimeSlider.value;
-speedSlider.oninput = () => speedVal.textContent = speedSlider.value;
-spreadSlider.oninput = () => spreadVal.textContent = spreadSlider.value;
-startOffsetSlider.oninput = () => startOffsetVal.textContent = startOffsetSlider.value;
-alphaSlider.oninput = () => alphaVal.textContent = alphaSlider.value;
+angleSlider.oninput = () => labelSynch(angleVal, angleSlider);//angleVal.textContent = angleSlider.value;
+sizeSlider.oninput = () => labelSynch(sizeVal, sizeSlider);//sizeVal.textContent = sizeSlider.value;
+lifetimeSlider.oninput = () => labelSynch(lifetimeVal, lifetimeSlider);//lifetimeVal.textContent = lifetimeSlider.value;
+speedSlider.oninput = () => labelSynch(speedVal, speedSlider);//speedVal.textContent = speedSlider.value;
+spreadSlider.oninput = () => labelSynch(spreadVal, spreadSlider);//spreadVal.textContent = spreadSlider.value;
+startOffsetSlider.oninput = () => labelSynch(startOffsetVal, startOffsetSlider);//startOffsetVal.textContent = startOffsetSlider.value;
+alphaSlider.oninput = () => labelSynch(alphaVal, alphaSlider);//alphaVal.textContent = alphaSlider.value;
+
+labelSynch(angleVal, angleSlider);
+labelSynch(sizeVal, sizeSlider);
+labelSynch(lifetimeVal, lifetimeSlider);
+labelSynch(speedVal, speedSlider);
+labelSynch(spreadVal, spreadSlider);
+labelSynch(startOffsetVal, startOffsetSlider);
+labelSynch(alphaVal, alphaSlider);
 
 // Canvas setup
-const canvas = document.getElementById('particle-canvas');
-const ctx = canvas.getContext('2d');
+const canvas = byId("particle-canvas");
+const ctx = canvas.getContext("2d");
 const particles = [];
 
 // Helper: convert hex to rgb
@@ -56,14 +72,31 @@ const Cfg = {
 };
 
 class Particle {
-    constructor() {
-
+    constructor(cfg) {
+        this.x = cfg.x;
+        this.y = cfg.y;
+        this.vx = cfg.vx;
+        this.vy = cfg.vy;
+        this.size = cfg.size;
+        this.alpha = cfg.alpha;
+        this.life = cfg.life;
+        this.maxLife = cfg.maxLife;
     }
     update() {
 
     }
-    draw(ctx) {
+    draw(ctx, color, alpha) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.fillStyle = `rgba(
+            ${Math.round(color.r)},
+            ${Math.round(color.g)},
+            ${Math.round(color.b)},
+            ${alpha}
+        )`;
 
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
     }
 }
 
@@ -79,8 +112,7 @@ function spawnParticle() {
   const pSize = parseFloat(sizeSlider.value);
   const startOffset = parseFloat(startOffsetSlider.value);
   const halfSpan = (startOffset + pSize * 2) / 2;
-
-  particles.push({
+  const conf = {
     x: (canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
     y: (canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
     vx: Math.cos(angle) * speedSlider.value,
@@ -89,12 +121,13 @@ function spawnParticle() {
     alpha: parseFloat(alphaSlider.value),
     life: parseInt(lifetimeSlider.value),
     maxLife: parseInt(lifetimeSlider.value)
-  });
+  };
+  particles.push(new Particle(conf));
+  //console.log(conf);
 }
 
 // Update and draw particles
 function updateParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const startRgb = hexToRgb(colorStart.value);
   const midRgb   = hexToRgb(colorMid.value);
@@ -130,6 +163,9 @@ function updateParticles() {
     const fade = lifeRatio * lifeRatio;
     const alpha = p.alpha * fade;
 
+    p.draw(ctx, color, alpha);
+
+    /*ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = `rgba(
       ${Math.round(color.r)},
       ${Math.round(color.g)},
@@ -139,7 +175,7 @@ function updateParticles() {
 
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fill();*/
   }
 }
 
