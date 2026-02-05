@@ -141,6 +141,20 @@ function spawnParticle(cfg) {
   particles.push(new Particle(conf));
 }
 
+class ParticleEmitter {
+    constructor() {
+        this.particles = [];
+    }
+    add(p) {
+        this.particles.push(p);
+    }
+    update() {
+
+    }
+}
+
+const particleEmitter = new ParticleEmitter();
+
 // Update and draw particles
 function updateParticles() {
 
