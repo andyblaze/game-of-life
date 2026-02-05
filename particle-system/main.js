@@ -51,6 +51,22 @@ function lerpColor(c1, c2, t) {
   };
 }
 
+const Cfg = {
+
+};
+
+class Particle {
+    constructor() {
+
+    }
+    update() {
+
+    }
+    draw(ctx) {
+
+    }
+}
+
 // Spawn a particle
 function spawnParticle() {
   // Base angle from slider (degrees → radians)
@@ -60,14 +76,16 @@ function spawnParticle() {
   const offset = (Math.random() - 0.5) * spreadSlider.value * (Math.PI / 180);
 
   const angle = baseAngle + offset;
+  const pSize = parseFloat(sizeSlider.value);
   const startOffset = parseFloat(startOffsetSlider.value);
+  const halfSpan = (startOffset + pSize * 2) / 2;
 
   particles.push({
-    x: canvas.width / 2,
-    y: (canvas.height / 2) + ((Math.random() - 0.5) * startOffset),
+    x: (canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
+    y: (canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
     vx: Math.cos(angle) * speedSlider.value,
     vy: Math.sin(angle) * speedSlider.value,
-    size: parseFloat(sizeSlider.value),
+    size: pSize,
     alpha: parseFloat(alphaSlider.value),
     life: parseInt(lifetimeSlider.value),
     maxLife: parseInt(lifetimeSlider.value)
