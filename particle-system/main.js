@@ -5,31 +5,29 @@ function byId(id) {
 // Grab sliders and color pickers
 const angleSlider = byId("angle-slider");
 const sizeSlider = byId("size-slider");
-const angleVal = byId("angle-val");
-const sizeVal = byId("size-val");
 const lifetimeSlider = byId("lifetime-slider");
-const lifetimeVal = byId("lifetime-val");
 const speedSlider = byId("speed-slider");
-const speedVal = byId("speed-val");
 const spreadSlider = byId("spread-slider");
-const spreadVal = byId("spread-val");
 const startOffsetSlider = byId("start-offset-slider");
-const startOffsetVal = byId("start-offset-val");
 const alphaSlider = byId("alpha-slider");
-const alphaVal = byId("alpha-val");
+
 
 const colorStart = byId("color-start");
 const colorMid = byId("color-mid");
 const colorEnd = byId("color-end");
 
 // Update slider display
-angleSlider.oninput = () => controlSynch(angleVal, angleSlider);
-sizeSlider.oninput = () => controlSynch(sizeVal, sizeSlider);
-lifetimeSlider.oninput = () => controlSynch(lifetimeVal, lifetimeSlider);
-speedSlider.oninput = () => controlSynch(speedVal, speedSlider);
-spreadSlider.oninput = () => controlSynch(spreadVal, spreadSlider);
-startOffsetSlider.oninput = () => controlSynch(startOffsetVal, startOffsetSlider);
-alphaSlider.oninput = () => controlSynch(alphaVal, alphaSlider);
+angleSlider.oninput = () => controlSynch(angleSlider);
+sizeSlider.oninput = () => controlSynch(sizeSlider);
+lifetimeSlider.oninput = () => controlSynch(lifetimeSlider);
+speedSlider.oninput = () => controlSynch(speedSlider);
+spreadSlider.oninput = () => controlSynch(spreadSlider);
+startOffsetSlider.oninput = () => controlSynch(startOffsetSlider);
+alphaSlider.oninput = () => controlSynch(alphaSlider);
+
+colorStart.oninput = () => controlSynch(colorStart);
+colorMid.oninput = () => controlSynch(colorMid);
+colorEnd.oninput = () => controlSynch(colorEnd);
 
 
 class Cfg {
@@ -45,30 +43,34 @@ class Cfg {
         this.spread = parseInt(spreadSlider.value);
         this.size = parseFloat(sizeSlider.value);
         this.startOffset = parseFloat(startOffsetSlider.value);
+        this.colorStart = hexToRgb(byId("color-start").value);
+        this.colorMid = hexToRgb(byId("color-mid").value);
+        this.colorEnd = hexToRgb(byId("color-end").value);
     }
 }
 const config = new Cfg();
 
-function controlSynch(label, ctrl) {
-    label.textContent = ctrl.value;
+function controlSynch(ctrl) {
+    const label = ctrl.dataset.lbl ?? null;
+    if ( label !== null )
+        byId(label).textContent = ctrl.value;
     config.update();
 }
 
 
-controlSynch(angleVal, angleSlider);
-controlSynch(sizeVal, sizeSlider);
-controlSynch(lifetimeVal, lifetimeSlider);
-controlSynch(speedVal, speedSlider);
-controlSynch(spreadVal, spreadSlider);
-controlSynch(startOffsetVal, startOffsetSlider);
-controlSynch(alphaVal, alphaSlider);
+controlSynch(angleSlider);
+controlSynch(sizeSlider);
+controlSynch(lifetimeSlider);
+controlSynch(speedSlider);
+controlSynch(spreadSlider);
+controlSynch(startOffsetSlider);
+controlSynch(alphaSlider);
 
 
 
 // Canvas setup
 const canvas = byId("particle-canvas");
 const ctx = canvas.getContext("2d");
-const particles = [];
 
 // Helper: convert hex to rgb
 function hexToRgb(hex) {
@@ -119,15 +121,12 @@ class Particle {
 // Spawn a particle
 function spawnParticle(cfg) {
   
-  const baseAngle = cfg.baseAngle;
-
   // Spread: random offset from base angle
   const offset = (Math.random() - 0.5) * cfg.spread * (Math.PI / 180);
 
-  const angle = baseAngle + offset;
+  const angle = cfg.baseAngle + offset;
   const pSize = cfg.size; 
-  const startOffset = cfg.startOffset;
-  const halfSpan = (startOffset + pSize * 2) / 2;
+  const halfSpan = (cfg.startOffset + pSize * 2) / 2;
   const conf = {
     x: (canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
     y: (canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
@@ -138,66 +137,62 @@ function spawnParticle(cfg) {
     life: cfg.life,
     maxLife: cfg.maxLife 
   };
-  particles.push(new Particle(conf));
+  return new Particle(conf);
 }
 
 class ParticleEmitter {
-    constructor() {
+    constructor(cfg) {
+        this.setColors(cfg);
         this.particles = [];
+    }
+    setColors(cfg) {
+        this.startRgb = cfg.colorStart;
+        this.midRgb = cfg.colorMid;
+        this.endRgb = cfg.colorEnd;
     }
     add(p) {
         this.particles.push(p);
     }
-    update() {
+    update(cfg) {
+        this.setColors(cfg);
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
 
+            p.update();
+
+            if ( p.life <= 0 ) {
+            this.particles.splice(i, 1);
+            continue;
+            }
+
+            // Lifetime ratios
+            const lifeRatio = p.life / p.maxLife;       // 1 → 0
+            const t = 1 - lifeRatio;                    // 0 → 1
+
+            // Color interpolation
+            let color = {};
+            if ( t < 0.5 ) {
+                color = lerpColor(this.startRgb, this.midRgb, t * 2);
+            } else {
+                color = lerpColor(this.midRgb, this.endRgb, (t - 0.5) * 2);
+            }
+
+            // Alpha over lifetime (ease-out)
+            const fade = lifeRatio * lifeRatio;
+            const alpha = p.alpha * fade;
+
+            p.draw(ctx, color, alpha);
+        }
     }
 }
 
-const particleEmitter = new ParticleEmitter();
-
-// Update and draw particles
-function updateParticles() {
-
-  const startRgb = hexToRgb(colorStart.value);
-  const midRgb   = hexToRgb(colorMid.value);
-  const endRgb   = hexToRgb(colorEnd.value);
-
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-
-    p.update();
-
-    if (p.life <= 0) {
-      particles.splice(i, 1);
-      continue;
-    }
-
-    // Lifetime ratios
-    const lifeRatio = p.life / p.maxLife;       // 1 → 0
-    const t = 1 - lifeRatio;                    // 0 → 1
-
-    // Color interpolation
-    let color;
-    if (t < 0.5) {
-      color = lerpColor(startRgb, midRgb, t * 2);
-    } else {
-      color = lerpColor(midRgb, endRgb, (t - 0.5) * 2);
-    }
-
-    // Alpha over lifetime (ease-out)
-    const fade = lifeRatio * lifeRatio;
-    const alpha = p.alpha * fade;
-    //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    p.draw(ctx, color, alpha);
-  }
-}
-
+const particleEmitter = new ParticleEmitter(config);
 
 // Animation loop
 function animate() {
-  spawnParticle(config);
+  particleEmitter.add(spawnParticle(config));
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  updateParticles();
+  particleEmitter.update(config);
   requestAnimationFrame(animate);
 }
 
