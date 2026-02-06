@@ -57,7 +57,6 @@ function controlSynch(ctrl) {
     config.update();
 }
 
-
 controlSynch(angleSlider);
 controlSynch(sizeSlider);
 controlSynch(lifetimeSlider);
@@ -65,8 +64,6 @@ controlSynch(speedSlider);
 controlSynch(spreadSlider);
 controlSynch(startOffsetSlider);
 controlSynch(alphaSlider);
-
-
 
 // Canvas setup
 const canvas = byId("particle-canvas");
