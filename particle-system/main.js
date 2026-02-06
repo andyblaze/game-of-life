@@ -122,11 +122,12 @@ function spawnParticle(cfg) {
   const angle = cfg.baseAngle + offset;
   const pSize = cfg.size; 
   const halfSpan = (cfg.startOffset + pSize * 2) / 2;
+  const speed = cfg.speed * (0.9 + Math.random() * 0.2);
   const conf = {
     x: (canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
     y: (canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
-    vx: Math.cos(angle) * cfg.speed,
-    vy: Math.sin(angle) * cfg.speed,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
     size: pSize,
     alpha: cfg.alpha,
     life: cfg.life,
@@ -182,10 +183,15 @@ class ParticleEmitter {
 }
 
 const particleEmitter = new ParticleEmitter(config);
+const isMoving = true;
 
 // Animation loop
 function animate() {
-  particleEmitter.add(spawnParticle(config));
+  if ( isMoving ) {
+    for ( let i = 0; i < 12; i++ )
+        particleEmitter.add(spawnParticle(config));
+  }
+  else particleEmitter.add(spawnParticle(config));
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   particleEmitter.update(config);
   requestAnimationFrame(animate);

@@ -26,6 +26,11 @@
     align-items: center;
     position: relative;
   }
+  #workspace img {
+    position: absolute;
+    top: 442px;
+    left: 310px;
+  }
 
   #workspace canvas {
     background-color: #00000000;
