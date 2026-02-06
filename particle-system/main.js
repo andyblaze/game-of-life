@@ -101,7 +101,6 @@ class Particle {
         this.life--;
     }
     draw(ctx, color, alpha) {
-        //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.fillStyle = `rgba(
             ${Math.round(color.r)},
             ${Math.round(color.g)},
@@ -116,8 +115,7 @@ class Particle {
 }
 
 // Spawn a particle
-function spawnParticle(cfg) {
-  
+function spawnParticle(cfg) {  
   // Spread: random offset from base angle
   const offset = (Math.random() - 0.5) * cfg.spread * (Math.PI / 180);
 
