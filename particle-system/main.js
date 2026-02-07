@@ -185,7 +185,7 @@ class ParticleEmitter {
                 if ( Math.round(p.y) > this.maxY ) this.maxY = Math.round(p.y);
                 //, Math.round(p.y))
             this.particles.splice(i, 1);
-            console.log(256 - this.maxX, 256 - this.maxY);
+            //console.log(256 - this.maxX, 256 - this.maxY);
             continue;
             }
 
