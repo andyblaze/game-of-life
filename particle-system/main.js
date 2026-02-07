@@ -32,7 +32,9 @@ colorEnd.oninput = () => controlSynch(colorEnd);
 
 
 class Cfg {
-    constructor() {
+    constructor(htmlId) {
+        this.canvas = byId(htmlId);
+        this.ctx = this.canvas.getContext("2d");
         this.update();
     }
     update() {
@@ -50,7 +52,7 @@ class Cfg {
         this.colorEnd = hexToRgb(byId("color-end").value);
     }
 }
-const config = new Cfg();
+const config = new Cfg("particle-canvas");
 
 function controlSynch(ctrl) {
     const label = ctrl.dataset.lbl ?? null;
@@ -67,10 +69,6 @@ controlSynch(spreadSlider);
 controlSynch(startOffsetSlider);
 controlSynch(alphaSlider);
 controlSynch(multiplierSlider);
-
-// Canvas setup
-const canvas = byId("particle-canvas");
-const ctx = canvas.getContext("2d");
 
 // Helper: convert hex to rgb
 function hexToRgb(hex) {
@@ -118,7 +116,7 @@ class Particle {
 }
 
 // Spawn a particle
-function spawnParticle(cfg) {  
+function spawnParticle(cfg) {   
   // Spread: random offset from base angle
   const offset = (Math.random() - 0.5) * cfg.spread * (Math.PI / 180);
 
@@ -127,8 +125,8 @@ function spawnParticle(cfg) {
   const halfSpan = (cfg.startOffset + pSize * 2) / 2;
   const speed = cfg.speed * (0.9 + Math.random() * 0.2);
   const conf = {
-    x: (canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
-    y: (canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
+    x: (cfg.canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
+    y: (cfg.canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
     vx: Math.cos(angle) * speed,
     vy: Math.sin(angle) * speed,
     size: pSize,
@@ -153,7 +151,7 @@ class ParticleEmitter {
         this.midRgb = cfg.colorMid;
         this.endRgb = cfg.colorEnd;
     }
-    add(p) {
+    add(p) {  
         this.particles.push(p);
     }
     getColor(t) {
@@ -196,7 +194,7 @@ class ParticleEmitter {
             const color = this.getColor(t);
             const alpha = this.getAlpha(p, lifeRatio);
 
-            p.draw(ctx, color, alpha);
+            p.draw(cfg.ctx, color, alpha);
         }
     }
 }
@@ -207,7 +205,7 @@ const particleEmitter = new ParticleEmitter(config);
 function animate() {
     for ( let i = 0; i < config.multiplier; i++ )
         particleEmitter.add(spawnParticle(config));
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    config.ctx.clearRect(0, 0, config.canvas.width, config.canvas.height);
     particleEmitter.update(config);
     requestAnimationFrame(animate);
 }
