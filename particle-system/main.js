@@ -34,6 +34,9 @@ colorEnd.oninput = () => controlSynch(colorEnd);
 class Cfg {
     constructor(htmlId) {
         this.canvas = byId(htmlId);
+        this.canvasW = this.canvas.width;
+        this.canvasH = this.canvas.height;
+        this.canvasCenter = { x: this.canvasW / 2, y: this.canvasH / 2 };
         this.ctx = this.canvas.getContext("2d");
         this.update();
     }
@@ -125,8 +128,8 @@ function spawnParticle(cfg) {
   const halfSpan = (cfg.startOffset + pSize * 2) / 2;
   const speed = cfg.speed * (0.9 + Math.random() * 0.2);
   const conf = {
-    x: (cfg.canvas.width / 2) - (1 + Math.floor(Math.random() * 8)),
-    y: (cfg.canvas.height / 2) + (Math.random() * 2 - 1) * halfSpan,
+    x: (cfg.canvasCenter.x) - (1 + Math.floor(Math.random() * 8)),
+    y: (cfg.canvasCenter.y) + (Math.random() * 2 - 1) * halfSpan,
     vx: Math.cos(angle) * speed,
     vy: Math.sin(angle) * speed,
     size: pSize,
