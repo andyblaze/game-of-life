@@ -10,7 +10,7 @@ const speedSlider = byId("speed-slider");
 const spreadSlider = byId("spread-slider");
 const startOffsetSlider = byId("start-offset-slider");
 const alphaSlider = byId("alpha-slider");
-
+const multiplierSlider = byId("multiplier-slider");
 
 const colorStart = byId("color-start");
 const colorMid = byId("color-mid");
@@ -24,6 +24,7 @@ speedSlider.oninput = () => controlSynch(speedSlider);
 spreadSlider.oninput = () => controlSynch(spreadSlider);
 startOffsetSlider.oninput = () => controlSynch(startOffsetSlider);
 alphaSlider.oninput = () => controlSynch(alphaSlider);
+multiplierSlider.oninput = () => controlSynch(multiplierSlider);
 
 colorStart.oninput = () => controlSynch(colorStart);
 colorMid.oninput = () => controlSynch(colorMid);
@@ -43,6 +44,7 @@ class Cfg {
         this.spread = parseInt(spreadSlider.value);
         this.size = parseFloat(sizeSlider.value);
         this.startOffset = parseFloat(startOffsetSlider.value);
+        this.multiplier = parseInt(multiplierSlider.value);
         this.colorStart = hexToRgb(byId("color-start").value);
         this.colorMid = hexToRgb(byId("color-mid").value);
         this.colorEnd = hexToRgb(byId("color-end").value);
@@ -64,6 +66,7 @@ controlSynch(speedSlider);
 controlSynch(spreadSlider);
 controlSynch(startOffsetSlider);
 controlSynch(alphaSlider);
+controlSynch(multiplierSlider);
 
 // Canvas setup
 const canvas = byId("particle-canvas");
@@ -130,6 +133,7 @@ function spawnParticle(cfg) {
     vy: Math.sin(angle) * speed,
     size: pSize,
     alpha: cfg.alpha,
+    alphaJitter: (Math.random() < 0.1 ? 0.6 + (Math.random() * 0.4) : 1),
     life: cfg.life,
     maxLife: cfg.maxLife 
   };
@@ -140,6 +144,9 @@ class ParticleEmitter {
     constructor(cfg) {
         this.setColors(cfg);
         this.particles = [];
+        this.boundingBox = { t:0, r:0, b:0, l:0 };
+        this.maxX = 0;
+        this.maxY = 0;
     }
     setColors(cfg) {
         this.startRgb = cfg.colorStart;
@@ -149,6 +156,19 @@ class ParticleEmitter {
     add(p) {
         this.particles.push(p);
     }
+    getColor(t) {
+        let color = {};
+        if ( t < 0.5 ) {
+            color = lerpColor(this.startRgb, this.midRgb, t * 2);
+        } else {
+            color = lerpColor(this.midRgb, this.endRgb, (t - 0.5) * 2);
+        } 
+        return color;
+    }
+    getAlpha(p, ratio) {
+        const fade = ratio * ratio;
+        return p.alpha * p. alphaJitter * fade; 
+    }
     update(cfg) {
         this.setColors(cfg);
         for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -156,8 +176,16 @@ class ParticleEmitter {
 
             p.update();
 
+            let minX = 1000;
+            //let maxX = 0;
+
             if ( p.life <= 0 ) {
+                const pX = Math.round(p.x);
+                if ( pX > this.boundingBox.l ) this.boundingBox.l = pX;
+                if ( Math.round(p.y) > this.maxY ) this.maxY = Math.round(p.y);
+                //, Math.round(p.y))
             this.particles.splice(i, 1);
+            console.log(256 - this.maxX, 256 - this.maxY);
             continue;
             }
 
@@ -165,17 +193,8 @@ class ParticleEmitter {
             const lifeRatio = p.life / p.maxLife;       // 1 → 0
             const t = 1 - lifeRatio;                    // 0 → 1
 
-            // Color interpolation
-            let color = {};
-            if ( t < 0.5 ) {
-                color = lerpColor(this.startRgb, this.midRgb, t * 2);
-            } else {
-                color = lerpColor(this.midRgb, this.endRgb, (t - 0.5) * 2);
-            }
-
-            // Alpha over lifetime (ease-out)
-            const fade = lifeRatio * lifeRatio;
-            const alpha = p.alpha * fade;
+            const color = this.getColor(t);
+            const alpha = this.getAlpha(p, lifeRatio);
 
             p.draw(ctx, color, alpha);
         }
@@ -183,18 +202,14 @@ class ParticleEmitter {
 }
 
 const particleEmitter = new ParticleEmitter(config);
-const isMoving = true;
 
 // Animation loop
 function animate() {
-  if ( isMoving ) {
-    for ( let i = 0; i < 12; i++ )
+    for ( let i = 0; i < config.multiplier; i++ )
         particleEmitter.add(spawnParticle(config));
-  }
-  else particleEmitter.add(spawnParticle(config));
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  particleEmitter.update(config);
-  requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    particleEmitter.update(config);
+    requestAnimationFrame(animate);
 }
 
 animate();
