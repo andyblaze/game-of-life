@@ -16,7 +16,7 @@
   }
 
   #workspace {
-    flex: 1;
+    flex: 0.5;
     background-color: #06691f;
     background-image: url("file:///E:/gamemaker-proj/green.jpg");
   background-size: cover;       /* scale to fill canvas */
@@ -38,11 +38,17 @@
   }
 
   #export-panel {
-    flex: 1;
+    flex: 1.5;
     background-color: #333;
     color: white;
     padding: 10px;
     box-sizing: border-box;
+  }
+  #sprite, #sprite-sheet {
+    background-color: #00000000;
+  }
+  #sprite-sheet {
+    border: 1px solid #fff;
   }
 
   label {

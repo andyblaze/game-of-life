@@ -184,7 +184,7 @@ class ParticleEmitter {
         if ( pB > this.boundingBox.b ) this.boundingBox.b = pB;
         this.boundingBox.w = this.boundingBox.r - this.boundingBox.l;
         this.boundingBox.h = this.boundingBox.b - this.boundingBox.t;
-        byId("bounding-box").innerText = JSON.stringify(this.boundingBox);
+        //byId("bounding-box").innerText = JSON.stringify(this.boundingBox);
     }
     draw() {
 
@@ -216,22 +216,51 @@ class ParticleEmitter {
 
 const particleEmitter = new ParticleEmitter(config);
 
-const SIM_FPS = 10;
+const SIM_FPS = 60;
 const SIM_STEP = 1000 / SIM_FPS; // ms per sim frame
 
 let lastTime = performance.now();
 let accumulator = 0;
+const startTime = 0;
+let elapsedTime = 0;
+
+const sprite = byId("sprite-sheet");
+const spriteCtx = sprite.getContext("2d");
+let ssLeft = 0;
+let ssTop = 0;
+const ssNum = 32;
+let ssCurr = 0;
 
 // Animation loop
 function animate(now) {
-    const delta = now - lastTime;
+    const delta = now - lastTime; 
     lastTime = now;
     accumulator += delta;
+    elapsedTime += delta;
     while ( accumulator >= SIM_STEP ) {
         for ( let i = 0; i < config.multiplier; i++ )
             particleEmitter.add(spawnParticle(config));
         config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
         particleEmitter.update(config);
+        if ( elapsedTime > 4000 ) {
+            let box = particleEmitter.boundingBox;
+            if ( ssCurr <= ssNum ) {
+                //spriteCtx.clearRect(0, 0, sprite.width, sprite.height);
+                
+
+                spriteCtx.drawImage(
+                    config.canvas,
+                    box.l, box.t,     // source x, y
+                    box.w, box.h,     // source width, height
+                    ssLeft, ssTop,             // destination x, y
+                    box.w, box.h      // destination width, height
+                );
+            }
+            ssCurr++;
+            ssLeft += box.w;
+            if ( ssCurr % 8 === 0 ) { ssLeft = 0; ssTop += box.h; }
+            
+        }
         accumulator -= SIM_STEP;
     }
     requestAnimationFrame(animate);
