@@ -145,7 +145,7 @@ class ParticleEmitter {
     constructor(cfg) {
         this.setColors(cfg);
         this.particles = [];
-        this.boundingBox = { t:0, r:0, b:0, l:0 };
+        this.boundingBox = { t: cfg.canvasCenter.y, r: cfg.canvasCenter.x, b: cfg.canvasCenter.y, l: cfg.canvasCenter.x, w: 0, h: 0 };
         this.maxX = 0;
         this.maxY = 0;
     }
@@ -170,24 +170,36 @@ class ParticleEmitter {
         const fade = ratio * ratio;
         return p.alpha * p. alphaJitter * fade; 
     }
+    setBoundingBox(p) {
+        const pX = Math.round(p.x);
+        const pY = Math.round(p.y);
+        const pSz = p.size;
+        const pL = Math.floor(pX - pSz);
+        const pR = Math.ceil(pX + pSz);
+        const pT = Math.floor(pY - pSz);
+        const pB = Math.ceil(pY + pSz);
+        if ( pL < this.boundingBox.l ) this.boundingBox.l = pL;
+        if ( pR > this.boundingBox.r ) this.boundingBox.r = pR;
+        if ( pT < this.boundingBox.t ) this.boundingBox.t = pT;
+        if ( pB > this.boundingBox.b ) this.boundingBox.b = pB;
+        this.boundingBox.w = this.boundingBox.r - this.boundingBox.l;
+        this.boundingBox.h = this.boundingBox.b - this.boundingBox.t;
+        byId("bounding-box").innerText = JSON.stringify(this.boundingBox);
+    }
+    draw() {
+
+    }
     update(cfg) {
         this.setColors(cfg);
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
 
             p.update();
-
-            let minX = 1000;
-            //let maxX = 0;
+            this.setBoundingBox(p);
 
             if ( p.life <= 0 ) {
-                const pX = Math.round(p.x);
-                if ( pX > this.boundingBox.l ) this.boundingBox.l = pX;
-                if ( Math.round(p.y) > this.maxY ) this.maxY = Math.round(p.y);
-                //, Math.round(p.y))
-            this.particles.splice(i, 1);
-            //console.log(256 - this.maxX, 256 - this.maxY);
-            continue;
+                this.particles.splice(i, 1);
+                continue;
             }
 
             // Lifetime ratios
@@ -204,13 +216,25 @@ class ParticleEmitter {
 
 const particleEmitter = new ParticleEmitter(config);
 
+const SIM_FPS = 10;
+const SIM_STEP = 1000 / SIM_FPS; // ms per sim frame
+
+let lastTime = performance.now();
+let accumulator = 0;
+
 // Animation loop
-function animate() {
-    for ( let i = 0; i < config.multiplier; i++ )
-        particleEmitter.add(spawnParticle(config));
-    config.ctx.clearRect(0, 0, config.canvas.width, config.canvas.height);
-    particleEmitter.update(config);
+function animate(now) {
+    const delta = now - lastTime;
+    lastTime = now;
+    accumulator += delta;
+    while ( accumulator >= SIM_STEP ) {
+        for ( let i = 0; i < config.multiplier; i++ )
+            particleEmitter.add(spawnParticle(config));
+        config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
+        particleEmitter.update(config);
+        accumulator -= SIM_STEP;
+    }
     requestAnimationFrame(animate);
 }
 
-animate();
+animate(performance.now());

@@ -13,23 +13,23 @@
     <h2>Particle Controls</h2>
     
     <label>
-      Angle: <span id="angle-val">270</span>
-      <input type="range" id="angle-slider" data-lbl="angle-val" min="0" max="359" value="270" autocomplete="false">
+      Angle: <span id="angle-val">180</span>
+      <input type="range" id="angle-slider" data-lbl="angle-val" min="0" max="359" value="180" autocomplete="false">
     </label>
     
     <label>
-      Size: <span id="size-val">8</span>
-      <input type="range" id="size-slider" data-lbl="size-val" min="0.5" step="0.5" max="32" value="8" autocomplete="false">
+      Size: <span id="size-val">2</span>
+      <input type="range" id="size-slider" data-lbl="size-val" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
     </label>
 
     <label>
-      Lifetime: <span id="lifetime-val">60</span>
-      <input type="range" id="lifetime-slider" data-lbl="lifetime-val" min="1" max="120" value="60" autocomplete="false">
+      Lifetime: <span id="lifetime-val">15</span>
+      <input type="range" id="lifetime-slider" data-lbl="lifetime-val" min="1" max="120" value="15" autocomplete="false">
     </label>
 
     <label>
-      Speed: <span id="speed-val">2</span>
-      <input type="range" id="speed-slider" data-lbl="speed-val" min="0.1" max="10" step="0.1" value="2" autocomplete="false">
+      Speed: <span id="speed-val">4.4</span>
+      <input type="range" id="speed-slider" data-lbl="speed-val" min="0.1" max="10" step="0.1" value="4.4" autocomplete="false">
     </label>
 
     <label>
@@ -43,13 +43,13 @@
     </label>
 
     <label>
-      Alpha: <span id="alpha-val">1.0</span>
-      <input type="range" id="alpha-slider" data-lbl="alpha-val" min="0" max="1" step="0.01" value="1" autocomplete="false">
+      Alpha: <span id="alpha-val">0.8</span>
+      <input type="range" id="alpha-slider" data-lbl="alpha-val" min="0" max="1" step="0.01" value="0.8" autocomplete="false">
     </label>
 
     <label>
-      Multiplier: <span id="multiplier-val">1.0</span>
-      <input type="range" id="multiplier-slider" data-lbl="multiplier-val" min="1" max="12" step="1" value="1" autocomplete="false">
+      Multiplier: <span id="multiplier-val">8</span>
+      <input type="range" id="multiplier-slider" data-lbl="multiplier-val" min="1" max="12" step="1" value="8" autocomplete="false">
     </label>
 
     <label>
@@ -76,6 +76,7 @@
   <!-- Export / blank panel -->
   <div id="export-panel">
     <h2>Export Panel</h2>
+    <div id="bounding-box"></div>
   </div>
 
   <script src="main.js"></script>
