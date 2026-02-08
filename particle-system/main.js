@@ -231,6 +231,46 @@ let ssTop = 0;
 const ssNum = 32;
 let ssCurr = 0;
 
+class SpriteSheet {
+    constructor(id) {
+        this.canvas = byId(id);
+        this.ctx = this.canvas.getContext("2d");
+        this.boxSet = false;
+        this.ssLeft = 0;
+        this.ssTop = 0;
+        this.ssNum = 32;
+        this.ssCurr = 0;
+        this.ssRowLen = 8;
+        this.ssColLen = this.ssNum / this.ssRowLen;
+        this.box = {};
+    }
+    setBox(box) {
+        if ( this.boxSet === true ) return;
+        this.canvas.width = box.w * this.ssRowLen;
+        this.canvas.height = box.h * this.ssColLen;
+        this.box = box;
+        this.boxSet = true;
+    }
+    draw(src) {
+        if ( this.ssCurr <= this.ssNum ) {
+            this.ctx.drawImage(
+                src,
+                this.box.l, this.box.t,     // source x, y
+                this.box.w, this.box.h,     // source width, height
+                this.ssLeft, this.ssTop,             // destination x, y
+                this.box.w, this.box.h      // destination width, height
+            );
+        }
+    }
+    setPos() {
+        this.ssCurr++;
+        this.ssLeft += this.box.w;
+        if ( this.ssCurr % this.ssRowLen === 0 ) { this.ssLeft = 0; this.ssTop += this.box.h; }
+    }
+}
+
+const spriteSheet = new SpriteSheet("sprite-sheet");
+
 // Animation loop
 function animate(now) {
     const delta = now - lastTime; 
