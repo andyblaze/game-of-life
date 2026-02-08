@@ -216,7 +216,7 @@ class ParticleEmitter {
 
 const particleEmitter = new ParticleEmitter(config);
 
-const SIM_FPS = 60;
+const SIM_FPS = 10;
 const SIM_STEP = 1000 / SIM_FPS; // ms per sim frame
 
 let lastTime = performance.now();
@@ -243,7 +243,10 @@ function animate(now) {
         config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
         particleEmitter.update(config);
         if ( elapsedTime > 4000 ) {
-            let box = particleEmitter.boundingBox;
+            const box = particleEmitter.boundingBox;
+            //sprite.width = box.w * 8;
+            //sprite.height = box.h * 4;
+            
             if ( ssCurr <= ssNum ) {
                 //spriteCtx.clearRect(0, 0, sprite.width, sprite.height);
                 

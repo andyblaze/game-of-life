@@ -58,11 +58,11 @@
     </label>
     <label>
       Mid Color:
-      <input type="color" id="color-mid" value="#ffff00" autocomplete="false">
+      <input type="color" id="color-mid" value="#ff0000" autocomplete="false">
     </label>
     <label>
       End Color:
-      <input type="color" id="color-end" value="#ff0000" autocomplete="false">
+      <input type="color" id="color-end" value="#ffffff" autocomplete="false">
     </label>
 
   </form>
@@ -77,8 +77,13 @@
   <div id="export-panel">
     <h2>Export Panel</h2>
     <div id="bounding-box"></div>
+    <div>
     <canvas id="sprite" width="84" height="16"></canvas>
+    </div>
+    <div>
     <canvas id="sprite-sheet" width="672" height="64"></canvas>
+    </div>
+    <button id="play-btn">Play</button>
   </div>
 
   <script src="main.js"></script>
