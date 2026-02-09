@@ -216,21 +216,6 @@ class ParticleEmitter {
 
 const particleEmitter = new ParticleEmitter(config);
 
-const SIM_FPS = 10;
-const SIM_STEP = 1000 / SIM_FPS; // ms per sim frame
-
-let lastTime = performance.now();
-let accumulator = 0;
-const startTime = 0;
-let elapsedTime = 0;
-
-const sprite = byId("sprite-sheet");
-const spriteCtx = sprite.getContext("2d");
-let ssLeft = 0;
-let ssTop = 0;
-const ssNum = 32;
-let ssCurr = 0;
-
 class SpriteSheet {
     constructor(id) {
         this.canvas = byId(id);
@@ -238,7 +223,7 @@ class SpriteSheet {
         this.boxSet = false;
         this.ssLeft = 0;
         this.ssTop = 0;
-        this.ssNum = 32;
+        this.ssNum = 48;
         this.ssCurr = 0;
         this.ssRowLen = 8;
         this.ssColLen = this.ssNum / this.ssRowLen;
@@ -291,7 +276,7 @@ class SpriteSheet {
             );
             this.setPos();
             if ( this.ssCurr > this.ssNum ) this.reset();
-        }, 32);
+        }, 16);
     }
     stop() {
         window.clearInterval(this.intvlID);
@@ -301,6 +286,15 @@ class SpriteSheet {
 const spriteSheet = new SpriteSheet("sprite-sheet");
 byId("play-btn").onclick = () => { spriteSheet.play() };
 byId("stop-btn").onclick = () => { spriteSheet.stop() };
+
+
+const SIM_FPS = 60;
+const SIM_STEP = 1000 / SIM_FPS; // ms per sim frame
+
+let lastTime = performance.now();
+let accumulator = 0;
+const startTime = 0;
+let elapsedTime = 0;
 
 // Animation loop
 function animate(now) {
