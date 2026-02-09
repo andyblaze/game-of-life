@@ -243,6 +243,12 @@ class SpriteSheet {
         this.ssRowLen = 8;
         this.ssColLen = this.ssNum / this.ssRowLen;
         this.box = {};
+        this.mode = "generating";
+    }
+    reset() {
+        this.ssLeft = 0;
+        this.ssTop = 0;
+        this.ssCurr = 0;
     }
     setBox(box) {
         if ( this.boxSet === true ) return;
@@ -252,7 +258,7 @@ class SpriteSheet {
         this.boxSet = true;
     }
     draw(src) {
-        if ( this.ssCurr <= this.ssNum ) {
+        if ( this.ssCurr <= this.ssNum && this.mode === "generating" ) {
             this.ctx.drawImage(
                 src,
                 this.box.l, this.box.t,     // source x, y
@@ -267,9 +273,34 @@ class SpriteSheet {
         this.ssLeft += this.box.w;
         if ( this.ssCurr % this.ssRowLen === 0 ) { this.ssLeft = 0; this.ssTop += this.box.h; }
     }
+    play() {
+        this.mode = "playing";
+        const canvas = byId("sprite");
+        canvas.width = this.box.w;
+        canvas.height = this.box.h;
+        const ctx = canvas.getContext("2d");
+        this.reset();
+        this.intvlID = window.setInterval(() => {
+            ctx.clearRect(0, 0, this.box.w, this.box.h);
+            ctx.drawImage(
+                this.canvas,
+                this.ssLeft, this.ssTop,
+                this.box.w, this.box.h,
+                0, 0,
+                canvas.width, canvas.height
+            );
+            this.setPos();
+            if ( this.ssCurr > this.ssNum ) this.reset();
+        }, 32);
+    }
+    stop() {
+        window.clearInterval(this.intvlID);
+    }
 }
 
 const spriteSheet = new SpriteSheet("sprite-sheet");
+byId("play-btn").onclick = () => { spriteSheet.play() };
+byId("stop-btn").onclick = () => { spriteSheet.stop() };
 
 // Animation loop
 function animate(now) {
@@ -278,32 +309,20 @@ function animate(now) {
     accumulator += delta;
     elapsedTime += delta;
     while ( accumulator >= SIM_STEP ) {
-        for ( let i = 0; i < config.multiplier; i++ )
+        for ( let i = 0; i < config.multiplier; i++ ) {
             particleEmitter.add(spawnParticle(config));
+        }
+
         config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
         particleEmitter.update(config);
-        if ( elapsedTime > 4000 ) {
-            const box = particleEmitter.boundingBox;
-            //sprite.width = box.w * 8;
-            //sprite.height = box.h * 4;
-            
-            if ( ssCurr <= ssNum ) {
-                //spriteCtx.clearRect(0, 0, sprite.width, sprite.height);
-                
 
-                spriteCtx.drawImage(
-                    config.canvas,
-                    box.l, box.t,     // source x, y
-                    box.w, box.h,     // source width, height
-                    ssLeft, ssTop,             // destination x, y
-                    box.w, box.h      // destination width, height
-                );
-            }
-            ssCurr++;
-            ssLeft += box.w;
-            if ( ssCurr % 8 === 0 ) { ssLeft = 0; ssTop += box.h; }
+        if ( elapsedTime > 4000 ) {
+            spriteSheet.setBox(particleEmitter.boundingBox);            
+            spriteSheet.draw(config.canvas);
+            spriteSheet.setPos();
             
         }
+
         accumulator -= SIM_STEP;
     }
     requestAnimationFrame(animate);
