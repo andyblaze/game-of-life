@@ -223,7 +223,7 @@ class SpriteSheet {
         this.boxSet = false;
         this.ssLeft = 0;
         this.ssTop = 0;
-        this.ssNum = 48;
+        this.ssNum = 64;
         this.ssCurr = 0;
         this.ssRowLen = 8;
         this.ssColLen = this.ssNum / this.ssRowLen;
@@ -259,6 +259,7 @@ class SpriteSheet {
         if ( this.ssCurr % this.ssRowLen === 0 ) { this.ssLeft = 0; this.ssTop += this.box.h; }
     }
     play() {
+        byId("bounding-box").innerText = JSON.stringify(this.box);
         this.mode = "playing";
         const canvas = byId("sprite");
         canvas.width = this.box.w;
