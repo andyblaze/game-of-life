@@ -11,9 +11,9 @@ export default class Emitter {
         const p = new Particle(
             this.pos.x,
             this.pos.y,
-            mt_randf(-0.5, 0.5),   // vx
+            cfg.speed,   // vx
             mt_randf(-1, -0.5),    // vy upward
-            mt_randf(1, 2),        // life
+            cfg.life,        // life
             { h: 30, s: 100, l: 50, a: 1 }, // color
             cfg.size         // radius
         );

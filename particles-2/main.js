@@ -26,10 +26,28 @@ class Controls {
     }
 }
 
+class TypeConverter {
+    apply(type, val) {
+        if (typeof this[type] === "function") {
+            return this[type](val);
+        }
+        else {
+            console.error("TypeConverter.apply(type, val) ", type, " is not a method.");
+        }
+    }
+    float(val) {
+        return parseFloat(val);
+    }
+}
+
 class Cfg { 
+    constructor(tc) {
+        this.converter = tc;
+    }
     updateCtrl(ctrl) { 
+        const type = ctrl.dataset.type;
         const property = ctrl.dataset.property;
-        this[property] = parseFloat(ctrl.value);
+        this[property] = this.converter.apply(type, ctrl.value);//parseFloat(ctrl.value);
     }
     update(ctrls) {
         for ( const ctrl of ctrls ) {
@@ -37,7 +55,7 @@ class Cfg {
         }
     }
 }
-const config = new Cfg();
+const config = new Cfg(new TypeConverter());
 const uiControls = new Controls("#ui-panel input");
 uiControls.addObserver(config);
 //uiControls.notify();
