@@ -1,3 +1,40 @@
-body {
-    
-}
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    font-family: sans-serif;
+    overflow: hidden;
+    background-color: #222;
+  }
+
+  #ui-panel {
+    flex: 1;
+    background-color: #222;
+    color: white;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  
+  label {
+    display: block;
+    width: 120px;
+    margin-top: 10px;
+  }
+  label input {
+    display: inline-block;
+    width: 400px;
+  }
+
+  #workspace {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  #workspace canvas {
+    background-color: #00000000;
+    border: 1px solid #ffffff;
+  }

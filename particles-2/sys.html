@@ -7,7 +7,18 @@
 <link rel="stylesheet" href="sys.css">
 </head>
 <body>
-
-<script src="main.js"></script>
+ <!-- UI panel -->
+<form id="ui-panel" autocomplete="false">
+    <h2>Particle Controls</h2>
+    <label>
+        Size: <span id="size-lbl">2</span>
+        <input type="range" id="size-slider" data-label="size-lbl" data-property="size" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+    </label>
+</form>
+<!-- Workspace canvas -->
+<div id="workspace">
+    <canvas id="effect" width="512" height="512"></canvas>
+</div>
+<script src="main.js" type="module"></script>
 </body>
 </html>
