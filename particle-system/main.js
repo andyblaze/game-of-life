@@ -296,6 +296,8 @@ let lastTime = performance.now();
 let accumulator = 0;
 const startTime = 0;
 let elapsedTime = 0;
+let generating = false;
+byId("generate-btn").onclick = () => { generating = true; }
 
 // Animation loop
 function animate(now) {
