@@ -1,4 +1,4 @@
-import { HSLAString, lerp, lerpHSLAColor } from "./functions.js";
+import { HSLAString } from "./functions.js";
 
 export default class Particle { 
     constructor(cfg) {
