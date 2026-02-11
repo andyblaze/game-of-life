@@ -1,73 +1,22 @@
-import { byId, byQsArray } from "./functions.js";
+import { byId } from "./functions.js";
 import Emitter from "./cls-emitter.js";
+import TypeConverter from "./cls-typeconverter.js";
+import Cfg from "./cls-config.js";
+import UiControls from "./cls-uicontrols.js";
 
-class Controls {
-    constructor(selector) {
-        this.observers = [];
-        this.ctrls = byQsArray(selector);
-        for ( const ctrl of this.ctrls ) {
-            ctrl.oninput = () => this.synch(ctrl);
-        }
-        this.notify();
-    }
-    synch(ctrl) {
-        const label = ctrl.dataset.label ?? null;
-        if ( label !== null )
-            byId(label).textContent = ctrl.value;
-        this.notify();
-    }
-    addObserver(o) {
-        this.observers.push(o);
-    }
-    notify() {
-        for ( const o of this.observers ) {
-            o.update(this.ctrls);
-        }
-    }
-}
+byId("ui-panel").reset();
 
-class TypeConverter {
-    apply(type, val) {
-        if (typeof this[type] === "function") {
-            return this[type](val);
-        }
-        else {
-            console.error("TypeConverter.apply(type, val) ", type, " is not a method.");
-        }
-    }
-    float(val) {
-        return parseFloat(val);
-    }
-}
-
-class Cfg { 
-    constructor(tc) {
-        this.converter = tc;
-    }
-    updateCtrl(ctrl) { 
-        const type = ctrl.dataset.type;
-        const property = ctrl.dataset.property;
-        this[property] = this.converter.apply(type, ctrl.value);//parseFloat(ctrl.value);
-    }
-    update(ctrls) {
-        for ( const ctrl of ctrls ) {
-            this.updateCtrl(ctrl);
-        }
-    }
-}
-const config = new Cfg(new TypeConverter());
-const uiControls = new Controls("#ui-panel input");
+const config = new Cfg(new TypeConverter(), "effect");
+const uiControls = new UiControls("#ui-panel input");
 uiControls.addObserver(config);
-//uiControls.notify();
+uiControls.notify();
 
-const canvas = byId("effect");
-const ctx = canvas.getContext("2d");
-const emitter = new Emitter(canvas.width / 2, canvas.height / 2);
+const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
 function loop(timestamp) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)
-    emitter.draw(ctx);
+    emitter.draw(config.ctx);
     requestAnimationFrame(loop);
 }
 

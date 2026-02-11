@@ -1,4 +1,4 @@
-import { mt_randf } from "./functions.js";
+import { mt_randf, lerp, lerpHSLAColor } from "./functions.js";
 import Particle from "./cls-particle.js";
 
 export default class Emitter {
@@ -8,15 +8,27 @@ export default class Emitter {
     }
 
     spawnParticle(cfg) {
-        const p = new Particle(
-            this.pos.x,
-            this.pos.y,
-            cfg.speed,   // vx
-            mt_randf(-1, -0.5),    // vy upward
-            cfg.life,        // life
-            { h: 30, s: 100, l: 50, a: 1 }, // color
-            cfg.size         // radius
-        );
+        const halfSpread = cfg.spread / 2;
+        const offset = mt_randf(-halfSpread, halfSpread);
+        const finalAngle = cfg.angle + offset;
+        const radians = (finalAngle - 90) * (Math.PI / 180);
+        const colour = { ...cfg.color_start };
+        colour.a = cfg.alpha;
+        const lifetimeTweens = {
+            alpha: t => lerp(cfg.alpha, 0, t),
+            color: t => lerpHSLAColor(colour, {h: 120, s: 80, l: 40, a: 0}, t)
+        };
+        const conf = {
+            x: this.pos.x,
+            y: this.pos.y,
+            vx: Math.cos(radians) * cfg.speed_x, 
+            vy: Math.sin(radians) * cfg.speed_y,    
+            life: cfg.life,        
+            color: colour,
+            size: cfg.size,         // radius            
+            tweens: lifetimeTweens
+        };
+        const p = new Particle(conf);
         this.particles.push(p);
     }
 

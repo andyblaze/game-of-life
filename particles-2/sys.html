@@ -9,18 +9,38 @@
 <body>
  <!-- UI panel -->
 <form id="ui-panel" autocomplete="false">
-    <h2>Particle Controls</h2>
+    <h3>Particle Controls</h3>
+    <label>
+      Angle: <span id="angle-lbl">180</span>
+      <input type="range" id="angle-slider" data-label="angle-lbl" data-property="angle" data-type="int" min="0" max="359" value="180" autocomplete="false">
+    </label>
     <label>
         Size: <span id="size-lbl">2</span>
         <input type="range" id="size-slider" data-label="size-lbl" data-property="size" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
     </label>
     <label>
-        Speed: <span id="speed-lbl">2</span>
-        <input type="range" id="speed-slider" data-label="speed-lbl" data-property="speed" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+        Spread: <span id="spread-lbl">22</span>
+        <input type="range" id="spread-slider" data-label="spread-lbl" data-property="spread" data-type="float" min="0" step="0.5" max="360" value="22" autocomplete="false">
     </label>
     <label>
-        Life: <span id="life-lbl">2</span>
-        <input type="range" id="life-slider" data-label="life-lbl" data-property="life" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+        Speed X: <span id="speedx-lbl">2</span>
+        <input type="range" id="speedx-slider" data-label="speedx-lbl" data-property="speed_x" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+    </label>
+    <label>
+        Speed Y: <span id="speedy-lbl">2</span>
+        <input type="range" id="speedy-slider" data-label="speedy-lbl" data-property="speed_y" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+    </label>
+    <label>
+        Life: <span id="life-lbl">32</span>
+        <input type="range" id="life-slider" data-label="life-lbl" data-property="life" data-type="float" min="0.5" step="0.5" max="32" value="32" autocomplete="false">
+    </label>
+    <label>
+      Alpha: <span id="alpha-lbl">0.8</span>
+      <input type="range" id="alpha-slider" data-label="alpha-lbl" data-property="alpha" data-type="float" min="0" max="1" step="0.01" value="0.8" autocomplete="false">
+    </label>
+    <label>
+      Color Start: <span id="color-start-lbl">#ffffff</span>
+      <input type="color" id="color-start" data-label="color-start-lbl" data-property="color_start" data-type="hsla" value="#ffffff" autocomplete="false">
     </label>
 </form>
 <!-- Workspace canvas -->
