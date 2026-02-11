@@ -12,11 +12,13 @@ export default class Emitter {
         const offset = mt_randf(-halfSpread, halfSpread);
         const finalAngle = cfg.angle + offset;
         const radians = (finalAngle - 90) * (Math.PI / 180);
-        const colour = { ...cfg.color_start };
-        colour.a = cfg.alpha;
+        const colour1 = { ...cfg.color_start };
+        const colour2 = { ...cfg.color_end };
+        colour1.a = cfg.alpha;
+        colour2.a = cfg.alpha;
         const lifetimeTweens = {
             alpha: t => lerp(cfg.alpha, 0, t),
-            color: t => lerpHSLAColor(colour, {h: 120, s: 80, l: 40, a: 0}, t)
+            color: t => lerpHSLAColor(colour1, colour2, t)
         };
         const conf = {
             x: this.pos.x,
@@ -24,7 +26,7 @@ export default class Emitter {
             vx: Math.cos(radians) * cfg.speed_x, 
             vy: Math.sin(radians) * cfg.speed_y,    
             life: cfg.life,        
-            color: colour,
+            color: colour1,
             size: cfg.size,         // radius            
             tweens: lifetimeTweens
         };

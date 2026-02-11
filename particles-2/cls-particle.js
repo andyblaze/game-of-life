@@ -1,6 +1,6 @@
 import { HSLAString, lerp, lerpHSLAColor } from "./functions.js";
 
-export default class Particle {
+export default class Particle { 
     constructor(cfg) {
         this.pos = { x: cfg.x, y: cfg.y };
         this.vel = { x: cfg.vx, y: cfg.vy };
