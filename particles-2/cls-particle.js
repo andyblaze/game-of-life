@@ -1,4 +1,4 @@
-import { HSLAString } from "./functions.js";
+import { HSLAString, mt_rand } from "./functions.js";
 
 export default class Particle { 
     constructor(cfg) {
@@ -9,10 +9,11 @@ export default class Particle {
         this.color = cfg.color;//, a: cfg.alpha };
         this.size = cfg.size;
         this.tweens = cfg.tweens;
+        this.seed = Math.random() * 1000;
     }
 
     update(dt) {
-        this.pos.x += this.vel.x ;
+        this.pos.x += this.vel.x;
         this.pos.y += this.vel.y * dt;
         this.age += dt;
         const t = this.age / this.life;

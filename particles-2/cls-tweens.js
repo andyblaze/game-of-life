@@ -45,3 +45,21 @@ export class SizeOverLife {
         p.size = lerp(this.start, this.end, t);
     }
 }
+
+export class NoiseDrift {
+    constructor(perlin, amount = 10, scale = 0.01, speed = 0.01) {
+        this.perlin = perlin;
+        this.amount = amount;
+        this.scale = scale;
+        this.speed = speed;
+    }
+
+    update(p, t, dt) {
+        const nx = this.perlin.noise(
+            p.seed * this.scale,
+            p.age * this.speed
+        );
+
+        p.pos.x += nx * this.amount;
+    }
+}

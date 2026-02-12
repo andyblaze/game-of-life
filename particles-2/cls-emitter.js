@@ -1,12 +1,14 @@
 import { mt_randf, lerp, lerpHSLAColor } from "./functions.js";
 import Particle from "./cls-particle.js";
-import { TweenCollection, AlphaOverLife, ColorOverLife, SizeOverLife } from "./cls-tweens.js";
+import { TweenCollection, AlphaOverLife, ColorOverLife, SizeOverLife, NoiseDrift } from "./cls-tweens.js";
+import PerlinNoise from "./cls-perlin.js";
 
 export default class Emitter {
     constructor(x, y) {
         this.pos = { x, y };
         //this.tweenBehaviors = tweens;
         this.particles = [];
+        this.perlin = new PerlinNoise();
     }
 
     buildTweens(cfg) {
@@ -14,6 +16,7 @@ export default class Emitter {
         tweenBehaviors.add(new AlphaOverLife(cfg.alpha, 0));
         tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha));
         tweenBehaviors.add(new SizeOverLife(cfg.size, 20.5));
+        tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
         return tweenBehaviors;
     }
 
