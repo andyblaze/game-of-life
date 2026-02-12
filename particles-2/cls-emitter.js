@@ -1,10 +1,20 @@
 import { mt_randf, lerp, lerpHSLAColor } from "./functions.js";
 import Particle from "./cls-particle.js";
+import { TweenCollection, AlphaOverLife, ColorOverLife, SizeOverLife } from "./cls-tweens.js";
 
 export default class Emitter {
     constructor(x, y) {
         this.pos = { x, y };
+        //this.tweenBehaviors = tweens;
         this.particles = [];
+    }
+
+    buildTweens(cfg) {
+        const tweenBehaviors = new TweenCollection();
+        tweenBehaviors.add(new AlphaOverLife(cfg.alpha, 0));
+        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha));
+        tweenBehaviors.add(new SizeOverLife(cfg.size, 20.5));
+        return tweenBehaviors;
     }
 
     spawnParticle(cfg) {
@@ -12,23 +22,15 @@ export default class Emitter {
         const offset = mt_randf(-halfSpread, halfSpread);
         const finalAngle = cfg.angle + offset;
         const radians = (finalAngle - 90) * (Math.PI / 180);
-        const colour1 = { ...cfg.color_start };
-        const colour2 = { ...cfg.color_end };
-        colour1.a = cfg.alpha;
-        colour2.a = cfg.alpha;
-        const lifetimeTweens = {
-            alpha: t => lerp(cfg.alpha, 0, t),
-            color: t => lerpHSLAColor(colour1, colour2, t)
-        };
         const conf = {
             x: this.pos.x,
             y: this.pos.y,
             vx: Math.cos(radians) * cfg.speed_x, 
             vy: Math.sin(radians) * cfg.speed_y,    
             life: cfg.life,        
-            color: colour1,
+            color: { ...cfg.color_start },
             size: cfg.size,         // radius            
-            tweens: lifetimeTweens
+            tweens: this.buildTweens(cfg)
         };
         const p = new Particle(conf);
         this.particles.push(p);

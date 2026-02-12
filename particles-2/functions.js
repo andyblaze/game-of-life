@@ -19,7 +19,7 @@ export function mt_randf(min, max) {
 
 export function lerp(a, b, t) {
     return a + (b - a) * t;
-}
+} 
 
 export function randHSLA(hRange, sRange, lRange, aRange) {
     const h = mt_randf(hRange[0], hRange[1]);

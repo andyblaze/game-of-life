@@ -7,14 +7,16 @@ export default class Particle {
         this.life = cfg.life;
         this.age = 0;
         this.color = cfg.color;//, a: cfg.alpha };
-        this.radius = cfg.size;
-        this.tweens = { ...cfg.tweens };
+        this.size = cfg.size;
+        this.tweens = cfg.tweens;
     }
 
     update(dt) {
-        this.pos.x += this.vel.x ;//* dt;
+        this.pos.x += this.vel.x ;
         this.pos.y += this.vel.y * dt;
         this.age += dt;
+        const t = this.age / this.life;
+        this.tweens.apply(this, t);
     }
 
     isAlive() {
@@ -22,13 +24,9 @@ export default class Particle {
     }
 
     draw(ctx) {
-        const t = this.age / this.life;
-        const alpha = this.tweens.alpha(this.age / this.life);//this.color.a * (1 - t); // simple fade out
-        this.color.a = alpha;
-        this.color = this.tweens.color(this.age / this.life);
         ctx.fillStyle = HSLAString(this.color);
         ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
+        ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
         ctx.fill();
     }
 }
