@@ -11,19 +11,28 @@
     flex: 1;
     background-color: #222;
     color: white;
-    padding: 10px;
+    padding: 10px 1% 10px 1%;
     box-sizing: border-box;
     overflow-y: auto;
   }
-  
+
+  #ui-panel h3, #ui-panel h4 {
+    margin: 0;
+  }
+    
   label {
     display: block;
-    width: 120px;
+    width: 100%;
     margin-top: 10px;
   }
+    #ui-panel .col-2 label {
+      width: 49.5%;
+      display: inline-block;
+    } 
+
   label input {
     display: inline-block;
-    width: 400px;
+    width: 100%;
   }
 
   #workspace {

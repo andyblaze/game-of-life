@@ -14,22 +14,32 @@
       Angle: <span id="angle-lbl">180</span>
       <input type="range" id="angle-slider" data-label="angle-lbl" data-property="angle" data-type="int" min="0" max="359" value="180" autocomplete="false">
     </label>
-    <label>
-        Size: <span id="size-lbl">2</span>
-        <input type="range" id="size-slider" data-label="size-lbl" data-property="size" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-    </label>
+    <div class="col-2">
+        <h4>Size</h4>
+        <label>
+            Start: <span id="size-start-lbl">2</span>
+            <input type="range" id="size-start-slider" data-label="size-start-lbl" data-property="size_start" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+        </label>
+            <label>
+            End: <span id="size-end-lbl">2</span>
+            <input type="range" id="size-end-slider" data-label="size-end-lbl" data-property="size_end" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+        </label>
+    </div>
     <label>
         Spread: <span id="spread-lbl">22</span>
         <input type="range" id="spread-slider" data-label="spread-lbl" data-property="spread" data-type="float" min="0" step="0.5" max="360" value="22" autocomplete="false">
     </label>
-    <label>
-        Speed X: <span id="speedx-lbl">2</span>
-        <input type="range" id="speedx-slider" data-label="speedx-lbl" data-property="speed_x" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-    </label>
-    <label>
-        Speed Y: <span id="speedy-lbl">2</span>
-        <input type="range" id="speedy-slider" data-label="speedy-lbl" data-property="speed_y" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-    </label>
+    <div class="col-2">
+        <h4>Speed</h4>
+        <label>
+            X: <span id="speedx-lbl">2</span>
+            <input type="range" id="speedx-slider" data-label="speedx-lbl" data-property="speed_x" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+        </label>
+        <label>
+            Y: <span id="speedy-lbl">2</span>
+            <input type="range" id="speedy-slider" data-label="speedy-lbl" data-property="speed_y" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
+        </label>
+    </div>
     <label>
         Life: <span id="life-lbl">256</span>
         <input type="range" id="life-slider" data-label="life-lbl" data-property="life" data-type="float" min="1" step="1" max="256" value="256" autocomplete="false">
@@ -42,18 +52,21 @@
       Alpha: <span id="alpha-lbl">0.8</span>
       <input type="range" id="alpha-slider" data-label="alpha-lbl" data-property="alpha" data-type="float" min="0" max="1" step="0.01" value="0.8" autocomplete="false">
     </label>
-    <label>
-      Color Start: <span id="color-start-lbl">#00ff00</span>
-      <input type="color" id="color-start" data-label="color-start-lbl" data-property="color_start" data-type="hsla" value="#00ff00" autocomplete="false">
-    </label>
-    <label>
-      Color End: <span id="color-end-lbl">#ff0000</span>
-      <input type="color" id="color-end" data-label="color-end-lbl" data-property="color_end" data-type="hsla" value="#ff0000" autocomplete="false">
-    </label>
+    <div class="col-2">
+        <h4>Color</h4>
+        <label>
+        Start: <span id="color-start-lbl">#00ff00</span>
+        <input type="color" id="color-start" data-label="color-start-lbl" data-property="color_start" data-type="hsla" value="#00ff00" autocomplete="false">
+        </label>
+        <label>
+        End: <span id="color-end-lbl">#ff0000</span>
+        <input type="color" id="color-end" data-label="color-end-lbl" data-property="color_end" data-type="hsla" value="#ff0000" autocomplete="false">
+        </label>
+    </div>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
-    <canvas id="effect" width="512" height="512"></canvas>
+    <canvas id="effect" width="720" height="720"></canvas>
 </div>
 <script src="main.js" type="module"></script>
 </body>

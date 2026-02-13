@@ -15,7 +15,7 @@ export default class Emitter {
         const tweenBehaviors = new TweenCollection();
         tweenBehaviors.add(new AlphaOverLife(cfg.alpha, 0));
         tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha));
-        tweenBehaviors.add(new SizeOverLife(cfg.size, 12));
+        tweenBehaviors.add(new SizeOverLife(cfg.size_start, cfg.size_end));
         tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
         return tweenBehaviors;
     }
@@ -38,7 +38,7 @@ export default class Emitter {
             vy: Math.sin(radians) * cfg.speed_y,
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
-            size: cfg.size,         // radius            
+            size: cfg.size_start,         // radius            
             tweens: this.buildTweens(cfg)
         };
         const p = new Particle(conf);
@@ -46,7 +46,7 @@ export default class Emitter {
     }
 
     update(cfg, dt) {
-        this.spawnParticle(cfg);
+        this.spawnParticle(cfg); this.spawnParticle(cfg);
         this.particles.forEach(p => p.update(dt));
         // remove dead particles
         this.particles = this.particles.filter(p => p.isAlive());
