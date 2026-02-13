@@ -1,4 +1,4 @@
-import { mt_randf, lerp, lerpHSLAColor } from "./functions.js";
+import { mt_randf, mt_rand } from "./functions.js";
 import Particle from "./cls-particle.js";
 import { TweenCollection, AlphaOverLife, ColorOverLife, SizeOverLife, NoiseDrift } from "./cls-tweens.js";
 import PerlinNoise from "./cls-perlin.js";
@@ -15,9 +15,13 @@ export default class Emitter {
         const tweenBehaviors = new TweenCollection();
         tweenBehaviors.add(new AlphaOverLife(cfg.alpha, 0));
         tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha));
-        tweenBehaviors.add(new SizeOverLife(cfg.size, 20.5));
+        tweenBehaviors.add(new SizeOverLife(cfg.size, 12));
         tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
         return tweenBehaviors;
+    }
+    lifeTimeVariance(cfg) {
+        const variance_rate = cfg.life * cfg.life_variance;
+        return mt_rand(-variance_rate, variance_rate); 
     }
 
     spawnParticle(cfg) {
@@ -25,12 +29,14 @@ export default class Emitter {
         const offset = mt_randf(-halfSpread, halfSpread);
         const finalAngle = cfg.angle + offset;
         const radians = (finalAngle - 90) * (Math.PI / 180);
+        const variance_rate = cfg.life * cfg.life_variance;
+        const variance = mt_rand(-variance_rate, variance_rate); 
         const conf = {
             x: this.pos.x,
             y: this.pos.y,
             vx: Math.cos(radians) * cfg.speed_x, 
-            vy: Math.sin(radians) * cfg.speed_y,    
-            life: cfg.life,        
+            vy: Math.sin(radians) * cfg.speed_y,
+            life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
             size: cfg.size,         // radius            
             tweens: this.buildTweens(cfg)
