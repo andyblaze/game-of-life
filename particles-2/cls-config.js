@@ -8,15 +8,20 @@ export default class Cfg {
         this.canvasHeight = this.canvas.height;
         this.canvasCenter = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
         this.converter = tc;
+        this.controlsData = {};
     }
     updateCtrl(ctrl) { 
         const type = ctrl.dataset.type;
         const property = ctrl.dataset.property;
         this[property] = this.converter.apply(type, ctrl.value);
+        this.controlsData[property] = this.converter.apply(type, ctrl.value);
     }
     update(ctrls) {
         for ( const ctrl of ctrls ) {
             this.updateCtrl(ctrl);
         }
+    }
+    export() {
+        return JSON.stringify(this.controlsData);
     }
 }

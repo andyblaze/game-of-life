@@ -56,6 +56,8 @@ function colorPicker($name, $val, $type, $property, $prefix='color-') {
         <?=colorPicker('end', '#ff0000', 'hsla', 'color_end');?>
     </div>
     <?=slider('density', 1, 12, 1, 1, 'int');?>
+    <button id="export" type="button">Export</button>
+    <div id="export-json"></div>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">

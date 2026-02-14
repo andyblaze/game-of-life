@@ -12,12 +12,9 @@ const uiControls = new UiControls("#ui-panel input");
 uiControls.addObserver(config);
 uiControls.notify();
 
-/*const tweenBehaviors = new TweenCollection();
-tweenBehaviors.add(new AlphaOverLife(config, 0));
-tweenBehaviors.add(new ColorOverLife(config));
-tweenBehaviors.add(new SizeOverLife(config, 0.5));*/
-
 const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
+
+byId("export").onclick = () => { byId("export-json").innerText = config.export() };
 
 function loop(timestamp) {
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
