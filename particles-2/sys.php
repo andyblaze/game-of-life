@@ -1,3 +1,23 @@
+<?php 
+function slider($name, $min, $max, $step, $val, $type='float', $property='', $prefix='') {
+    $lbl = ucfirst(str_replace('-', ' ', $name));
+    $prop = $property === '' ? $name : $property;
+    $name = $prefix . $name;
+    return "<label>
+      {$lbl}: <span id=\"{$name}-lbl\">{$val}</span>
+      <input type=\"range\" id=\"{$name}-slider\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" min=\"{$min}\" max=\"{$max}\" step=\"{$step}\" value=\"{$val}\" />
+    </label>";
+}
+function colorPicker($name, $val, $type, $property, $prefix='color-') {
+    $lbl = ucfirst(str_replace('-', ' ', $name));
+    $prop = $property === '' ? $name : $property;
+    $name = $prefix . $name;
+    return "<label>
+        Start: <span id=\"{$name}-lbl\">{$val}</span>
+        <input type=\"color\" id=\"{$name}\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" value=\"{$val}\" />
+        </label>";
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,76 +28,34 @@
 </head>
 <body>
  <!-- UI panel --> 
-<form id="ui-panel" autocomplete="false">
+<form id="ui-panel">
     <h3>Particle Controls</h3>
-    <label>
-      Angle: <span id="angle-lbl">180</span>
-      <input type="range" id="angle-slider" data-label="angle-lbl" data-property="angle" data-type="int" min="0" max="359" value="180" autocomplete="false">
-    </label>
+    <?=slider('angle', 0, 359, 1, 180, 'int');?>
     <div class="col-2">
         <h4>Size</h4>
-        <label>
-            Start: <span id="size-start-lbl">2</span>
-            <input type="range" id="size-start-slider" data-label="size-start-lbl" data-property="size_start" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-        </label>
-            <label>
-            End: <span id="size-end-lbl">2</span>
-            <input type="range" id="size-end-slider" data-label="size-end-lbl" data-property="size_end" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-        </label>
+        <?=slider('start', 0.5, 32, 0.5, 2, 'float', 'size_start', 'size-');?>
+        <?=slider('end', 0.5, 32, 0.5, 2, 'float', 'size_end', 'size-');?>
     </div>
-    <label>
-        Spread: <span id="spread-lbl">22</span>
-        <input type="range" id="spread-slider" data-label="spread-lbl" data-property="spread" data-type="float" min="0" step="0.5" max="360" value="22" autocomplete="false">
-    </label>
+    <?=slider('spread', 0, 360, 1, 22);?>
     <div class="col-2">
         <h4>Speed</h4>
-        <label>
-            X: <span id="speedx-lbl">2</span>
-            <input type="range" id="speedx-slider" data-label="speedx-lbl" data-property="speed_x" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-        </label>
-        <label>
-            Y: <span id="speedy-lbl">2</span>
-            <input type="range" id="speedy-slider" data-label="speedy-lbl" data-property="speed_y" data-type="float" min="0.5" step="0.5" max="32" value="2" autocomplete="false">
-        </label>
+        <?=slider('x', 0.5, 32, 0.5, 1, 'float', 'speed_x', 'speed');?>
+        <?=slider('y', 0.5, 32, 0.5, 1, 'float', 'speed_y', 'speed');?>
     </div>
-    <label>
-        Life: <span id="life-lbl">256</span>
-        <input type="range" id="life-slider" data-label="life-lbl" data-property="life" data-type="int" min="1" step="1" max="256" value="256" autocomplete="false">
-    </label>
-    <label>
-        Life Variance: <span id="life-variance-lbl">0.01</span>
-        <input type="range" id="life-variance-slider" data-label="life-variance-lbl" data-property="life_variance" data-type="float" min="0.01" step="0.01" max="1" value="0.01" autocomplete="false">
-    </label>
+    <?=slider('life', 1, 256, 1, 256, 'int');?>
+    <?=slider('life-variance', 0.01, 1, 0.01, 0.01, 'float', 'life_variance');?>
     <div class="col-2">
         <h4>Spawn Offset</h4>
-        <label>
-        X: <span id="spawn-offsetX-lbl">0</span>
-        <input type="range" id="spawn-offsetX-slider" data-label="spawn-offsetX-lbl" data-property="spawn_offsetX" data-type="int" min="0" max="32" step="1" value="0" autocomplete="false">
-        </label>
-        <label>
-        Y: <span id="spawn-offsetY-lbl">0</span>
-        <input type="range" id="spawn-offsetY-slider" data-label="spawn-offsetY-lbl" data-property="spawn_offsetY" data-type="int" min="0" max="32" step="1" value="0" autocomplete="false">
-        </label>
+        <?=slider('X', 0, 32, 1, 0, 'int', 'spawn_offsetX', 'spawn-offset-');?>
+        <?=slider('Y', 0, 32, 1, 0, 'int', 'spawn_offsetY', 'spawn-offset-');?>
     </div>
-    <label>
-      Alpha: <span id="alpha-lbl">0.8</span>
-      <input type="range" id="alpha-slider" data-label="alpha-lbl" data-property="alpha" data-type="float" min="0" max="1" step="0.01" value="0.8" autocomplete="false">
-    </label>
+    <?=slider('alpha', 0, 1, 0.01, 0.8);?>
     <div class="col-2">
         <h4>Color</h4>
-        <label>
-        Start: <span id="color-start-lbl">#00ff00</span>
-        <input type="color" id="color-start" data-label="color-start-lbl" data-property="color_start" data-type="hsla" value="#00ff00" autocomplete="false">
-        </label>
-        <label>
-        End: <span id="color-end-lbl">#ff0000</span>
-        <input type="color" id="color-end" data-label="color-end-lbl" data-property="color_end" data-type="hsla" value="#ff0000" autocomplete="false">
-        </label>
+        <?=colorPicker('start', '#00ff00', 'hsla', 'color_start');?>
+        <?=colorPicker('end', '#ff0000', 'hsla', 'color_end');?>
     </div>
-    <label>
-        Multiplier: <span id="multiplier-lbl">1</span>
-        <input type="range" id="multiplier-slider" data-label="multiplier-lbl" data-property="multiplier" data-type="int" min="1" step="1" max="12" value="1" autocomplete="false">
-    </label>
+    <?=slider('density', 1, 12, 1, 1, 'int');?>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">

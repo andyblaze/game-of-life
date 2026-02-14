@@ -47,7 +47,7 @@ export default class Emitter {
     }
 
     update(cfg, dt) {
-        for ( let i = 0; i < cfg.multiplier; i++ ) {
+        for ( let i = 0; i < cfg.density; i++ ) {
             this.spawnParticle(cfg); 
         }
         this.particles.forEach(p => p.update(dt));
