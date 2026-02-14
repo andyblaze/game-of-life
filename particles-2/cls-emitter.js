@@ -23,17 +23,18 @@ export default class Emitter {
         const variance_rate = cfg.life * cfg.life_variance;
         return mt_rand(-variance_rate, variance_rate); 
     }
+    spawnOffset(axisOffset) {
+        return axisOffset === 0 ? axisOffset : mt_rand(-axisOffset, axisOffset);
+    }
 
     spawnParticle(cfg) {
         const halfSpread = cfg.spread / 2;
         const offset = mt_randf(-halfSpread, halfSpread);
         const finalAngle = cfg.angle + offset;
         const radians = (finalAngle - 90) * (Math.PI / 180);
-        const variance_rate = cfg.life * cfg.life_variance;
-        const variance = mt_rand(-variance_rate, variance_rate); 
         const conf = {
-            x: this.pos.x,
-            y: this.pos.y,
+            x: this.pos.x + this.spawnOffset(cfg.spawn_offsetX),
+            y: this.pos.y+ this.spawnOffset(cfg.spawn_offsetY),
             vx: Math.cos(radians) * cfg.speed_x, 
             vy: Math.sin(radians) * cfg.speed_y,
             life: cfg.life + this.lifeTimeVariance(cfg),        
@@ -46,7 +47,9 @@ export default class Emitter {
     }
 
     update(cfg, dt) {
-        this.spawnParticle(cfg); this.spawnParticle(cfg);
+        for ( let i = 0; i < cfg.multiplier; i++ ) {
+            this.spawnParticle(cfg); 
+        }
         this.particles.forEach(p => p.update(dt));
         // remove dead particles
         this.particles = this.particles.filter(p => p.isAlive());

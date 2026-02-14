@@ -42,12 +42,23 @@
     </div>
     <label>
         Life: <span id="life-lbl">256</span>
-        <input type="range" id="life-slider" data-label="life-lbl" data-property="life" data-type="float" min="1" step="1" max="256" value="256" autocomplete="false">
+        <input type="range" id="life-slider" data-label="life-lbl" data-property="life" data-type="int" min="1" step="1" max="256" value="256" autocomplete="false">
     </label>
     <label>
         Life Variance: <span id="life-variance-lbl">0.01</span>
         <input type="range" id="life-variance-slider" data-label="life-variance-lbl" data-property="life_variance" data-type="float" min="0.01" step="0.01" max="1" value="0.01" autocomplete="false">
     </label>
+    <div class="col-2">
+        <h4>Spawn Offset</h4>
+        <label>
+        X: <span id="spawn-offsetX-lbl">0</span>
+        <input type="range" id="spawn-offsetX-slider" data-label="spawn-offsetX-lbl" data-property="spawn_offsetX" data-type="int" min="0" max="32" step="1" value="0" autocomplete="false">
+        </label>
+        <label>
+        Y: <span id="spawn-offsetY-lbl">0</span>
+        <input type="range" id="spawn-offsetY-slider" data-label="spawn-offsetY-lbl" data-property="spawn_offsetY" data-type="int" min="0" max="32" step="1" value="0" autocomplete="false">
+        </label>
+    </div>
     <label>
       Alpha: <span id="alpha-lbl">0.8</span>
       <input type="range" id="alpha-slider" data-label="alpha-lbl" data-property="alpha" data-type="float" min="0" max="1" step="0.01" value="0.8" autocomplete="false">
@@ -63,6 +74,10 @@
         <input type="color" id="color-end" data-label="color-end-lbl" data-property="color_end" data-type="hsla" value="#ff0000" autocomplete="false">
         </label>
     </div>
+    <label>
+        Multiplier: <span id="multiplier-lbl">1</span>
+        <input type="range" id="multiplier-slider" data-label="multiplier-lbl" data-property="multiplier" data-type="int" min="1" step="1" max="12" value="1" autocomplete="false">
+    </label>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
