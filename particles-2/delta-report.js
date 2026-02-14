@@ -3,7 +3,7 @@ export default class DeltaReport {
     static startTime = performance.now();
     static frameCount = 0;
     static sum = 0;
-    static min = 60;
+    static min = Infinity;
     static max = 0;
     static timeSum = 0; // total ms of frame times (not normalised)
 
