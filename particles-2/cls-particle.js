@@ -25,9 +25,23 @@ export default class Particle {
     }
 
     draw(ctx) {
+const g = ctx.createRadialGradient(
+    this.pos.x, this.pos.y, 0,
+    this.pos.x, this.pos.y, this.size
+);
+const c = this.color;
+
+g.addColorStop(0, `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`);
+g.addColorStop(1, `hsla(${c.h}, ${c.s}%, ${c.l}%, 0)`);
+
+ctx.fillStyle = g;
+ctx.beginPath();
+ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+ctx.fill();
+/*
         ctx.fillStyle = HSLAString(this.color);
         ctx.beginPath();
         ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fill();*/
     }
 }

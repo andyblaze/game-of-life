@@ -3,7 +3,7 @@ import Emitter from "./cls-emitter.js";
 import TypeConverter from "./cls-typeconverter.js";
 import Cfg from "./cls-config.js";
 import UiControls from "./cls-uicontrols.js";
-import { TweenCollection, AlphaOverLife, ColorOverLife, SizeOverLife } from "./cls-tweens.js";
+import DeltaReport from "./delta-report.js";
 
 byId("ui-panel").reset();
 
@@ -23,6 +23,7 @@ function loop(timestamp) {
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)
     emitter.draw(config.ctx);
+    DeltaReport.log(timestamp);
     requestAnimationFrame(loop);
 }
 

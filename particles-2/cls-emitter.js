@@ -36,7 +36,7 @@ export default class Emitter {
             x: this.pos.x + this.spawnOffset(cfg.spawn_offsetX),
             y: this.pos.y+ this.spawnOffset(cfg.spawn_offsetY),
             vx: Math.cos(radians) * cfg.speed_x, 
-            vy: Math.sin(radians) * cfg.speed_y,
+            vy: Math.sin(radians) * cfg.speed_y + mt_randf(-0.5, 0.5),
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
             size: cfg.size_start,         // radius            
