@@ -17,7 +17,6 @@ const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 byId("export").onclick = () => { 
     const json = config.export();
     const fname = byId("fname").value;
-    
 };
 
 function loop(timestamp) {

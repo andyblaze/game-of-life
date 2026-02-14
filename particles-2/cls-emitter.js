@@ -6,15 +6,14 @@ import PerlinNoise from "./cls-perlin.js";
 export default class Emitter {
     constructor(x, y) {
         this.pos = { x, y };
-        //this.tweenBehaviors = tweens;
         this.particles = [];
         this.perlin = new PerlinNoise();
     }
 
     buildTweens(cfg) {
         const tweenBehaviors = new TweenCollection();
-        tweenBehaviors.add(new AlphaOverLife(cfg.alpha, 0));
-        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha));
+        tweenBehaviors.add(new AlphaOverLife(cfg.alpha_start, cfg.alpha_end));
+        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha_start));
         tweenBehaviors.add(new SizeOverLife(cfg.size_start, cfg.size_end));
         tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
         return tweenBehaviors;
@@ -36,7 +35,7 @@ export default class Emitter {
             x: this.pos.x + this.spawnOffset(cfg.spawn_offsetX),
             y: this.pos.y+ this.spawnOffset(cfg.spawn_offsetY),
             vx: Math.cos(radians) * cfg.speed_x, 
-            vy: Math.sin(radians) * cfg.speed_y + mt_randf(-0.5, 0.5),
+            vy: Math.sin(radians) * cfg.speed_y + mt_randf(-0.5, 0.5), // fix this baked in code
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
             size: cfg.size_start,         // radius            

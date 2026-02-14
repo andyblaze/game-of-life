@@ -13,7 +13,7 @@ function colorPicker($name, $val, $type, $property, $prefix='color-') {
     $prop = $property === '' ? $name : $property;
     $name = $prefix . $name;
     return "<label>
-        Start: <span id=\"{$name}-lbl\">{$val}</span>
+        {$lbl}: <span id=\"{$name}-lbl\">{$val}</span>
         <input type=\"color\" id=\"{$name}\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" value=\"{$val}\" />
         </label>";
 }
@@ -30,7 +30,8 @@ $controls = [
     'spawnOffsetYCtrl'  => slider('Y', 0, 32, 1, 0, 'int', 'spawn_offsetY', 'spawn-offset-'),
     'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start'),
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end'),
-    'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.8),
+    'alphaStartCtrl'    => slider('start', 0, 1, 0.01, 0.8, 'float', 'alpha_start', 'alpha-'),
+    'alphaEndCtrl'      => slider('end', 0, 1, 0.01, 0.8, 'float', 'alpha_end', 'alpha-'),
     'densityCtrl'       => slider('density', 1, 12, 1, 1, 'int')
 ];
 extract($controls);

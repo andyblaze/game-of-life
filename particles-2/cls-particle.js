@@ -6,7 +6,7 @@ export default class Particle {
         this.vel = { x: cfg.vx, y: cfg.vy };
         this.life = cfg.life;
         this.age = 0;
-        this.color = cfg.color;//, a: cfg.alpha };
+        this.color = cfg.color;
         this.size = cfg.size;
         this.tweens = cfg.tweens;
         this.seed = Math.random() * 1000;

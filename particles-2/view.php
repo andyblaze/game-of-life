@@ -29,7 +29,11 @@
         <?=$spawnOffsetXCtrl;?>
         <?=$spawnOffsetYCtrl;?>
     </div>
-    <?=$alphaCtrl;?>
+    <div class="col-2">
+        <h4>Alpha</h4>
+        <?=$alphaStartCtrl;?>
+        <?=$alphaEndCtrl;?>
+    </div>
     <div class="col-2">
         <h4>Color</h4>
         <?=$colorStartCtrl;?>
