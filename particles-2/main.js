@@ -14,7 +14,11 @@ uiControls.notify();
 
 const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
-byId("export").onclick = () => { byId("export-json").innerText = config.export() };
+byId("export").onclick = () => { 
+    const json = config.export();
+    const fname = byId("fname").value;
+    
+};
 
 function loop(timestamp) {
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);

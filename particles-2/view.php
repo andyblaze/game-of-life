@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Particle Workspace</title>
+<link rel="stylesheet" href="sys.css">
+</head>
+<body>
+ <!-- UI panel --> 
+<form id="ui-panel">
+    <h3>Particle Controls</h3>
+    <?=$angleCtrl;?>
+    <div class="col-2">
+        <h4>Size</h4>
+        <?=$sizeStartCtrl;?>
+        <?=$sizeEndCtrl;?>
+    </div>
+    <?=$spreadCtrl;?>
+    <div class="col-2">
+        <h4>Speed</h4>
+        <?=$speedXCtrl;?>
+        <?=$speedYCtrl;?>
+    </div>
+    <?=$lifeCtrl;?>
+    <?=$lifeVarianceCtrl;?>
+    <div class="col-2">
+        <h4>Spawn Offset</h4>
+        <?=$spawnOffsetXCtrl;?>
+        <?=$spawnOffsetYCtrl;?>
+    </div>
+    <?=$alphaCtrl;?>
+    <div class="col-2">
+        <h4>Color</h4>
+        <?=$colorStartCtrl;?>
+        <?=$colorEndCtrl;?>
+    </div>
+    <?=$densityCtrl;?>
+    <button id="export" type="button">Export</button><input type="text" id="fname" />
+    <div id="export-json"></div>
+</form>
+<!-- Workspace canvas -->
+<div id="workspace">
+    <canvas id="effect" width="720" height="720"></canvas>
+</div>
+<script src="main.js" type="module"></script>
+</body>
+</html>
