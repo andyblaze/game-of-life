@@ -25,11 +25,12 @@ export default class Emitter {
     spawnOffset(axisOffset) { 
         return axisOffset === 0 ? axisOffset : mt_rand(-axisOffset, axisOffset);
     }
-    speedVariance(cfg) {
-        return mt_randf(-0.5, 0.5);// fix this baked in code
+    speedVariance(axis, variance) {
+        const variance_rate = axis * variance;
+        return mt_randf(-variance_rate, variance_rate);
     }
 
-    spawnParticle(cfg) {
+    spawnParticle(cfg) { 
         const halfSpread = cfg.spread / 2;
         const offset = mt_randf(-halfSpread, halfSpread);
         const finalAngle = cfg.angle + offset;
@@ -37,8 +38,8 @@ export default class Emitter {
         const conf = {
             x: this.pos.x + this.spawnOffset(cfg.spawn_offsetX),
             y: this.pos.y+ this.spawnOffset(cfg.spawn_offsetY),
-            vx: Math.cos(radians) * cfg.speed_x, 
-            vy: Math.sin(radians) * cfg.speed_y + this.speedVariance(cfg), 
+            vx: Math.cos(radians) * cfg.speed_x + this.speedVariance(cfg.speed_x, cfg.speed_varianceX), 
+            vy: Math.sin(radians) * cfg.speed_y + this.speedVariance(cfg.speed_y, cfg.speed_varianceY), 
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
             size: cfg.size_start,         // radius            

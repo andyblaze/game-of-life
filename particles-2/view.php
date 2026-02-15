@@ -22,6 +22,11 @@
         <?=$speedXCtrl;?>
         <?=$speedYCtrl;?>
     </div>
+    <div class="col-2">
+        <h4>Speed variance</h4>
+        <?=$speedVarianceXCtrl;?>
+        <?=$speedVarianceYCtrl;?>
+    </div>
     <?=$lifeCtrl;?>
     <?=$lifeVarianceCtrl;?>
     <div class="col-2">
