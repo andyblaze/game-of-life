@@ -5,12 +5,11 @@
     font-family: sans-serif;
     overflow: hidden;
     background-color: #222;
+    color: white;
   }
 
   #ui-panel {
     flex: 1;
-    background-color: #222;
-    color: white;
     padding: 10px 1% 10px 1%;
     box-sizing: border-box;
     overflow-y: auto;
@@ -20,7 +19,7 @@
     margin: 0;
   }
     
-  label {
+  #ui-panel label {
     display: block;
     width: 100%;
     margin-top: 10px;
@@ -38,10 +37,27 @@
   #workspace {
     flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
   }
+   #workspace div {
+    display: block;
+    width: 100%;
+   }
+   .import-export {
+    margin: 1rem 0 1rem 0;
+   }
+    .import-export * {
+      font-size: 1.2rem;
+    }
+    .import-export button {
+      padding: 0.25rem;
+    }
+   .import-export label {
+    margin: 0 0.5rem 0 1rem;
+   }
   
   #workspace canvas {
     background-color: #00000000;

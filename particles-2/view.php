@@ -40,12 +40,12 @@
         <?=$colorEndCtrl;?>
     </div>
     <?=$densityCtrl;?>
-    <button id="export" type="button">Export</button><input type="text" id="fname" />
-    <div id="export-json"></div>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
-    <canvas id="effect" width="720" height="720"></canvas>
+    <div><canvas id="effect" width="720" height="720"></canvas></div>
+    <div class="import-export"><button id="export" type="button">Export</button> <label for="fname">Type:</label><input type="text" id="fname" /></div>
+    <div id="export-result"></div>
 </div>
 <script src="main.js" type="module"></script>
 </body>

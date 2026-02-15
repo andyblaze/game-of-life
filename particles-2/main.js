@@ -14,16 +14,44 @@ uiControls.notify();
 
 const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
+class Ajax {
+    static post(url, data) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error ${res.status}`);
+            }
+            return res.json(); // or res.text() if you prefer
+        });
+    }
+}
+
 byId("export").onclick = () => { 
-    const json = config.export();
-    const fname = byId("fname").value;
+    const payload = {
+        json: config.export(),
+        fname: byId("fname").value,
+        action: "export"
+    };
+    Ajax.post('filesys.php', payload)
+        .then(response => {
+            console.log('Saved:', response);
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
 };
 
 function loop(timestamp) {
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)
     emitter.draw(config.ctx);
-    DeltaReport.log(timestamp);
+    //DeltaReport.log(timestamp);
     requestAnimationFrame(loop);
 }
 
