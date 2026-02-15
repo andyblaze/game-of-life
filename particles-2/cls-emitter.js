@@ -22,8 +22,11 @@ export default class Emitter {
         const variance_rate = cfg.life * cfg.life_variance;
         return mt_rand(-variance_rate, variance_rate); 
     }
-    spawnOffset(axisOffset) {
+    spawnOffset(axisOffset) { 
         return axisOffset === 0 ? axisOffset : mt_rand(-axisOffset, axisOffset);
+    }
+    speedVariance(cfg) {
+        return mt_randf(-0.5, 0.5);// fix this baked in code
     }
 
     spawnParticle(cfg) {
@@ -35,7 +38,7 @@ export default class Emitter {
             x: this.pos.x + this.spawnOffset(cfg.spawn_offsetX),
             y: this.pos.y+ this.spawnOffset(cfg.spawn_offsetY),
             vx: Math.cos(radians) * cfg.speed_x, 
-            vy: Math.sin(radians) * cfg.speed_y + mt_randf(-0.5, 0.5), // fix this baked in code
+            vy: Math.sin(radians) * cfg.speed_y + this.speedVariance(cfg), 
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
             size: cfg.size_start,         // radius            
