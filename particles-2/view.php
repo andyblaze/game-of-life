@@ -43,6 +43,7 @@
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
+    <div class="import-export"><?=$importSelect;?> <button id="import" type="button">Import</button></div>
     <div><canvas id="effect" width="720" height="720"></canvas></div>
     <div class="import-export"><button id="export" type="button">Export</button> <label for="fname">Type:</label><input type="text" id="fname" /></div>
     <div id="export-result"></div>

@@ -17,6 +17,16 @@ function colorPicker($name, $val, $type, $property, $prefix='color-') {
         <input type=\"color\" id=\"{$name}\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" value=\"{$val}\" />
         </label>";
 }
+function select($name, $options) { 
+    $htm = "<select name=\"{$name}\" id=\"{$name}\">";
+    foreach ( $options as $opt ) {
+        $val = $opt;
+        $txt = ucfirst(str_replace('.json', '', basename($val)));
+        $htm .= "<option value=\"{$val}\">{$txt}</option>";
+    }
+    $htm .= '</select>';
+    return $htm;
+}
 $controls = [
     'angleCtrl'         => slider('angle', 0, 359, 1, 180, 'int'),
     'sizeStartCtrl'     => slider('start', 0.5, 32, 0.5, 2, 'float', 'size_start', 'size-'),
@@ -32,7 +42,8 @@ $controls = [
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end'),
     'alphaStartCtrl'    => slider('start', 0, 1, 0.01, 0.8, 'float', 'alpha_start', 'alpha-'),
     'alphaEndCtrl'      => slider('end', 0, 1, 0.01, 0.8, 'float', 'alpha_end', 'alpha-'),
-    'densityCtrl'       => slider('density', 1, 12, 1, 1, 'int')
+    'densityCtrl'       => slider('density', 1, 12, 1, 1, 'int'),
+    'importSelect'      => select('presets', glob('presets/*.json'))
 ];
 extract($controls);
 include('view.php');

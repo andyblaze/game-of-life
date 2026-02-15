@@ -47,6 +47,24 @@ byId("export").onclick = () => {
         });
 };
 
+byId("import").onclick = () => {
+    const payload = {
+        fname: byId("presets").value,
+        action: "import"
+    };
+    Ajax.post('filesys.php', payload)
+        .then(response => {
+            //console.log(response.preset);
+            //console.log(config.controlsData);
+            config.importPreset(response);
+            uiControls.updateFromConfig(config);
+            //console.log(config.controlsData);
+        })
+        .catch(err => {
+            console.error('Error:', err);
+        });
+};
+
 function loop(timestamp) {
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)

@@ -24,4 +24,12 @@ export default class Cfg {
     export() {
         return JSON.stringify(this.controlsData);
     }
+    importPreset(data) {        
+        const ctrls = JSON.parse(data); //console.log("ip", data, ctrls);
+        for (const [key, val] of Object.entries(ctrls)) {
+            //console.log(key, val);
+            this[key] = val;
+            this.controlsData[key] = val;
+        }
+    }
 }
