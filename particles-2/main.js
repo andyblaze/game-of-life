@@ -45,7 +45,7 @@ function loop(timestamp) {
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)
     renderer.draw(emitter.particles, tweens, config.ctx);
-    DeltaReport.log(timestamp);
+    //DeltaReport.log(timestamp);
     requestAnimationFrame(loop);
 }
 
