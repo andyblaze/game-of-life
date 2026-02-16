@@ -16,32 +16,12 @@ export default class Particle {
         this.pos.x += this.vel.x;
         this.pos.y += this.vel.y * dt;
         this.age += dt;
-        const t = this.age / this.life;
-        this.tweens.apply(this, t);
+    }
+    dt() {
+        return this.age / this.life;
     }
 
     isAlive() {
         return this.age < this.life;
-    }
-
-    draw(ctx) {
-const g = ctx.createRadialGradient(
-    this.pos.x, this.pos.y, 0,
-    this.pos.x, this.pos.y, this.size
-);
-const c = this.color;
-
-g.addColorStop(0, `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`);
-g.addColorStop(1, `hsla(${c.h}, ${c.s}%, ${c.l}%, 0)`);
-
-ctx.fillStyle = g;
-ctx.beginPath();
-ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
-ctx.fill();
-/*
-        ctx.fillStyle = HSLAString(this.color);
-        ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
-        ctx.fill();*/
     }
 }

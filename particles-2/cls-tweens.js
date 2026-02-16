@@ -4,12 +4,12 @@ export class TweenCollection {
     constructor() { 
         this.items = []; 
     }
-    add(b) { 
-        this.items.push(b); 
+    add(i) { 
+        this.items.push(i); 
     }
     apply(particle, t) {
-        for (const b of this.items) 
-            b.update(particle, t);
+        for (const i of this.items) 
+            i.update(particle, t);
     }
 }
 

@@ -9,15 +9,6 @@ export default class Emitter {
         this.particles = [];
         this.perlin = new PerlinNoise();
     }
-
-    buildTweens(cfg) {
-        const tweenBehaviors = new TweenCollection();
-        tweenBehaviors.add(new AlphaOverLife(cfg.alpha_start, cfg.alpha_end));
-        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha_start));
-        tweenBehaviors.add(new SizeOverLife(cfg.size_start, cfg.size_end));
-        tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
-        return tweenBehaviors;
-    }
     lifeTimeVariance(cfg) {
         const variance_rate = cfg.life * cfg.life_variance;
         return mt_rand(-variance_rate, variance_rate); 
@@ -42,8 +33,7 @@ export default class Emitter {
             vy: Math.sin(radians) * cfg.speed_y + this.speedVariance(cfg.speed_y, cfg.speed_varianceY), 
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
-            size: cfg.size_start,         // radius            
-            tweens: this.buildTweens(cfg)
+            size: cfg.size_start        // radius            
         };
         const p = new Particle(conf);
         this.particles.push(p);
@@ -56,9 +46,5 @@ export default class Emitter {
         this.particles.forEach(p => p.update(dt));
         // remove dead particles
         this.particles = this.particles.filter(p => p.isAlive());
-    }
-
-    draw(ctx) {
-        this.particles.forEach(p => p.draw(ctx));
     }
 }
