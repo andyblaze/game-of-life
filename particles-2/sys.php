@@ -45,7 +45,8 @@ $controls = [
     'alphaStartCtrl'    => slider('start', 0, 1, 0.01, 0.8, 'float', 'alpha_start', 'alpha-'),
     'alphaEndCtrl'      => slider('end', 0, 1, 0.01, 0.8, 'float', 'alpha_end', 'alpha-'),
     'densityCtrl'       => slider('density', 1, 12, 1, 1, 'int'),
-    'importSelect'      => select('presets', glob('presets/*.json'))
+    'importSelect'      => select('presets', glob('presets/*.json')),
+    'rendererCtrl'      =>select('renderer', ['solid', 'gradient'])
 ];
 extract($controls);
 include('view.php');

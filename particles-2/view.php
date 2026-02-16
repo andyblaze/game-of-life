@@ -45,6 +45,7 @@
         <?=$colorEndCtrl;?>
     </div>
     <?=$densityCtrl;?>
+    <?=$rendererCtrl;?>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">

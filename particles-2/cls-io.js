@@ -1,4 +1,5 @@
 import Ajax from "./cls-ajax.js";
+import { byId } from "./functions.js";
 
 export default class IO {
     static export(cfg) {
