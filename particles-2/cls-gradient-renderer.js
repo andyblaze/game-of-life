@@ -3,9 +3,8 @@ import { HSLAString } from "./functions.js";
 
 export default class GradientRenderer {
     static type = "gradient";
-    draw(particles, tweens, ctx) {
+    draw(particles, ctx) {
         particles.forEach(p => {
-            tweens.apply(p, p.dt()); 
             const g = ctx.createRadialGradient(
                 p.pos.x, p.pos.y, 0,
                 p.pos.x, p.pos.y, p.size

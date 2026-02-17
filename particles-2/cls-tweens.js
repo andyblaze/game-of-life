@@ -1,6 +1,7 @@
 import { lerp, lerpHSLAColor } from "./functions.js";
+import PerlinNoise from "./cls-perlin.js";
 
-export class TweenCollection {
+class TweenCollection {
     constructor() { 
         this.items = []; 
     }
@@ -13,7 +14,7 @@ export class TweenCollection {
     }
 }
 
-export class AlphaOverLife {
+class AlphaOverLife {
     constructor(start, end) {
         this.start = start;
         this.end = end;
@@ -24,7 +25,7 @@ export class AlphaOverLife {
     }
 }
 
-export class ColorOverLife {
+class ColorOverLife {
     constructor(start, end, alpha) {
         this.start = { ...start, a: alpha };
         this.end   = { ...end,   a: 0 };
@@ -35,7 +36,7 @@ export class ColorOverLife {
     }
 }
 
-export class SizeOverLife {
+class SizeOverLife {
     constructor(start, end) {
         this.start = start;
         this.end   = end;
@@ -46,7 +47,7 @@ export class SizeOverLife {
     }
 }
 
-export class NoiseDrift {
+class NoiseDrift {
     constructor(perlin, amount = 10, scale = 0.01, speed = 0.01) {
         this.perlin = perlin;
         this.amount = amount;
@@ -61,5 +62,17 @@ export class NoiseDrift {
         );
 
         p.pos.x += nx * this.amount;
+    }
+}
+
+export class TweenFactory {
+    static perlin = new PerlinNoise();
+    static build(cfg) {
+        const tweenBehaviors = new TweenCollection();
+        tweenBehaviors.add(new AlphaOverLife(cfg.alpha_start, cfg.alpha_end));
+        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha_start));
+        tweenBehaviors.add(new SizeOverLife(cfg.size_start, cfg.size_end));
+        tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
+        return tweenBehaviors;        
     }
 }

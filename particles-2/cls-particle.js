@@ -16,6 +16,8 @@ export default class Particle {
         this.pos.x += this.vel.x;
         this.pos.y += this.vel.y * dt;
         this.age += dt;
+        const t = this.age / this.life;
+        this.tweens.apply(this, t); 
     }
     dt() {
         return this.age / this.life;

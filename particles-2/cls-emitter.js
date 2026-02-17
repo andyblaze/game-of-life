@@ -1,13 +1,11 @@
 import { mt_randf, mt_rand } from "./functions.js";
 import Particle from "./cls-particle.js";
-import { TweenCollection, AlphaOverLife, ColorOverLife, SizeOverLife, NoiseDrift } from "./cls-tweens.js";
-import PerlinNoise from "./cls-perlin.js";
+import { TweenFactory } from "./cls-tweens.js";
 
 export default class Emitter {
     constructor(x, y) {
         this.pos = { x, y };
         this.particles = [];
-        this.perlin = new PerlinNoise();
     }
     lifeTimeVariance(cfg) {
         const variance_rate = cfg.life * cfg.life_variance;
@@ -33,7 +31,8 @@ export default class Emitter {
             vy: Math.sin(radians) * cfg.speed_y + this.speedVariance(cfg.speed_y, cfg.speed_varianceY), 
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
-            size: cfg.size_start        // radius            
+            size: cfg.size_start,        // radius       
+            tweens: TweenFactory.build(cfg)
         };
         const p = new Particle(conf);
         this.particles.push(p);
