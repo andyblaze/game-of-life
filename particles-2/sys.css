@@ -4,7 +4,7 @@
     height: 100vh;
     font-family: sans-serif;
     overflow: hidden;
-    background-color: #222;
+    background-color: #000;
     color: white;
   }
 
@@ -26,6 +26,10 @@
   }
     #ui-panel .col-2 label {
       width: 49.5%;
+      display: inline-block;
+    } 
+    #ui-panel .col-4 label {
+      width: 24.5%;
       display: inline-block;
     } 
 

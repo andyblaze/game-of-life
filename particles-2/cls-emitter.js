@@ -1,6 +1,6 @@
 import { mt_randf, mt_rand } from "./functions.js";
 import Particle from "./cls-particle.js";
-import { TweenFactory } from "./cls-tweens.js";
+import { TweenBuilder } from "./cls-tweens.js";
 
 export default class Emitter {
     constructor(x, y) {
@@ -32,7 +32,7 @@ export default class Emitter {
             life: cfg.life + this.lifeTimeVariance(cfg),        
             color: { ...cfg.color_start },
             size: cfg.size_start,        // radius       
-            tweens: TweenFactory.build(cfg)
+            tweens: TweenBuilder.build(cfg)
         };
         const p = new Particle(conf);
         this.particles.push(p);

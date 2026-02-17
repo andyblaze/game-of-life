@@ -8,6 +8,23 @@ function slider($name, $min, $max, $step, $val, $type='float', $property='', $pr
       <input type=\"range\" id=\"{$name}-slider\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" min=\"{$min}\" max=\"{$max}\" step=\"{$step}\" value=\"{$val}\" />
     </label>";
 }
+function selectCtrl($name, $options, $type='str', $property='', $prefix='') {
+    $lbl = ucfirst(str_replace('-', ' ', $name));
+    $prop = $property === '' ? $name : $property;
+    $name = $prefix . $name;
+    $opts = '';
+    $sel = '';
+    foreach ( $options as $id=>$opt ) {
+        $val = $opt;
+        $txt = ucfirst($opt);
+        if ( $id === 0 ) $sel = $val;        
+        $opts .= "<option value=\"{$val}\">{$txt}</option>";
+    }
+    return "<label>
+      {$lbl}: <!--<span id=\"{$name}-lbl\">{$val}</span>-->
+      <select id=\"{$name}-select\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\">{$opts}</select>
+    </label>";
+}
 function colorPicker($name, $val, $type, $property, $prefix='color-') {
     $lbl = ucfirst(str_replace('-', ' ', $name));
     $prop = $property === '' ? $name : $property;
@@ -45,8 +62,12 @@ $controls = [
     'alphaStartCtrl'    => slider('start', 0, 1, 0.01, 0.8, 'float', 'alpha_start', 'alpha-'),
     'alphaEndCtrl'      => slider('end', 0, 1, 0.01, 0.8, 'float', 'alpha_end', 'alpha-'),
     'densityCtrl'       => slider('density', 1, 12, 1, 1, 'int'),
+    'trailsCtrl'        => slider('trails', 0, 0.5, 0.001, 0, 'invert'),
+    'perlinAmountCtrl'  => slider('perlinAmount', 0, 10, 0.01, 0, 'float', 'perlin_amount'),
+    'perlinScaleCtrl'   => slider('perlinScale', 0, 2, 0.01, 0.01, 'float', 'perlin_scale'),
+    'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
     'importSelect'      => select('presets', glob('presets/*.json')),
-    'rendererCtrl'      => select('renderer', ['solid', 'gradient'])
+    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient'])
 ];
 extract($controls);
 include('view.php');

@@ -45,6 +45,12 @@
         <?=$colorEndCtrl;?>
     </div>
     <?=$densityCtrl;?>
+    <div class="col-4">
+        <?=$trailsCtrl;?>
+        <?=$perlinAmountCtrl;?>
+        <?=$perlinScaleCtrl;?>
+        <?=$perlinSpeedCtrl;?>
+    </div>
     <?=$rendererCtrl;?>
 </form>
 <!-- Workspace canvas -->

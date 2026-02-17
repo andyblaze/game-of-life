@@ -9,7 +9,7 @@ export default class RendererFactory {
     create(type) {
         const A = RendererRegistry[type];
         if ( ! A ) 
-            throw new Error(`Unknown animation type: ${type}`);
+            throw new Error(`Unknown renderer type: ${type}`);
         return new A();
     }
     init() {

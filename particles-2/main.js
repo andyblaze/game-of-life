@@ -18,13 +18,15 @@ uiControls.notify();
 
 const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
-const rendererFactory = new RendererFactory(byId("renderer"));
+const rendererFactory = new RendererFactory(byId("renderer-select"));
 
 let renderer = rendererFactory.init();
-byId("renderer").onchange = () => { renderer = rendererFactory.change(); } 
+byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }  
 
-function loop(timestamp) {
-    config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
+function loop(timestamp) {    
+    config.ctx.fillStyle = `rgba(0, 0, 0, ${config.trails})`;
+    config.ctx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
+    //config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)
     renderer.draw(emitter.particles, config.ctx);
     DeltaReport.log(timestamp);

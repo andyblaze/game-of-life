@@ -8,8 +8,14 @@ export default class TypeConverter {
             console.error("TypeConverter.apply(type, val) ", type, " is not a method.");
         }
     }
+    str(val) {
+        return val;
+    }
     float(val) {
         return parseFloat(val);
+    }
+    invert(val) {
+        return 0.5 - parseFloat(val);
     }
     int(val) {
         return parseInt(val);

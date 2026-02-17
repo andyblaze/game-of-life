@@ -65,14 +65,29 @@ class NoiseDrift {
     }
 }
 
-export class TweenFactory {
+const tweenRegistry = {
+    alpha: AlphaOverLife,
+    color: ColorOverLife,
+    size: SizeOverLife
+};
+
+class TweenFactory {
+    static create(type, cfg) {
+        const A = tweenRegistry[type];
+        if ( ! A ) 
+            throw new Error(`Unknown renderer type: ${type}`);
+        return new A(cfg);
+    }
+}
+
+export class TweenBuilder {
     static perlin = new PerlinNoise();
-    static build(cfg) {
+    static build(cfg) { 
         const tweenBehaviors = new TweenCollection();
         tweenBehaviors.add(new AlphaOverLife(cfg.alpha_start, cfg.alpha_end));
         tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha_start));
         tweenBehaviors.add(new SizeOverLife(cfg.size_start, cfg.size_end));
-        tweenBehaviors.add(new NoiseDrift(this.perlin, 1, 0.1, 0.02));
+        tweenBehaviors.add(new NoiseDrift(this.perlin, cfg.perlin_amount, cfg.perlin_scale, cfg.perlin_speed));
         return tweenBehaviors;        
     }
 }
