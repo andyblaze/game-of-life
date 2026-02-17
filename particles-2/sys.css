@@ -37,6 +37,9 @@
     display: inline-block;
     width: 100%;
   }
+  #trails-slider {
+    /*transform: scaleX(-1);*/
+  }
 
   #workspace {
     flex: 1;

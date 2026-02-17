@@ -15,7 +15,7 @@ export default class UiControls {
             byId(label).textContent = ctrl.value;
         this.notify();
     }
-    addObserver(o) {
+    addObserver(o) { 
         this.observers.push(o);
     }
     notify() {
@@ -23,7 +23,7 @@ export default class UiControls {
             o.update(this.ctrls);
         }
     }
-    updateFromConfig(cfg) {
+    updateFromConfig(cfg) { 
         this.ctrls.forEach(ctrl => {
             const prop = ctrl.dataset.property;
             if ( prop && cfg.controlsData[prop] !== undefined ) {
