@@ -24,7 +24,7 @@ let renderer = rendererFactory.init();
 byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }  
 
 function loop(timestamp) {    
-    config.ctx.fillStyle = `rgba(0, 0, 0, ${config.trails})`;
+    config.ctx.fillStyle = `rgba(0, 0, 0, ${config.bg_opacity})`;
     config.ctx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
     //config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)

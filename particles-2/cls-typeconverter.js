@@ -14,9 +14,6 @@ export default class TypeConverter {
     float(val) {
         return parseFloat(val);
     }
-    invert(val) {
-        return 0.5 - parseFloat(val);
-    }
     int(val) {
         return parseInt(val);
     }

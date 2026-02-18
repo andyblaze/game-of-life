@@ -90,4 +90,4 @@ export class TweenBuilder {
         tweenBehaviors.add(new NoiseDrift(this.perlin, cfg.perlin_amount, cfg.perlin_scale, cfg.perlin_speed));
         return tweenBehaviors;        
     }
-}
+} 

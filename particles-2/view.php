@@ -46,7 +46,7 @@
     </div>
     <?=$densityCtrl;?>
     <div class="col-4">
-        <?=$trailsCtrl;?>
+        <?=$bgOpacityCtrl;?>
         <?=$perlinAmountCtrl;?>
         <?=$perlinScaleCtrl;?>
         <?=$perlinSpeedCtrl;?>
