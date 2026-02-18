@@ -51,9 +51,9 @@ $controls = [
     'speedVarianceXCtrl'=> slider('X', 0.01, 1, 0.01, 0.01, 'float', 'speed_varianceX', 'speed-variance-'),
     'speedVarianceYCtrl'=> slider('Y', 0.01, 1, 0.01, 0.01, 'float', 'speed_varianceY', 'speed-variance-'),
     'spreadCtrl'        => slider('spread', 0, 359, 1, 25, 'int'),
-    'speedXCtrl'        => slider('x', 0.25, 16, 0.25, 1, 'float', 'speed_x', 'speed'),
-    'speedYCtrl'        => slider('y', 0.25, 16, 0.25, 1, 'float', 'speed_y', 'speed'),
-    'lifeCtrl'          => slider('life', 1, 256, 1, 256, 'int'),
+    'speedXCtrl'        => slider('x', 0, 16, 0.25, 1, 'float', 'speed_x', 'speed'),
+    'speedYCtrl'        => slider('y', 0, 16, 0.25, 1, 'float', 'speed_y', 'speed'),
+    'lifeCtrl'          => slider('life', 1, 512, 1, 256, 'int'),
     'lifeVarianceCtrl'  => slider('life-variance', 0.01, 1, 0.01, 0.01, 'float', 'life_variance'),
     'spawnOffsetXCtrl'  => slider('X', 0, 32, 1, 0, 'int', 'spawn_offsetX', 'spawn-offset-'),
     'spawnOffsetYCtrl'  => slider('Y', 0, 32, 1, 0, 'int', 'spawn_offsetY', 'spawn-offset-'),
@@ -67,7 +67,7 @@ $controls = [
     'perlinScaleCtrl'   => slider('perlinScale', 0, 2, 0.01, 0.01, 'float', 'perlin_scale'),
     'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
     'importSelect'      => select('presets', glob('presets/*.json')),
-    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient'])
+    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc'])
 ];
 extract($controls);
 include('view.php');
