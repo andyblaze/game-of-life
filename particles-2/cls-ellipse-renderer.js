@@ -24,9 +24,9 @@ export default class MorphingEllipseRenderer {
             // simple morph: oscillate width/height slightly
             const wobble = Math.sin(performance.now() * 0.005 + x + y) * 0.3; // small oscillation
             const width = baseSize * (1 + wobble);
-            const height = baseSize * (1 - wobble);
+            const height = baseSize * (1 - wobble) + 10;
 
-            console.log(x, y);
+            //console.log(x, y);
 
             // radial gradient fill
             /*const g = ctx.createRadialGradient(x, y, 0, x, y, baseSize);
@@ -39,10 +39,12 @@ export default class MorphingEllipseRenderer {
             // draw rotated ellipse
             ctx.save();
             //ctx.translate(x, y);
-            ctx.rotate(rot);
+            //ctx.rotate(rot);
             //ctx.scale(width, height);
             ctx.beginPath();
-            ctx.arc(p.pos.x, p.pos.y, p.size, 0, Math.PI * 2);    
+            //ctx.arc(p.pos.x, p.pos.y, p.size, 0, Math.PI * 2);    
+            // .ellipse(x, y, x_radius, y_radius, rotation, start_angle, end_angle, direction);
+            ctx.ellipse(x, y, width, height, rot, 0, 2 * Math.PI);//width, height, rot, Math.PI / 3, 0);
             //ctx.ellipse(0, 0, width, height, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
