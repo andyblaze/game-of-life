@@ -39,7 +39,7 @@ class ColorOverLife {
 class SizeOverLife {
     constructor(start, end) {
         this.start = start;
-        this.end   = end;
+        this.end   = end * 10;
     }
 
     update(p, t) {
