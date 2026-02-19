@@ -39,11 +39,12 @@ class ColorOverLife {
 class SizeOverLife {
     constructor(start, end) {
         this.start = start;
-        this.end   = end * 10;
+        this.end   = end;
     }
 
     update(p, t) {
-        p.size = lerp(this.start, this.end, t);
+        const t2 = 1 - (1 - t) * (1 - t);   // quadratic ease-out
+        p.size = lerp(this.start, this.end, t2);//lerp(this.start, this.end, t);
     }
 }
 

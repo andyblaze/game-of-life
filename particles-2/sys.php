@@ -46,8 +46,8 @@ function select($name, $options) {
 }
 $controls = [
     'angleCtrl'         => slider('angle', 0, 359, 1, 180, 'int'),
-    'sizeStartCtrl'     => slider('start', 0.5, 32, 0.5, 2, 'float', 'size_start', 'size-'),
-    'sizeEndCtrl'       => slider('end', 0.5, 32, 0.5, 2, 'float', 'size_end', 'size-'),
+    'sizeStartCtrl'     => slider('start', 0.5, 320, 0.5, 2, 'float', 'size_start', 'size-'),
+    'sizeEndCtrl'       => slider('end', 0.5, 320, 0.5, 2, 'float', 'size_end', 'size-'),
     'speedVarianceXCtrl'=> slider('X', 0.01, 1, 0.01, 0.01, 'float', 'speed_varianceX', 'speed-variance-'),
     'speedVarianceYCtrl'=> slider('Y', 0.01, 1, 0.01, 0.01, 'float', 'speed_varianceY', 'speed-variance-'),
     'spreadCtrl'        => slider('spread', 0, 359, 1, 25, 'int'),
