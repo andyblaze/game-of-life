@@ -2,6 +2,7 @@ import CircleRenderer from "./cls-circle-renderer.js";
 import GradientRenderer from "./cls-gradient-renderer.js";
 import VelocityLineRenderer from "./cls-velocity-line-renderer.js";
 import ArcRenderer from "./cls-arc-renderer.js";
+import TriangleRenderer from "./cls-triangle-renderer.js";
 import { RendererRegistry } from "./cls-renderer-registry.js";
 
 export default class RendererFactory {
