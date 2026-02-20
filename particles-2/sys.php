@@ -45,6 +45,8 @@ function select($name, $options) {
     return $htm;
 }
 $controls = [
+    'spawnXCtrl'        => slider('X', 0, 720, 1, 360, 'int', 'spawn_x', 'spawn-pos-'),
+    'spawnYCtrl'        => slider('Y', 0, 720, 1, 360, 'int', 'spawn_y', 'spawn-pos-'),    
     'angleCtrl'         => slider('angle', 0, 359, 1, 180, 'int'),
     'sizeStartCtrl'     => slider('start', 0.5, 320, 0.5, 2, 'float', 'size_start', 'size-'),
     'sizeEndCtrl'       => slider('end', 0.5, 320, 0.5, 2, 'float', 'size_end', 'size-'),
@@ -55,8 +57,8 @@ $controls = [
     'speedYCtrl'        => slider('y', 0, 16, 0.25, 1, 'float', 'speed_y', 'speed'),
     'lifeCtrl'          => slider('life', 1, 512, 1, 256, 'int'),
     'lifeVarianceCtrl'  => slider('life-variance', 0.01, 1, 0.01, 0.01, 'float', 'life_variance'),
-    'spawnOffsetXCtrl'  => slider('X', 0, 32, 1, 0, 'int', 'spawn_offsetX', 'spawn-offset-'),
-    'spawnOffsetYCtrl'  => slider('Y', 0, 32, 1, 0, 'int', 'spawn_offsetY', 'spawn-offset-'),
+    'spawnOffsetXCtrl'  => slider('X', 0, 64, 1, 0, 'int', 'spawn_offsetX', 'spawn-offset-'),
+    'spawnOffsetYCtrl'  => slider('Y', 0, 64, 1, 0, 'int', 'spawn_offsetY', 'spawn-offset-'),
     'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start'),
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end'),
     'alphaStartCtrl'    => slider('start', 0, 1, 0.01, 0.8, 'float', 'alpha_start', 'alpha-'),

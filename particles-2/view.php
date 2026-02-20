@@ -9,14 +9,21 @@
 <body>
  <!-- UI panel --> 
 <form id="ui-panel">
-    <h3>Particle Controls</h3>
-    <?=$angleCtrl;?>
+    <div class="col-2">
+        <h4>Position</h4>
+        <?=$spawnXCtrl;?>
+        <?=$spawnYCtrl;?>
+    </div>
+    <div class="col-2">
+        <h4>Direction</h4>
+        <?=$angleCtrl;?>
+        <?=$spreadCtrl;?>
+    </div>
     <div class="col-2">
         <h4>Size</h4>
         <?=$sizeStartCtrl;?>
         <?=$sizeEndCtrl;?>
-    </div>
-    <?=$spreadCtrl;?>
+    </div>    
     <div class="col-2">
         <h4>Speed</h4>
         <?=$speedXCtrl;?>
@@ -55,6 +62,7 @@
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
+    <div id="fps">FPS: <span id="fps-report">60</span></div>
     <div class="import-export"><?=$importSelect;?> <button id="import" type="button">Import</button></div>
     <div><canvas id="effect" width="720" height="720"></canvas></div>
     <div class="import-export"><button id="export" type="button">Export</button> <label for="fname">Type:</label><input type="text" id="fname" /></div>

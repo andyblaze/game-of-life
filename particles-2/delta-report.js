@@ -1,3 +1,5 @@
+import { byId } from "./functions.js";
+
 export default class DeltaReport {
     static lastTime = performance.now();
     static startTime = performance.now();
@@ -27,13 +29,14 @@ export default class DeltaReport {
             const seconds = (totalSeconds % 60).toString().padStart(2, "0");
             const elapsed = minutes + ":" + seconds;
 
-            console.log(
+            /*console.log(
                 "fps", fps,
                 "min=", this.min,
                 "max=", this.max,
                 "avgFrame=", avgFrameTime.toFixed(2) + "ms",
                 "elapsed=", elapsed
-            );
+            );*/
+            byId("fps-report").innerText = fps;
 
             // reset accumulators
             this.frameCount = 0;

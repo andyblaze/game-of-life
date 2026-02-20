@@ -1,5 +1,5 @@
 import BaseRenderer from "./cls-baserenderer.js";
-import { HSLAString } from "./functions.js";
+import { HSLAString, mt_randf } from "./functions.js";
 
 export default class MorphingEllipseRenderer {
     static type = "ellipse";
@@ -13,8 +13,8 @@ export default class MorphingEllipseRenderer {
     draw(particles, ctx) {
         particles.forEach(p => {
             // get or initialize rotation
-            let rot = this.rotations.get(p) ?? Math.random() * Math.PI * 2;
-            rot += this.rotationSpeed;
+            let rot = this.rotations.get(p) ?? mt_randf(-1, 1) * Math.PI * 2;
+            rot += rot > 0 ? this.rotationSpeed : -this.rotationSpeed;
             this.rotations.set(p, rot);
 
             const x = p.pos.x;
@@ -22,9 +22,9 @@ export default class MorphingEllipseRenderer {
             const baseSize = p.size;
 
             // simple morph: oscillate width/height slightly
-            const wobble = Math.sin(performance.now() * 0.005 + x + y) * 0.3; // small oscillation
-            const width = baseSize * (1 + wobble);
-            const height = baseSize * (1 - wobble) + 10;
+            //const wobble = 0;//Math.sin(performance.now() * 0.005 + x + y) * 0.3; // small oscillation
+            const width = baseSize;
+            const height = baseSize +10;//* 2.52;
 
             //console.log(x, y);
 

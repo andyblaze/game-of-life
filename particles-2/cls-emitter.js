@@ -14,7 +14,7 @@ export default class Emitter {
     spawnOffset(axisOffset) { 
         return axisOffset === 0 ? axisOffset : mt_rand(-axisOffset, axisOffset);
     }
-    speedVariance(axis, variance) {
+    speedVariance(axis, variance) { 
         const variance_rate = axis * variance;
         return mt_randf(-variance_rate, variance_rate);
     }
@@ -24,9 +24,10 @@ export default class Emitter {
         const offset = mt_randf(-halfSpread, halfSpread);
         const finalAngle = cfg.angle + offset;
         const radians = (finalAngle - 90) * (Math.PI / 180);
+        const spawn = {x: cfg.spawn_x, y: cfg.spawn_y };
         const conf = {
-            x: this.pos.x + this.spawnOffset(cfg.spawn_offsetX),
-            y: this.pos.y+ this.spawnOffset(cfg.spawn_offsetY),
+            x: spawn.x + this.spawnOffset(cfg.spawn_offsetX),
+            y: spawn.y + this.spawnOffset(cfg.spawn_offsetY),
             vx: Math.cos(radians) * cfg.speed_x + this.speedVariance(cfg.speed_x, cfg.speed_varianceX), 
             vy: Math.sin(radians) * cfg.speed_y + this.speedVariance(cfg.speed_y, cfg.speed_varianceY), 
             life: cfg.life + this.lifeTimeVariance(cfg),        
