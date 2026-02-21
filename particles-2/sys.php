@@ -69,7 +69,7 @@ $controls = [
     'perlinScaleCtrl'   => slider('perlinScale', 0, 2, 0.01, 0.01, 'float', 'perlin_scale'),
     'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
     'importSelect'      => select('presets', glob('presets/*.json')),
-    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections'])
+    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections', 'repulsor'])
 ];
 extract($controls);
 include('view.php');
