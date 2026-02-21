@@ -1,4 +1,4 @@
-import BaseRenderer from "./cls-baserenderer.js";
+//import BaseRenderer from "./cls-baserenderer.js";
 import { HSLAString, randomFrom } from "./functions.js";
 
 export default class RepulsorRenderer {
@@ -43,13 +43,13 @@ draw(particles, ctx) {
     });
 
     // Draw
-    particles.forEach(p => {
+    /*particles.forEach(p => {
         ctx.fillStyle = HSLAString(p.color);
         ctx.beginPath();
         ctx.arc(p.pos.x, p.pos.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-    });
+    });*/
 }
 }
 
-BaseRenderer.register(RepulsorRenderer);
+//BaseRenderer.register(RepulsorRenderer);

@@ -6,6 +6,7 @@ import UiControls from "./cls-uicontrols.js";
 import IO from "./cls-io.js";
 import RendererFactory from "./cls-renderer-factory.js";
 import DeltaReport from "./delta-report.js";
+import RepulsorRenderer from "./cls-repulsor-renderer.js";
 
 byId("ui-panel").reset();
 byId("export").onclick = () => IO.export(config);
@@ -21,13 +22,16 @@ const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 const rendererFactory = new RendererFactory(byId("renderer-select"));
 
 let renderer = rendererFactory.init();
-byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }  
+byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }   
+
+const field = new RepulsorRenderer();
 
 function loop(timestamp) {    
     config.ctx.fillStyle = `rgba(0, 0, 0, ${config.bg_opacity})`;
     config.ctx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
     //config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     emitter.update(config, 1); // dt = 1 frame (super simple)
+    field.draw(emitter.particles);
     renderer.draw(emitter.particles, config.ctx);
     DeltaReport.log(timestamp);
     requestAnimationFrame(loop);
