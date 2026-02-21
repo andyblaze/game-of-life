@@ -17,6 +17,10 @@ export function mt_randf(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+export function randomFrom(arr) {
+    return arr[mt_rand(0, arr.length - 1)];
+}
+
 export function lerp(a, b, t) {
     return a + (b - a) * t;
 } 
