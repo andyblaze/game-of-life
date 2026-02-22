@@ -28,8 +28,9 @@ export default class UiControls {
     }
     updateFromConfig(cfg) { 
         this.ctrls.forEach(ctrl => {
-            const prop = ctrl.dataset.property;
-            if ( prop && cfg.controlsData[prop] !== undefined ) {
+            const prop = ctrl.dataset.property ?? null;
+            if ( prop === null ) return;
+            if ( cfg.controlsData[prop] !== undefined ) {
                 if (typeof cfg.controlsData[prop] === "object" && "h" in cfg.controlsData[prop]) {
                     ctrl.value = hslaToHex(cfg.controlsData[prop]);
                 } else {
