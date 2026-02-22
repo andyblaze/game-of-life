@@ -60,8 +60,8 @@
     </div>
     <?=$rendererCtrl;?>
     <div class="col-2 inlined">
-        <label for="repulsor">Repulsor: <input type="checkbox" class="force-ticker" id="repulsor" data-force="repulsor" data-type="bool" value="1" /></label>
-        <label for="vortex">Vortex: <input type="checkbox" class="force-ticker" id="vortex" data-force="vortex" data-type="bool" value="1" /></label>
+        <?=$repulsorCtrl;?>
+        <?=$vortexCtrl;?>
     </div>
 </form>
 <!-- Workspace canvas -->

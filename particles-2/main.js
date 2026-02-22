@@ -5,9 +5,8 @@ import Cfg from "./cls-config.js";
 import UiControls from "./cls-uicontrols.js";
 import IO from "./cls-io.js";
 import RendererFactory from "./cls-renderer-factory.js";
+import ParticleForces from "./cls-particle-forces.js";
 import DeltaReport from "./delta-report.js";
-import RepulsorForce from "./cls-repulsor-force.js";
-import VortexForce from "./cls-vortex-force.js";
 
 byId("ui-panel").reset();
 byId("export").onclick = () => IO.export(config);
@@ -25,29 +24,11 @@ const rendererFactory = new RendererFactory(byId("renderer-select"));
 let renderer = rendererFactory.init();
 byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }   
 
-class ParticleForces {
-    constructor() {
-        this.items = {
-            repulsor: { active:true, force: new RepulsorForce() },
-            vortex: { active: true, force: new VortexForce() }
-        }
-    }
-    apply(particles) {
-        for ( const [key, item] of Object.entries(this.items) ) {
-            if ( item.active )
-                item.force.apply(particles);
-        }
-    }
-    set(key) {
-        this.items[key].active = ! this.items[key].active;
-    }
-}
-
 const forces = new ParticleForces();
 
 byQsArray(".force-ticker").forEach(ctrl => {
     ctrl.onclick = () => {
-        const forceName = control.dataset.force;
+        const forceName = ctrl.dataset.force;
         forces.set(forceName);
     };
 });

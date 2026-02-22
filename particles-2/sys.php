@@ -44,6 +44,10 @@ function select($name, $options) {
     $htm .= '</select>';
     return $htm;
 }
+function checkboxCtrl($name) {
+    $lbl = ucfirst($name);
+    return "<label for=\"{$name}\">{$lbl} <input type=\"checkbox\" class=\"force-ticker\" id=\"{$name}\" data-property=\"{$name}\"  data-force=\"{$name}\" data-type=\"bool\" value=\"1\" /></label>";
+}
 $controls = [
     'spawnXCtrl'        => slider('X', 0, 720, 1, 360, 'int', 'spawn_x', 'spawn-pos-'),
     'spawnYCtrl'        => slider('Y', 0, 720, 1, 360, 'int', 'spawn_y', 'spawn-pos-'),    
@@ -69,7 +73,9 @@ $controls = [
     'perlinScaleCtrl'   => slider('perlinScale', 0, 2, 0.01, 0.01, 'float', 'perlin_scale'),
     'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
     'importSelect'      => select('presets', glob('presets/*.json')),
-    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections'])
+    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections']),
+    'repulsorCtrl'      => checkboxCtrl('repulsor'),
+    'vortexCtrl'        => checkboxCtrl('vortex')
 ];
 extract($controls);
 include('view.php');
