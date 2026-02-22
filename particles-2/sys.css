@@ -37,6 +37,9 @@
     display: inline-block;
     width: 100%;
   }
+  #ui-panel .inlined label, #ui-panel .inlined input {
+    width: auto !important;
+  }
 
 
   #workspace {

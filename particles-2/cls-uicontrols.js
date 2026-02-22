@@ -5,7 +5,10 @@ export default class UiControls {
         this.observers = [];
         this.ctrls = byQsArray(selector);
         for ( const ctrl of this.ctrls ) {
-            ctrl.oninput = () => this.synch(ctrl);
+            if ( ctrl.type === "select" || ctrl.type === "checkbox" )
+                ctrl.onchange = () => this.synch(ctrl);
+            else
+                ctrl.oninput = () => this.synch(ctrl);
         }
         this.notify();
     }

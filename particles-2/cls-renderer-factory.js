@@ -6,7 +6,6 @@ import TriangleRenderer from "./cls-triangle-renderer.js";
 import MorphingEllipseRenderer from "./cls-ellipse-renderer.js";
 import ConnectionsRenderer from "./cls-connections-renderer.js";
 import RadialBurstRenderer from "./cls-radialburst-renderer.js";
-//import RepulsorRenderer from "./cls-repulsor-renderer.js";
 import { RendererRegistry } from "./cls-renderer-registry.js";
 
 export default class RendererFactory {

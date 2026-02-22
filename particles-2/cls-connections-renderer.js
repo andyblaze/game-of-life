@@ -57,13 +57,7 @@ export default class ConnectionsRenderer {
             // Check if connection exists and is alive
             if ( ! target ) {
                 const maxDistance = 10;
-                const near = this.nearby(p, particles);// particles.filter(candidate => {
-                    /*if (candidate === p) return false;               // don’t link to self
-                    //if (candidate.dead) return false;                // skip dead particles
-                    const dx = candidate.pos.x - p.pos.x;
-                    const dy = candidate.pos.y - p.pos.y;
-                    return dx*dx + dy*dy <= maxDistance*maxDistance; // within threshold
-                });*/
+                const near = this.nearby(p, particles);
                 // Roll random chance to create a connection
                 if (mt_rand(0, 100) < this.connectionChance && near.length > 0 ) {
                     // Pick a random particle that isn’t self
@@ -82,10 +76,6 @@ export default class ConnectionsRenderer {
                 ctx.strokeStyle = HSLAString(p.color);
                 ctx.lineWidth = 1;
                 this.quadraticCurve(p, target, ctx, 10);
-                /*ctx.beginPath();
-                ctx.moveTo(p.pos.x, p.pos.y);
-                ctx.lineTo(target.pos.x, target.pos.y);
-                ctx.stroke();*/
             }
         });
     }

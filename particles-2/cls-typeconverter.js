@@ -14,6 +14,9 @@ export default class TypeConverter {
     float(val) {
         return parseFloat(val);
     }
+    bool(val) {
+        return parseInt(val) === 1 ? true : false;
+    }
     int(val) {
         return parseInt(val);
     }
