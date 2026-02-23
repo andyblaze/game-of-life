@@ -36,7 +36,20 @@ export default class DeltaReport {
                 "avgFrame=", avgFrameTime.toFixed(2) + "ms",
                 "elapsed=", elapsed
             );*/
-            byId("fps-report").innerText = fps;
+            const fpsEl = byId("fps-report");
+            fpsEl.innerText = fps;
+
+            // Clear any previous fps-* class
+            fpsEl.classList.remove("fps-best", "fps-ok", "fps-bad");
+
+            // Add class based on fps
+            if (fps >= 55) {
+                fpsEl.classList.add("fps-best");
+            } else if (fps >= 40) {
+                fpsEl.classList.add("fps-ok");
+            } else {
+                fpsEl.classList.add("fps-bad");
+            }
 
             // reset accumulators
             this.frameCount = 0;

@@ -75,6 +75,7 @@ $controls = [
     'importSelect'      => select('presets', glob('presets/*.json')),
     'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections']),
     'repulsorCtrl'      => checkboxCtrl('repulsor'),
+    'attractorCtrl'     => checkboxCtrl('attractor'),
     'vortexCtrl'        => checkboxCtrl('vortex')
 ];
 extract($controls);

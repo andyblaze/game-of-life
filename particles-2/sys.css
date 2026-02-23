@@ -122,3 +122,8 @@
     white-space: nowrap;
     z-index: 1000;
 }
+
+/* fps report */
+#fps-report.fps-best { color: lime; }
+#fps-report.fps-ok   { color: orange; }
+#fps-report.fps-bad  { color: red; }

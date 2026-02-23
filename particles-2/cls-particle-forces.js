@@ -1,3 +1,4 @@
+import AttractorForce from "./cls-attractor-force.js";
 import RepulsorForce from "./cls-repulsor-force.js";
 import VortexForce from "./cls-vortex-force.js";
 
@@ -5,6 +6,7 @@ export default class ParticleForces {
     constructor(cfg) {
         this.items = {
             repulsor: { active:false, force: new RepulsorForce(cfg) },
+            attractor: { active: false, force: new AttractorForce(cfg)},
             vortex: { active: false, force: new VortexForce(cfg) }
         }
     }
