@@ -28,6 +28,10 @@
       width: 49.5%;
       display: inline-block;
     } 
+    #ui-panel .col-3 label {
+      width: 33%;
+      display: inline-block;
+    } 
     #ui-panel .col-4 label {
       width: 24.5%;
       display: inline-block;
@@ -86,3 +90,35 @@
     border: 1px solid #ffffff;
     margin: 0 0 0 1rem;
   }
+  /* help tooltips */
+  .help {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    background: #444;
+    padding: 0.1rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: normal !important;
+    line-height: 16px;
+    text-align: center;
+    cursor: pointer;
+    margin-left: 6px;
+    position: relative;
+}
+
+.help-tooltip {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    border: 1px solid #fff;
+    background: #222;
+    color: #fff;
+    padding: 0.3rem 0.4rem;
+    font-size: 1.2rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 1000;
+}

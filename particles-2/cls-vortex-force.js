@@ -1,11 +1,11 @@
 export default class VortexForce {
     static type = "vortex";
 
-    constructor() {
+    constructor(cfg) {
         this.strength = 0.005; // tweakable swirl strength
         this.clockwise = true; // flip for direction
-        this.centerX = 360;
-        this.centerY = 360;
+        this.centerX = cfg.canvasCenter.x;
+        this.centerY = cfg.canvasCenter.y;
     }
 
     apply(particles) {

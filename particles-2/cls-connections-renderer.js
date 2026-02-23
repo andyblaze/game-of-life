@@ -4,7 +4,8 @@ import { HSLAString, mt_rand, randomFrom } from "./functions.js";
 export default class ConnectionsRenderer {
     static type = "connections";
 
-    constructor() {
+    constructor(cfg) {
+        this.cfg = cfg;
         this.connectionsMap = new WeakMap();
         this.connectionChance = 1; // tweakable: % chance to connect per particle per frame
     }

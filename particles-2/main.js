@@ -6,6 +6,7 @@ import UiControls from "./cls-uicontrols.js";
 import IO from "./cls-io.js";
 import RendererFactory from "./cls-renderer-factory.js";
 import ParticleForces from "./cls-particle-forces.js";
+import TooltipHelp from "./cls-tooltips.js";
 import DeltaReport from "./delta-report.js";
 
 byId("ui-panel").reset();
@@ -19,12 +20,12 @@ uiControls.notify();
 
 const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
-const rendererFactory = new RendererFactory(byId("renderer-select"));
+const rendererFactory = new RendererFactory(byId("renderer-select"), config);
 
-let renderer = rendererFactory.init();
+let renderer = rendererFactory.init(config);
 byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }   
 
-const forces = new ParticleForces();
+const forces = new ParticleForces(config);
 
 byQsArray(".force-ticker").forEach(ctrl => {
     ctrl.onclick = () => {
@@ -32,6 +33,8 @@ byQsArray(".force-ticker").forEach(ctrl => {
         forces.set(forceName);
     };
 });
+
+TooltipHelp.init(".help", ".help-tooltip");
 
 function loop(timestamp) {    
     config.ctx.fillStyle = `rgba(0, 0, 0, ${config.bg_opacity})`;

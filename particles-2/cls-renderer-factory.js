@@ -16,9 +16,10 @@ export default class RendererFactory {
         const A = RendererRegistry[type];
         if ( ! A ) 
             throw new Error(`Unknown renderer type: ${type}`);
-        return new A();
+        return new A(this.cfg);
     }
-    init() {
+    init(cfg) {
+        this.cfg = cfg; 
         return this.change();
     }
     change() {

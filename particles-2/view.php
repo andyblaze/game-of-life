@@ -10,50 +10,54 @@
  <!-- UI panel --> 
 <form id="ui-panel">
     <div class="col-2">
-        <h4>Position</h4>
+        <h4>Position <a class="help" data-help="Where the emitter spawns particles in the canvas.">?</a></h4>
         <?=$spawnXCtrl;?>
         <?=$spawnYCtrl;?>
     </div>
     <div class="col-2">
-        <h4>Direction</h4>
+        <h4>Direction <a class="help" data-help="Angle is direction. Spread is how much particles fan out.">?</a></h4>
         <?=$angleCtrl;?>
         <?=$spreadCtrl;?>
     </div>
     <div class="col-2">
-        <h4>Size</h4>
+        <h4>Size <a class="help" data-help="Starting and ending particle size.">?</a></h4>
         <?=$sizeStartCtrl;?>
         <?=$sizeEndCtrl;?>
     </div>    
     <div class="col-2">
-        <h4>Speed</h4>
+        <h4>Speed <a class="help" data-help="Sets initial X/Y velocity.">?</a></h4>
         <?=$speedXCtrl;?>
         <?=$speedYCtrl;?>
     </div>
     <div class="col-2">
-        <h4>Speed variance</h4>
+        <h4>Speed variance <a class="help" data-help="Adds randomness to particle speed in X / Y directions.">?</a></h4>
         <?=$speedVarianceXCtrl;?>
         <?=$speedVarianceYCtrl;?>
     </div>
-    <?=$lifeCtrl;?>
-    <?=$lifeVarianceCtrl;?>
     <div class="col-2">
-        <h4>Spawn Offset</h4>
+        <h4>Lifetime <a class="help" data-help="How long particles live, with some variation.">?</a></h4>
+        <?=$lifeCtrl;?>
+        <?=$lifeVarianceCtrl;?>
+    </div>
+    <div class="col-2">
+        <h4>Spawn Offset <a class="help" data-help="Expands the X/Y area where particles spawn.">?</a></h4>
         <?=$spawnOffsetXCtrl;?>
         <?=$spawnOffsetYCtrl;?>
     </div>
-    <div class="col-2">
-        <h4>Alpha</h4>
+    <div class="col-4">
+        <h4>Colour / Alpha (Opacity)</h4>
+        <?=$colorStartCtrl;?>
+        <?=$colorEndCtrl;?>
         <?=$alphaStartCtrl;?>
         <?=$alphaEndCtrl;?>
     </div>
     <div class="col-2">
-        <h4>Color</h4>
-        <?=$colorStartCtrl;?>
-        <?=$colorEndCtrl;?>
-    </div>
-    <?=$densityCtrl;?>
-    <div class="col-4">
+        <h4>Density / Trails <a class="help" data-help="Particle count. Lower background opacity makes longer trails.">?</a></h4>
+        <?=$densityCtrl;?>
         <?=$bgOpacityCtrl;?>
+    </div>
+    <div class="col-3">
+        <h4>Perlin ( Wind ) <a class="help" data-help="Adds smooth directional drift. Not so smooth at high settings !">?</a></h4>        
         <?=$perlinAmountCtrl;?>
         <?=$perlinScaleCtrl;?>
         <?=$perlinSpeedCtrl;?>
@@ -67,9 +71,14 @@
 <!-- Workspace canvas -->
 <div id="workspace">
     <div id="fps">FPS: <span id="fps-report">60</span></div>
-    <div class="import-export"><?=$importSelect;?> <button id="import" type="button">Import</button></div>
-    <div><canvas id="effect" width="720" height="720"></canvas></div>
-    <div class="import-export"><button id="export" type="button">Export</button> <label for="fname">Type:</label><input type="text" id="fname" /></div>
+    <div class="import-export">
+        <?=$importSelect;?> 
+        <button id="import" type="button">Import</button>
+        <button id="export" type="button">Export</button> 
+        <label for="fname">Type:</label>
+        <input type="text" id="fname" />
+    </div>
+    <div><canvas id="effect" width="820" height="820"></canvas></div>
     <div id="export-result"></div>
 </div>
 <script src="main.js" type="module"></script>

@@ -4,7 +4,7 @@ function slider($name, $min, $max, $step, $val, $type='float', $property='', $pr
     $prop = $property === '' ? $name : $property;
     $name = $prefix . $name;
     return "<label>
-      {$lbl}: <span id=\"{$name}-lbl\">{$val}</span>
+      {$lbl}: <span id=\"{$name}-lbl\">{$val}</span> 
       <input type=\"range\" id=\"{$name}-slider\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" min=\"{$min}\" max=\"{$max}\" step=\"{$step}\" value=\"{$val}\" />
     </label>";
 }
@@ -49,8 +49,8 @@ function checkboxCtrl($name) {
     return "<label for=\"{$name}\">{$lbl} <input type=\"checkbox\" class=\"force-ticker\" id=\"{$name}\" data-property=\"{$name}\"  data-force=\"{$name}\" data-type=\"bool\" value=\"1\" /></label>";
 }
 $controls = [
-    'spawnXCtrl'        => slider('X', 0, 720, 1, 360, 'int', 'spawn_x', 'spawn-pos-'),
-    'spawnYCtrl'        => slider('Y', 0, 720, 1, 360, 'int', 'spawn_y', 'spawn-pos-'),    
+    'spawnXCtrl'        => slider('X', 0, 820, 1, 410, 'int', 'spawn_x', 'spawn-pos-'),
+    'spawnYCtrl'        => slider('Y', 0, 820, 1, 410, 'int', 'spawn_y', 'spawn-pos-'),    
     'angleCtrl'         => slider('angle', 0, 359, 1, 180, 'int'),
     'sizeStartCtrl'     => slider('start', 0.5, 320, 0.5, 2, 'float', 'size_start', 'size-'),
     'sizeEndCtrl'       => slider('end', 0.5, 320, 0.5, 2, 'float', 'size_end', 'size-'),
