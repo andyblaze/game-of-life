@@ -26,9 +26,9 @@ class AlphaOverLife {
 }
 
 class ColorOverLife {
-    constructor(start, end, alpha) {
-        this.start = { ...start, a: alpha };
-        this.end   = { ...end,   a: 0 };
+    constructor(start, end, alphaStart, alphaEnd) {
+        this.start = { ...start, a: alphaStart };
+        this.end   = { ...end,   a: alphaEnd };
     }
 
     update(p, t) {
@@ -86,7 +86,7 @@ export class TweenBuilder {
     static build(cfg) { 
         const tweenBehaviors = new TweenCollection();
         tweenBehaviors.add(new AlphaOverLife(cfg.alpha_start, cfg.alpha_end));
-        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha_start));
+        tweenBehaviors.add(new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha_start, cfg.alpha_end));
         tweenBehaviors.add(new SizeOverLife(cfg.size_start, cfg.size_end));
         tweenBehaviors.add(new NoiseDrift(this.perlin, cfg.perlin_amount, cfg.perlin_scale, cfg.perlin_speed));
         return tweenBehaviors;        
