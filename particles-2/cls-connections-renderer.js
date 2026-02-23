@@ -40,16 +40,25 @@ export default class ConnectionsRenderer {
         ctx.quadraticCurveTo(cx, cy, x1, y1);
         ctx.stroke();
     }
-    nearby(p, particles) {
-        const maxDistance = 10;
-        const near = particles.filter(candidate => {
-            if (candidate === p) return false;               // don’t link to self
-            //if (candidate.dead) return false;                // skip dead particles
+    nearby(p, particles) { 
+        const maxSpawnDist = 10; 
+        const maxLocalDist = 10;
+        const spawnX = this.cfg.spawn_x;
+        const spawnY = this.cfg.spawn_y;
+
+        return particles.filter(candidate => {
+            if (candidate === p) return false;
+
+            // distance from spawn
+            const dxS = candidate.pos.x - spawnX;
+            const dyS = candidate.pos.y - spawnY;
+            if (dxS*dxS + dyS*dyS > maxSpawnDist*maxSpawnDist) return false;
+
+            // distance from current particle
             const dx = candidate.pos.x - p.pos.x;
             const dy = candidate.pos.y - p.pos.y;
-            return dx*dx + dy*dy <= maxDistance*maxDistance; // within threshold
-        });  
-        return near;      
+            return dx*dx + dy*dy <= maxLocalDist*maxLocalDist;
+        });
     }
     draw(particles, ctx) {
         particles.forEach(p => {
