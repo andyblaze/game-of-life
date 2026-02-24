@@ -3,7 +3,8 @@ import RepulsorForce from "./cls-repulsor-force.js";
 import VortexForce from "./cls-vortex-force.js";
 
 export default class ParticleForces {
-    constructor(cfg) {
+    constructor(cfg) { 
+        this.cfg = cfg;
         this.items = {
             repulsor: { active:false, force: new RepulsorForce(cfg) },
             attractor: { active: false, force: new AttractorForce(cfg)},
@@ -12,7 +13,7 @@ export default class ParticleForces {
     }
     apply(particles) {
         for ( const [key, item] of Object.entries(this.items) ) {
-            if ( item.active )
+            if ( this.cfg[key] === true )
                 item.force.apply(particles);
         }
     }

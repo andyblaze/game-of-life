@@ -11,7 +11,7 @@ export default class Cfg {
         this.controlsData = {};
     }
     updateCtrl(ctrl) { 
-        if ( ctrl.type === "checkbox" && ctrl.checked === false ) return;
+        //if ( ctrl.type === "checkbox" && ctrl.checked === false ) return;
         const type = ctrl.dataset.type;
         const property = ctrl.dataset.property;
         this[property] = this.converter.apply(type, ctrl, ctrl.value);
@@ -21,6 +21,7 @@ export default class Cfg {
         for ( const ctrl of ctrls ) {
             this.updateCtrl(ctrl);
         }
+        //console.log(this);
     }
     export() {
         return JSON.stringify(this.controlsData);
