@@ -1,29 +1,29 @@
 import { hexToHSLA } from "./functions.js";
 export default class TypeConverter {
-    apply(type, val) {
+    apply(type, ctrl, val) {
         if (typeof this[type] === "function") {
-            return this[type](val);
+            return this[type](ctrl, val);
         }
         else {
             console.error("TypeConverter.apply(type, val) ", type, " is not a method.");
         }
     }
-    str(val) {
+    str(ctrl, val) {
         return val;
     }
-    float(val) {
+    float(ctrl, val) {
         return parseFloat(val);
     }
-    bool(val) {
-        return parseInt(val) === 1 ? true : false;
+    bool(ctrl, val) {
+        return !!ctrl.checked;
     }
-    int(val) {
+    int(ctrl, val) {
         return parseInt(val);
     }
-    hex(val) {
+    hex(ctrl, val) {
         return val;
     }
-    hsla(val) {
+    hsla(ctrl, val) {
         return hexToHSLA(val);
     }
 }

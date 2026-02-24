@@ -36,6 +36,9 @@
       width: 24.5%;
       display: inline-block;
     } 
+    #ui-panel #renderer-select {
+      font-size: 1.2rem;
+    }
 
   label input {
     display: inline-block;
@@ -73,7 +76,7 @@
   height: 3rem;
 }
    .import-export {
-    margin: 1rem 0 1rem 0;
+    margin: 1rem 0 1rem 1rem;
    }
     .import-export * {
       font-size: 1.2rem;

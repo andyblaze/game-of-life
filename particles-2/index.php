@@ -21,8 +21,8 @@ function selectCtrl($name, $options, $type='str', $property='', $prefix='') {
         $opts .= "<option value=\"{$val}\">{$txt}</option>";
     }
     return "<label>
-      {$lbl}: <!--<span id=\"{$name}-lbl\">{$val}</span>-->
-      <select id=\"{$name}-select\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\">{$opts}</select>
+      {$lbl}: 
+      <select id=\"{$name}-select\" data-property=\"{$prop}\" data-type=\"{$type}\">{$opts}</select>
     </label>";
 }
 function colorPicker($name, $val, $type, $property, $prefix='color-') {
@@ -46,7 +46,7 @@ function select($name, $options) {
 }
 function checkboxCtrl($name) {
     $lbl = ucfirst($name);
-    return "<label for=\"{$name}\">{$lbl} <input type=\"checkbox\" class=\"force-ticker\" id=\"{$name}\" data-property=\"{$name}\"  data-force=\"{$name}\" data-type=\"bool\" value=\"1\" /></label>";
+    return "<label for=\"{$name}\">{$lbl} <input type=\"checkbox\" class=\"force-checkbox\" id=\"{$name}\" data-property=\"{$name}\"  data-force=\"{$name}\" data-type=\"bool\" value=\"1\" /></label>";
 }
 $controls = [
     'spawnXCtrl'        => slider('X', 0, 820, 1, 410, 'int', 'spawn_x', 'spawn-pos-'),

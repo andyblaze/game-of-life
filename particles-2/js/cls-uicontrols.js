@@ -39,6 +39,11 @@ export default class UiControls {
                 const lbl = ctrl.dataset.label ?? null;
                 if ( lbl )
                     byId(lbl).textContent = ctrl.value;
+                if ( ctrl.type === "checkbox" ) {
+                    ctrl.checked = ctrl.value;
+                }
+                if ( ctrl.type === "select" || ctrl.type === "checkbox" )
+                    ctrl.dispatchEvent(new Event("change", { bubbles: true }));
             }
         });
     }

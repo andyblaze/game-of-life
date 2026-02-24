@@ -27,7 +27,7 @@ byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); 
 
 const forces = new ParticleForces(config);
 
-byQsArray(".force-ticker").forEach(ctrl => {
+byQsArray(".force-checkbox").forEach(ctrl => {
     ctrl.onclick = () => {
         const forceName = ctrl.dataset.force;
         forces.set(forceName);

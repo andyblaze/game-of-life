@@ -14,8 +14,8 @@ export default class Cfg {
         if ( ctrl.type === "checkbox" && ctrl.checked === false ) return;
         const type = ctrl.dataset.type;
         const property = ctrl.dataset.property;
-        this[property] = this.converter.apply(type, ctrl.value);
-        this.controlsData[property] = this.converter.apply(type, ctrl.value);
+        this[property] = this.converter.apply(type, ctrl, ctrl.value);
+        this.controlsData[property] = this.converter.apply(type, ctrl, ctrl.value);
     }
     update(ctrls) {
         for ( const ctrl of ctrls ) {
@@ -26,9 +26,8 @@ export default class Cfg {
         return JSON.stringify(this.controlsData);
     }
     importPreset(data) {        
-        const ctrls = JSON.parse(data); //console.log("ip", data, ctrls);
+        const ctrls = JSON.parse(data);
         for (const [key, val] of Object.entries(ctrls)) {
-            //console.log(key, val);
             this[key] = val;
             this.controlsData[key] = val;
         }

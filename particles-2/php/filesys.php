@@ -1,11 +1,12 @@
 <?php 
 $data = json_decode(file_get_contents('php://input'), true);
 
+$path = '../';
 $filename = strtolower(trim($data['fname']));
 $action = $data['action'];
 
 if ( $action === 'export' ) {
-    $filename = 'presets/' . $filename  . '.json';
+    $filename = $path . $filename  . '.json';
     $json = $data['json'];
     $ok = true;
     if ( false === file_exists($filename) ) $ok = $ok && touch($filename);
@@ -17,11 +18,11 @@ if ( $action === 'import' ) {
     $ok = true;
     $fe = false;
     $jsonok = true;
-    if ( true === file_exists($filename) ) {
+    if ( true === file_exists($path . $filename) ) {
         $fe = true;
-        $json = file_get_contents($filename);
+        $json = file_get_contents($path . $filename);
         if ( $json === false ) $jsonok = false;
         
-    }
+    } else die($path . $filename);
     echo $json;
 }
