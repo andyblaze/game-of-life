@@ -5,19 +5,19 @@ import VortexForce from "./cls-vortex-force.js";
 export default class ParticleForces {
     constructor(cfg) { 
         this.cfg = cfg;
-        this.items = {
-            repulsor: { active:false, force: new RepulsorForce(cfg) },
-            attractor: { active: false, force: new AttractorForce(cfg)},
-            vortex: { active: false, force: new VortexForce(cfg) }
+        this.forces = {
+            repulsor: new RepulsorForce(cfg),
+            attractor: new AttractorForce(cfg),
+            vortex: new VortexForce(cfg)
         }
     }
     apply(particles) {
-        for ( const [key, item] of Object.entries(this.items) ) {
+        for ( const [key, force] of Object.entries(this.forces) ) {
             if ( this.cfg[key] === true )
-                item.force.apply(particles);
+                force.apply(particles);
         }
     }
     set(key) {
-        this.items[key].active = ! this.items[key].active;
+        //this.items[key].active = ! this.items[key].active;
     }
 }
