@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Particle Workspace</title>
-<link rel="stylesheet" href="sys.css">
+<link rel="stylesheet" href="css/sys.css">
 </head>
 <body>
  <!-- UI panel --> 
@@ -82,6 +82,6 @@
     <div><canvas id="effect" width="820" height="820"></canvas></div>
     <div id="export-result"></div>
 </div>
-<script src="main.js" type="module"></script>
+<script src="js/main.js" type="module"></script>
 </body>
 </html>

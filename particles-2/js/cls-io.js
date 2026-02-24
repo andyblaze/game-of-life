@@ -8,7 +8,7 @@ export default class IO {
             fname: byId("fname").value,
             action: "export"
         };
-        Ajax.post('filesys.php', payload)
+        Ajax.post('php/filesys.php', payload)
             .then(response => {
                 console.log('Saved:', response);
             })
@@ -21,7 +21,7 @@ export default class IO {
             fname: byId("presets").value,
             action: "import"
         };
-        Ajax.post('filesys.php', payload)
+        Ajax.post('php/filesys.php', payload)
             .then(response => {
                 cfg.importPreset(response);
                 ui.updateFromConfig(cfg);

@@ -79,4 +79,4 @@ $controls = [
     'vortexCtrl'        => checkboxCtrl('vortex')
 ];
 extract($controls);
-include('view.php');
+include('php/view.php');
