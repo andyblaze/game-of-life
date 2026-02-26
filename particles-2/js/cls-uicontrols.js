@@ -34,6 +34,7 @@ export default class UiControls {
                     ctrl.value = hslaToHex(cfg.controlsData[prop]);
                 } else {
                     if ( ctrl.type === "checkbox" ) {
+                        if ( prop === "vortex" ) console.log(prop, cfg.controlsData[prop], cfg.controlsData);
                         const chk = cfg.controlsData[prop];
                         ctrl.checked = chk;
                         if (chk) {
@@ -49,8 +50,8 @@ export default class UiControls {
                 if ( lbl )
                     byId(lbl).textContent = ctrl.value;
 
-                if ( ctrl.type === "select" || ctrl.type === "checkbox" )
-                    ctrl.dispatchEvent(new Event("change", { bubbles: true }));
+                //if ( ctrl.type === "select" || ctrl.type === "checkbox" )
+                //    ctrl.dispatchEvent(new Event("change", { bubbles: true }));
             }
         });
     }
