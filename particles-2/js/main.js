@@ -23,16 +23,19 @@ const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 const rendererFactory = new RendererFactory(byId("renderer-select"), config);
 
 let renderer = rendererFactory.init(config);
-byId("renderer-select").onchange = () => { renderer = rendererFactory.change(); }   
+byId("renderer-select").onchange = () => { 
+    config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
+    renderer = rendererFactory.change(); 
+}   
 
 const forces = new ParticleForces(config);
 
-byQsArray(".force-checkbox").forEach(ctrl => {
+/*byQsArray(".force-checkbox").forEach(ctrl => {
     ctrl.onclick = () => {
-        const forceName = ctrl.dataset.force;
-        forces.set(forceName);
+        //const forceName = ctrl.dataset.force;
+        //forces.set(forceName);
     };
-});
+});*/
 
 TooltipHelp.init(".help", ".help-tooltip");
 
