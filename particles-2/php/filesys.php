@@ -6,7 +6,7 @@ $filename = strtolower(trim($data['fname']));
 $action = $data['action'];
 
 if ( $action === 'export' ) {
-    $filename = $path . $filename  . '.json';
+    $filename = $path . 'presets/' . $filename  . '.json';
     $json = $data['json'];
     $ok = true;
     if ( false === file_exists($filename) ) $ok = $ok && touch($filename);

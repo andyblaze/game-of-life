@@ -67,6 +67,7 @@
         <?=$repulsorCtrl;?>
         <?=$attractorCtrl;?>
         <?=$vortexCtrl;?>
+        <?=$gravityCtrl;?>
     </div>
 </form>
 <!-- Workspace canvas -->

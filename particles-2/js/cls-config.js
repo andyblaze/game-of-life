@@ -21,7 +21,7 @@ export default class Cfg {
         for ( const ctrl of ctrls ) {
             this.updateCtrl(ctrl);
         }
-        //console.log(this);
+        //console.log(this.controlsData);
     }
     export() {
         return JSON.stringify(this.controlsData);
@@ -31,6 +31,8 @@ export default class Cfg {
         for (const [key, val] of Object.entries(ctrls)) {
             this[key] = val;
             this.controlsData[key] = val;
+            //if ( key === "gravity" ) console.log(val, typeof val);
         }
+        console.log(this.controlsData);
     }
 }

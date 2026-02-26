@@ -76,7 +76,8 @@ $controls = [
     'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections', 'line']),
     'repulsorCtrl'      => checkboxCtrl('repulsor'),
     'attractorCtrl'     => checkboxCtrl('attractor'),
-    'vortexCtrl'        => checkboxCtrl('vortex')
+    'vortexCtrl'        => checkboxCtrl('vortex'),
+    'gravityCtrl'       => checkboxCtrl('gravity')
 ];
 extract($controls);
 include('php/view.php');

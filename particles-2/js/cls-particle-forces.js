@@ -1,6 +1,7 @@
 import AttractorForce from "./cls-attractor-force.js";
 import RepulsorForce from "./cls-repulsor-force.js";
 import VortexForce from "./cls-vortex-force.js";
+import GravityForce from "./cls-gravity-force.js";
 
 export default class ParticleForces {
     constructor(cfg) { 
@@ -8,7 +9,8 @@ export default class ParticleForces {
         this.forces = {
             repulsor: new RepulsorForce(cfg),
             attractor: new AttractorForce(cfg),
-            vortex: new VortexForce(cfg)
+            vortex: new VortexForce(cfg),
+            gravity: new GravityForce(cfg)
         }
     }
     apply(particles) {
