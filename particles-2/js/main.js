@@ -24,25 +24,25 @@ const rendererFactory = new RendererFactory(byId("renderer-select"), config);
 
 let renderer = rendererFactory.init(config);
 byId("renderer-select").onchange = () => { 
+    //emitter.clear();
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
     renderer = rendererFactory.change(); 
 }   
 
 const forces = new ParticleForces(config);
 
-/*byQsArray(".force-checkbox").forEach(ctrl => {
-    ctrl.onclick = () => {
-        //const forceName = ctrl.dataset.force;
-        //forces.set(forceName);
-    };
-});*/
-
 TooltipHelp.init(".help", ".help-tooltip");
 
+let lastTimestamp = 0;
 function loop(timestamp) {    
+    config.ctx.globalCompositeOperation = "destination-out";
     config.ctx.fillStyle = `rgba(0, 0, 0, ${config.bg_opacity})`;
     config.ctx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
-    emitter.update(config, 1); // dt = 1 frame (super simple)
+    config.ctx.globalCompositeOperation = "source-over";
+    if ( lastTimestamp === 0 ) lastTimestamp = timestamp;
+    const dt = (timestamp - lastTimestamp) / 16.666; // 16.666 ms ~ 60 FPS
+    lastTimestamp = timestamp;
+    emitter.update(config, dt); 
     forces.apply(emitter.particles);
     renderer.draw(emitter.particles, config.ctx);
     DeltaReport.log(timestamp);

@@ -38,7 +38,7 @@ function select($name, $options) {
     $htm = "<select name=\"{$name}\" id=\"{$name}\">";
     foreach ( $options as $opt ) {
         $val = $opt;
-        $txt = ucfirst(str_replace('.json', '', basename($val)));
+        $txt = ucfirst(str_replace(['-', '.json'], [' ', ''], basename($val)));
         $htm .= "<option value=\"{$val}\">{$txt}</option>";
     }
     $htm .= '</select>';

@@ -6,6 +6,7 @@ $filename = strtolower(trim($data['fname']));
 $action = $data['action'];
 
 if ( $action === 'export' ) {
+    $filename = str_replace(' ', '-', $filename);
     $filename = $path . 'presets/' . $filename  . '.json';
     $json = $data['json'];
     $ok = true;

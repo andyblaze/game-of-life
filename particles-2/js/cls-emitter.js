@@ -18,7 +18,6 @@ export default class Emitter {
         const variance_rate = axis * variance;
         return mt_randf(-variance_rate, variance_rate);
     }
-
     spawnParticle(cfg) { 
         const halfSpread = cfg.spread / 2;
         const offset = mt_randf(-halfSpread, halfSpread);
@@ -38,7 +37,6 @@ export default class Emitter {
         const p = new Particle(conf);
         this.particles.push(p);
     }
-
     update(cfg, dt) {
         for ( let i = 0; i < cfg.density; i++ ) {
             this.spawnParticle(cfg); 
@@ -46,5 +44,8 @@ export default class Emitter {
         this.particles.forEach(p => p.update(dt));
         // remove dead particles
         this.particles = this.particles.filter(p => p.isAlive());
+    }
+    clear() {
+        this.particles = [];
     }
 }
