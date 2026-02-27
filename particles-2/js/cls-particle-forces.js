@@ -15,11 +15,11 @@ export default class ParticleForces {
     }
     apply(particles) {
         for ( const [key, force] of Object.entries(this.forces) ) {
-            if ( this.cfg[key] === true )
+            //if ( this.cfg[key] === true )
                 force.apply(particles);
         }
     }
-    set(key) {
+    set(key, val) {
         //this.items[key].active = ! this.items[key].active;
     }
 }

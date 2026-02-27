@@ -3,12 +3,15 @@ import { randomFrom } from "./functions.js";
 export default class AttractorForce {
     static type = "attractor";
 
-    constructor() {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.baseStrength = 0.1;
         this.weakmap = new WeakMap();
-        this.strength = 0.1; // tweakable attraction constant
+        //this.strength = 0.1; // tweakable attraction constant
     }
 
     apply(particles) {
+        const strength = this.baseStrength * this.cfg.attractor; 
         // Find existing attractor
         let attractor = null;
         particles.forEach(p => {
@@ -32,7 +35,7 @@ export default class AttractorForce {
             let distSq = dx * dx + dy * dy;
             distSq = Math.max(distSq, 0.01);
 
-            let force = this.strength / distSq;
+            let force = strength / distSq;
 
             p.vel.x += dx * force;
             p.vel.y += dy * force;

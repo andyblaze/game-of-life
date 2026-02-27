@@ -2,13 +2,16 @@ export default class VortexForce {
     static type = "vortex";
 
     constructor(cfg) {
-        this.strength = 0.005; // tweakable swirl strength
+        this.cfg = cfg;
+        this.baseStrength = 0.005; // tweak this
+        //this.strength = cfg.gravity;
         this.clockwise = true; // flip for direction
         this.centerX = cfg.canvasCenter.x;
         this.centerY = cfg.canvasCenter.y;
     }
 
     apply(particles) {
+        const strength = this.baseStrength * this.cfg.vortex; 
         particles.forEach(p => {
             // Vector from center to particle
             let dx = p.pos.x - this.centerX;
@@ -30,7 +33,7 @@ export default class VortexForce {
 
             // Optional falloff (inverse distance, not square)
             let dist = Math.sqrt(distSq);
-            let force = this.strength / dist;
+            let force = strength / dist;
 
             p.vel.x += perpX * force;
             p.vel.y += perpY * force;

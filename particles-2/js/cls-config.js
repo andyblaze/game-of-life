@@ -33,6 +33,6 @@ export default class Cfg {
             this.controlsData[key] = val;
             if ( key === "vortex" ) console.log(val, typeof val);
         }
-        console.log(this.controlsData);
+        //console.log(this.controlsData);
     }
 }

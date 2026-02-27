@@ -2,12 +2,15 @@ export default class GravityForce {
     static type = "gravity";
 
     constructor(cfg) {
-        this.strength = 0.02; // tweak this
+        this.cfg = cfg;
+        this.baseStrength = 0.02; // tweak this
+        //this.strength = cfg.gravity;
     }
 
     apply(particles) {
+        const strength = this.baseStrength * this.cfg.gravity; 
         particles.forEach(p => {
-            p.vel.y += this.strength; // push downward
+            p.vel.y += strength; 
         });
     }
 }

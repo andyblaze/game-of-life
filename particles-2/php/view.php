@@ -63,7 +63,7 @@
         <?=$perlinSpeedCtrl;?>
     </div>
     <?=$rendererCtrl;?>
-    <div class="col-3 inlined">
+    <div class="col-4">
         <?=$repulsorCtrl;?>
         <?=$attractorCtrl;?>
         <?=$vortexCtrl;?>
@@ -83,6 +83,6 @@
     <div><canvas id="effect" width="820" height="820"></canvas></div>
     <div id="export-result"></div>
 </div>
-<script src="js/main.js" type="module"></script>
+<script src="js/main.js?h" type="module"></script>
 </body>
 </html>

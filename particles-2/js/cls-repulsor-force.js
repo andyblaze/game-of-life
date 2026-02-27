@@ -3,11 +3,14 @@ import { randomFrom } from "./functions.js";
 export default class RepulsorForce {
     static type = "repulsor";
 
-    constructor() {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.baseStrength = 0.5;
         this.weakmap = new WeakMap();
-        this.strength = 0.5; // tweakable repulsion constant
+        //this.strength = 0.5; // tweakable repulsion constant
     }
     apply(particles) {
+        const strength = this.baseStrength * this.cfg.repulsor; 
         // Find existing repulsor
         let repulsor = null;
 
@@ -30,7 +33,7 @@ export default class RepulsorForce {
             let distSq = dx * dx + dy * dy;
             distSq = Math.max(distSq, 0.01);
 
-            let force = this.strength / distSq;
+            let force = strength / distSq;
 
             p.vel.x += dx * force;
             p.vel.y += dy * force;
