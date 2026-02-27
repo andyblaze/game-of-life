@@ -74,9 +74,9 @@ $controls = [
     'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
     'importSelect'      => select('presets', glob('presets/*.json')),
     'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections', 'line']),
-    'repulsorCtrl'      => slider('repulsor', 0, 1, 0.1, 0, 'float', 'repulsor', 'force'), //checkboxCtrl('repulsor'),
-    'attractorCtrl'     => slider('attractor', 0, 1, 0.1, 0, 'float', 'attractor', 'force'), //checkboxCtrl('attractor'),
-    'vortexCtrl'        => slider('vortex', -10, 10, 0.1, 0, 'float', 'vortex', 'force'), //checkboxCtrl('vortex'),
+    'repulsorCtrl'      => slider('repulsor', 0, 2, 0.1, 0, 'float', 'repulsor', 'force'), //checkboxCtrl('repulsor'),
+    'attractorCtrl'     => slider('attractor', 0, 2, 0.1, 0, 'float', 'attractor', 'force'), //checkboxCtrl('attractor'),
+    'vortexCtrl'        => slider('vortex', -5, 5, 0.1, 0, 'float', 'vortex', 'force'), //checkboxCtrl('vortex'),
     'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force')//checkboxCtrl('gravity')
 ];
 extract($controls);
