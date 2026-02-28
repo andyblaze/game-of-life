@@ -12,46 +12,62 @@ export default class PetalRenderer {
             const vy = p.vel.y;
             const size = p.size;
 
-            // skip zero-length velocity
             if (vx === 0 && vy === 0) return;
 
-            // angle along velocity
-            const angle = Math.atan2(vy, vx);
+            // normalize velocity for direction
+            const mag = Math.hypot(vx, vy);
+            const dirX = vx / mag;
+            const dirY = vy / mag;
 
-            // deterministic petal dimensions
-            const length = size * 2.5;     // tip to base distance
-            const baseWidth = size * 1.8;  // width of fat end
+            // perpendicular vector
+            const perpX = -dirY;
+            const perpY = dirX;
 
             // tip at particle
-            const tipX = x;
-            const tipY = y;
+            const tip = [x, y];
 
-            // base center along velocity
-            const baseX = x + vx * length;
-            const baseY = y + vy * length;
+            // fat base center along velocity
+            const length = size * 2.5;
+            const baseCenter = [x + dirX * length, y + dirY * length];
 
-            // perpendicular offset for base edges
-            const dx = Math.cos(angle + Math.PI / 2) * baseWidth / 2;
-            const dy = Math.sin(angle + Math.PI / 2) * baseWidth / 2;
-            const baseLeft  = [baseX - dx, baseY - dy];
-            const baseRight = [baseX + dx, baseY + dy];
+            // width of fat end
+            const baseWidth = size * 2;
+            const leftBase  = [baseCenter[0] - perpX * baseWidth / 2, baseCenter[1] - perpY * baseWidth / 2];
+            const rightBase = [baseCenter[0] + perpX * baseWidth / 2, baseCenter[1] + perpY * baseWidth / 2];
 
-            // control points for bulging sides (1/3 along the line from tip to base, pushed outward)
-            const ctrlFactor = 0.33;
-            const bulge = size; // amount of outward curve
+            // arc radius for rounded top
+            const arcRadius = size * 1.2;
 
-            const ctrlLeftX  = tipX + (baseLeft[0] - tipX) * ctrlFactor - Math.sin(angle) * bulge;
-            const ctrlLeftY  = tipY + (baseLeft[1] - tipY) * ctrlFactor + Math.cos(angle) * bulge;
-
-            const ctrlRightX = tipX + (baseRight[0] - tipX) * ctrlFactor + Math.sin(angle) * bulge;
-            const ctrlRightY = tipY + (baseRight[1] - tipY) * ctrlFactor - Math.cos(angle) * bulge;
-
-            // draw teardrop petal
             ctx.fillStyle = HSLAString(p.color);
             ctx.beginPath();
-            ctx.moveTo(tipX, tipY);
-            ctx.quadraticCurveTo(ctrlLeftX, ctrlLeftY, baseLeft[0], baseLeft[1]);
-            ctx.quadraticCurveTo(ctrlRightX, ctrlRightY, tipX, tipY);
+            ctx.moveTo(...tip);
+
+            // left side quadratic to left base
+            ctx.quadraticCurveTo(
+                tip[0] + perpX * size * 0.5,
+                tip[1] + perpY * size * 0.5,
+                ...leftBase
+            );
+
+            // top semicircle (fat end)
+            const startAngle = Math.atan2(leftBase[1] - baseCenter[1], leftBase[0] - baseCenter[0]);
+            const endAngle   = Math.atan2(rightBase[1] - baseCenter[1], rightBase[0] - baseCenter[0]);
+            ctx.arc(
+                baseCenter[0],
+                baseCenter[1],
+                arcRadius,
+                startAngle,
+                endAngle,
+                false
+            );
+
+            // right side quadratic back to tip
+            ctx.quadraticCurveTo(
+                tip[0] - perpX * size * 0.5,
+                tip[1] - perpY * size * 0.5,
+                ...tip
+            );
+
             ctx.closePath();
             ctx.fill();
         });
