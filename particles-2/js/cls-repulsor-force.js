@@ -7,7 +7,6 @@ export default class RepulsorForce {
         this.cfg = cfg;
         this.baseStrength = 0.5;
         this.weakmap = new WeakMap();
-        //this.strength = 0.5; // tweakable repulsion constant
     }
     apply(particles) {
         const strength = this.baseStrength * this.cfg.repulsor; 

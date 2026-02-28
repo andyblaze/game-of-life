@@ -4,7 +4,6 @@ export default class GravityForce {
     constructor(cfg) {
         this.cfg = cfg;
         this.baseStrength = 0.02; // tweak this
-        //this.strength = cfg.gravity;
     }
 
     apply(particles) {

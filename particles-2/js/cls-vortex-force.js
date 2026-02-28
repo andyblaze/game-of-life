@@ -4,8 +4,6 @@ export default class VortexForce {
     constructor(cfg) {
         this.cfg = cfg;
         this.baseStrength = 0.005; // tweak this
-        //this.strength = cfg.gravity;
-        this.clockwise = true; // flip for direction
         this.centerX = cfg.canvasCenter.x;
         this.centerY = cfg.canvasCenter.y;
     }
@@ -23,13 +21,8 @@ export default class VortexForce {
             // Perpendicular vector (rotate 90°)
             let perpX, perpY;
 
-            if (this.clockwise) {
-                perpX = dy;
-                perpY = -dx;
-            } else {
-                perpX = -dy;
-                perpY = dx;
-            }
+            perpX = dy;
+            perpY = -dx;
 
             // Optional falloff (inverse distance, not square)
             let dist = Math.sqrt(distSq);

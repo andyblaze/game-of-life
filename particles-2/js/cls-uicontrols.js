@@ -5,7 +5,7 @@ export default class UiControls {
         this.observers = [];
         this.ctrls = byQsArray(selector);
         for ( const ctrl of this.ctrls ) {
-            if ( ctrl.type === "select" || ctrl.type === "checkbox" )
+            if ( ctrl.type === "select" )
                 ctrl.onchange = () => this.synch(ctrl);
             else
                 ctrl.oninput = () => this.synch(ctrl);
@@ -33,18 +33,7 @@ export default class UiControls {
                 if (typeof cfg.controlsData[prop] === "object" && "h" in cfg.controlsData[prop]) {
                     ctrl.value = hslaToHex(cfg.controlsData[prop]);
                 } else {
-                    if ( ctrl.type === "checkbox" ) {
-                        //if ( prop === "vortex" ) console.log(prop, cfg.controlsData[prop], cfg.controlsData);
-                        const chk = cfg.controlsData[prop];
-                        ctrl.checked = chk;
-                        if (chk) {
-                            ctrl.setAttribute("checked", "checked");
-                        } else {
-                            ctrl.removeAttribute("checked");
-                        }
-                    }  
-                    else                   
-                        ctrl.value = cfg.controlsData[prop];
+                    ctrl.value = cfg.controlsData[prop];
                 }
                 const lbl = ctrl.dataset.label ?? null;
                 if ( lbl )

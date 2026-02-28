@@ -7,7 +7,6 @@ export default class AttractorForce {
         this.cfg = cfg;
         this.baseStrength = 0.1;
         this.weakmap = new WeakMap();
-        //this.strength = 0.1; // tweakable attraction constant
     }
 
     apply(particles) {
