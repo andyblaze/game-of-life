@@ -77,7 +77,8 @@ $controls = [
     'repulsorCtrl'      => slider('repulsor', 0, 2, 0.1, 0, 'float', 'repulsor', 'force'), 
     'attractorCtrl'     => slider('attractor', 0, 2, 0.1, 0, 'float', 'attractor', 'force'), 
     'vortexCtrl'        => slider('vortex', -5, 5, 0.1, 0, 'float', 'vortex', 'force'), 
-    'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force')
+    'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force'),
+    'boidsCtrl'         => slider('boids', 0, 2, 0.1, 0, 'float', 'boids', 'force')
 ];
 extract($controls);
 include('php/view.php');

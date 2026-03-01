@@ -36,6 +36,10 @@
       width: 24.5%;
       display: inline-block;
     } 
+    #ui-panel .col-5 label {
+      width: 19.5%;
+      display: inline-block;
+    } 
     #ui-panel #renderer-select {
       font-size: 1.2rem;
     }

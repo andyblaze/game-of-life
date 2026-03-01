@@ -63,7 +63,8 @@
         <?=$perlinSpeedCtrl;?>
     </div>
     <?=$rendererCtrl;?>
-    <div class="col-4">
+    <div class="col-5">
+        <?=$boidsCtrl;?>
         <?=$repulsorCtrl;?>
         <?=$attractorCtrl;?>
         <?=$vortexCtrl;?>
