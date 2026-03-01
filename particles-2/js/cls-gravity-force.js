@@ -8,6 +8,7 @@ export default class GravityForce {
 
     apply(particles) {
         const strength = this.baseStrength * this.cfg.gravity; 
+        if ( strength === 0 ) return;
         particles.forEach(p => {
             p.vel.y += strength; 
         });

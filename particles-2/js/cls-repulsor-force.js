@@ -10,6 +10,7 @@ export default class RepulsorForce {
     }
     apply(particles) {
         const strength = this.baseStrength * this.cfg.repulsor; 
+        if ( strength === 0 ) return;
         // Find existing repulsor
         let repulsor = null;
 
