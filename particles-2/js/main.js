@@ -36,8 +36,7 @@ class DeviceTester {
 }
 
 const device = new DeviceTester("screen-warning", "continue-btn"); 
-device.test();
-
+device.test(); 
 
 
 const config = new Cfg(new TypeConverter(), "effect");
