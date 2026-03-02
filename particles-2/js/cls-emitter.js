@@ -48,4 +48,7 @@ export default class Emitter {
     clear() {
         this.particles = [];
     }
+    getSize() {
+        return this.particles.length;
+    }
 }

@@ -66,24 +66,24 @@
     display: block;
     width: 100%;
    }
-#workspace #fps {
+#workspace #hud {
     position: absolute;
     top:0px;
     right: 0px;
     width: 9rem;
-    height: 3rem;
+    height: 5rem;
     padding: 0.5rem;
     font-size: 1.5rem;
    }
-#fps-report {
+#fps-report, #pos-report {
   display: inline-block;
   width:3rem;
-  height: 3rem;
+  height: 2.2rem;
 }
    .import-export {
     margin: 1rem 0 1rem 0;
    }
-    .import-export * {
+    .import-export, .import-export * {
       font-size: 1.2rem;
     }
     .import-export button {

@@ -62,23 +62,28 @@
         <?=$perlinScaleCtrl;?>
         <?=$perlinSpeedCtrl;?>
     </div>
-    <?=$rendererCtrl;?>
     <div class="col-5">
+        <h4>Forces <a class="help" data-help="Experiment with these. Some are strong !">?</a></h4>
         <?=$boidsCtrl;?>
         <?=$repulsorCtrl;?>
         <?=$attractorCtrl;?>
         <?=$vortexCtrl;?>
         <?=$gravityCtrl;?>
     </div>
+    <?=$rendererCtrl;?>
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
-    <div id="fps">FPS: <span id="fps-report">60</span></div>
+    <div id="hud">
+        <div>FPS: <span id="fps-report">60</span></div>
+        <div>POS: <span id="pos-report">60</span></div>
+    </div>
     <div class="import-export">
+        Presets: 
         <?=$importSelect;?> 
-        <button id="import" type="button">Import</button>
+        <button id="import" type="button">Load</button>
         <button id="export" type="button">Export</button> 
-        <label for="fname">Type:</label>
+        <label for="fname">Name:</label>
         <input type="text" id="fname" />
     </div>
     <div><canvas id="effect" width="820" height="820"></canvas></div>

@@ -9,7 +9,7 @@ export default class DeltaReport {
     static max = 0;
     static timeSum = 0; // total ms of frame times (not normalised)
 
-    static log(timestamp) {
+    static log(timestamp, numParticles) {
         this.frameCount++;
         const deltaTime = timestamp - this.lastTime; // ms since last frame
         const delta = deltaTime / 16.67; // normalised to 60fps
@@ -50,6 +50,9 @@ export default class DeltaReport {
             } else {
                 fpsEl.classList.add("fps-bad");
             }
+
+            const posEl = byId("pos-report");
+            posEl.innerText = numParticles;
 
             // reset accumulators
             this.frameCount = 0;

@@ -59,7 +59,7 @@ function loop(timestamp) {
     // --- blit offscreen canvas onto visible canvas ---
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight); // optional, just ensures clean frame
     config.ctx.drawImage(offCanvas, 0, 0);
-    DeltaReport.log(timestamp);
+    DeltaReport.log(timestamp, emitter.getSize());
     requestAnimationFrame(loop);
 }
 
