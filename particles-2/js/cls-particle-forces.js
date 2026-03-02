@@ -17,7 +17,8 @@ export default class ParticleForces {
     }
     apply(particles) {
         for ( const [key, force] of Object.entries(this.forces) ) {
-            force.apply(particles);
+            if ( particles.length > 0 )
+                force.apply(particles);
         }
     }
     set(key, val) {}

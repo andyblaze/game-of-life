@@ -10,7 +10,7 @@ export default class BoidsForce {
 
     apply(particles) {
         const strength = this.baseStrength * this.cfg.boids; 
-        if (strength === 0) return;
+        if ( strength === 0 || particles.length === 0 ) return;
 
         const len = particles.length;
 

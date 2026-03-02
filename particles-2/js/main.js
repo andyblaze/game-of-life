@@ -9,30 +9,45 @@ import ParticleForces from "./cls-particle-forces.js";
 import TooltipHelp from "./cls-tooltips.js";
 import DeltaReport from "./delta-report.js";
 
-byId("ui-panel").reset();
-byId("export").onclick = () => IO.export(config);
-byId("import").onclick = () => IO.import(config, uiControls);
-
 const config = new Cfg(new TypeConverter(), "effect");
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
 uiControls.notify();
+
+byId("ui-panel").reset();
+
+byId("export").onclick = () => IO.export(config);
+byId("import").onclick = () => {
+    emitter.clear();
+    config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
+    IO.import(config, uiControls);
+};
 
 const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
 const rendererFactory = new RendererFactory(byId("renderer-select"), config);
 
 // --- Offscreen canvas setup ---
-const offCanvas = document.createElement("canvas");
-offCanvas.width = config.canvasWidth;
-offCanvas.height = config.canvasHeight;
-const offCtx = offCanvas.getContext("2d");
+class OffScreen {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = cfg.canvasWidth;
+        this.canvas.height = cfg.canvasHeight;
+        this.ctx = this.canvas.getContext("2d");
+    }
+    clear() {
+        this.ctx.clearRect(0, 0, this.cfg.canvasWidth, this.cfg.canvasHeight);
+    }
+}
+
+const offScreen = new OffScreen(config);
 
 let renderer = rendererFactory.init(config);
 byId("renderer-select").onchange = () => { 
-    //emitter.clear();
+    emitter.clear();
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
-    offCtx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
+    offScreen.clear();
     renderer = rendererFactory.change(); 
 }   
 
@@ -47,18 +62,18 @@ function loop(timestamp) {
     lastTimestamp = timestamp;
 
     // --- fade the offscreen canvas to create trails ---
-    offCtx.globalCompositeOperation = "source-over";
-    offCtx.fillStyle = `rgba(0, 0, 0, ${config.bg_opacity})`;
-    offCtx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
+    offScreen.ctx.globalCompositeOperation = "source-over";
+    offScreen.ctx.fillStyle = `rgba(0, 0, 0, ${config.bg_opacity})`;
+    offScreen.ctx.fillRect(0, 0, config.canvasWidth, config.canvasHeight);
 
     emitter.update(config, dt); 
     forces.apply(emitter.particles);
     //renderer.draw(emitter.particles, config.ctx);
-    renderer.draw(emitter.particles, offCtx);
+    renderer.draw(emitter.particles, offScreen.ctx);
 
     // --- blit offscreen canvas onto visible canvas ---
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight); // optional, just ensures clean frame
-    config.ctx.drawImage(offCanvas, 0, 0);
+    config.ctx.drawImage(offScreen.canvas, 0, 0);
     DeltaReport.log(timestamp, emitter.getSize());
     requestAnimationFrame(loop);
 }

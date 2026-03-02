@@ -11,7 +11,7 @@ export default class AttractorForce {
 
     apply(particles) {
         const strength = this.baseStrength * this.cfg.attractor; 
-        if ( strength === 0 ) return;
+        if ( strength === 0 || particles.length === 0 ) return;
         // Find existing attractor
         let attractor = null;
         particles.forEach(p => {

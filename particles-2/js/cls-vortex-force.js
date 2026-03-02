@@ -10,7 +10,7 @@ export default class VortexForce {
 
     apply(particles) {
         const strength = this.baseStrength * this.cfg.vortex; 
-        if ( strength === 0 ) return;
+        if ( strength === 0 || particles.length === 0 ) return;
         particles.forEach(p => {
             // Vector from center to particle
             let dx = p.pos.x - this.centerX;
