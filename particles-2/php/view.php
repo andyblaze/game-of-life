@@ -74,7 +74,7 @@
 </form>
 <!-- Workspace canvas -->
 <div id="workspace">
-    <div id="hud">
+    <div id="hud" title="Frames per second. / Particles on screen.">
         <div>FPS: <span id="fps-report">60</span></div>
         <div>POS: <span id="pos-report">60</span></div>
     </div>
