@@ -9,16 +9,36 @@ import ParticleForces from "./cls-particle-forces.js";
 import TooltipHelp from "./cls-tooltips.js";
 import DeltaReport from "./delta-report.js";
 
-const screenWidth  = window.screen.width;
-const screenHeight = window.screen.height;
-const viewportWidth  = window.innerWidth;
-const viewportHeight = window.innerHeight;
+class DeviceTester {
+    constructor(modalID, closeButtonID) {
+        this.modalID = modalID;
+        const screenWidth  = window.screen.width;
+        const screenHeight = window.screen.height;
+        const viewportWidth  = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-// your minimums
-const minWidth  = 1880;
-const minHeight = 910;
+        // your minimums
+        const minWidth  = 1880;
+        const minHeight = 910;
 
-const tooSmall = viewportWidth < minWidth || viewportHeight < minHeight;
+        this.tooSmall = viewportWidth < minWidth || viewportHeight < minHeight;
+        byId(closeButtonID).onclick = () => { this.hideModal() } 
+    }
+    test() {
+        if ( this.tooSmall ) this.showModal();
+    }
+    showModal() {
+        byId(this.modalID).style.display = "flex";
+    }
+    hideModal() {
+        byId(this.modalID).style.display = "none";
+    }
+}
+
+const device = new DeviceTester("screen-warning", "continue-btn"); 
+device.test();
+
+
 
 const config = new Cfg(new TypeConverter(), "effect");
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
