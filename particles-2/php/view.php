@@ -7,6 +7,15 @@
 <link rel="stylesheet" href="css/sys.css">
 </head>
 <body>
+<div id="screen-warning">
+    <div class="modal-content">
+        <h2>Heads up!</h2>
+        <h3>This is a professional tool, not a widget for phones or old PCs / laptops.</h3>
+        <p>Best viewed on large screens (1920×1080+). Small screens WILL NOT display correctly.</p>
+        <p>Your PC may struggle with high-density presets. Proceed at your own risk.</p>
+        <button id="continue-btn">Continue anyway</button>
+    </div>
+</div>
  <!-- UI panel --> 
 <form id="ui-panel">
     <div class="col-2">

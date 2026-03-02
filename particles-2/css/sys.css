@@ -135,3 +135,59 @@
 #fps-report.fps-best { color: lime; }
 #fps-report.fps-ok   { color: orange; }
 #fps-report.fps-bad  { color: red; }
+
+/* modal stuff */
+/* Overlay background */
+#screen-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* semi-transparent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* above everything else */
+    font-family: sans-serif;
+}
+
+/* Modal content box */
+#screen-warning .modal-content {
+    background-color: #fff;
+    color: #222;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 800px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* Heading */
+#screen-warning .modal-content h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+}
+
+/* Paragraphs */
+#screen-warning .modal-content p {
+    margin: 1rem 0;
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+/* Continue button */
+#screen-warning #continue-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #0077cc;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#screen-warning #continue-btn:hover {
+    background-color: #005fa3;
+}

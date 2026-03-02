@@ -9,6 +9,17 @@ import ParticleForces from "./cls-particle-forces.js";
 import TooltipHelp from "./cls-tooltips.js";
 import DeltaReport from "./delta-report.js";
 
+const screenWidth  = window.screen.width;
+const screenHeight = window.screen.height;
+const viewportWidth  = window.innerWidth;
+const viewportHeight = window.innerHeight;
+
+// your minimums
+const minWidth  = 1880;
+const minHeight = 910;
+
+const tooSmall = viewportWidth < minWidth || viewportHeight < minHeight;
+
 const config = new Cfg(new TypeConverter(), "effect");
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
