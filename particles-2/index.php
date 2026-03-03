@@ -1,6 +1,16 @@
 <?php 
 include('php/defines.php');
 
+/*
+foreach (glob('js/cls-*.js') as $f) {
+    $dir = dirname($f);
+    $fn  = basename($f);
+    $nf  = $dir . '/' . substr($fn, 4); // remove "cls-"
+    echo $fn . ' => ' . basename($nf) . '<br>';
+    rename($f, $nf);
+}
+die();
+*/
 function exportCtrls() {
     return IN_PRODUCTION ? '' : '<button id="export" type="button">Export</button> 
         <label for="fname">Name:</label>
