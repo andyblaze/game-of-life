@@ -1,6 +1,6 @@
 import { mt_randf, mt_rand } from "./functions.js";
-import Particle from "./cls-particle.js";
-import { TweenBuilder } from "./cls-tweens.js";
+import Particle from "./particle.js";
+import { TweenBuilder } from "./tweens.js";
 
 export default class Emitter {
     constructor(x, y) {

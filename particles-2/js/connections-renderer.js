@@ -1,4 +1,4 @@
-import BaseRenderer from "./cls-baserenderer.js";
+import BaseRenderer from "./baserenderer.js";
 import { HSLAString, mt_rand, randomFrom } from "./functions.js";
 
 export default class ConnectionsRenderer {

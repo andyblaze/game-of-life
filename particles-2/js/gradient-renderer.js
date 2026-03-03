@@ -1,4 +1,4 @@
-import BaseRenderer from "./cls-baserenderer.js";
+import BaseRenderer from "./baserenderer.js";
 import { HSLAString } from "./functions.js";
 
 export default class GradientRenderer {

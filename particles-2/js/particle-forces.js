@@ -1,8 +1,8 @@
-import AttractorForce from "./cls-attractor-force.js";
-import RepulsorForce from "./cls-repulsor-force.js";
-import VortexForce from "./cls-vortex-force.js";
-import GravityForce from "./cls-gravity-force.js";
-import BoidsForce from "./cls-boids-force.js";
+import AttractorForce from "./attractor-force.js";
+import RepulsorForce from "./repulsor-force.js";
+import VortexForce from "./vortex-force.js";
+import GravityForce from "./gravity-force.js";
+import BoidsForce from "./boids-force.js";
 
 export default class ParticleForces {
     constructor(cfg) { 

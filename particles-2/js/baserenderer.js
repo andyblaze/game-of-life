@@ -1,4 +1,4 @@
-import { RendererRegistry } from "./cls-renderer-registry.js";
+import { RendererRegistry } from "./renderer-registry.js";
 
 export default class BaseRenderer {
     static register(cls) {

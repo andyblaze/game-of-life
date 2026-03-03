@@ -1,4 +1,4 @@
-import Ajax from "./cls-ajax.js";
+import Ajax from "./ajax.js";
 import { byId } from "./functions.js";
 
 export default class IO {

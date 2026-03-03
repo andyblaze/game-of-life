@@ -1,5 +1,5 @@
 import { lerp, lerpHSLAColor } from "./functions.js";
-import PerlinNoise from "./cls-perlin.js";
+import PerlinNoise from "./perlin.js";
 
 class TweenCollection {
     constructor() { 
