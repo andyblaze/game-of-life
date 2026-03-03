@@ -8,15 +8,22 @@
 <meta name="description" content="Create stunning generative art with an interactive particle system. Play with forces, trails, colors, and real-time renderers in your browser.">
 <meta name="keywords" content="particle system, generative art, canvas animation, interactive particles, boids, trails, HTML5 canvas, particle forces, browser art">
 <meta name="author" content="Ark Digital">
+<link rel="canonical" href="https://mediagraphic.co.uk/particle-workspace">
+<meta name="robots" content="index, follow" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#000000">
 
 <!-- Open Graph / social preview -->
-<meta property="og:title" content="Particle Workspace - Interactive Generative Art">
+<meta property="og:title" content="Particle System - Interactive Generative Art">
 <meta property="og:description" content="Experiment with a high-performance particle system in your browser. Trails, forces, and colorful generative effects in real time.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="images/social-preview.jpg">
+<meta property="og:image" content="https://mediagraphic.co.uk/particle-workspace/images/social-preview.jpg">
 <meta property="og:url" content="https://mediagraphic.co.uk/particle-workspace">
 
-<link rel="stylesheet" href="css/sys.css">
+<link rel="stylesheet" href="https://mediagraphic.co.uk/particle-workspace/css/sys.css">
 </head>
 <body>
 <div id="screen-warning" style="display:none;">

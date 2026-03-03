@@ -13,7 +13,7 @@ if (IN_PRODUCTION && $action === 'export') {
 if ( $action === 'export' ) {
     $path = '../';
     $filename = strtolower(trim($data['fname']));
-    $filename = str_replace(' ', '-', $filename);
+    $filename = str_replace([' ', '-'], '_', $filename);
     $filename = $path . 'presets/' . $filename  . '.json';
     $json = $data['json'];
     $ok = true;
