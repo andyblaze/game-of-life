@@ -8,32 +8,8 @@ import RendererFactory from "./cls-renderer-factory.js";
 import ParticleForces from "./cls-particle-forces.js";
 import TooltipHelp from "./cls-tooltips.js";
 import DeltaReport from "./delta-report.js";
-
-class DeviceTester {
-    constructor(modalID, closeButtonID) {
-        this.modalID = modalID;
-        const screenWidth  = window.screen.width;
-        const screenHeight = window.screen.height;
-        const viewportWidth  = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        // your minimums
-        const minWidth  = 1880;
-        const minHeight = 910;
-
-        this.tooSmall = viewportWidth < minWidth || viewportHeight < minHeight;
-        byId(closeButtonID).onclick = () => { this.hideModal() } 
-    }
-    test() {
-        if ( this.tooSmall ) this.showModal();
-    }
-    showModal() {
-        byId(this.modalID).style.display = "flex";
-    }
-    hideModal() {
-        byId(this.modalID).style.display = "none";
-    }
-}
+import DeviceTester from "./device-tester.js";
+import OffScreenCanvas from "./offscreen-canvas.js";
 
 const device = new DeviceTester("screen-warning", "continue-btn"); 
 device.test(); 
@@ -46,7 +22,8 @@ uiControls.notify();
 
 byId("ui-panel").reset();
 
-byId("export").onclick = () => IO.export(config);
+if ( byId("export") ) 
+    byId("export").onclick = () => IO.export(config);
 byId("import").onclick = () => {
     emitter.clear();
     config.ctx.clearRect(0, 0, config.canvasWidth, config.canvasHeight);
@@ -57,21 +34,7 @@ const emitter = new Emitter(config.canvasCenter.x, config.canvasCenter.y);
 
 const rendererFactory = new RendererFactory(byId("renderer-select"), config);
 
-// --- Offscreen canvas setup ---
-class OffScreen {
-    constructor(cfg) {
-        this.cfg = cfg;
-        this.canvas = document.createElement("canvas");
-        this.canvas.width = cfg.canvasWidth;
-        this.canvas.height = cfg.canvasHeight;
-        this.ctx = this.canvas.getContext("2d");
-    }
-    clear() {
-        this.ctx.clearRect(0, 0, this.cfg.canvasWidth, this.cfg.canvasHeight);
-    }
-}
-
-const offScreen = new OffScreen(config);
+const offScreen = new OffScreenCanvas(config);
 
 let renderer = rendererFactory.init(config);
 byId("renderer-select").onchange = () => { 

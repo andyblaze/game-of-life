@@ -1,4 +1,12 @@
 <?php 
+include('php/defines.php');
+
+function exportCtrls() {
+    return IN_PRODUCTION ? '' : '<button id="export" type="button">Export</button> 
+        <label for="fname">Name:</label>
+        <input type="text" id="fname" value="" autocomplete="false" />';
+}
+
 function saneItems($name, $property, $prefix) {
     $lbl = ucfirst(str_replace('-', ' ', $name));
     $prop = $property === '' ? $name : $property;
@@ -37,8 +45,8 @@ function colorPicker($name, $val, $type, $property, $prefix='color-') {
 function presetsSelect($name, $options) { 
     $htm = "<select name=\"{$name}\" id=\"{$name}\">";
     foreach ( $options as $opt ) {
-        $val = str_replace(['-', '.json'], [' ', ''], basename($opt));
-        $txt = ucfirst($val);
+        $val = str_replace('.json', '', basename($opt));
+        $txt = ucfirst(str_replace(['-', '_'], ' ', $val));
         $htm .= "<option value=\"{$val}\">{$txt}</option>";
     }
     $htm .= '</select>';
@@ -74,7 +82,8 @@ $controls = [
     'attractorCtrl'     => slider('attractor', 0, 2, 0.1, 0, 'float', 'attractor', 'force'), 
     'vortexCtrl'        => slider('vortex', -5, 5, 0.1, 0, 'float', 'vortex', 'force'), 
     'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force'),
-    'boidsCtrl'         => slider('boids', 0, 2, 0.1, 0, 'float', 'boids', 'force')
+    'boidsCtrl'         => slider('boids', 0, 2, 0.1, 0, 'float', 'boids', 'force'),
+    'exportCtrls'       => exportCtrls()
 ];
 extract($controls);
 include('php/view.php');

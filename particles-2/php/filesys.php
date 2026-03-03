@@ -1,11 +1,18 @@
 <?php 
+include('defines.php');
+
 $data = json_decode(file_get_contents('php://input'), true);
 
-$path = '../';
-$filename = strtolower(trim($data['fname']));
 $action = $data['action'];
 
+if (IN_PRODUCTION && $action === 'export') {
+    http_response_code(403);
+    exit;
+}
+
 if ( $action === 'export' ) {
+    $path = '../';
+    $filename = strtolower(trim($data['fname']));
     $filename = str_replace(' ', '-', $filename);
     $filename = $path . 'presets/' . $filename  . '.json';
     $json = $data['json'];

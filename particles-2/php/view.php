@@ -91,12 +91,9 @@
         Presets: 
         <?=$importSelect;?> 
         <button id="import" type="button">Load</button>
-        <button id="export" type="button">Export</button> 
-        <label for="fname">Name:</label>
-        <input type="text" id="fname" />
+        <?=$exportCtrls;?>
     </div>
     <div><canvas id="effect" width="820" height="820"></canvas></div>
-    <div id="export-result"></div>
 </div>
 <script src="js/main.js" type="module"></script>
 </body>
