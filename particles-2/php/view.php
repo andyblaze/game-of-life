@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Particle Workspace</title>
+<title>Interactive Generative Art and Particle System</title>
+
+<meta name="description" content="Create stunning generative art with an interactive particle system. Play with forces, trails, colors, and real-time renderers in your browser.">
+<meta name="keywords" content="particle system, generative art, canvas animation, interactive particles, boids, trails, HTML5 canvas, particle forces, browser art">
+<meta name="author" content="Ark Digital">
+
+<!-- Open Graph / social preview -->
+<meta property="og:title" content="Particle Workspace - Interactive Generative Art">
+<meta property="og:description" content="Experiment with a high-performance particle system in your browser. Trails, forces, and colorful generative effects in real time.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="images/social-preview.png">
+<meta property="og:url" content="https://mediagraphic.co.uk/particle-workspace">
+
 <link rel="stylesheet" href="css/sys.css">
 </head>
 <body>
