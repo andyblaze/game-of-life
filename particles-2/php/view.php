@@ -13,7 +13,7 @@
 <meta property="og:title" content="Particle Workspace - Interactive Generative Art">
 <meta property="og:description" content="Experiment with a high-performance particle system in your browser. Trails, forces, and colorful generative effects in real time.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="images/social-preview.png">
+<meta property="og:image" content="images/social-preview.jpg">
 <meta property="og:url" content="https://mediagraphic.co.uk/particle-workspace">
 
 <link rel="stylesheet" href="css/sys.css">
