@@ -1,6 +1,19 @@
 <?php 
 include('php/defines.php');
 
+function importItems() {
+    $htm = "<script type=\"text/javascript\">
+    const presets = {\n";
+    foreach ( glob('presets/*.json') as $f ) {
+        $name = basename($f, '.json'); // e.g. "anemone"
+        $json = file_get_contents($f);
+        $htm .= $name . ': ' . $json . ",\n";
+    }
+    $htm = trim($htm, ",\n");
+    $htm .= "\n}\n</script>\n";
+    return $htm;
+}
+
 function exportCtrls() {
     return IN_PRODUCTION ? '' : '<button id="export" type="button">Export</button> 
         <label for="fname">Name:</label>
@@ -83,7 +96,8 @@ $controls = [
     'vortexCtrl'        => slider('vortex', -5, 5, 0.1, 0, 'float', 'vortex', 'force'), 
     'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force'),
     'boidsCtrl'         => slider('boids', 0, 2, 0.1, 0, 'float', 'boids', 'force'),
-    'exportCtrls'       => exportCtrls()
+    'exportCtrls'       => exportCtrls(),
+    'presetItems'       => importItems()
 ];
 extract($controls);
 include('php/view.php');

@@ -107,6 +107,7 @@
     </div>
     <div><canvas id="effect" width="820" height="820"></canvas></div>
 </div>
+<?=$presetItems;?>
 <script src="js/main.js" type="module"></script>
 </body>
 </html>

@@ -17,17 +17,11 @@ export default class IO {
             });  
     }
     static import(cfg, ui) {
-        const payload = {
-            fname: byId("presets").value,
-            action: "import"
-        };
-        Ajax.post('php/filesys.php', payload)
-            .then(response => {
-                cfg.importPreset(response);
-                ui.updateFromConfig(cfg);
-            })
-            .catch(err => {
-                console.error('Error:', err);
-            });        
+        const presetName = byId("presets").value; 
+        const data = presets[presetName];
+        if ( data ) {
+            cfg.importPreset(data);
+            ui.updateFromConfig(cfg);
+        }      
     }
 }
