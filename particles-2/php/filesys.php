@@ -15,15 +15,29 @@ if ( $action === 'export' ) {
     echo json_encode(['status'=>$ok]);
 }
 
-if ( $action === 'import' ) {
-    $ok = true;
-    $fe = false;
-    $jsonok = true;
-    if ( true === file_exists($path . $filename) ) {
-        $fe = true;
-        $json = file_get_contents($path . $filename);
-        if ( $json === false ) $jsonok = false;
-        
-    } else die($path . $filename);
-    echo $json;
+if ($action === 'import') {
+
+    $baseDir = realpath(__DIR__ . '/../presets');
+    $filename = strtolower(trim($data['fname']));
+
+    // Allow only letters, numbers, dash and underscore
+    if (!preg_match('/^[a-z0-9_-]+$/', $filename)) {
+        http_response_code(400);
+        exit;
+    }
+
+    $fullPath = realpath($baseDir . '/' . $filename . '.json');
+
+    // Ensure resolved path is inside presets directory
+    if ($fullPath === false || strpos($fullPath, $baseDir) !== 0) {
+        http_response_code(403);
+        exit;
+    }
+
+    if (!file_exists($fullPath)) {
+        http_response_code(404);
+        exit;
+    }
+
+    echo file_get_contents($fullPath);
 }

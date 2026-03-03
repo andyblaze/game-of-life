@@ -1,17 +1,19 @@
 <?php 
-function slider($name, $min, $max, $step, $val, $type='float', $property='', $prefix='') {
+function saneItems($name, $property, $prefix) {
     $lbl = ucfirst(str_replace('-', ' ', $name));
     $prop = $property === '' ? $name : $property;
     $name = $prefix . $name;
+    return [$lbl, $prop, $name];    
+}
+function slider($name, $min, $max, $step, $val, $type='float', $property='', $prefix='') {
+    list($lbl, $prop, $name) = saneItems($name, $property, $prefix);
     return "<label>
       {$lbl}: <span id=\"{$name}-lbl\">{$val}</span> 
       <input type=\"range\" id=\"{$name}-slider\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" min=\"{$min}\" max=\"{$max}\" step=\"{$step}\" value=\"{$val}\" />
     </label>";
 }
 function selectCtrl($name, $options, $type='str', $property='', $prefix='') {
-    $lbl = ucfirst(str_replace('-', ' ', $name));
-    $prop = $property === '' ? $name : $property;
-    $name = $prefix . $name;
+    list($lbl, $prop, $name) = saneItems($name, $property, $prefix);
     $opts = '';
     $sel = '';
     foreach ( $options as $id=>$opt ) {
@@ -26,27 +28,21 @@ function selectCtrl($name, $options, $type='str', $property='', $prefix='') {
     </label>";
 }
 function colorPicker($name, $val, $type, $property, $prefix='color-') {
-    $lbl = ucfirst(str_replace('-', ' ', $name));
-    $prop = $property === '' ? $name : $property;
-    $name = $prefix . $name;
+    list($lbl, $prop, $name) = saneItems($name, $property, $prefix);
     return "<label>
         {$lbl}: <span id=\"{$name}-lbl\">{$val}</span>
         <input type=\"color\" id=\"{$name}\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" value=\"{$val}\" />
         </label>";
 }
-function select($name, $options) { 
+function presetsSelect($name, $options) { 
     $htm = "<select name=\"{$name}\" id=\"{$name}\">";
     foreach ( $options as $opt ) {
-        $val = $opt;
-        $txt = ucfirst(str_replace(['-', '.json'], [' ', ''], basename($val)));
+        $val = str_replace(['-', '.json'], [' ', ''], basename($opt));
+        $txt = ucfirst($val);
         $htm .= "<option value=\"{$val}\">{$txt}</option>";
     }
     $htm .= '</select>';
     return $htm;
-}
-function checkboxCtrl($name) {
-    $lbl = ucfirst($name);
-    return "<label for=\"{$name}\">{$lbl} <input type=\"checkbox\" class=\"force-checkbox\" id=\"{$name}\" data-property=\"{$name}\"  data-force=\"{$name}\" data-type=\"bool\" value=\"1\" /></label>";
 }
 $controls = [
     'spawnXCtrl'        => slider('X', 0, 820, 1, 410, 'int', 'spawn_x', 'spawn-pos-'),
@@ -72,7 +68,7 @@ $controls = [
     'perlinAmountCtrl'  => slider('perlinAmount', 0, 10, 0.01, 0, 'float', 'perlin_amount'),
     'perlinScaleCtrl'   => slider('perlinScale', 0, 2, 0.01, 0.01, 'float', 'perlin_scale'),
     'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
-    'importSelect'      => select('presets', glob('presets/*.json')),
+    'importSelect'      => presetsSelect('presets', glob('presets/*.json')),
     'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections', 'line', 'petal']),
     'repulsorCtrl'      => slider('repulsor', 0, 2, 0.1, 0, 'float', 'repulsor', 'force'), 
     'attractorCtrl'     => slider('attractor', 0, 2, 0.1, 0, 'float', 'attractor', 'force'), 
