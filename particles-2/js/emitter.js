@@ -34,7 +34,6 @@ export default class Emitter {
             size: cfg.size_start,        // radius       
             tweens: TweenBuilder.build(cfg)
         };
-        console.log(conf.color);
         const p = new Particle(conf);
         this.particles.push(p);
     }
