@@ -14,3 +14,6 @@ emitter.spawnParticle(cfg) needs something like this:
     startColor.s = Math.min(Math.max(startColor.s, 0), 100); // Saturation clamp 0–100
 
     particle.color = startColor;
+
+    emitter : fix GC churn in update - 
+    this.particles = this.particles.filter(p => p.isAlive());
