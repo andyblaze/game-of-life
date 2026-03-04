@@ -1,5 +1,5 @@
 <?php 
-include('php/defines.php');
+include('php/utils.php');
 
 function importItems() {
     $htm = "<script type=\"text/javascript\">
@@ -65,7 +65,7 @@ function presetsSelect($name, $options) {
     $htm .= '</select>';
     return $htm;
 }
-$controls = [
+$viewData = [
     'spawnXCtrl'        => slider('X', 0, 820, 1, 410, 'int', 'spawn_x', 'spawn-pos-'),
     'spawnYCtrl'        => slider('Y', 0, 820, 1, 410, 'int', 'spawn_y', 'spawn-pos-'),    
     'angleCtrl'         => slider('angle', 0, 359, 1, 180, 'int'),
@@ -100,5 +100,5 @@ $controls = [
     'presetItems'       => importItems(),
     'baseUrl'           => BASE_URL
 ];
-extract($controls);
+extract($viewData);
 include('php/view.php');
