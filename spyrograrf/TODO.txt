@@ -1,0 +1,13 @@
+Reminder / starting point for Spyrograrf project:
+
+Start dumb: 2 circles interacting, 1 pen, draw line.
+
+Keep it deterministic. No randomness yet.
+
+Focus on getting the curve emerging cleanly.
+
+Everything else (sliders, multi-pen, ellipses, bars, artistic flourishes) comes after this core works.
+
+Goal: explore, see what emerges, iterate from minimal working system.
+
+Keep performance light — design for all devices (phones → big screens).
