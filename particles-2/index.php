@@ -97,7 +97,8 @@ $controls = [
     'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force'),
     'boidsCtrl'         => slider('boids', 0, 2, 0.1, 0, 'float', 'boids', 'force'),
     'exportCtrls'       => exportCtrls(),
-    'presetItems'       => importItems()
+    'presetItems'       => importItems(),
+    'baseUrl'           => BASE_URL
 ];
 extract($controls);
 include('php/view.php');

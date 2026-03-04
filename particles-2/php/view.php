@@ -2,28 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<?=meta('viewport', 'width=device-width, initial-scale=1.0');?>
 <title>Interactive Generative Art and Particle System</title>
 
-<meta name="description" content="Create stunning generative art with an interactive particle system. Play with forces, trails, colors, and real-time renderers in your browser.">
-<meta name="keywords" content="particle system, generative art, canvas animation, interactive particles, boids, trails, HTML5 canvas, particle forces, browser art">
-<meta name="author" content="Ark Digital">
-<link rel="canonical" href="https://mediagraphic.co.uk/particle-workspace">
-<meta name="robots" content="index, follow" />
+<?=meta('description', 'Create stunning generative art with an interactive particle system. Play with forces, trails, colors, and real-time renderers in your browser.');?>
+<?=meta('keywords', 'particle system, generative art, canvas animation, interactive particles, boids, trails, HTML5 canvas, particle forces, browser art');?>
+<?=meta('author', 'Ark Digital');?>
+<link rel="canonical" href="<?=url();?>">
+<?=meta('robots', 'index, follow');?>
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 <link rel="manifest" href="/site.webmanifest" />
-<meta name="theme-color" content="#000000">
+<?=meta('theme-color', '#000000');?>
 
 <!-- Open Graph / social preview -->
-<meta property="og:title" content="Particle System - Interactive Generative Art">
-<meta property="og:description" content="Experiment with a high-performance particle system in your browser. Trails, forces, and colorful generative effects in real time.">
-<meta property="og:type" content="website">
-<meta property="og:image" content="https://mediagraphic.co.uk/particle-workspace/images/social-preview.jpg">
-<meta property="og:url" content="https://mediagraphic.co.uk/particle-workspace">
+<?=meta_prop('og:title', 'Particle System - Interactive Generative Art');?>
+<?=meta_prop('og:description', 'Experiment with a high-performance particle system in your browser. Trails, forces, and colorful generative effects in real time.');?>
+<?=meta_prop('og:type', 'website');?>
+<?=meta_prop('og:image', url('images/social-preview.jpg'));?>
+<?=meta_prop('og:url', url());?> 
 
-<link rel="stylesheet" href="https://mediagraphic.co.uk/particle-workspace/css/sys.css">
+<?=link_tag('css/sys.css');?>
 </head>
 <body>
 <div id="screen-warning" style="display:none;">
@@ -91,7 +91,7 @@
         <?=$perlinSpeedCtrl;?>
     </div>
     <div class="col-5">
-        <h4>Forces <a class="help" data-help="Experiment with these. Some are strong !">?</a></h4>
+        <h4>Forces <a class="help" data-help="Experiment with these. Some are strong, Boids is an FPS killer !">?</a></h4>
         <?=$boidsCtrl;?>
         <?=$repulsorCtrl;?>
         <?=$attractorCtrl;?>
