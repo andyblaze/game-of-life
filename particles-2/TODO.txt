@@ -3,7 +3,8 @@ sys.css has commented out style,
 emitter.spawnParticle(cfg) needs something like this:
     const startColor = { ...cfg.color_start };
 
-    // tiny tweak
+    // tiny tweak - we need to limit this += somehow - else it might go out of range.
+    also - what range / step will color variance slider have ?
     startColor.h += (Math.random() - 0.5) * cfg.startColorVarianceHue;
     startColor.s += (Math.random() - 0.5) * cfg.startColorVarianceSat;
 
