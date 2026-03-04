@@ -1,11 +1,16 @@
 color variance... 
-sys.css has commented out style, 
+sys.css has commented out style - needs a little work on new slider width, 
+index.php control     slider is 0->60, step 1  property is color_variance, value = 0
+
 emitter.spawnParticle(cfg) needs something like this:
     const startColor = { ...cfg.color_start };
 
-    // tiny tweak - we need to limit this += somehow - else it might go out of range.
-    also - what range / step will color variance slider have ?
-    startColor.h += (Math.random() - 0.5) * cfg.startColorVarianceHue;
-    startColor.s += (Math.random() - 0.5) * cfg.startColorVarianceSat;
+    // Apply variance
+    startColor.h += (Math.random() - 0.5) * cfg.color_variance; // degrees
+    startColor.s += (Math.random() - 0.5) * cfg.color_variance; // percent
+
+    // Clamp / wrap
+    startColor.h = (startColor.h + 360) % 360;               // Hue wraps 0–360
+    startColor.s = Math.min(Math.max(startColor.s, 0), 100); // Saturation clamp 0–100
 
     particle.color = startColor;
