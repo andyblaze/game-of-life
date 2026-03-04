@@ -50,7 +50,7 @@ function selectCtrl($name, $options, $type='str', $property='', $prefix='') {
 }
 function colorPicker($name, $val, $type, $property, $prefix='color-') {
     list($lbl, $prop, $name) = saneItems($name, $property, $prefix);
-    return "<label>
+    return "<label class=\"color-ctrl\">
         {$lbl}: <span id=\"{$name}-lbl\">{$val}</span>
         <input type=\"color\" id=\"{$name}\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" value=\"{$val}\" />
         </label>";
