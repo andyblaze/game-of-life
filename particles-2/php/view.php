@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <?=meta('viewport', 'width=device-width, initial-scale=1.0');?>
-<title>Interactive Generative Art and Particle System</title>
+<title>Interactive Particle System - Generative Art in the Browser</title>
 
 <?=meta('description', 'Create stunning generative art with an interactive particle system. Play with forces, trails, colors, and real-time renderers in your browser.');?>
 <?=meta('keywords', 'particle system, generative art, canvas animation, interactive particles, boids, trails, HTML5 canvas, particle forces, browser art');?>
@@ -22,6 +22,11 @@
 <?=meta_prop('og:type', 'website');?>
 <?=meta_prop('og:image', url('images/social-preview.jpg'));?>
 <?=meta_prop('og:url', url());?> 
+
+<?=meta_prop('twitter:card', 'summary_large_image');?>
+<?=meta_prop('twitter:title', 'Particle System - Interactive Generative Art');?>
+<?=meta_prop('twitter:description', 'Experiment with a high-performance particle system in your browser. Trails, forces, and colorful generative effects in real time.');?>
+<?=meta_prop('twitter:image', url('images/social-preview.jpg'));?>
 
 <?=link_tag('css/sys.css');?>
 </head>
