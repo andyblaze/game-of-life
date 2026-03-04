@@ -1,0 +1,10 @@
+color variance... 
+sys.css has commented out style, 
+emitter.spawnParticle(cfg) needs something like this:
+    const startColor = { ...cfg.color_start };
+
+    // tiny tweak
+    startColor.h += (Math.random() - 0.5) * cfg.startColorVarianceHue;
+    startColor.s += (Math.random() - 0.5) * cfg.startColorVarianceSat;
+
+    particle.color = startColor;
