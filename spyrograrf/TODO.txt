@@ -1,13 +1,15 @@
-Reminder / starting point for Spyrograrf project:
+function render($view, $data = [])
+{
+    $html = file_get_contents($view);
 
-Start dumb: 2 circles interacting, 1 pen, draw line.
+    foreach ($data as $key => $value) {
+        $html = str_replace('{' . $key . '}', $value, $html);
+    }
 
-Keep it deterministic. No randomness yet.
+    return $html;
+}
 
-Focus on getting the curve emerging cleanly.
-
-Everything else (sliders, multi-pen, ellipses, bars, artistic flourishes) comes after this core works.
-
-Goal: explore, see what emerges, iterate from minimal working system.
-
-Keep performance light — design for all devices (phones → big screens).
+echo render('view.html', [
+    'title' => 'Welcome',
+    'name'  => 'Andrea'
+]);
