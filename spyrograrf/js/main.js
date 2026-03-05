@@ -16,21 +16,21 @@ uiControls.notify();
 byId("ui-panel").reset();
 
 let paused = true;
-byId("go-btn").onclick = () => { paused = !paused; }
+byId("go-btn").onclick = () => { core.init(config); paused = !paused; }
 
 
 let lastTimestamp = 0;
 function loop(timestamp) { 
-    if ( lastTimestamp === 0 ) lastTimestamp = timestamp;
-    const dt = (timestamp - lastTimestamp) / 16.666; // 16.666 ms ~ 60 FPS
-    lastTimestamp = timestamp;
+    if ( paused === false ) {
+        if ( lastTimestamp === 0 ) lastTimestamp = timestamp;
+        const dt = (timestamp - lastTimestamp) / 16.666; // 16.666 ms ~ 60 FPS
+        lastTimestamp = timestamp;
 
-    const pos = core.getPoint(core.t);
-    core.update(config.speed * dt);
-    renderer.draw(pos.x, pos.y);
-
+        const pos = core.getPoint(core.t);
+        core.update(config.speed * dt);
+        renderer.draw(pos.x, pos.y); 
+    }
     requestAnimationFrame(loop);
 }
 
-if ( paused === false )
-    loop(performance.now()); 
+loop(performance.now()); 

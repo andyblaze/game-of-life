@@ -1,15 +1,2 @@
-function render($view, $data = [])
-{
-    $html = file_get_contents($view);
-
-    foreach ($data as $key => $value) {
-        $html = str_replace('{' . $key . '}', $value, $html);
-    }
-
-    return $html;
-}
-
-echo render('view.html', [
-    'title' => 'Welcome',
-    'name'  => 'Andrea'
-]);
+outerRadius : 20 → 300
+innerRadius : 5  → outerRadius

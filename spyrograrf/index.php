@@ -65,45 +65,6 @@ function presetsSelect($name, $options) {
     $htm .= '</select>';
     return $htm;
 }
-/*
-$viewData = [
-    'spawnXCtrl'        => slider('X', 0, 820, 1, 410, 'int', 'spawn_x', 'spawn-pos-'),
-    'spawnYCtrl'        => slider('Y', 0, 820, 1, 410, 'int', 'spawn_y', 'spawn-pos-'),    
-    'angleCtrl'         => slider('angle', 0, 359, 1, 180, 'int'),
-    'sizeStartCtrl'     => slider('start', 0.5, 320, 0.5, 2, 'float', 'size_start', 'size-'),
-    'sizeEndCtrl'       => slider('end', 0.5, 320, 0.5, 2, 'float', 'size_end', 'size-'),
-    'speedVarianceXCtrl'=> slider('X', 0.01, 1, 0.01, 0.01, 'float', 'speed_varianceX', 'speed-variance-'),
-    'speedVarianceYCtrl'=> slider('Y', 0.01, 1, 0.01, 0.01, 'float', 'speed_varianceY', 'speed-variance-'),
-    'spreadCtrl'        => slider('spread', 0, 359, 1, 25, 'int'),
-    'speedXCtrl'        => slider('x', 0, 8, 0.25, 1, 'float', 'speed_x', 'speed'),
-    'speedYCtrl'        => slider('y', 0, 8, 0.25, 1, 'float', 'speed_y', 'speed'),
-    'lifeCtrl'          => slider('life', 1, 512, 1, 256, 'int'),
-    'lifeVarianceCtrl'  => slider('life-variance', 0.01, 1, 0.01, 0.01, 'float', 'life_variance'),
-    'spawnOffsetXCtrl'  => slider('X', 0, 64, 1, 0, 'int', 'spawn_offsetX', 'spawn-offset-'),
-    'spawnOffsetYCtrl'  => slider('Y', 0, 64, 1, 0, 'int', 'spawn_offsetY', 'spawn-offset-'),
-    'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start'),
-    'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end'),
-    'alphaStartCtrl'    => slider('start', 0, 1, 0.01, 0.8, 'float', 'alpha_start', 'alpha-'),
-    'alphaEndCtrl'      => slider('end', 0, 1, 0.01, 0, 'float', 'alpha_end', 'alpha-'),
-    'densityCtrl'       => slider('density', 1, 6, 1, 1, 'int'),
-    'bgOpacityCtrl'     => slider('bg-opacity', 0, 0.3, 0.001, 0.15, 'float', 'bg_opacity'),
-    'perlinAmountCtrl'  => slider('perlinAmount', 0, 10, 0.01, 0, 'float', 'perlin_amount'),
-    'perlinScaleCtrl'   => slider('perlinScale', 0, 2, 0.01, 0.01, 'float', 'perlin_scale'),
-    'perlinSpeedCtrl'   => slider('perlinSpeed', 0, 2, 0.01, 0.01, 'float', 'perlin_speed'),
-    'importSelect'      => presetsSelect('presets', glob('presets/*.json')),
-    'rendererCtrl'      => selectCtrl('renderer', ['solid', 'gradient', 'velocity_line', 'arc', 'triangle', 'ellipse', 'radial_burst', 'connections', 'line', 'petal']),
-    'repulsorCtrl'      => slider('repulsor', 0, 2, 0.1, 0, 'float', 'repulsor', 'force'), 
-    'attractorCtrl'     => slider('attractor', 0, 2, 0.1, 0, 'float', 'attractor', 'force'), 
-    'vortexCtrl'        => slider('vortex', -5, 5, 0.1, 0, 'float', 'vortex', 'force'), 
-    'gravityCtrl'       => slider('gravity', -1, 1, 0.1, 0, 'float', 'gravity', 'force'),
-    'boidsCtrl'         => slider('boids', 0, 2, 0.1, 0, 'float', 'boids', 'force'),
-    'exportCtrls'       => exportCtrls(),
-    'presetItems'       => importItems(),
-    'baseUrl'           => BASE_URL
-];
-extract($viewData);
-
-include('php/view.php');*/
 
 function render($view, $data = []) {
     $html = file_get_contents($view);
@@ -114,7 +75,8 @@ function render($view, $data = []) {
 }
 
 $viewData = [
-    'innerRadiusCtrl' => slider('innerRadius', 20, 60, 1, 40, 'int', 'innerRadius')
+    'innerRadiusCtrl' => slider('innerRadius', 20, 60, 1, 40, 'int', 'innerRadius'),
+    'outerRadiusCtrl' => slider('outerRadius', 120, 360, 1, 140, 'int', 'outerRadius')
 ];
 
 echo render('view.html', $viewData);

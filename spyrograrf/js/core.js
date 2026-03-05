@@ -8,6 +8,10 @@ export default class Core {
         this.t = cfg.theta;
         this.pos = { };
     }
+    init(cfg) {
+        this.R = cfg.outerRadius;
+        this.r = cfg.innerRadius;    
+    }
     update(dt) {
         this.t += dt;
     }
