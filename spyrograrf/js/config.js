@@ -6,6 +6,8 @@ export default class Config {
         this.ctx = this.canvas.getContext("2d");
         const rect = byId(workspaceId).getBoundingClientRect();
         this.canvas.width = rect.width;
+        this.converter = tc;
+        this.controlsData = {};
         this.canvas.height = window.innerHeight
         this.canvasW = this.canvas.width;
         this.canvasH = this.canvas.height;

@@ -65,6 +65,7 @@ function presetsSelect($name, $options) {
     $htm .= '</select>';
     return $htm;
 }
+/*
 $viewData = [
     'spawnXCtrl'        => slider('X', 0, 820, 1, 410, 'int', 'spawn_x', 'spawn-pos-'),
     'spawnYCtrl'        => slider('Y', 0, 820, 1, 410, 'int', 'spawn_y', 'spawn-pos-'),    
@@ -101,4 +102,19 @@ $viewData = [
     'baseUrl'           => BASE_URL
 ];
 extract($viewData);
-include('php/view.php');
+
+include('php/view.php');*/
+
+function render($view, $data = []) {
+    $html = file_get_contents($view);
+    foreach ($data as $key => $value) {
+        $html = str_replace('{' . $key . '}', $value, $html);
+    }
+    return $html;
+}
+
+$viewData = [
+    'innerRadiusCtrl' => slider('innerRadius', 20, 60, 1, 40, 'int', 'innerRadius')
+];
+
+echo render('view.html', $viewData);

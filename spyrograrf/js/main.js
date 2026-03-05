@@ -2,12 +2,22 @@ import Config from "./config.js";
 import Renderer from "./renderer.js";
 import Core from "./core.js";
 import { byId } from "./functions.js";
-const config = new Config("spiro", "workspace");
-const renderer = new Renderer(config);
+import TypeConverter from "./typeconverter.js";
+import UiControls from "./uicontrols.js";
 
+const config = new Config("spiro", "workspace", new TypeConverter());
+const renderer = new Renderer(config);
 const core = new Core(config);
 
-byId("innerRad").oninput = (ctrl) => { config.innerRadius = parseInt(ctrl.value); }
+const uiControls = new UiControls("#ui-panel input, #ui-panel select");
+uiControls.addObserver(config);
+uiControls.notify();
+
+byId("ui-panel").reset();
+
+let paused = true;
+byId("go-btn").onclick = () => { paused = !paused; }
+
 
 let lastTimestamp = 0;
 function loop(timestamp) { 
@@ -22,4 +32,5 @@ function loop(timestamp) {
     requestAnimationFrame(loop);
 }
 
-loop(performance.now());
+if ( paused === false )
+    loop(performance.now()); 
