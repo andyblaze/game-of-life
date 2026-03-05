@@ -75,8 +75,9 @@ function render($view, $data = []) {
 }
 
 $viewData = [
-    'innerRadiusCtrl' => slider('innerRadius', 20, 60, 1, 40, 'int', 'innerRadius'),
-    'outerRadiusCtrl' => slider('outerRadius', 120, 360, 1, 140, 'int', 'outerRadius')
+    'outerRadiusCtrl' => slider('outerRadius', 120, 360, 1, 140, 'int', 'outerRadius'),
+    'innerRadiusCtrl' => slider('innerRadius', 20, 100, 1, 60, 'int', 'innerRadius'),
+    'penOffset'       => slider('penOffest', 2, 30, 1, 15, 'int', 'penOffset')  
 ];
 
 echo render('view.html', $viewData);

@@ -10,7 +10,8 @@ export default class Core {
     }
     init(cfg) {
         this.R = cfg.outerRadius;
-        this.r = cfg.innerRadius;    
+        this.r = cfg.innerRadius; 
+        this.d = cfg.penOffset;   
     }
     update(dt) {
         this.t += dt;

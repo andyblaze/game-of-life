@@ -17,7 +17,7 @@ export default class Config {
         this.innerRadius = 109;
         this.penOffset = 91;
         this.theta = 0;
-        this.speed = 0.2;
+        this.speed = 0.02;
     }
     updateCtrl(ctrl) { 
         const type = ctrl.dataset.type;
