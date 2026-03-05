@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <?=meta('viewport', 'width=device-width, initial-scale=1.0');?>
-<title>Interactive Particle System - Generative Art in the Browser</title>
+<title>Spyrograrf</title>
 
 <?=meta('description', 'Create stunning generative art with an interactive particle system. Play with forces, trails, colors, and real-time renderers in your browser.');?>
 <?=meta('keywords', 'particle system, generative art, canvas animation, interactive particles, boids, trails, HTML5 canvas, particle forces, browser art');?>
