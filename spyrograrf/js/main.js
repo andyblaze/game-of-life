@@ -1,11 +1,13 @@
 import Config from "./config.js";
 import Renderer from "./renderer.js";
 import Core from "./core.js";
-
-const config = new Config("spiro");
+import { byId } from "./functions.js";
+const config = new Config("spiro", "workspace");
 const renderer = new Renderer(config);
 
 const core = new Core(config);
+
+byId("innerRad").oninput = (ctrl) => { config.innerRadius = parseInt(ctrl.value); }
 
 let lastTimestamp = 0;
 function loop(timestamp) { 

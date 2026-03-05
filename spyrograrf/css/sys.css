@@ -9,7 +9,7 @@
   }
 
   #ui-panel {
-    flex: 1.2;
+    flex: 0.5;
     padding: 10px 1% 10px 1%;
     box-sizing: border-box;
     overflow-y: auto;
@@ -57,7 +57,7 @@
 
 
   #workspace {
-    flex: 1;
+    flex: 1.5;
     display: flex;
     flex-direction: column;
     justify-content: center;

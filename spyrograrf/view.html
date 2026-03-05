@@ -7,7 +7,12 @@
 <link href="css/sys.css" type="text/css" rel="stylesheet">
 </head>
 <body>
-<canvas id="spiro"></canvas>
+<form id="ui-panel">
+    <input type="range" id="innerRad" min="20" max="60" step="1" value="20">
+</form>
+<div id="workspace">
+    <canvas id="spiro" width="800" height="800"></canvas>
+</div>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
