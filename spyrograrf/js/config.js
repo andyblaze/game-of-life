@@ -18,14 +18,17 @@ export default class Config {
         this.rotation = 0;
         this.innerRadius = 109;
         this.penOffset = 91;
-        this.theta = 90;
+        this.theta = 0;
         this.speed = 0.02;
+        this.color_start = {},
+        this.color_end = {},
+        this.alpha = 1;
     }
     updateCtrl(ctrl) { 
         const type = ctrl.dataset.type;
         const property = ctrl.dataset.property;
         this[property] = this.converter.apply(type, ctrl, ctrl.value);
-        this.controlsData[property] = this.converter.apply(type, ctrl, ctrl.value);
+        this.controlsData[property] = this.converter.apply(type, ctrl, ctrl.value); 
     }
     update(ctrls) {
         for ( const ctrl of ctrls ) {

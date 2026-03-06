@@ -75,12 +75,15 @@ function render($view, $data = []) {
 }
 
 $viewData = [
-    'outerRadiusXCtrl' => slider('outerRadiusX', 20, 360, 1, 140, 'int', 'outerRadiusX'),
-    'outerRadiusYCtrl' => slider('outerRadiusY', 20, 360, 1, 140, 'int', 'outerRadiusY'),
-    'rotationCtrl'     => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
+    'outerRadiusXCtrl'=> slider('outerRadiusX', 20, 360, 1, 140, 'int', 'outerRadiusX'),
+    'outerRadiusYCtrl'=> slider('outerRadiusY', 20, 360, 1, 140, 'int', 'outerRadiusY'),
+    'rotationCtrl'    => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
     'innerRadiusCtrl' => slider('innerRadius', 20, 140, 1, 60, 'int', 'innerRadius'),
     'penOffsetCtrl'   => slider('penOffest', 2, 30, 1, 15, 'int', 'penOffset'),
-    'speedCtrl'       => slider('speed', 0.01, 0.5, 0.01, 0.2, 'float', 'speed')
+    'speedCtrl'       => slider('speed', 0.01, 0.5, 0.01, 0.2, 'float', 'speed'),
+    'colorStartCtrl'  => colorPicker('start', '#00ff00', 'hsla', 'color_start'),
+    'colorEndCtrl'    => colorPicker('end', '#ff0000', 'hsla', 'color_end'),
+    'alphaCtrl'       => slider('alpha', 0, 1, 0.01, 0.8, 'float', 'alpha')
 ];
 
 echo render('view.html', $viewData);

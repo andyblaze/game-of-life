@@ -6,12 +6,13 @@ import TypeConverter from "./typeconverter.js";
 import UiControls from "./uicontrols.js";
 
 const config = new Config("spiro", "workspace", new TypeConverter());
-const renderer = new Renderer(config);
-const core = new Core(config);
 
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
 uiControls.notify();
+
+const renderer = new Renderer(config);
+const core = new Core(config);
 
 byId("ui-panel").reset();
 
@@ -32,7 +33,7 @@ function loop(timestamp) {
         for (let i = 0; i < subSteps; i++) {
             const pos = core.getPoint(core.t);
             core.update(stepDT);
-            renderer.draw(pos.x, pos.y); 
+            renderer.draw(pos.x, pos.y, dt); 
         }
     }
     requestAnimationFrame(loop);
