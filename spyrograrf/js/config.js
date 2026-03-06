@@ -16,7 +16,7 @@ export default class Config {
         this.outerRadius = 251;
         this.innerRadius = 109;
         this.penOffset = 91;
-        this.theta = 0;
+        this.theta = 90;
         this.speed = 0.02;
     }
     updateCtrl(ctrl) { 

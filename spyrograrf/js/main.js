@@ -26,9 +26,14 @@ function loop(timestamp) {
         const dt = (timestamp - lastTimestamp) / 16.666; // 16.666 ms ~ 60 FPS
         lastTimestamp = timestamp;
 
-        const pos = core.getPoint(core.t);
-        core.update(config.speed * dt);
-        renderer.draw(pos.x, pos.y); 
+        
+        const subSteps = Math.ceil(config.speed * 20) + 1;
+        const stepDT = (config.speed * dt) * (dt / subSteps);
+        for (let i = 0; i < subSteps; i++) {
+            const pos = core.getPoint(core.t);
+            core.update(stepDT);
+            renderer.draw(pos.x, pos.y); 
+        }
     }
     requestAnimationFrame(loop);
 }
