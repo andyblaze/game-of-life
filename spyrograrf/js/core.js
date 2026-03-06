@@ -2,14 +2,18 @@ export default class Core {
     constructor(cfg) {
         this.cfg = cfg;
         // core parameters
-        this.R = cfg.outerRadius;
+        this.Rx = cfg.outerRadiusX;
+        this.Ry = cfg.outerRadiusY;
+        this.angleRad = (cfg.rotation * Math.PI) / 180;
         this.r = cfg.innerRadius;
         this.d = cfg.penOffset;
         this.t = cfg.theta;
         this.pos = { };
     }
     init(cfg) {
-        this.R = cfg.outerRadius;
+        this.Rx = cfg.outerRadiusX;
+        this.Ry = cfg.outerRadiusY;
+        this.angleRad = (cfg.rotation * Math.PI) / 180;
         this.r = cfg.innerRadius; 
         this.d = cfg.penOffset;   
     }
@@ -17,11 +21,16 @@ export default class Core {
         this.t += dt;
     }
     getPoint(t) {
-        const x = (this.R - this.r) * Math.cos(t)
-                + this.d * Math.cos(((this.R - this.r) / this.r) * t);
+        const baseX = (this.Rx - this.r) * Math.cos(this.t);
+        const baseY = (this.Ry - this.r) * Math.sin(this.t);
 
-        const y = (this.R - this.r) * Math.sin(t)
-                - this.d * Math.sin(((this.R - this.r) / this.r) * t);
+        const rot = ((this.Rx - this.r) / this.r) * this.t;
+
+        const penX = this.d * Math.cos(rot);
+        const penY = this.d * Math.sin(rot);
+
+        const x = baseX + penX;
+        const y = baseY - penY;
 
         return {
             x: this.cfg.centerX + x,

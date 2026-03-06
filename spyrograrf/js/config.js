@@ -13,7 +13,9 @@ export default class Config {
         this.canvasH = this.canvas.height;
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;
-        this.outerRadius = 251;
+        this.outerRadiusX = 251;
+        this.outerRadiusY = 251;
+        this.rotation = 0;
         this.innerRadius = 109;
         this.penOffset = 91;
         this.theta = 90;

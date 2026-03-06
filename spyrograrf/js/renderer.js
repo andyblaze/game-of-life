@@ -2,7 +2,7 @@ export default class Renderer {
     constructor(cfg) {
         this.cfg = cfg;
         this.prev = null;
-        this.cfg.ctx.lineWidth = 1;
+        this.cfg.ctx.lineWidth = 0.5;
         this.cfg.ctx.strokeStyle = "#ff0000";
     }
     draw(px, py) {
