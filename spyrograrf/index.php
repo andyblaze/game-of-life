@@ -26,11 +26,12 @@ function saneItems($name, $property, $prefix) {
     $name = $prefix . $name;
     return [$lbl, $prop, $name];    
 }
-function slider($name, $min, $max, $step, $val, $type='float', $property='', $prefix='') {
+function slider($name, $min, $max, $step, $val, $type='float', $property='', $isGeo=true, $prefix='') {
     list($lbl, $prop, $name) = saneItems($name, $property, $prefix);
+    $cssClass = (true === $isGeo ? ' class="geometry"' : '');
     return "<label>
       {$lbl}: <span id=\"{$name}-lbl\">{$val}</span> 
-      <input type=\"range\" id=\"{$name}-slider\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" min=\"{$min}\" max=\"{$max}\" step=\"{$step}\" value=\"{$val}\" />
+      <input type=\"range\" id=\"{$name}-slider\" data-label=\"{$name}-lbl\" data-property=\"{$prop}\" data-type=\"{$type}\" min=\"{$min}\" max=\"{$max}\" step=\"{$step}\" value=\"{$val}\"$cssClass />
     </label>";
 }
 function selectCtrl($name, $options, $type='str', $property='', $prefix='') {
@@ -69,21 +70,22 @@ function presetsSelect($name, $options) {
 function render($view, $data = []) {
     $html = file_get_contents($view);
     foreach ($data as $key => $value) {
-        $html = str_replace('{' . $key . '}', $value, $html);
+        $html = str_replace("{{$key}}", $value, $html);
     }
     return $html;
 }
 
 $viewData = [
-    'outerRadiusXCtrl'=> slider('outerRadiusX', 20, 360, 1, 140, 'int', 'outerRadiusX'),
-    'outerRadiusYCtrl'=> slider('outerRadiusY', 20, 360, 1, 140, 'int', 'outerRadiusY'),
-    'rotationCtrl'    => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
-    'innerRadiusCtrl' => slider('innerRadius', 20, 140, 1, 60, 'int', 'innerRadius'),
-    'penOffsetCtrl'   => slider('penOffest', 2, 30, 1, 15, 'int', 'penOffset'),
-    'speedCtrl'       => slider('speed', 0.01, 0.5, 0.01, 0.2, 'float', 'speed'),
-    'colorStartCtrl'  => colorPicker('start', '#00ff00', 'hsla', 'color_start'),
-    'colorEndCtrl'    => colorPicker('end', '#ff0000', 'hsla', 'color_end'),
-    'alphaCtrl'       => slider('alpha', 0, 1, 0.01, 0.8, 'float', 'alpha')
+    'outerRadiusXCtrl'  => slider('outerRadiusX', 20, 360, 1, 140, 'int', 'outerRadiusX'),
+    'outerRadiusYCtrl'  => slider('outerRadiusY', 20, 360, 1, 140, 'int', 'outerRadiusY'),
+    'rotationCtrl'      => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
+    'innerRadiusCtrl'   => slider('innerRadius', 20, 140, 1, 60, 'int', 'innerRadius'),
+    'penOffsetCtrl'     => slider('penOffest', 2, 30, 1, 15, 'int', 'penOffset'),
+    'speedCtrl'         => slider('speed', 0.01, 0.5, 0.01, 0.2, 'float', 'speed', false),
+    'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start', false),
+    'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end', false),
+    'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.8, 'float', 'alpha', false),
+    'rotationForceCtrl' => slider('rotationForce', 0, 1, 0.1, 0, 'float', 'rotation_force')
 ];
 
 echo render('view.html', $viewData);

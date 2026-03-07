@@ -1,22 +1,29 @@
 import { lerpHSLAColor, HSLAString } from "./functions.js";
 
-class ColorOverLife {
-    constructor(start, end, alpha) {
+class ColorTween {
+    constructor(start, end, alpha, speed = 0.2) {
         this.start = { ...start, a: alpha };
         this.end   = { ...end,   a: alpha };
+        this.speed = speed;
+        this.phase = 0;
     }
-
+    reset(cfg) {
+        
+    }
     update(dt) {
-        const c = lerpHSLAColor(this.start, this.end, dt);
-        console.log(c, dt);
-        return c;
+        this.phase += this.speed * dt;
+
+        let cycle = this.phase % 2;
+        let t = cycle > 1 ? 2 - cycle : cycle;
+
+        return lerpHSLAColor(this.start, this.end, t);
     }
 }
 
 
 export default class Renderer {
     constructor(cfg) { 
-        //this.cr = new ColorOverLife(cfg.color_start, cfg.color_end, cfg.alpha);
+        this.cr = new ColorTween(cfg.color_start, cfg.color_end, cfg.alpha);
         this.cfg = cfg;
         this.prev = null;
         this.cfg.ctx.lineWidth = 0.5;          // thin lines for dense patterns
@@ -24,10 +31,9 @@ export default class Renderer {
         //this.alpha = cfg.alpha;                      // low alpha to prevent mud
         //this.hueStep = 0.5;                    // hue change per segment
     }
-
     draw(px, py, dt) {
         if (this.prev) {
-            //this.color = this.cr.update(dt);
+            this.color = this.cr.update(dt);
             const ctx = this.cfg.ctx;
 
             ctx.beginPath();
@@ -47,7 +53,8 @@ export default class Renderer {
 
     reset() {
         this.prev = null;
-        this.baseHue = 0;
+        this.cr.reset(this.cfg);
+        //this.baseHue = 0;
     }
 }
 /*class Renderer {

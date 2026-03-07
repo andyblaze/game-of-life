@@ -1,7 +1,7 @@
 import Config from "./config.js";
 import Renderer from "./renderer.js";
 import Core from "./core.js";
-import { byId } from "./functions.js";
+import { byId, byQsArray } from "./functions.js";
 import TypeConverter from "./typeconverter.js";
 import UiControls from "./uicontrols.js";
 
@@ -16,8 +16,81 @@ const core = new Core(config);
 
 byId("ui-panel").reset();
 
-let paused = true;
-byId("go-btn").onclick = () => { core.init(config); paused = !paused; }
+let paused = false;
+//byId("go-btn").onclick = () => { core.init(config); paused = !paused; }
+
+class PinchForce {
+    constructor(cfg) { 
+        this.cx = cfg.centerX; 
+        this.cy = cfg.centerY; 
+        this.strength = 20;//cfg.pinch_force; 
+    }
+    reset() { 
+        this.strength = 20;//cfg.pinch_force; 
+    }
+    update(t, pos) {
+        const dx = pos.x - this.cx;
+        const dy = pos.y - this.cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        pos.x -= dx/dist * this.strength;
+        pos.y -= dy/dist * this.strength;
+    }
+}
+class RotationForce {
+    constructor(cfg) {
+        this.cx = cfg.centerX;
+        this.cy = cfg.centerY;
+        this.force = cfg.rotation_force;
+    }
+    reset(cfg) {
+        this.force = cfg.rotation_force;
+    }
+    update(t, pos) {
+        if ( this.force === 0 ) return;
+        const dx = pos.x - this.cx;
+        const dy = pos.y - this.cy;
+        const angle = core.t * this.force;   
+
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        const rx = dx * cos - dy * sin;
+        const ry = dx * sin + dy * cos;
+
+        pos.x = this.cx + rx;
+        pos.y = this.cy + ry;
+    }
+}
+
+class Forces {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.forces = [
+            new RotationForce(cfg),
+            new PinchForce(cfg)
+        ];
+    }
+    update(t, pos) {
+        for ( const f of this.forces ) {
+            f.update(t, pos);
+        }
+    }
+    reset() {
+        for ( const f of this.forces ) {
+            f.reset(this.cfg);
+        }
+    }
+}
+
+const forces = new Forces(config);
+
+const geoCtrls = byQsArray("#ui-panel input.geometry");
+for ( const ctrl of geoCtrls ) ctrl.onchange = () => { 
+    core.reset();
+    renderer.reset();
+    forces.reset();
+    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH); 
+};
 
 
 let lastTimestamp = 0;
@@ -30,10 +103,11 @@ function loop(timestamp) {
         
         const subSteps = Math.ceil(config.speed * 20) + 1;
         const stepDT = (config.speed * dt) * (dt / subSteps);
-        for (let i = 0; i < subSteps; i++) {
-            const pos = core.getPoint(core.t);
+        for ( let i = 0; i < subSteps; i++ ) {
+            const pos = core.getPoint();
+            forces.update(core.t, pos);
             core.update(stepDT);
-            renderer.draw(pos.x, pos.y, dt); 
+            renderer.draw(pos.x, pos.y, stepDT); 
         }
     }
     requestAnimationFrame(loop);
