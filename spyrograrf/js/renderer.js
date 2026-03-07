@@ -1,14 +1,15 @@
 import { lerpHSLAColor, HSLAString } from "./functions.js";
 
 class ColorTween {
-    constructor(start, end, alpha, speed = 0.2) {
-        this.start = { ...start, a: alpha };
-        this.end   = { ...end,   a: alpha };
+    constructor(cfg, speed = 0.2) {
+        this.cfg = cfg;
+        this.reset();
         this.speed = speed;
-        this.phase = 0;
     }
-    reset(cfg) {
-        
+    reset() {
+        this.start = { ...this.cfg.color_start, a: this.cfg.alpha };
+        this.end   = { ...this.cfg.color_end,   a: this.cfg.alpha };
+        this.phase = 0;
     }
     update(dt) {
         this.phase += this.speed * dt;
@@ -23,16 +24,14 @@ class ColorTween {
 
 export default class Renderer {
     constructor(cfg) { 
-        this.cr = new ColorTween(cfg.color_start, cfg.color_end, cfg.alpha);
+        this.cr = new ColorTween(cfg);
         this.cfg = cfg;
         this.prev = null;
-        this.cfg.ctx.lineWidth = 0.5;          // thin lines for dense patterns
-        this.color = cfg.color_start;                     // starting hue
-        //this.alpha = cfg.alpha;                      // low alpha to prevent mud
-        //this.hueStep = 0.5;                    // hue change per segment
+        this.cfg.ctx.lineWidth = 0.5;          
+        this.color = cfg.color_start;                     
     }
     draw(px, py, dt) {
-        if (this.prev) {
+        if ( this.prev ) {
             this.color = this.cr.update(dt);
             const ctx = this.cfg.ctx;
 
@@ -40,13 +39,8 @@ export default class Renderer {
             ctx.moveTo(this.prev.x, this.prev.y);
             ctx.lineTo(px, py);
 
-            // HSL rainbow stroke
             ctx.strokeStyle = HSLAString(this.color);
             ctx.stroke();
-
-            // Increment hue for next segment
-            //this.baseHue += this.hueStep;
-            //if (this.baseHue >= 360) this.baseHue -= 360;
         }
         this.prev = { x: px, y: py };
     }
