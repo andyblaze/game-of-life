@@ -80,13 +80,13 @@ $viewData = [
     'outerRadiusYCtrl'  => slider('outerRadiusY', 20, 360, 1, 140, 'int', 'outerRadiusY'),
     'rotationCtrl'      => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
     'innerRadiusCtrl'   => slider('innerRadius', 20, 140, 1, 60, 'int', 'innerRadius'),
-    'penOffsetCtrl'     => slider('penOffest', 2, 30, 1, 15, 'int', 'penOffset'),
+    'penOffsetCtrl'     => slider('penOffest', 2, 130, 1, 15, 'int', 'penOffset'),
     'speedCtrl'         => slider('speed', 0.01, 0.5, 0.01, 0.2, 'float', 'speed', false),
     'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start', false),
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end', false),
     'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.8, 'float', 'alpha', false),
     'rotationForceCtrl' => slider('rotationForce', 0, 1, 0.1, 0, 'float', 'rotation_force'),
-    'pinchForceCtrl'    => slider('pinchForce', 0, 20, 1, 0, 'int', 'pinch_force')
+    'pinchForceCtrl'    => slider('pinchForce', -20, 20, 1, 0, 'int', 'pinch_force')
 ];
 
 echo render('view.html', $viewData);

@@ -11,6 +11,7 @@ class PinchForce {
     }
 
     update(t, pos) {
+        if ( this.strength === 0 ) return;
 
         // Vector from center → point
         const dx = pos.x - this.cx;
