@@ -78,11 +78,11 @@ class BendForce {
         this.dy = -30; // pixels to pull on Y
 
         // strength: 0 = no effect, 1 = full effect
-        this.strength = cfg.bend_force || 5;
+        this.strength = cfg.bend_force;
     }
 
     reset(cfg) {
-        this.strength = cfg.bend_force || 5;
+        this.strength = cfg.bend_force;
     }
 
     update(t, pos) {

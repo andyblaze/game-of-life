@@ -86,7 +86,8 @@ $viewData = [
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end', false),
     'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.8, 'float', 'alpha', false),
     'rotationForceCtrl' => slider('rotationForce', 0, 1, 0.1, 0, 'float', 'rotation_force'),
-    'pinchForceCtrl'    => slider('pinchForce', -20, 20, 1, 0, 'int', 'pinch_force')
+    'pinchForceCtrl'    => slider('pinchForce', -20, 20, 1, 0, 'int', 'pinch_force'),
+    'bendForceCtrl'     => slider('bendForce', -30, 30, 1, 0, 'int', 'bend_force')
 ];
 
 echo render('view.html', $viewData);
