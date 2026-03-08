@@ -67,12 +67,46 @@ class RotationForce {
     }
 }
 
+class BendForce {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.cx = cfg.centerX;
+        this.cy = cfg.centerY;
+
+        // direction of pull
+        this.dx = 50; // pixels to pull on X
+        this.dy = -30; // pixels to pull on Y
+
+        // strength: 0 = no effect, 1 = full effect
+        this.strength = cfg.bend_force || 5;
+    }
+
+    reset(cfg) {
+        this.strength = cfg.bend_force || 5;
+    }
+
+    update(t, pos) {
+        // distance from center
+        const dxC = pos.x - this.cx;
+        const dyC = pos.y - this.cy;
+        const dist = Math.sqrt(dxC*dxC + dyC*dyC);
+
+        // falloff: closer to center gets pulled more, further away less
+        const falloff = 1 / (1 + dist/200); // tweak 200 for radius scale
+
+        // apply pull
+        pos.x += this.dx * this.strength * falloff;
+        pos.y += this.dy * this.strength * falloff;
+    }
+}
+
 export default class Forces {
     constructor(cfg) {
         this.cfg = cfg;
         this.forces = [
             new RotationForce(cfg),
-            new PinchForce(cfg)
+            new PinchForce(cfg),
+            new BendForce(cfg)
         ];
     }
     update(t, pos) {

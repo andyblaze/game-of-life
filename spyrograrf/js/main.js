@@ -14,7 +14,7 @@ const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
 uiControls.notify();
 
-const renderer = new MultiPenRenderer(config); //Renderer(config);
+const renderer = new Renderer(config);
 const core = new Core(config);
 
 byId("ui-panel").reset();
@@ -44,8 +44,10 @@ function loop(timestamp) {
         const pos = core.getPoint();
         forces.update(core.t, pos);
         core.update(stepDT);
-        renderer.pens[0].color = ct.update(stepDT);
-        renderer.pens[1].color = ct.update(stepDT);
+        renderer.color = ct.update(stepDT);
+        /*renderer.pens[1].color = ct.update(stepDT);
+        renderer.pens[1].offsetX = Math.sin(core.t * 0.5) * 100;
+        renderer.pens[1].offsetY = Math.cos(core.t * 0.5) * 100;*/
         renderer.draw(pos.x, pos.y, stepDT); 
     }
 
