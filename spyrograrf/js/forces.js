@@ -139,7 +139,7 @@ class TwistForce {
     }
 }
 
-export default class Forces {
+export default class Forces { 
     constructor(cfg) {
         this.cfg = cfg;
         this.forces = [
