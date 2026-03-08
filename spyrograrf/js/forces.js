@@ -74,8 +74,8 @@ class BendForce {
         this.cy = cfg.centerY;
 
         // direction of pull
-        this.dx = 50; // pixels to pull on X
-        this.dy = -30; // pixels to pull on Y
+        this.dx = 5; // pixels to pull on X
+        this.dy = -3; // pixels to pull on Y
 
         // strength: 0 = no effect, 1 = full effect
         this.strength = cfg.bend_force;
@@ -90,13 +90,52 @@ class BendForce {
         const dxC = pos.x - this.cx;
         const dyC = pos.y - this.cy;
         const dist = Math.sqrt(dxC*dxC + dyC*dyC);
+        const falloff = dist / 200; // increase with distance
+pos.x += this.dx * this.strength * falloff;
+pos.y += this.dy * this.strength * falloff;
 
         // falloff: closer to center gets pulled more, further away less
-        const falloff = 1 / (1 + dist/200); // tweak 200 for radius scale
+        //const falloff = 1 / (1 + dist/200); // tweak 200 for radius scale
 
         // apply pull
-        pos.x += this.dx * this.strength * falloff;
-        pos.y += this.dy * this.strength * falloff;
+        //pos.x += this.dx * this.strength * falloff;
+        //pos.y += this.dy * this.strength * falloff;
+    }
+}
+class TwistForce {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.cx = cfg.centerX;
+        this.cy = cfg.centerY;
+
+        // slider control
+        this.strength = cfg.twist_force;
+    }
+
+    reset(cfg) {
+        this.strength = cfg.twist_force;
+    }
+
+    update(t, pos) {
+
+        // vector from center
+        const dx = pos.x - this.cx;
+        const dy = pos.y - this.cy;
+
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        // angle of the point around the center
+        const angle = Math.atan2(dy, dx);
+
+        // twist amount grows with distance from center
+        const twist = this.strength * dist * 0.001;   // tweak scale here
+
+        // new rotated angle
+        const newAngle = angle + twist;
+
+        // convert back to cartesian
+        pos.x = this.cx + Math.cos(newAngle) * dist;
+        pos.y = this.cy + Math.sin(newAngle) * dist;
     }
 }
 
@@ -106,7 +145,8 @@ export default class Forces {
         this.forces = [
             new RotationForce(cfg),
             new PinchForce(cfg),
-            new BendForce(cfg)
+            new BendForce(cfg),
+            new TwistForce(cfg)
         ];
     }
     update(t, pos) {

@@ -81,13 +81,14 @@ $viewData = [
     'rotationCtrl'      => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
     'innerRadiusCtrl'   => slider('innerRadius', 20, 140, 1, 60, 'int', 'innerRadius'),
     'penOffsetCtrl'     => slider('penOffest', 2, 130, 1, 15, 'int', 'penOffset'),
-    'speedCtrl'         => slider('speed', 0.01, 0.5, 0.01, 0.2, 'float', 'speed', false),
+    'speedCtrl'         => slider('speed', 0.01, 1, 0.01, 0.2, 'float', 'speed', false),
     'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start', false),
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end', false),
-    'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.8, 'float', 'alpha', false),
+    'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.5, 'float', 'alpha', false),
     'rotationForceCtrl' => slider('rotationForce', 0, 1, 0.1, 0, 'float', 'rotation_force'),
     'pinchForceCtrl'    => slider('pinchForce', -20, 20, 1, 0, 'int', 'pinch_force'),
-    'bendForceCtrl'     => slider('bendForce', -30, 30, 1, 0, 'int', 'bend_force')
+    'bendForceCtrl'     => slider('bendForce', -30, 30, 1, 0, 'int', 'bend_force'),
+    'twistForceCtrl'     => slider('twistForce', -30, 30, 1, 0, 'int', 'twist_force')
 ];
 
 echo render('view.html', $viewData);
