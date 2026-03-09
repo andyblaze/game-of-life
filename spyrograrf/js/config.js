@@ -1,6 +1,6 @@
 import { byId } from "./functions.js";
 
-function setupCanvas(canvas) {
+/*function setupCanvas(canvas) {
 
     const dpr = window.devicePixelRatio || 1;
 
@@ -15,6 +15,24 @@ function setupCanvas(canvas) {
 
     return ctx;
 }
+
+cfg.centerX = canvas.width / (2 * dpr);
+cfg.centerY = canvas.height / (2 * dpr);
+
+window.addEventListener("resize", () => {
+
+    ctx = setupCanvas(canvas);
+
+    cfg.centerX = canvas.clientWidth / 2;
+    cfg.centerY = canvas.clientHeight / 2;
+
+    reset();   // restart drawing
+});
+
+const MAX = 2000;
+
+canvas.width  = Math.min(rect.width  * dpr, MAX);
+canvas.height = Math.min(rect.height * dpr, MAX);*/
 
 export default class Config {
     constructor(canvasId, workspaceId, tc) {
