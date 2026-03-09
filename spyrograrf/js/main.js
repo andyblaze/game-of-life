@@ -8,6 +8,21 @@ import UiControls from "./uicontrols.js";
 import Forces from "./forces.js";
 import ColorTween from "./tweens.js";
 
+function checkOrientation() {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    return isPortrait;
+}
+
+function updateWarning() {
+    const warning = byId("rotate-warning");
+    warning.style.display = checkOrientation() ? "block" : "none";
+}
+
+window.addEventListener("resize", updateWarning);
+window.addEventListener("orientationchange", updateWarning);
+
+updateWarning();
+
 const config = new Config("spiro", "workspace", new TypeConverter());
 
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
