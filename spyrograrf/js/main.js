@@ -7,6 +7,7 @@ import TypeConverter from "./typeconverter.js";
 import UiControls from "./uicontrols.js";
 import Forces from "./forces.js";
 import ColorTween from "./tweens.js";
+import DeltaReport from "./delta-report.js";
 
 function checkOrientation() {
     const isPortrait = window.innerHeight > window.innerWidth;
@@ -65,7 +66,7 @@ function loop(timestamp) {
         renderer.pens[1].offsetY = Math.cos(core.t * 0.5) * 100;*/
         renderer.draw(pos.x, pos.y, stepDT); 
     }
-
+    DeltaReport.log(timestamp); //DeltaReport.spew();
     requestAnimationFrame(loop);
 }
 

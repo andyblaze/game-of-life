@@ -9,7 +9,11 @@ export default class DeltaReport {
     static max = 0;
     static timeSum = 0; // total ms of frame times (not normalised)
 
-    static log(timestamp) { //}, numParticles) {
+    static spew() {
+        console.log(Math.random());
+    }
+
+    static log(timestamp) { //DeltaReport.spew(); //}, numParticles) {
         this.frameCount++;
         const deltaTime = timestamp - this.lastTime; // ms since last frame
         const delta = deltaTime / 16.67; // normalised to 60fps
