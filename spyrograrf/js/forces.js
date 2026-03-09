@@ -86,6 +86,7 @@ class BendForce {
     }
 
     update(t, pos) {
+        if ( this.strength === 0 ) return;
         // distance from center
         const dxC = pos.x - this.cx;
         const dyC = pos.y - this.cy;
@@ -117,6 +118,7 @@ class TwistForce {
     }
 
     update(t, pos) {
+        if ( this.strength === 0 ) return;
 
         // vector from center
         const dx = pos.x - this.cx;
@@ -139,6 +141,72 @@ class TwistForce {
     }
 }
 
+class GravityForce {
+    constructor(cfg) {
+        this.cfg = cfg;
+
+        this.gx = cfg.centerX;
+        this.gy = cfg.centerY;
+
+        this.strength = cfg.gravity_force;
+    }
+
+    reset(cfg) {
+        this.strength = cfg.gravity_force;
+    }
+
+    update(t, pos) {
+        if ( this.strength === 0 ) return;
+
+        // vector toward gravity well
+        const dx = this.gx - pos.x;
+        const dy = this.gy - pos.y;
+
+        // distance squared (avoids sqrt and feels nicer)
+        const dist2 = dx*dx + dy*dy + 1;
+
+        // inverse-square style falloff
+        const pull = this.strength * 2000 / dist2;
+
+        pos.x += dx * pull;
+        pos.y += dy * pull;
+    }
+}
+
+class SpiralForce {
+    constructor(cfg) {
+        this.cfg = cfg;
+
+        this.cx = cfg.centerX;
+        this.cy = cfg.centerY;
+
+        this.strength = cfg.spiral_force * 10;
+    }
+
+    reset(cfg) {
+        this.strength = cfg.spiral_force * 10;
+    }
+
+    update(t, pos) {
+
+        // vector from center
+        const dx = pos.x - this.cx;
+        const dy = pos.y - this.cy;
+
+        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+
+        // rotate slightly
+        const angle = Math.atan2(dy, dx);
+        const newAngle = angle + this.strength * 0.02;
+
+        // push outward/inward slightly
+        const newDist = dist + this.strength * 0.05;
+
+        pos.x = this.cx + Math.cos(newAngle) * newDist;
+        pos.y = this.cy + Math.sin(newAngle) * newDist;
+    }
+}
+
 export default class Forces { 
     constructor(cfg) {
         this.cfg = cfg;
@@ -146,7 +214,9 @@ export default class Forces {
             new RotationForce(cfg),
             new PinchForce(cfg),
             new BendForce(cfg),
-            new TwistForce(cfg)
+            new TwistForce(cfg),
+            new GravityForce(cfg),
+            new SpiralForce(cfg)
         ];
     }
     update(t, pos) {
