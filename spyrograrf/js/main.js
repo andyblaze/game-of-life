@@ -83,6 +83,8 @@ class ThreeDee {
         this.cameraAngle += 0.002;
     }
     update(pos, cfg) {
+
+        const tmpAlpha = cfg.colorAlpha;
         
         const dx = pos.x - this.cfg.centerX;
         const dy = pos.y - this.cfg.centerY;
@@ -109,7 +111,7 @@ class ThreeDee {
         // alpha fade based on z-depth
         const alpha = Math.min(1, this.baseAlpha * scale); // closer = brighter
 
-        return { x: xProj, y: yProj, a: alpha };
+        return { x: xProj, y: yProj, a: alpha, prevAlpha: tmpAlpha };
     }
 }
 const projection = new ThreeDee(config);
@@ -139,11 +141,11 @@ function loop(timestamp) {
             focalLength: 300
         });
                 // temporarily override renderer color alpha
-        const prevAlpha = renderer.color.a;
+        //const prevAlpha = renderer.color.a;
         renderer.color.a = projected.a;
 
         renderer.draw(projected.x, projected.y, stepDT);
-        renderer.color.a = prevAlpha; // restore
+        renderer.color.a = projected.prevAlpha; // restore
         //renderer.draw(pos.x, pos.y, stepDT); 
     }
     DeltaReport.log(timestamp); //DeltaReport.spew();
