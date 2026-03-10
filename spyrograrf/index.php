@@ -89,7 +89,7 @@ $viewData = [
     'pinchForceCtrl'    => slider('pinchForce', -20, 20, 1, 0, 'int', 'pinch_force'),
     'bendForceCtrl'     => slider('bendForce', -30, 30, 1, 0, 'int', 'bend_force'),
     'twistForceCtrl'    => slider('twistForce', -30, 30, 1, 0, 'int', 'twist_force'),
-    'gravityForceCtrl'  => slider('gravityForce', -30, 30, 1, 0, 'int', 'gravity_force'),
+    'shearForceCtrl'    => slider('shearForce', -1, 1, 0.1, 0, 'float', 'shear_force'),
     'spiralForceCtrl'   => slider('spiralForce', -30, 30, 1, 0, 'int', 'spiral_force')
 ];
 

@@ -25,6 +25,11 @@ export default class GravityForce {
         // inverse-square style falloff
         const pull = this.strength * 2000 / dist2;
 
+        // clamp runaway forces
+        const maxPull = 0.005;
+        if (pull > maxPull) pull = maxPull;
+        if (pull < -maxPull) pull = -maxPull;
+
         pos.x += dx * pull;
         pos.y += dy * pull;
     }

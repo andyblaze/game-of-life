@@ -2,7 +2,7 @@ import RotationForce from "./rotation-force.js";
 import PinchForce from "./pinch-force.js";
 import BendForce from "./bend-force.js";
 import TwistForce from "./twist-force.js";
-import GravityForce from "./gravity-force.js";
+import ShearForce from "./shear-force.js";
 import SpiralForce from "./spiral-force.js";
 
 export default class Forces { 
@@ -13,7 +13,7 @@ export default class Forces {
             new PinchForce(cfg),
             new BendForce(cfg),
             new TwistForce(cfg),
-            new GravityForce(cfg),
+            new ShearForce(cfg),
             new SpiralForce(cfg)
         ];
     }
