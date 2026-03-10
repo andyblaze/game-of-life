@@ -77,6 +77,7 @@ class ThreeDee {
     constructor(cfg) {
         this.cfg = cfg;
         this.cameraAngle = 0;
+        this.baseAlpha = 0.2;
     }
     updateAngle() {
         this.cameraAngle += 0.002;
@@ -106,12 +107,12 @@ class ThreeDee {
         const yProj = this.cfg.centerY + dy * scale;
 
         // alpha fade based on z-depth
-        const alpha = Math.min(1, cfg.baseAlpha * scale); // closer = brighter
+        const alpha = Math.min(1, this.baseAlpha * scale); // closer = brighter
 
         return { x: xProj, y: yProj, a: alpha };
     }
 }
-const proj = new ThreeDee(config);
+const projection = new ThreeDee(config);
 
 //let cameraAngle = 0; // global for smooth rotation
 let lastTimestamp = 0;
@@ -124,25 +125,25 @@ function loop(timestamp) {
     
     const subSteps = Math.ceil(config.speed * 60) + 1;
     const stepDT = (config.speed * dt) * (dt / subSteps);
-    proj.updateAngle();
+    projection.updateAngle();
     for ( let i = 0; i < subSteps; i++ ) {
         const pos = core.getPoint();
         forces.update(core.t, pos);
         core.update(stepDT);
         renderer.color = ct.update(stepDT);
 
-const projected = proj.update(pos, {
-            depthFactor: 0.2,
-           // cameraAngle,
-            focalLength: 300,
-            baseAlpha: 0.2 // tweak for ghosting/shimmer
+        const projected = projection.update(pos, {
+            depthFactor: 0.02,
+            colorAlpha: renderer.color.a,
+            // cameraAngle,
+            focalLength: 300
         });
-        // temporarily override renderer color alpha
+                // temporarily override renderer color alpha
         const prevAlpha = renderer.color.a;
         renderer.color.a = projected.a;
 
-renderer.draw(projected.x, projected.y, stepDT);
-renderer.color.a = prevAlpha; // restore
+        renderer.draw(projected.x, projected.y, stepDT);
+        renderer.color.a = prevAlpha; // restore
         //renderer.draw(pos.x, pos.y, stepDT); 
     }
     DeltaReport.log(timestamp); //DeltaReport.spew();
