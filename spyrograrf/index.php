@@ -90,7 +90,9 @@ $viewData = [
     'bendForceCtrl'     => slider('bendForce', -30, 30, 1, 0, 'int', 'bend_force'),
     'twistForceCtrl'    => slider('twistForce', -30, 30, 1, 0, 'int', 'twist_force'),
     'shearForceCtrl'    => slider('shearForce', -1, 1, 0.1, 0, 'float', 'shear_force'),
-    'spiralForceCtrl'   => slider('spiralForce', -30, 30, 1, 0, 'int', 'spiral_force')
+    'spiralForceCtrl'   => slider('spiralForce', -30, 30, 1, 0, 'int', 'spiral_force'),
+    'depthFactorCtrl'   => slider('depthFactor', 0, 0.2, 0.01, 0, 'float', 'depthFactor'),
+    'focalLengthCtrl'   => slider('focalLength', 0, 300, 50, 0, 'int', 'focalLength')
 ];
 
 echo render('view.html', $viewData);
