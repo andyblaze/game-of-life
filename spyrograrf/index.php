@@ -93,7 +93,8 @@ $viewData = [
     'spiralForceCtrl'   => slider('spiralForce', -30, 30, 1, 0, 'int', 'spiral_force'),
     'depthFactorCtrl'   => slider('depthFactor', 0, 0.02, 0.02, 0, 'float', 'depthFactor'),
     'focalLengthCtrl'   => slider('focalLength', 0, 300, 300, 0, 'int', 'focalLength'),
-    'importSelectCtrl'  => presetsSelect('presets', []),
+    'importSelectCtrl'  => presetsSelect('presets', glob('presets/*.json')),
+    'presetItems'       => importItems(),
     'exportCtrls'       => exportCtrls()
 ];
 

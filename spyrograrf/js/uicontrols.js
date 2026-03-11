@@ -40,6 +40,6 @@ export default class UiControls {
                     byId(lbl).textContent = ctrl.value;
             }
         });
-        byId("renderer-select").dispatchEvent(new Event("change", { bubbles: true }));
+        //byId("presets").dispatchEvent(new Event("change", { bubbles: true }));
     }
 }

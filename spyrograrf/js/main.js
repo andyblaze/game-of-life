@@ -9,6 +9,7 @@ import Forces from "./forces.js";
 import ThreeDee from "./three-dee.js";
 import ColorTween from "./tweens.js";
 import DeltaReport from "./delta-report.js";
+import IO from "../_js/io.js";
 
 function checkOrientation() {
     const isPortrait = window.innerHeight > window.innerWidth;
@@ -25,7 +26,7 @@ window.addEventListener("orientationchange", updateWarning);
 
 updateWarning();
 
-const config = new Config("spiro", "workspace", new TypeConverter());
+const config = new Config("spiro", "canvas-wrap", new TypeConverter());
 
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
@@ -34,12 +35,22 @@ uiControls.notify();
 const renderer = new Renderer(config);
 const core = new Core(config);
 
-byId("ui-panel").reset();
-
 const forces = new Forces(config);
 const colorTween = new ColorTween(config);
 const projection = new ThreeDee(config);
 
+byId("ui-panel").reset();
+
+if ( byId("export") ) 
+    byId("export").onclick = () => IO.export(config);
+byId("import").onclick = () => {
+    IO.import(config, uiControls);
+    core.reset();
+    renderer.reset();
+    forces.reset();
+    projection.reset();
+    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
+};
 
 const geoCtrls = byQsArray("#ui-panel input.geometry");
 for ( const ctrl of geoCtrls ) ctrl.onchange = () => { 

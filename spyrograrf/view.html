@@ -22,9 +22,6 @@
 </div>
 <div id="container">
 <form id="ui-panel">
-<div id="hud">
-    <div>FPS: <span id="fps-report">60</span></div>
-</div>
     {outerRadiusXCtrl}
     {outerRadiusYCtrl}
     {rotationCtrl}
@@ -50,15 +47,19 @@
     </div>
 </form>
 <div id="workspace">
-    <div class="import-export">
+    <div id="import-export">
         Presets: 
         {importSelectCtrl} 
         <button id="import" type="button">Load</button>
         {exportCtrls}
     </div>
-    <canvas id="spiro" width="800" height="800"></canvas>
+    <div id="hud">
+        <div>FPS: <span id="fps-report">60</span></div>
+    </div>
+    <div id="canvas-wrap"><canvas id="spiro" width="800" height="800"></canvas></div>
 </div>
 </div>
+{presetItems}
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

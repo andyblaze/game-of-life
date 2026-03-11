@@ -42,7 +42,7 @@ export default class Config {
         this.ctx = this.canvas.getContext("2d");
         const rect = byId(workspaceId).getBoundingClientRect();
         this.canvas.width = rect.width;
-        this.canvas.height = window.innerHeight;
+        this.canvas.height = window.innerHeight - 98;
         this.canvasW = this.canvas.width;
         this.canvasH = this.canvas.height;
         this.centerX = this.canvas.width / 2;
@@ -67,6 +67,16 @@ export default class Config {
     update(ctrls) {
         for ( const ctrl of ctrls ) {
             this.updateCtrl(ctrl);
+        }
+    }
+    export() {
+        return JSON.stringify(this.controlsData);
+    }
+    importPreset(data) {        
+        const ctrls = JSON.parse(data);
+        for (const [key, val] of Object.entries(ctrls)) {
+            this[key] = val;
+            this.controlsData[key] = val;
         }
     }
 }
