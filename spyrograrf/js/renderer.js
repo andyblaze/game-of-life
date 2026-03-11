@@ -20,7 +20,12 @@ export default class Renderer {
         }
         this.prev = { x: px, y: py };
     }
-
+    getColorAlpha() {
+        return this.color.a;
+    }
+    setColorAlpha(a) {
+        this.color.a = a;
+    }
     reset() {
         this.prev = null;
     }

@@ -22,7 +22,7 @@
 </div>
 <div id="container">
 <form id="ui-panel">
-<div id="hud" title="Frames per second. / Particles on screen.">
+<div id="hud">
     <div>FPS: <span id="fps-report">60</span></div>
 </div>
     {outerRadiusXCtrl}
@@ -43,10 +43,19 @@
     {twistForceCtrl}
     {shearForceCtrl}
     {spiralForceCtrl}
-    {depthFactorCtrl}
-    {focalLengthCtrl}
+    <div class="col-2">
+        <h4>Camera - off / on</h4>
+        {depthFactorCtrl}
+        {focalLengthCtrl}
+    </div>
 </form>
 <div id="workspace">
+    <div class="import-export">
+        Presets: 
+        {importSelectCtrl} 
+        <button id="import" type="button">Load</button>
+        {exportCtrls}
+    </div>
     <canvas id="spiro" width="800" height="800"></canvas>
 </div>
 </div>

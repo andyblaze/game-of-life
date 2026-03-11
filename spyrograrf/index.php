@@ -80,19 +80,21 @@ $viewData = [
     'outerRadiusYCtrl'  => slider('outerRadiusY', 20, 360, 1, 140, 'int', 'outerRadiusY'),
     'rotationCtrl'      => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
     'innerRadiusCtrl'   => slider('innerRadius', 20, 140, 1, 60, 'int', 'innerRadius'),
-    'penOffsetCtrl'     => slider('penOffest', 2, 130, 1, 15, 'int', 'penOffset'),
+    'penOffsetCtrl'     => slider('penOffest', 1, 130, 1, 15, 'int', 'penOffset'),
     'speedCtrl'         => slider('speed', 0.01, 1, 0.01, 0.2, 'float', 'speed', false),
     'colorStartCtrl'    => colorPicker('start', '#00ff00', 'hsla', 'color_start', false),
     'colorEndCtrl'      => colorPicker('end', '#ff0000', 'hsla', 'color_end', false),
     'alphaCtrl'         => slider('alpha', 0, 1, 0.01, 0.5, 'float', 'alpha', false),
     'rotationForceCtrl' => slider('rotationForce', 0, 1, 0.1, 0, 'float', 'rotation_force'),
-    'pinchForceCtrl'    => slider('pinchForce', -20, 20, 1, 0, 'int', 'pinch_force'),
+    'pinchForceCtrl'    => slider('pinchForce', 0, 50, 1, 0, 'int', 'pinch_force'),
     'bendForceCtrl'     => slider('bendForce', -30, 30, 1, 0, 'int', 'bend_force'),
     'twistForceCtrl'    => slider('twistForce', -30, 30, 1, 0, 'int', 'twist_force'),
     'shearForceCtrl'    => slider('shearForce', -1, 1, 0.1, 0, 'float', 'shear_force'),
     'spiralForceCtrl'   => slider('spiralForce', -30, 30, 1, 0, 'int', 'spiral_force'),
-    'depthFactorCtrl'   => slider('depthFactor', 0, 0.2, 0.01, 0, 'float', 'depthFactor'),
-    'focalLengthCtrl'   => slider('focalLength', 0, 300, 50, 0, 'int', 'focalLength')
+    'depthFactorCtrl'   => slider('depthFactor', 0, 0.02, 0.02, 0, 'float', 'depthFactor'),
+    'focalLengthCtrl'   => slider('focalLength', 0, 300, 300, 0, 'int', 'focalLength'),
+    'importSelectCtrl'  => presetsSelect('presets', []),
+    'exportCtrls'       => exportCtrls()
 ];
 
 echo render('view.html', $viewData);

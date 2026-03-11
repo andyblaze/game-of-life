@@ -69,13 +69,12 @@ function loop(timestamp) {
         renderer.color = colorTween.update(stepDT);
 
         const projected = projection.update(pos, {
-            colorAlpha: renderer.color.a
+            colorAlpha: renderer.getColorAlpha()
         });
-        // temporarily override renderer color alpha
-        renderer.color.a = projected.a;
-
+        
+        renderer.setColorAlpha(projected.a); // temporarily override renderer color alpha
         renderer.draw(projected.x, projected.y, stepDT);
-        renderer.color.a = projected.prevAlpha; // restore
+        renderer.setColorAlpha(projected.prevAlpha); // restore alpha
     }
     DeltaReport.log(timestamp);
     requestAnimationFrame(loop);
