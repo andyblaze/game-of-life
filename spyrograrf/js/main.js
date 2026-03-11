@@ -41,24 +41,34 @@ const projection = new ThreeDee(config);
 
 byId("ui-panel").reset();
 
+function resetAll() {
+    core.reset();
+    renderer.reset();
+    forces.reset();
+    projection.reset();
+    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);    
+}
+
 if ( byId("export") ) 
     byId("export").onclick = () => IO.export(config);
 byId("import").onclick = () => {
     IO.import(config, uiControls);
-    core.reset();
+    resetAll();
+    /*core.reset();
     renderer.reset();
     forces.reset();
     projection.reset();
-    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
+    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);*/
 };
 
 const geoCtrls = byQsArray("#ui-panel input.geometry");
 for ( const ctrl of geoCtrls ) ctrl.onchange = () => { 
-    core.reset();
+    resetAll();
+    /*core.reset();
     renderer.reset();
     forces.reset();
     projection.reset();
-    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH); 
+    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH); */
 };
 
 
