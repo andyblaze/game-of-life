@@ -1,6 +1,5 @@
 import Config from "./config.js";
 import Renderer from "./renderer.js";
-import MultiPenRenderer from "./mulltipen-renderer.js";
 import Core from "./core.js";
 import { byId, byQsArray } from "./functions.js";
 import TypeConverter from "./typeconverter.js";
@@ -9,22 +8,16 @@ import Forces from "./forces.js";
 import ThreeDee from "./three-dee.js";
 import ColorTween from "./tweens.js";
 import DeltaReport from "./delta-report.js";
-import IO from "../_js/io.js";
+import IO from "./io.js";
+import DeviceChecker from "./device-checker.js";
 
-function checkOrientation() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    return isPortrait;
-}
 
-function updateWarning() {
-    const warning = byId("rotate-warning");
-    warning.style.display = checkOrientation() ? "block" : "none";
-}
+const device = new DeviceChecker("rotate-warning");
 
-window.addEventListener("resize", updateWarning);
-window.addEventListener("orientationchange", updateWarning);
+window.addEventListener("resize", device.checkSize);
+window.addEventListener("orientationchange", device.checkSize);
 
-updateWarning();
+device.checkSize();
 
 const config = new Config("spiro", "canvas-wrap", new TypeConverter());
 
@@ -49,37 +42,32 @@ function resetAll() {
     config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);    
 }
 
-if ( byId("export") ) 
-    byId("export").onclick = () => IO.export(config);
-byId("import").onclick = () => {
+const exportBtn = byId("export");
+const importBtn = byId("import");
+
+if ( exportBtn ) 
+    exportBtn.onclick = () => IO.export(config);
+importBtn.onclick = () => {
     IO.import(config, uiControls);
     resetAll();
-    /*core.reset();
-    renderer.reset();
-    forces.reset();
-    projection.reset();
-    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);*/
 };
 
 const geoCtrls = byQsArray("#ui-panel input.geometry");
 for ( const ctrl of geoCtrls ) ctrl.onchange = () => { 
     resetAll();
-    /*core.reset();
-    renderer.reset();
-    forces.reset();
-    projection.reset();
-    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH); */
 };
 
 
 
 let lastTimestamp = 0;
+
 function loop(timestamp) { 
-    if ( lastTimestamp === 0 ) lastTimestamp = timestamp;
+    if ( lastTimestamp === 0 ) 
+        lastTimestamp = timestamp;
 
     const dt = (timestamp - lastTimestamp) / 16.666; // 16.666 ms ~ 60 FPS
-    lastTimestamp = timestamp;
-    
+    lastTimestamp = timestamp;   
+
     const subSteps = Math.ceil(config.speed * 60) + 1;
     const stepDT = (config.speed * dt) * (dt / subSteps);
     projection.updateAngle();
