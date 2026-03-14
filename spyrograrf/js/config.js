@@ -36,17 +36,18 @@ canvas.height = Math.min(rect.height * dpr, MAX);*/
 
 export default class Config {
     constructor(canvasId, workspaceId, tc) {
+        this.workspaceId = workspaceId;
         this.converter = tc;
         this.controlsData = {};
         this.canvas = byId(canvasId);
         this.ctx = this.canvas.getContext("2d");
-        const rect = byId(workspaceId).getBoundingClientRect();
+        /*const rect = byId(workspaceId).getBoundingClientRect();
         this.canvas.width = rect.width;
         this.canvas.height = window.innerHeight - 98;
         this.canvasW = this.canvas.width;
         this.canvasH = this.canvas.height;
         this.centerX = this.canvas.width / 2;
-        this.centerY = this.canvas.height / 2;
+        this.centerY = this.canvas.height / 2;*/
         this.outerRadiusX = 251;
         this.outerRadiusY = 251;
         this.rotation = 0;
@@ -57,6 +58,16 @@ export default class Config {
         this.color_start = {},
         this.color_end = {},
         this.alpha = 1;
+    }
+    setupCanvas(screenData) {
+        const dpr = screenData.dpr;
+        //const rect = this.canvas.getBoundingClientRect();
+        const rect = byId(this.workspaceId).getBoundingClientRect();
+        this.canvas.width  = rect.width  * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+        this.centerX = this.canvas.width / (2 * dpr);
+        this.centerY = this.canvas.height / (2 * dpr);
     }
     updateCtrl(ctrl) { 
         const type = ctrl.dataset.type;

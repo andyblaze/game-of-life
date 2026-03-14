@@ -7,17 +7,7 @@
 <link href="css/sys.css" type="text/css" rel="stylesheet">
 </head>
 <body>
-<div id="rotate-warning" style="
-    display:none;
-    position:absolute;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.8);
-    color: #fff;
-    font-size: 1.5rem;
-    text-align:center;
-    padding-top: 40%;
-    z-index:1000;
-">
+<div id="screen-warning" style="display:none;">
     Please rotate your device to landscape for best experience
 </div>
 <div id="container">
@@ -56,7 +46,7 @@
     <div id="hud">
         <div>FPS: <span id="fps-report">60</span></div>
     </div>
-    <div id="canvas-wrap"><canvas id="spiro" width="800" height="800"></canvas></div>
+    <div id="canvas-wrap"><canvas id="spiro" width="600" height="600"></canvas></div>
 </div>
 </div>
 {presetItems}

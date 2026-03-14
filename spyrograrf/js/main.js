@@ -11,15 +11,19 @@ import DeltaReport from "./delta-report.js";
 import IO from "./io.js";
 import DeviceChecker from "./device-checker.js";
 
-
-const device = new DeviceChecker("rotate-warning");
-
-window.addEventListener("resize", device.checkSize);
-window.addEventListener("orientationchange", device.checkSize);
-
-device.checkSize();
-
+const device = new DeviceChecker("screen-warning");
 const config = new Config("spiro", "canvas-wrap", new TypeConverter());
+
+function screenSetup() {
+    const screenData = device.checkSize();
+    config.setupCanvas(screenData);
+}
+
+window.addEventListener("resize", screenSetup);
+window.addEventListener("orientationchange", screenSetup);
+
+screenSetup();
+
 
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);

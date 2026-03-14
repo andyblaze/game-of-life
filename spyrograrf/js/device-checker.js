@@ -5,10 +5,23 @@ export default class DeviceChecker {
         this.warning = byId(warningId);
         this.checkSize = this.checkSize.bind(this);
     }
-    isPortrait() {
-        return window.innerHeight > window.innerWidth;
+    getInfo() {
+        this.info = {
+            innerW  : window.innerWidth, 
+            innerH  : window.innerHeight ,
+            clientW : document.documentElement.clientWidth, 
+            clientH : document.documentElement.clientHeight,
+            screenW : screen.width, 
+            screenH : screen.height,
+            availW  : screen.availWidth,
+            availH  : screen.availHeight,
+            dpr     : window.devicePixelRatio || 1
+        };
+        this.info.aspect = (this.info.innerH > this.info.innerW ? "portrait" : "landscape");
     }
     checkSize() {
-        this.warning.style.display = this.isPortrait() ? "block" : "none";
+        this.getInfo();
+        this.warning.style.display = this.info.aspect === "portrait" ? "block" : "none";
+        return this.info;
     }
 }

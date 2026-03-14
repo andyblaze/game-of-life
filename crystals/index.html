@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Crystal Grower</title>
+<style>
+body{
+    margin:0;
+    background:black;
+    overflow:hidden;
+}
+canvas{
+    display:block;
+}
+</style>
+</head>
+
+<body>
+<canvas id="c"></canvas>
+
+<script>
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+let w,h;
+let crystal = [];
+let particles = [];
+
+const PARTICLE_COUNT = 400;
+
+function resize(){
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+}
+
+window.addEventListener("resize",resize);
+resize();
+
+function reset(){
+
+    crystal = [];
+    particles = [];
+
+    crystal.push({
+        x: w/2,
+        y: h/2
+    });
+
+    for(let i=0;i<PARTICLE_COUNT;i++){
+        spawnParticle();
+    }
+}
+
+function spawnParticle(){
+
+    let side = Math.floor(Math.random()*4);
+    let x,y;
+
+    if(side===0){x=Math.random()*w;y=0;}
+    if(side===1){x=w;y=Math.random()*h;}
+    if(side===2){x=Math.random()*w;y=h;}
+    if(side===3){x=0;y=Math.random()*h;}
+
+    particles.push({
+        x:x,
+        y:y
+    });
+}
+
+function dist(a,b){
+    let dx=a.x-b.x;
+    let dy=a.y-b.y;
+    return Math.sqrt(dx*dx+dy*dy);
+}
+
+function update(){
+
+    for(let p of particles){
+
+        p.x += (Math.random()-0.5)*4;
+        p.y += (Math.random()-0.5)*4;
+
+        if(p.x<0||p.x>w||p.y<0||p.y>h){
+            spawnParticle();
+            p.dead=true;
+            continue;
+        }
+
+        for(let c of crystal){
+
+            if(dist(p,c)<4){
+
+                crystal.push({x:p.x,y:p.y});
+                p.dead=true;
+                spawnParticle();
+                break;
+
+            }
+        }
+    }
+
+    particles = particles.filter(p=>!p.dead);
+
+    if(crystal.length>7000){
+        setTimeout(reset,1500);
+    }
+}
+
+function draw(){
+
+    ctx.fillStyle="rgba(0,0,0,0.15)";
+    ctx.fillRect(0,0,w,h);
+
+    for(let c of crystal){
+
+        let hue = 180 + Math.sin(c.x*0.01 + c.y*0.01)*40;
+
+        ctx.fillStyle=`hsl(${hue},100%,70%)`;
+        ctx.shadowColor=`hsl(${hue},100%,70%)`;
+        ctx.shadowBlur=8;
+
+        ctx.fillRect(c.x,c.y,2,2);
+
+    }
+
+    ctx.shadowBlur=0;
+
+    ctx.fillStyle="rgba(255,255,255,0.3)";
+
+    for(let p of particles){
+        ctx.fillRect(p.x,p.y,1,1);
+    }
+}
+
+function loop(){
+
+    update();
+    draw();
+    requestAnimationFrame(loop);
+
+}
+
+reset();
+loop();
+
+</script>
+
+</body>
+</html>

@@ -17,6 +17,7 @@
 
   #ui-panel {
     flex: 0.5;
+    min-width: 460px;
     padding: 10px 1% 10px 1%;
     box-sizing: border-box;
     overflow-y: auto;
@@ -36,7 +37,7 @@
       display: inline-block;
     } 
     #ui-panel .col-3 label {
-      width: 58%;
+      width: 47%;
       display: inline-block;
     } 
     #ui-panel .col-4 label {
@@ -44,7 +45,7 @@
       display: inline-block;
     } 
     #ui-panel .col-3 label.color-ctrl { 
-      width: 20% !important;
+      width: 25% !important;
     }
     #ui-panel .col-5 label {
       width: 19.5%;
@@ -64,6 +65,7 @@
 
 
   #workspace {
+    min-width: 600px;
     flex: 1.5;
     display: flex;
     flex-direction: column;
@@ -146,6 +148,18 @@
 #fps-report.fps-best { color: lime; }
 #fps-report.fps-ok   { color: orange; }
 #fps-report.fps-bad  { color: red; }
+
+#screen-warning {
+    display:none;
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 1.5rem;
+    text-align:center;
+    padding-top: 40%;
+    z-index:1000;
+}
 
 /* modal stuff */
 /* Overlay background */
