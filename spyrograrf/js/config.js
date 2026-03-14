@@ -48,7 +48,7 @@ export default class Config {
         this.canvasH = this.canvas.height;
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;*/
-        this.outerRadiusX = 251;
+        /*this.outerRadiusX = 251;
         this.outerRadiusY = 251;
         this.rotation = 0;
         this.innerRadius = 109;
@@ -57,7 +57,7 @@ export default class Config {
         this.speed = 0.02;
         this.color_start = {},
         this.color_end = {},
-        this.alpha = 1;
+        this.alpha = 1;*/
     }
     setupCanvas(screenData) {
         const dpr = screenData.dpr;
@@ -72,8 +72,9 @@ export default class Config {
     updateCtrl(ctrl) { 
         const type = ctrl.dataset.type;
         const property = ctrl.dataset.property;
-        this[property] = this.converter.apply(type, ctrl, ctrl.value);
-        this.controlsData[property] = this.converter.apply(type, ctrl, ctrl.value); 
+        const val = this.converter.apply(type, ctrl, ctrl.value);
+        this[property] = val;
+        this.controlsData[property] = val;
     }
     update(ctrls) {
         for ( const ctrl of ctrls ) {

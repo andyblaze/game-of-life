@@ -14,17 +14,6 @@ import DeviceChecker from "./device-checker.js";
 const device = new DeviceChecker("screen-warning");
 const config = new Config("spiro", "canvas-wrap", new TypeConverter());
 
-function screenSetup() {
-    const screenData = device.checkSize();
-    config.setupCanvas(screenData);
-}
-
-window.addEventListener("resize", screenSetup);
-window.addEventListener("orientationchange", screenSetup);
-
-screenSetup();
-
-
 const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
 uiControls.notify();
@@ -36,8 +25,6 @@ const forces = new Forces(config);
 const colorTween = new ColorTween(config);
 const projection = new ThreeDee(config);
 
-byId("ui-panel").reset();
-
 function resetAll() {
     core.reset();
     renderer.reset();
@@ -45,6 +32,21 @@ function resetAll() {
     projection.reset();
     config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);    
 }
+
+function screenSetup() {
+    const screenData = device.checkSize();
+    config.setupCanvas(screenData);
+    uiControls.notify();
+    resetAll();
+    //console.log(config);
+}
+
+window.addEventListener("resize", screenSetup);
+window.addEventListener("orientationchange", screenSetup);
+
+screenSetup();
+
+byId("ui-panel").reset();
 
 const exportBtn = byId("export");
 const importBtn = byId("import");
@@ -60,8 +62,6 @@ const geoCtrls = byQsArray("#ui-panel input.geometry");
 for ( const ctrl of geoCtrls ) ctrl.onchange = () => { 
     resetAll();
 };
-
-
 
 let lastTimestamp = 0;
 
