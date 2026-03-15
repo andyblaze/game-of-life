@@ -169,6 +169,12 @@
     z-index:1000;
 }
 
+@media (max-width: 1800px) {
+  #canvas-wrap {
+    min-height: 800px;
+  }
+}
+
 /* modal stuff */
 /* Overlay background */
 /*#screen-warning {
@@ -225,7 +231,7 @@
 #screen-warning #continue-btn:hover {
     background-color: #005fa3;
 }*/
-
+/*
 @media (max-width: 768px) {
 
     #container {
@@ -247,4 +253,4 @@
     height: 100%;
     display: block;
 }
-}
+}*/
