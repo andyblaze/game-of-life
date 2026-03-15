@@ -38,7 +38,6 @@ function screenSetup() {
     config.setupCanvas(screenData);
     uiControls.notify();
     resetAll();
-    //console.log(config);
 }
 
 window.addEventListener("resize", screenSetup);

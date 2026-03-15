@@ -1,15 +1,13 @@
 export default class ThreeDee {
     constructor(cfg) {
         this.cfg = cfg;
-        this.cameraAngle = 0;
         this.baseAlpha = 0.2;
-        this.depthFactor = 0;//cfg.depthFactor;
-        this.focalLength = 0;//cfg.focalLength; 
+        this.reset();
     }
     reset() {
         this.cameraAngle = 0;
-        this.depthFactor = 0;//this.cfg.depthFactor;
-        this.focalLength = 0;//this.cfg.focalLength;         
+        this.depthFactor = 0;
+        this.focalLength = 0;        
     }
     updateAngle() {
         this.cameraAngle += 0.002;

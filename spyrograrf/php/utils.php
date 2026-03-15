@@ -2,7 +2,7 @@
 
 define('IN_PRODUCTION', false);
 
-define('BASE_URL', (IN_PRODUCTION === true ? 'https://mediagraphic.co.uk/particle-workspace/' : 'http://127.0.0.1/gol/particles-2/'));
+define('BASE_URL', (IN_PRODUCTION === true ? 'https://mediagraphic.co.uk/spyrograrf/' : 'http://127.0.0.1/gol/spyrograrf/'));
 
 function url($u='') {
     return BASE_URL . $u;

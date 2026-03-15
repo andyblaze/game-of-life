@@ -76,6 +76,7 @@ function render($view, $data = []) {
 }
 
 $viewData = [
+    'cssFile'           => link_tag('css/sys.css'),
     'outerRadiusXCtrl'  => slider('outerRadiusX', 1, 360, 1, 140, 'int', 'outerRadiusX'),
     'outerRadiusYCtrl'  => slider('outerRadiusY', 1, 360, 1, 140, 'int', 'outerRadiusY'),
     'rotationCtrl'      => slider('rotation', 0, 359, 1, 0, 'int', 'rotation'),
