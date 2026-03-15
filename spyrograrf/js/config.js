@@ -41,26 +41,26 @@ export default class Config {
         this.controlsData = {};
         this.canvas = byId(canvasId);
         this.ctx = this.canvas.getContext("2d");
-        /*const rect = byId(workspaceId).getBoundingClientRect();
+        const rect = byId(workspaceId).getBoundingClientRect();
         this.canvas.width = rect.width;
         this.canvas.height = window.innerHeight - 98;
         this.canvasW = this.canvas.width;
         this.canvasH = this.canvas.height;
         this.centerX = this.canvas.width / 2;
-        this.centerY = this.canvas.height / 2;*/
-        /*this.outerRadiusX = 251;
-        this.outerRadiusY = 251;
+        this.centerY = this.canvas.height / 2;
+        this.outerRadiusX = 140;
+        this.outerRadiusY = 140;
         this.rotation = 0;
-        this.innerRadius = 109;
-        this.penOffset = 91;
+        this.innerRadius = 60;
+        this.penOffset = 15;
         this.theta = 0;
-        this.speed = 0.02;
+        this.speed = 1;
         this.color_start = {},
         this.color_end = {},
-        this.alpha = 1;*/
+        this.alpha = 1;
     }
     setupCanvas(screenData) {
-        const dpr = screenData.dpr;
+        const dpr = screenData.dpr; 
         //const rect = this.canvas.getBoundingClientRect();
         const rect = byId(this.workspaceId).getBoundingClientRect();
         this.canvas.width  = rect.width  * dpr;
@@ -68,6 +68,8 @@ export default class Config {
         this.ctx.scale(dpr, dpr);
         this.centerX = this.canvas.width / (2 * dpr);
         this.centerY = this.canvas.height / (2 * dpr);
+        this.canvasW = this.canvas.width;
+        this.canvasH = this.canvas.height;
     }
     updateCtrl(ctrl) { 
         const type = ctrl.dataset.type;

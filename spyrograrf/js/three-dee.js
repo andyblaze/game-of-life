@@ -3,28 +3,30 @@ export default class ThreeDee {
         this.cfg = cfg;
         this.cameraAngle = 0;
         this.baseAlpha = 0.2;
-        this.depthFactor = cfg.depthFactor;
-        this.focalLength = cfg.focalLength; 
+        this.depthFactor = 0;//cfg.depthFactor;
+        this.focalLength = 0;//cfg.focalLength; 
     }
     reset() {
         this.cameraAngle = 0;
-        this.depthFactor = this.cfg.depthFactor;
-        this.focalLength = this.cfg.focalLength;         
+        this.depthFactor = 0;//this.cfg.depthFactor;
+        this.focalLength = 0;//this.cfg.focalLength;         
     }
     updateAngle() {
         this.cameraAngle += 0.002;
     }
-    update(pos, cfg) {
+    update(pos, rendererAlpha) {
+        this.depthFactor = this.cfg.camera * 0.02;
+        this.focalLength = this.cfg.camera * 300;
         if ( this.depthFactor === 0 || this.focalLength === 0 ) 
-             return { x: pos.x, y: pos.y, a: cfg.colorAlpha, prevAlpha: cfg.colorAlpha };
+             return { x: pos.x, y: pos.y, a: rendererAlpha, prevAlpha: rendererAlpha };
 
-        const tmpAlpha = cfg.colorAlpha;
+        const tmpAlpha = rendererAlpha;
         
         const dx = pos.x - this.cfg.centerX;
         const dy = pos.y - this.cfg.centerY;
 
         // pseudo-z based on distance from center
-        const z = Math.sqrt(dx*dx + dy*dy) * (this.cfg.depthFactor);
+        const z = Math.sqrt(dx*dx + dy*dy) * (this.depthFactor);
 
         // camera rotation around Y axis
         const angle = this.cameraAngle;
@@ -35,7 +37,7 @@ export default class ThreeDee {
         const zRot = dx * sinA + z * cosA;
 
         // perspective projection
-        const focalLength = this.cfg.focalLength;
+        const focalLength = this.focalLength;
         const scale = focalLength / (focalLength + zRot);
 
         // final projected coordinates

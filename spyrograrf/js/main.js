@@ -81,9 +81,7 @@ function loop(timestamp) {
         core.update(stepDT);
         renderer.color = colorTween.update(stepDT);
 
-        const projected = projection.update(pos, {
-            colorAlpha: renderer.getColorAlpha()
-        });
+        const projected = projection.update(pos, renderer.getColorAlpha());
         
         renderer.setColorAlpha(projected.a); // temporarily override renderer color alpha
         renderer.draw(projected.x, projected.y, stepDT);

@@ -78,6 +78,10 @@
     display: block;
     width: 100%;
    }
+   #canvas-wrap {
+    min-height: 600px;
+    min-width: 600px;
+   }
 #hud {
     position: absolute;
     top:0px;
@@ -163,21 +167,22 @@
 
 /* modal stuff */
 /* Overlay background */
-#screen-warning {
+/*#screen-warning {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.4); /* semi-transparent */
+    background-color: rgba(0, 0, 0, 0.4); /* semi-transparent 
     display: none; 
     justify-content: center;
     align-items: center;
-    z-index: 10000; /* above everything else */
+    z-index: 10000; /* above everything else 
     font-family: sans-serif;
-}
+}*/
 
 /* Modal content box */
+/*
 #screen-warning .modal-content {
     background-color: #fff;
     color: #222;
@@ -188,20 +193,20 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* Heading */
+
 #screen-warning .modal-content h2 {
     margin-top: 0;
     font-size: 1.5rem;
 }
 
-/* Paragraphs */
+
 #screen-warning .modal-content p {
     margin: 1rem 0;
     font-size: 1rem;
     line-height: 1.4;
 }
 
-/* Continue button */
+
 #screen-warning #continue-btn {
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
@@ -215,7 +220,7 @@
 
 #screen-warning #continue-btn:hover {
     background-color: #005fa3;
-}
+}*/
 
 @media (max-width: 768px) {
 
