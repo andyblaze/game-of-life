@@ -26,11 +26,15 @@
   #ui-panel h3, #ui-panel h4 {
     margin: 0;
   }
+
+  #ui-panel .col, #ui-panel label {
+    margin-top: 1.6vh;
+  }
     
   #ui-panel label {
     display: block;
     width: 100%;
-    margin-top: 10px;
+    /*margin-top: 10px;*/
   }
     #ui-panel .col-2 label {
       width: 49.5%;
