@@ -72,7 +72,7 @@ function loop(timestamp) {
     lastTimestamp = timestamp;   
 
     const subSteps = Math.ceil(config.speed * 60) + 1;
-    const stepDT = (config.speed * dt) * (dt / subSteps);
+    const stepDT = (config.speed * dt) / subSteps; //const stepDT = (config.speed * dt) * (dt / subSteps);
     projection.updateAngle();
     for ( let i = 0; i < subSteps; i++ ) {
         const pos = core.getPoint();
