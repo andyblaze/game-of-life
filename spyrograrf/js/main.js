@@ -14,9 +14,9 @@ import DeviceChecker from "./device-checker.js";
 const device = new DeviceChecker("screen-warning");
 const config = new Config("spiro", "canvas-wrap", new TypeConverter());
 
-const uiControls = new UiControls("#ui-panel input, #ui-panel select");
+const uiControls = new UiControls("#ui-panel input");
 uiControls.addObserver(config);
-uiControls.notify();
+//uiControls.notify();
 
 const renderer = new Renderer(config);
 const core = new Core(config);
@@ -42,10 +42,6 @@ function screenSetup() {
 
 window.addEventListener("resize", screenSetup);
 window.addEventListener("orientationchange", screenSetup);
-
-screenSetup();
-
-byId("ui-panel").reset();
 
 const exportBtn = byId("export");
 const importBtn = byId("import");
@@ -90,4 +86,12 @@ function loop(timestamp) {
     requestAnimationFrame(loop);
 }
 
-loop(performance.now()); 
+document.addEventListener("DOMContentLoaded", () => {
+    byId("ui-panel").reset();
+    screenSetup();
+    loop(performance.now()); 
+});
+
+window.addEventListener("beforeunload", () => {
+    config.ctx.clearRect(0, 0, config.canvasW, config.canvasH);
+});
