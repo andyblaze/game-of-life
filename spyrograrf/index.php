@@ -76,6 +76,23 @@ function render($view, $data = []) {
 }
 
 $viewData = [
+    'metaTags'          => meta("viewport", "width=device-width, initial-scale=1.0").
+    meta("description", "A spirograph toy with sliders. Load a preset, move things around, and see what happens. Some combinations are better than others.").
+    meta("keywords", "spirograph, generative art, math art, procedural graphics, canvas, creative coding, interactive art").
+    meta("theme-color", "#000000").
+    meta("author", "ARK Digital"),  
+
+    'ogTags'            => meta_prop("og:title", "Spyrograrf – Interactive Spirograph Generator").
+    meta_prop("og:description", "Play with sliders, load presets, and create evolving geometric patterns. A generative art toy in your browser.").
+    meta_prop("og:type", "website").
+    meta_prop("og:url", BASE_URL).
+    meta_prop("og:image", url('spyrograrf-preview.png')),
+
+    'twitterTags'       => meta("twitter:card", "summary_large_image").
+    meta("twitter:title", "Spyrograrf - Generative Spirograph Tool").
+    meta("twitter:description", "Create hypnotic curves with sliders and presets. No instructions—just explore.").
+    meta("twitter:image", url('spyrograrf-preview.png')),
+
     'cssFile'           => link_tag('css/sys.css'),
     'outerRadiusXCtrl'  => slider('Outer radius X', 1, 360, 1, 140, 'int', 'outerRadiusX'),
     'outerRadiusYCtrl'  => slider('Outer radius Y', 1, 360, 1, 140, 'int', 'outerRadiusY'),
