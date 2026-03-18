@@ -21,7 +21,33 @@ export default class DeviceChecker {
     }
     checkSize() {
         this.getInfo();
-        this.warning.style.display = this.info.aspect === "portrait" ? "block" : "none";
+
+        const minW = 1300;
+        const minH = 882;
+
+        const isPortrait = this.info.aspect === "portrait";
+        const tooSmall = this.info.innerW < minW || this.info.innerH < minH;
+
+        if (isPortrait) {
+            byId("warn").innerHTML = `
+                <strong>Rotate your device</strong><br>
+                This works best in landscape.<br>
+                (${this.info.innerW} × ${this.info.innerH})
+            `;
+            this.warning.style.display = "block";
+        } 
+        else if (tooSmall) {
+            byId("warn").innerHTML = `
+                <strong>Screen is too small</strong><br>
+                Recommended: ${minW} × ${minH}<br>
+                Current: ${this.info.innerW} × ${this.info.innerH}<br>
+                It'll run… but look really bad.`;
+            this.warning.style.display = "block";
+        } 
+        else {
+            this.warning.style.display = "none";
+        }
+
         return this.info;
     }
 }

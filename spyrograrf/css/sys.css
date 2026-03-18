@@ -181,6 +181,16 @@
     padding-top: 40%;
     z-index:1000;
 }
+#screen-warning button {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #0077cc;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
 
 @media (max-width: 1800px) {
   #canvas-wrap {
