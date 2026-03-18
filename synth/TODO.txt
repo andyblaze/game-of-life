@@ -1,162 +1,23 @@
-1. Pinch / Bulge (your idea)
+let complexity = Math.abs(config.R - config.r) + config.ratio * 10;
 
-Imagine a distortion centered somewhere on the canvas.
+// normalise it roughly
+let t = Math.min(complexity / 500, 1);
 
-As the pen approaches that point:
+let min = 100;
+let max = 2000;
 
-Pinch → points get pulled inward
+let freq = min * Math.pow(max / min, t);
+audio.setFreq(freq);
 
-Bulge → points get pushed outward
+0.0 → silence
 
-Visually this would make:
+1.0 → full volume (no change)
 
-flowers collapse toward the centre
+let g = 0.02 + config.speed * 0.1;
+g = Math.min(g, 0.2);
+audio.setGain(g);
 
-torus shapes cave in
+gain = Math.pow(sliderValue, 2) * 0.2;
 
-spirals warp into vortexes
-
-And because the line is drawn sequentially, you'd get these elastic-looking bends rather than a uniform distortion.
-
-Even cooler:
-Move the center off-centre and the whole drawing starts to look gravitational.
-
-2. Gravity wells
-
-Same concept but with strong falloff.
-
-The curve behaves like it's passing near a planet.
-
-Near the well:
-
-lines bend
-
-loops stretch
-
-density increases
-
-You could even allow multiple wells.
-
-That would create beautiful tangled filaments.
-
-3. Flow fields
-
-Instead of a radial distortion, the point gets nudged by a vector field.
-
-Think:
-
-wind
-
-fluid flow
-
-magnetic lines
-
-Your nice geometric curve slowly turns into something organic.
-
-Spirographs suddenly look like:
-
-smoke
-
-coral
-
-alien plants
-
-Your particle system background means this idea is probably very natural for you.
-
-4. Rotational vortex
-
-Points near a centre get rotated slightly before drawing.
-
-So instead of pulling inward or outward, they swirl.
-
-Effects:
-
-flowers twist
-
-torus shapes become spirals
-
-dense regions form whirlpools
-
-You’d get galaxy-looking results very easily.
-
-5. Wave distortions
-
-Add a sine displacement.
-
-Example conceptually:
-
-horizontal ripple
-
-vertical ripple
-
-radial ripple
-
-This would produce woven patterns.
-
-Your dense torus shapes would become something like fabric or moiré interference.
-
-6. Mirror fields
-
-Points reflect across invisible lines.
-
-Examples:
-
-vertical mirror line
-
-diagonal mirror
-
-radial mirrors
-
-This creates instant symmetry engines.
-
-Your single curve suddenly becomes mandala generators.
-
-7. Distance-based scaling
-
-Instead of moving the point, scale it relative to centre.
-
-So far points expand, near points compress.
-
-This can create:
-
-tunnel / wormhole effects
-
-strong depth illusions
-
-Which you already glimpsed with your “wormhole” shape.
-
-8. Time-varying distortion (this one is wild)
-
-What if the distortion itself changes slowly as the curve draws?
-
-Examples:
-
-pinch strength oscillates
-
-vortex rotates slowly
-
-gravity wells drift
-
-Then the curve is reacting to a moving environment.
-
-You’d get patterns that look alive.
-
-9. Density distortions
-
-Instead of moving points, distort time.
-
-Meaning:
-
-slow the curve near certain regions
-
-speed it up elsewhere
-
-You’d get dense clusters and airy regions without touching the geometry.
-
-This is surprisingly powerful visually.
-
-10. The idea is depth projection.
-
-Not fake depth by shading — actual geometric depth simulated while drawing.
-
-Your curve still exists in 2D math, but before drawing you project it through a fake 3D camera.
+let notes = [220, 247, 261, 293, 329, 349, 392, 440]; // A minor-ish
+freq = notes[Math.floor(t * notes.length)];
