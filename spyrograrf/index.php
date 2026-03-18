@@ -80,9 +80,11 @@ $viewData = [
     meta("description", "A spirograph toy with sliders. Load a preset, move things around, and see what happens. Some combinations are better than others.").
     meta("keywords", "spirograph, generative art, math art, procedural graphics, canvas, creative coding, interactive art").
     meta("theme-color", "#000000").
+    meta("robots", "index, follow").
+    '<link rel="canonical" href="' . BASE_URL .'">'. PHP_EOL .
     meta("author", "ARK Digital"),  
 
-    'ogTags'            => meta_prop("og:title", "Spyrograrf – Interactive Spirograph Generator").
+    'ogTags'            => meta_prop("og:title", "Spyrograrf - Interactive Spirograph Generator").
     meta_prop("og:description", "Play with sliders, load presets, and create evolving geometric patterns. A generative art toy in your browser.").
     meta_prop("og:type", "website").
     meta_prop("og:url", BASE_URL).
