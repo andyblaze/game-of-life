@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+{metaTags}
+<title>Spyrograrf - Interactive Spirograph and Generative Art</title>
+{cssFile}
+{ogTags}
+{twitterTags}
+</head>
+<body>
+<div id="screen-warning" style="display:none;">
+    <div id="warn">Please rotate your device to landscape for best experience</div>
+    <p><button onclick="this.parentElement.style.display='none'">ok 👍</button></p>
+</div>
+<div id="container">
+<form id="ui-panel">
+    <div class="col col-3">
+        <h4>Colour / Alpha (Opacity)</h4>
+        {colorStartCtrl}
+        {colorEndCtrl}
+        {alphaCtrl}        
+    </div>
+    {speedCtrl}
+    {outerRadiusXCtrl}
+    {outerRadiusYCtrl}
+    {rotationCtrl}
+    {innerRadiusCtrl}
+    {penOffsetCtrl} 
+    {rotationForceCtrl}
+    {pinchForceCtrl}
+    {bendForceCtrl}
+    {twistForceCtrl}
+    {shearForceCtrl}
+    {spiralForceCtrl}
+    {cameraCtrl}
+</form>
+<div id="workspace">
+    <div id="import-export">
+        Presets: 
+        {importSelectCtrl} 
+        <button id="import" type="button">Load</button>
+        {exportCtrls}
+        <span id="hud">
+            <span>FPS: <span id="fps-report">60</span></span>
+        </span>
+    </div>
+    <div id="canvas-wrap"><canvas id="spiro" width="800" height="800"></canvas></div>
+</div>
+</div>
+{presetItems}
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

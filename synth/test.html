@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Spiro Sound Toy</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: sans-serif;
+    text-align: center;
+  }
+  canvas {
+    background: #000;
+    margin-top: 10px;
+  }
+  .controls {
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Spiro Sound Toy</h2>
+<p>Click anywhere to start audio</p>
+
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<div class="controls">
+  R: <input type="range" id="R" min="50" max="200" value="120"><br>
+  r: <input type="range" id="r" min="10" max="150" value="60"><br>
+  ratio: <input type="range" id="ratio" min="1" max="20" value="5"><br>
+  speed: <input type="range" id="speed" min="1" max="20" value="5"><br>
+</div> 
+
+<script type="text/javascript">
+
+// sliders
+const Rslider = document.getElementById("R");
+const rslider = document.getElementById("r");
+const ratioSlider = document.getElementById("ratio");
+const speedSlider = document.getElementById("speed");
+
+// AUDIO SETUP
+class Audio {
+    constructor(cfg) {
+        this.cfg = cfg;    
+        this.started = false;
+        this.audioCtx = null;
+        this.osc = null;
+        this.gain = null;
+    }
+    start() {
+        if ( this.started ) return;
+
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        this.osc = this.audioCtx.createOscillator();
+        this.gain = this.audioCtx.createGain();
+
+        this.osc.type = "sine";
+        this.gain.gain.value = 0.05;
+
+        this.osc.connect(this.gain).connect(this.audioCtx.destination);
+        this.osc.start();
+
+        this.started = true;
+    }
+    setFreq(f) {
+        this.osc.frequency.setTargetAtTime(f, this.audioCtx.currentTime, 0.01);
+    }
+    setGain(g) {
+        this.gain.gain.setTargetAtTime(g, this.audioCtx.currentTime, 0.01);
+    }
+}
+
+class Config {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext("2d");
+        this.canvasW = this.canvas.width;
+        this.canvasH = this.canvas.height;
+        this.centerX = this.canvasW / 2;
+        this.centerY = this.canvasH / 2;
+        this.R = 0;
+        this.r = 0;
+        this.ratio = 0;
+        this.speed = 0;
+        this.controlsData = {};
+    }
+    update() {
+        this.R = parseFloat(Rslider.value);
+        this.r = parseFloat(rslider.value);
+        this.ratio = parseFloat(ratioSlider.value);
+        this.speed = parseFloat(speedSlider.value) * 0.01;
+    }
+}
+
+class Maths {
+    run(cfg, tt) {
+        return { 
+            x: (cfg.R - cfg.r) * Math.cos(tt) + cfg.r * Math.cos((cfg.R / cfg.r) * tt * cfg.ratio),
+            y: (cfg.R - cfg.r) * Math.sin(tt) - cfg.r * Math.sin((cfg.R / cfg.r) * tt * cfg.ratio),
+        };
+    }
+}
+
+class Pen {
+    constructor(cfg, maths) {
+        this.cfg = cfg;
+        this.maths = maths;
+    }
+    draw(t) {
+        const ctx = this.cfg.ctx;
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.fillRect(0, 0, this.cfg.canvasW, this.cfg.canvasH);
+        ctx.beginPath();
+
+        let x0, y0;
+        for (let i = 0; i < 200; i++) {
+            let tt = t + i * 0.02;
+
+            const pos = this.maths.run(this.cfg, tt);
+
+            pos.x += this.cfg.centerX;
+            pos.y += this.cfg.centerY;
+
+            if ( i === 0 ) {
+                ctx.moveTo(pos.x, pos.y);
+                x0 = pos.x;
+                y0 = pos.y;
+            } 
+            else {
+                ctx.lineTo(pos.x, pos.y);
+            }
+        }
+        ctx.strokeStyle = "white";
+        ctx.stroke();
+    }
+}
+
+const config = new Config("canvas");
+const audio = new Audio(config);
+const pen = new Pen(config, new Maths());
+
+document.body.addEventListener("click", () => audio.start());
+
+// DRAW LOOP
+let t = 0;
+function draw(timestamp) {  
+    config.update();
+    pen.draw(t);
+
+    // --- AUDIO MAPPING ---
+    if ( audio.started ) {
+        let complexity = Math.abs(config.R - config.r) + config.ratio * 10;
+
+        audio.setFreq(100 + complexity * 2);
+        audio.setGain(0.02 + config.speed * 0.1);
+    }
+
+    t += config.speed;
+    requestAnimationFrame(draw);
+}
+
+draw(performance.now());
+
+</script>
+
+</body>
+</html>
