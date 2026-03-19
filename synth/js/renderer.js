@@ -1,32 +1,33 @@
-import { HSLAString } from "./functions.js";
-
 export default class Renderer {
-    constructor(cfg) { 
+    constructor(cfg, maths) {
         this.cfg = cfg;
-        this.prev = null;
-        this.cfg.ctx.lineWidth = 0.5;          
-        this.color = cfg.color_start;                     
+        this.maths = maths;
+        this.cfg.ctx.fillStyle = "rgba(0,0,0,0.2)";
+        this.cfg.ctx.strokeStyle = "white";
     }
-    draw(px, py, dt) {
-        if ( this.prev ) {
-            const ctx = this.cfg.ctx;
+    draw(t) {
+        const ctx = this.cfg.ctx;
+        ctx.fillRect(0, 0, this.cfg.canvasW, this.cfg.canvasH);
+        ctx.beginPath();
 
-            ctx.beginPath();
-            ctx.moveTo(this.prev.x, this.prev.y);
-            ctx.lineTo(px, py);
+        let x0, y0;
+        for ( let i = 0; i < 200; i++ ) {
+            let tt = t + i * 0.02;
 
-            ctx.strokeStyle = HSLAString(this.color);
-            ctx.stroke();
+            const pos = this.maths.getPosition(tt);
+
+            pos.x += this.cfg.centerX;
+            pos.y += this.cfg.centerY;
+
+            if ( i === 0 ) {
+                ctx.moveTo(pos.x, pos.y);
+                x0 = pos.x;
+                y0 = pos.y;
+            } 
+            else {
+                ctx.lineTo(pos.x, pos.y);
+            }
         }
-        this.prev = { x: px, y: py };
-    }
-    getColorAlpha() {
-        return this.color.a;
-    }
-    setColorAlpha(a) {
-        this.color.a = a;
-    }
-    reset() {
-        this.prev = null;
+        ctx.stroke();
     }
 }

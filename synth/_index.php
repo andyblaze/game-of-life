@@ -67,6 +67,10 @@ function presetsSelect($name, $options) {
     return $htm;
 }
 
+function radioGroup() {
+
+}
+
 function render($view, $data = []) {
     $html = file_get_contents($view);
     foreach ($data as $key => $value) {
@@ -95,8 +99,13 @@ $viewData = [
     meta("twitter:description", "Create hypnotic curves with sliders and presets. No instructions—just explore.").
     meta("twitter:image", url('spyrograrf-preview.png')),
 
-    'cssFile'           => link_tag('css/sys.css'),
-    'outerRadiusXCtrl'  => slider('Outer radius X', 1, 360, 1, 140, 'int', 'outerRadiusX'),
+    //'cssFile'           => link_tag('css/sys.css'),
+    'RCtrl'             => slider('R', 1, 200, 1, 60, 'int', 'R', false),
+    'rCtrl'             => slider('r', 1, 150, 1, 60, 'int', 'r', false),
+    'ratioCtrl'         => slider('Ratio', 1, 20, 1, 1, 'int', 'ratio', false),
+    'speedCtrl'         => slider('Speed', 1, 20, 1, 1, 'int', 'speed', false),
+    'waveformCtrl'      => selectCtrl('Waveform', ['sine', 'square', 'sawtooth', 'triangle'])
+    /*'outerRadiusXCtrl'  => slider('Outer radius X', 1, 360, 1, 140, 'int', 'outerRadiusX'),
     'outerRadiusYCtrl'  => slider('Outer radius Y', 1, 360, 1, 140, 'int', 'outerRadiusY'),
     'rotationCtrl'      => slider('Rotation', 0, 359, 1, 0, 'int', 'rotation'),
     'innerRadiusCtrl'   => slider('Inner radius', 1, 360, 1, 60, 'int', 'innerRadius'),
@@ -114,7 +123,7 @@ $viewData = [
     'cameraCtrl'        => slider('Camera Off / On', 0, 1, 0, 0, 'int', 'camera'),
     'importSelectCtrl'  => presetsSelect('presets', glob('presets/*.json')),
     'presetItems'       => importItems(),
-    'exportCtrls'       => exportCtrls()
+    'exportCtrls'       => exportCtrls()*/
 ];
 
-echo render('view.html', $viewData);
+echo render('test.html', $viewData);
