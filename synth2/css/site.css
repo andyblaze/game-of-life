@@ -56,7 +56,8 @@
     #canvas-container,
     #ui-controls {
         flex: none;       /* stop fixed ratio */
-        width: 100%;      /* full width */
+        width: 98%;      /* full width */
+        padding: 1%;
     }
 
     #canvas-container {
