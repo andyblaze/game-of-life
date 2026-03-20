@@ -22,7 +22,7 @@ export default class AudioEngine {
         // --- main oscillator ---
         this.osc = this.ctx.createOscillator();
         this.osc.type = "sine";
-        this.osc.frequency.value = 220;
+        this.osc.frequency.value = 440;
 
         // --- gain ---
         this.gain = this.ctx.createGain();
@@ -31,10 +31,10 @@ export default class AudioEngine {
         // --- LFO (tremolo) ---
         this.lfo = this.ctx.createOscillator();
         this.lfo.type = "sine";
-        this.lfo.frequency.value = 2; // Hz
+        this.lfo.frequency.value = 4; // Hz
 
         this.lfoGain = this.ctx.createGain();
-        this.lfoGain.gain.value = 0; // depth (start off)
+        this.lfoGain.gain.value = 0.1; // depth (start off)
 
         // connect LFO → gain.gain
         this.lfo.connect(this.lfoGain);

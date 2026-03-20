@@ -11,6 +11,12 @@ document.body.addEventListener("click", () => {
     analyser = new Analyser(audio.getAnalyser());
 });
 
+let oscFreq = 100;
+const osc = document.getElementById("osc")
+osc.addEventListener("input", () => {
+    audio.setFrequency(osc.value);
+});
+
 function loop(timestamp) {
     if (analyser) {
         const data = analyser.getTimeDomainData();
