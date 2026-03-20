@@ -25,7 +25,7 @@ function loop(timestamp) {  //console.log(config.controlsData)
     renderer.draw(t);
 
     if ( audio.started ) {
-        audio.update(config.Waveform);
+        audio.update(config);
         let complexity = maths.getComplexity();//.abs(config.R - config.r) + config.ratio * 10;
         audio.setFreq(100 + complexity * 2);
         audio.setGain(0.02 + config.speed * 0.1);

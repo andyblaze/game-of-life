@@ -1,0 +1,71 @@
+  body {
+    margin: 0;
+    background: #111;
+    color: #eee;
+    font-family: sans-serif;
+    overflow: hidden;
+  }
+
+  #app {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* === CANVAS AREA === */
+  #canvas-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+
+  canvas {
+    width: 95%;
+    height: 95%;
+    background: #000;
+  }
+
+  /* === CONTROLS === */
+  #ui-controls {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #1a1a1a;
+    border-left: 1px solid #333;
+  }
+
+  #ui-controls label {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  #ui-controls input[type="range"],
+  #ui-controls select {
+    width: 100%;
+  }
+
+  /* === TABLET / SMALL SCREEN === */
+@media (max-width: 900px) {
+    #app {
+        flex-direction: column;
+    }
+
+    #canvas-container,
+    #ui-controls {
+        flex: none;       /* stop fixed ratio */
+        width: 100%;      /* full width */
+    }
+
+    #canvas-container {
+        height: 40vh;
+    }
+
+    #ui-controls {
+        height: 60vh;
+        border-left: none;
+        border-top: 1px solid #333;
+    }
+}

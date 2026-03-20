@@ -11,7 +11,11 @@ export default class Config {
         this.r = 0;
         this.ratio = 0;
         this.speed = 0;
-        this.Waveform = "sine";
+        this.detune = 0;
+        this.cutoff = 100;
+        this.tremoloRate = 0;
+        this.tremoloDepth = 0;
+        this.waveform = "sine";
         this.controlsData = {};
     }
     updateCtrl(ctrl) { 
