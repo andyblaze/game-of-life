@@ -17,7 +17,7 @@ export default class AudioEngine {
         this.started = false;
     }
 
-    start() {
+    start(cfg) {
         if (this.started) return;
 
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -25,7 +25,7 @@ export default class AudioEngine {
         // --- main oscillator ---
         this.osc = this.ctx.createOscillator();
         this.osc.type = "sine";
-        this.osc.frequency.value = 440;
+        this.osc.frequency.value = cfg.osc;
 
         // --- gain ---
         this.gain = this.ctx.createGain();
@@ -34,7 +34,7 @@ export default class AudioEngine {
         // --- LFO (tremolo) ---
         this.lfo = this.ctx.createOscillator();
         this.lfo.type = "sine";
-        this.lfo.frequency.value = 4; // Hz
+        this.lfo.frequency.value = cfg.lfo; // Hz
 
         this.lfoGain = this.ctx.createGain();
         this.lfoGain.gain.value = 0.1; // depth (start off)

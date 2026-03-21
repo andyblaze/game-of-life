@@ -8,6 +8,7 @@ export default class Config {
         this.centerX = this.canvasW / 2;
         this.centerY = this.canvasH / 2;
         this.osc = 100;
+        this.lfo = 4;
         this.controlsData = {};
     }
     updateCtrl(ctrl) { 

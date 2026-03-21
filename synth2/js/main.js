@@ -18,7 +18,7 @@ let analyser = null;
 const renderer = new Renderer("scope");
 
 document.body.addEventListener("click", () => {
-    audio.start();
+    audio.start(config);
     analyser = new Analyser(audio.getAnalyser());
 });
 
