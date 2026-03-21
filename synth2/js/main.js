@@ -6,7 +6,7 @@ import TypeConverter from "./typeconverter.js";
 import UiControls from "./uicontrols.js";
 
 const config = new Config("scope", new TypeConverter());
-const audio = new AudioEngine(new TypeConverter());
+const audio = new AudioEngine(config);
 
 const uiControls = new UiControls("#ui-panel input");
 uiControls.addObserver(config);
@@ -18,7 +18,7 @@ let analyser = null;
 const renderer = new Renderer("scope");
 
 document.body.addEventListener("click", () => {
-    audio.start(config);
+    audio.start();
     analyser = new Analyser(audio.getAnalyser());
 });
 

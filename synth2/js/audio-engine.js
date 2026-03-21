@@ -1,8 +1,8 @@
 import { ucFirst } from "./functions.js";
 
 export default class AudioEngine {
-    constructor(tc) {
-        this.converter = tc;
+    constructor(cfg) {
+        this.cfg = cfg.controlsData;
         this.ctx = null;
 
         this.osc = null;
@@ -17,7 +17,7 @@ export default class AudioEngine {
         this.started = false;
     }
 
-    start(cfg) {
+    start() {
         if (this.started) return;
 
         this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -25,7 +25,7 @@ export default class AudioEngine {
         // --- main oscillator ---
         this.osc = this.ctx.createOscillator();
         this.osc.type = "sine";
-        this.osc.frequency.value = cfg.osc;
+        this.osc.frequency.value = this.cfg.osc;
 
         // --- gain ---
         this.gain = this.ctx.createGain();
@@ -34,7 +34,7 @@ export default class AudioEngine {
         // --- LFO (tremolo) ---
         this.lfo = this.ctx.createOscillator();
         this.lfo.type = "sine";
-        this.lfo.frequency.value = cfg.lfo; // Hz
+        this.lfo.frequency.value = this.cfg.lfo; // Hz
 
         this.lfoGain = this.ctx.createGain();
         this.lfoGain.gain.value = 0.1; // depth (start off)
@@ -57,20 +57,15 @@ export default class AudioEngine {
 
         this.started = true;
     }
-    update(ctrls) { 
-        for ( const ctrl of ctrls ) {
-            const prop = ctrl.dataset.property ?? "";
-            if (!prop) continue;
+    update() { 
+        for ( const [prop, val] of Object.entries(this.cfg) ) {
+
             const func = "set" + ucFirst(prop);
 
             if (typeof this[func] !== "function") {
-                console.warn(`No method ${func} for control`, ctrl);
+                console.warn(`No method ${func} for control`, k);
                 continue;
             }
-
-            const type = ctrl.dataset.type;
-            const val = this.converter.apply(type, ctrl, ctrl.value);
-
             this[func](val);
         }
     }
@@ -85,7 +80,7 @@ export default class AudioEngine {
         this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.01);
     }
 
-    setLfoRate(r) {
+    setLfo(r) {
         if (!this.started) return;
         this.lfo.frequency.setTargetAtTime(r, this.ctx.currentTime, 0.01);
     }

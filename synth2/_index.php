@@ -100,7 +100,9 @@ $viewData = [
     meta("twitter:image", url('spyrograrf-preview.png')),
 
     'cssFile'           => link_tag('css/site.css'),
-    'oscCtrl'           => slider('osc', 100, 700, 1, 100, 'int', 'osc', false)
+    'oscCtrl'           => slider('osc', 100, 700, 1, 100, 'int', 'osc', false),
+    'lfoCtrl'           => slider('lfo', 100, 700, 1, 100, 'int', 'lfo', false),
+    'cutoffCtrl'        => slider('cutoff', 100, 5000, 10, 100, 'int', 'cutoff', false)
     /*'rCtrl'             => slider('r', 1, 150, 1, 60, 'int', 'r', false),
     'ratioCtrl'         => slider('Ratio', 1, 20, 0.1, 1, 'float', 'ratio', false),
     'speedCtrl'         => slider('Speed', 0.01, 1, 0.01, 0.5, 'float', 'speed', false),
