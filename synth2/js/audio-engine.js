@@ -2,7 +2,7 @@
 
 export default class AudioEngine {
     constructor(cfg) {
-        this.cfg = cfg.controlsData;    
+        this.cfg = cfg.controlsData;    // inelegant but ok
         this.started = false;
         this.audioCtx = null;
 
@@ -74,7 +74,7 @@ export default class AudioEngine {
     getAnalyser() {
         return this.analyser;
     }
-    update() {
+    update() { // gets ui ctrls passed in, never uses it.  i can live with this
         if (!this.started) return;
 
         this.lfo.frequency.setTargetAtTime(this.cfg.lfo, this.audioCtx.currentTime, 0.01);
@@ -84,11 +84,11 @@ export default class AudioEngine {
         this.filter.frequency.setTargetAtTime(this.cfg.cutoff, this.audioCtx.currentTime, 0.01);
 
         // Waveform
-        console.log(this.cfg.waveform, this.osc.type);
+        //console.log(this.cfg.waveform, this.osc.type);
         if (this.osc.type !== this.cfg.waveform) {
             this.osc.type = this.cfg.waveform;
             this.lfo.type = this.cfg.waveform;
-        } console.log(this.cfg.waveform, this.osc.type);
+        } //console.log(this.cfg.waveform, this.osc.type);
 
         // Tremolo
         // Depth: 0 → 1, maps to gain swing
