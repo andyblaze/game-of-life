@@ -1,96 +1,100 @@
-import { ucFirst } from "./functions.js";
+//import { ucFirst } from "./functions.js";
 
 export default class AudioEngine {
     constructor(cfg) {
-        this.cfg = cfg.controlsData;
-        this.ctx = null;
+        this.cfg = cfg.controlsData;    
+        this.started = false;
+        this.audioCtx = null;
 
         this.osc = null;
-        this.gain = null;
-
-        // LFO (for tremolo)
         this.lfo = null;
-        this.lfoGain = null;
 
-        this.analyser = null;
+        this.level = null;
+        this.filter = null;
 
-        this.started = false;
+        // tremolo nodes
+        this.tremoloOsc = null;
+        this.tremoloGain = null;
     }
 
     start() {
         if (this.started) return;
 
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // --- main oscillator ---
-        this.osc = this.ctx.createOscillator();
-        this.osc.type = "sine";
-        this.osc.frequency.value = this.cfg.osc;
+        // Filter
+        this.filter = this.audioCtx.createBiquadFilter();
+        this.filter.type = "lowpass";
+        this.filter.Q.value = 10;
+        this.filter.frequency.value = 100;
 
-        // --- gain ---
-        this.gain = this.ctx.createGain();
-        this.gain.gain.value = 0.1;
+        // Oscillators
+        this.osc = this.audioCtx.createOscillator();
+        this.lfo = this.audioCtx.createOscillator();
 
-        // --- LFO (tremolo) ---
-        this.lfo = this.ctx.createOscillator();
-        this.lfo.type = "sine";
-        this.lfo.frequency.value = this.cfg.lfo; // Hz
+        this.osc.type = this.cfg.waveform;
+        this.lfo.type = this.cfg.waveform;
 
-        this.lfoGain = this.ctx.createGain();
-        this.lfoGain.gain.value = 0.1; // depth (start off)
+        // Main level
+        this.level = this.audioCtx.createGain();
+        this.level.gain.value = 0.04;
 
-        // connect LFO → gain.gain
-        this.lfo.connect(this.lfoGain);
-        this.lfoGain.connect(this.gain.gain);
+        // Tremolo setup
+        this.tremoloOsc = this.audioCtx.createOscillator();
+        this.tremoloGain = this.audioCtx.createGain();
 
+        this.tremoloOsc.type = "sine";
+        this.tremoloGain.gain.value = 0; // start at 0 depth
+
+        // Connect tremolo
+        this.tremoloOsc.connect(this.tremoloGain);
+        this.tremoloGain.connect(this.level.gain);
+
+        this.tremoloOsc.start();
+
+        // Connect main oscillators through filter → level
+        this.osc.connect(this.filter);
+        this.lfo.connect(this.filter);
+        this.filter.connect(this.level);
+
+        // Finally connect level → destination
+        this.level.connect(this.audioCtx.destination);
+        
         // --- analyser ---
-        this.analyser = this.ctx.createAnalyser();
+        this.analyser = this.audioCtx.createAnalyser();
         this.analyser.fftSize = 1024;
-
-        // --- wiring ---
-        this.osc.connect(this.gain);
-        this.gain.connect(this.analyser);
-        this.analyser.connect(this.ctx.destination);
+        this.level.connect(this.analyser);
+        this.analyser.connect(this.audioCtx.destination);
 
         this.osc.start();
         this.lfo.start();
 
         this.started = true;
     }
-    update() { 
-        for ( const [prop, val] of Object.entries(this.cfg) ) {
-
-            const func = "set" + ucFirst(prop);
-
-            if (typeof this[func] !== "function") {
-                console.warn(`No method ${func} for control`, k);
-                continue;
-            }
-            this[func](val);
-        }
-    }
-
-    setOsc(f) {
-        if (!this.started) return;
-        this.osc.frequency.setTargetAtTime(f, this.ctx.currentTime, 0.01);
-    }
-
-    setVolume(v) {
-        if (!this.started) return;
-        this.gain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.01);
-    }
-
-    setLfo(r) {
-        if (!this.started) return;
-        this.lfo.frequency.setTargetAtTime(r, this.ctx.currentTime, 0.01);
-    }
-
-    setLfoDepth(d) {
-        if (!this.started) return;
-        this.lfoGain.gain.setTargetAtTime(d, this.ctx.currentTime, 0.01);
-    }
-
     getAnalyser() {
         return this.analyser;
+    }
+    update() {
+        if (!this.started) return;
+
+        this.lfo.frequency.setTargetAtTime(this.cfg.lfo, this.audioCtx.currentTime, 0.01);
+        this.osc.frequency.setTargetAtTime(this.cfg.osc, this.audioCtx.currentTime, 0.01);
+
+        // Filter
+        this.filter.frequency.setTargetAtTime(this.cfg.cutoff, this.audioCtx.currentTime, 0.01);
+
+        // Waveform
+        console.log(this.cfg.waveform, this.osc.type);
+        if (this.osc.type !== this.cfg.waveform) {
+            this.osc.type = this.cfg.waveform;
+            this.lfo.type = this.cfg.waveform;
+        } console.log(this.cfg.waveform, this.osc.type);
+
+        // Tremolo
+        // Depth: 0 → 1, maps to gain swing
+        this.tremoloGain.gain.setTargetAtTime(this.cfg.tremoloDepth, this.audioCtx.currentTime, 0.01);
+
+        // Rate: LFO frequency in Hz
+        this.tremoloOsc.frequency.setTargetAtTime(this.cfg.tremoloRate, this.audioCtx.currentTime, 0.01);
     }
 }

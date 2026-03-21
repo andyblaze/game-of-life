@@ -9,6 +9,10 @@ export default class Config {
         this.centerY = this.canvasH / 2;
         this.osc = 100;
         this.lfo = 4;
+        this.cutoff = 100;
+        this.tremoloRate = 0;
+        this.tremoloDepth = 0;
+        this.waveform = "sine";
         this.controlsData = {};
     }
     updateCtrl(ctrl) { 

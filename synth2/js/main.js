@@ -8,7 +8,7 @@ import UiControls from "./uicontrols.js";
 const config = new Config("scope", new TypeConverter());
 const audio = new AudioEngine(config);
 
-const uiControls = new UiControls("#ui-panel input");
+const uiControls = new UiControls("#ui-panel input, #ui-panel select");
 uiControls.addObserver(config);
 uiControls.addObserver(audio);
 uiControls.notify();
