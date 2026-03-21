@@ -28,7 +28,7 @@
   }
 
   /* === CONTROLS === */
-  #ui-controls {
+  #ui-panel {
     flex: 1;
     padding: 1rem;
     overflow-y: auto;
@@ -36,14 +36,14 @@
     border-left: 1px solid #333;
   }
 
-  #ui-controls label {
+  #ui-panel label {
     display: block;
     margin-bottom: 12px;
     font-size: 14px;
   }
 
-  #ui-controls input[type="range"],
-  #ui-controls select {
+ #ui-panel input[type="range"],
+  #ui-panel select {
     width: 100%;
   }
 
@@ -54,7 +54,7 @@
     }
 
     #canvas-container,
-    #ui-controls {
+    #ui-panel {
         flex: none;       /* stop fixed ratio */
         width: 98%;      /* full width */
         padding: 1%;

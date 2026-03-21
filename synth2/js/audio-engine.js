@@ -1,5 +1,8 @@
+import { ucFirst } from "./functions.js";
+
 export default class AudioEngine {
-    constructor() {
+    constructor(tc) {
+        this.converter = tc;
         this.ctx = null;
 
         this.osc = null;
@@ -54,8 +57,25 @@ export default class AudioEngine {
 
         this.started = true;
     }
+    update(ctrls) { 
+        for ( const ctrl of ctrls ) {
+            const prop = ctrl.dataset.property ?? "";
+            if (!prop) continue;
+            const func = "set" + ucFirst(prop);
 
-    setFrequency(f) {
+            if (typeof this[func] !== "function") {
+                console.warn(`No method ${func} for control`, ctrl);
+                continue;
+            }
+
+            const type = ctrl.dataset.type;
+            const val = this.converter.apply(type, ctrl, ctrl.value);
+
+            this[func](val);
+        }
+    }
+
+    setOsc(f) {
         if (!this.started) return;
         this.osc.frequency.setTargetAtTime(f, this.ctx.currentTime, 0.01);
     }

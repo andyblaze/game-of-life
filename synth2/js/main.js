@@ -1,8 +1,19 @@
 import AudioEngine from "./audio-engine.js";
 import Analyser from "./analyser.js";
 import Renderer from "./renderer.js";
+import Config from "./config.js";
+import TypeConverter from "./typeconverter.js";
+import UiControls from "./uicontrols.js";
 
-const audio = new AudioEngine();
+const config = new Config("scope", new TypeConverter());
+const audio = new AudioEngine(new TypeConverter());
+
+const uiControls = new UiControls("#ui-panel input");
+uiControls.addObserver(config);
+uiControls.addObserver(audio);
+uiControls.notify();
+
+
 let analyser = null;
 const renderer = new Renderer("scope");
 
@@ -11,14 +22,8 @@ document.body.addEventListener("click", () => {
     analyser = new Analyser(audio.getAnalyser());
 });
 
-let oscFreq = 100;
-const osc = document.getElementById("osc")
-osc.addEventListener("input", () => {
-    audio.setFrequency(osc.value);
-});
-
 function loop(timestamp) {
-    if (analyser) {
+    if ( analyser ) {
         const data = analyser.getTimeDomainData();
         renderer.draw(data);
     }
