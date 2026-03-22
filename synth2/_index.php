@@ -105,6 +105,7 @@ $viewData = [
     'cutoffCtrl'        => slider('cutoff', 100, 5000, 10, 100, 'int', 'cutoff', false),
     'tremoloRateCtrl'   => slider('Tremolo rate', 0, 10, 0.1, 0, 'float', 'tremoloRate', false),
     'tremoloDepthCtrl'  => slider('Tremolo depth', 0, 1, 0.01, 0, 'float', 'tremoloDepth', false),
+    'cutoffSweepCtrl'   => slider('Cutoff sweep', 0, 1000, 1, 0, 'int', 'cutoffSweep', false),
     'waveformCtrl'      => selectCtrl('waveform', ['sine', 'square', 'sawtooth', 'triangle'])
     /*'rCtrl'             => slider('r', 1, 150, 1, 60, 'int', 'r', false),
     'ratioCtrl'         => slider('Ratio', 1, 20, 0.1, 1, 'float', 'ratio', false),
