@@ -54,11 +54,11 @@ export default class AudioEngine {
 
         // Connect main oscillators through filter → level
         this.osc.connect(this.filter);
-        this.lfo.connect(this.filter);
+        //this.lfo.connect(this.filter);  remove lfo from sound
         this.filter.connect(this.level);
 
         // Finally connect level → destination
-        this.level.connect(this.audioCtx.destination);
+        //this.level.connect(this.audioCtx.destination); remove this too - so there aren't 2 sound -> out
         
         // --- analyser ---
         this.analyser = this.audioCtx.createAnalyser();
@@ -77,24 +77,25 @@ export default class AudioEngine {
     update() { // gets ui ctrls passed in, never uses it.  i can live with this
         if (!this.started) return;
 
-        this.lfo.frequency.setTargetAtTime(this.cfg.lfo, this.audioCtx.currentTime, 0.01);
-        this.osc.frequency.setTargetAtTime(this.cfg.osc, this.audioCtx.currentTime, 0.01);
+        const now = this.audioCtx.currentTime;
+
+        this.lfo.frequency.setTargetAtTime(this.cfg.lfo, now, 0.01);
+        this.osc.frequency.setTargetAtTime(this.cfg.osc, now, 0.01);
 
         // Filter
-        this.filter.frequency.setTargetAtTime(this.cfg.cutoff, this.audioCtx.currentTime, 0.01);
+        this.filter.frequency.setTargetAtTime(this.cfg.cutoff, now, 0.01);
 
         // Waveform
-        //console.log(this.cfg.waveform, this.osc.type);
         if (this.osc.type !== this.cfg.waveform) {
             this.osc.type = this.cfg.waveform;
-            this.lfo.type = this.cfg.waveform;
-        } //console.log(this.cfg.waveform, this.osc.type);
+            //this.lfo.type = this.cfg.waveform;
+        } 
 
         // Tremolo
         // Depth: 0 → 1, maps to gain swing
-        this.tremoloGain.gain.setTargetAtTime(this.cfg.tremoloDepth, this.audioCtx.currentTime, 0.01);
+        this.tremoloGain.gain.setTargetAtTime(this.cfg.tremoloDepth, now, 0.01);
 
         // Rate: LFO frequency in Hz
-        this.tremoloOsc.frequency.setTargetAtTime(this.cfg.tremoloRate, this.audioCtx.currentTime, 0.01);
+        this.tremoloOsc.frequency.setTargetAtTime(this.cfg.tremoloRate, now, 0.01);
     }
 }

@@ -101,7 +101,7 @@ $viewData = [
 
     'cssFile'           => link_tag('css/site.css'),
     'oscCtrl'           => slider('osc', 100, 700, 1, 100, 'int', 'osc', false),
-    'lfoCtrl'           => slider('lfo', 100, 700, 1, 100, 'int', 'lfo', false),
+    'lfoCtrl'           => slider('lfo', 0.2, 20, 0.1, 1, 'float', 'lfo', false),
     'cutoffCtrl'        => slider('cutoff', 100, 5000, 10, 100, 'int', 'cutoff', false),
     'tremoloRateCtrl'   => slider('Tremolo rate', 0, 10, 0.1, 0, 'float', 'tremoloRate', false),
     'tremoloDepthCtrl'  => slider('Tremolo depth', 0, 1, 0.01, 0, 'float', 'tremoloDepth', false),
