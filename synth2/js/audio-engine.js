@@ -54,11 +54,11 @@ export default class AudioEngine {
 
         // Connect main oscillators through filter → level
         this.osc.connect(this.filter);
-        //this.lfo.connect(this.filter);  remove lfo from sound
+        //this.lfo.connect(this.filter);  //remove lfo from sound
         this.filter.connect(this.level);
 
         // Finally connect level → destination
-        //this.level.connect(this.audioCtx.destination); remove this too - so there aren't 2 sound -> out
+        //this.level.connect(this.audioCtx.destination); //remove this too - so there aren't 2 sound -> out
         
         // --- analyser ---
         this.analyser = this.audioCtx.createAnalyser();
