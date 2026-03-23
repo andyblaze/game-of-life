@@ -1,49 +1,78 @@
+import { mt_rand, byId, randomFrom } from "./functions.js";
+
 class IronMining {
     constructor() {
         this.resource = "iron";
     }
-    tick(mulltiplier) {
-        return 1 * mulltiplier;
+    tick(workers) {
+        let str = 0;
+        for ( const w of workers )
+            str += w.attr("strength");
+        return 0.1 * str;
     }
 }
 class CoalMining {
     constructor() {
         this.resource = "coal";
     }
-    tick(mulltiplier) {
-        return 0.5 * mulltiplier;
+    tick(workers) {
+        return 0.5 * workers.length;
     }
 }
 class WheatFarming {
     constructor() {
         this.resource = "wheat";
     }
-    tick(mulltiplier) {
-        return 0.75 * mulltiplier;
+    tick(workers) {
+        return 0.75 * workers.length;
     }
 }
-class Resource {
+class HumanBehaviour {
+    constructor() {
+        this.resource = "human";
+    }
+    tick(parent) {
+        parent.morale -= 1;
+    }
+}
+class BaseResource {
     constructor(s) {
         this.strategy = s;
+    }    
+}
+class FarmedResource extends BaseResource {
+    constructor(s) {
+        super(s);
         this.resource = s.resource;
-        this.workers = 0;
+        this.workers = [];
         this.output = 0;
 
     }
     tick() {
         this.output += this.strategy.tick(this.workers);
     }
-    assignWorkers(num) {
-        this.workers += num;
+    assignWorkers(n, population) {
+        const workers = population.getAvailable(n);
+        for ( const w of workers ) {
+            w.assignedTo = this;
+        }
+        this.workers = workers;
     }
 }
 
-class Human extends Resource {
-    constructor() {
-        super("human");
+class Human extends BaseResource {
+    constructor(s) {
+        super(s);
+        this.int = mt_rand(20, 80);
+        this.morale = mt_rand(20, 80);
+        this.strength = mt_rand(20, 80);
+        this.assignedTo = null;
     }
     tick() {
-
+        this.strategy.tick(this);
+    }
+    attr(a) {
+        return this[a];
     }
 }
 
@@ -61,9 +90,27 @@ class Observable {
     }
 }
 
+class Config {
+    constructor(msgs) {
+        this.messages = [
+            "A message",
+            "Message to you",
+            "Help me Tom Cruise",
+            "There's a problem",
+            "All is not well",
+            "A collapse",
+            "Many people unwell"
+        ];
+    }
+    getMessage() {
+        return randomFrom(this.messages);
+    }
+}
+
 class ResourceAggregator extends Observable {
-    constructor() {     
-        super();   
+    constructor(cfg) {     
+        super();  
+        this.cfg = cfg; 
         this.resources = [];
         this.output = 0;
         this.resource = "";
@@ -73,11 +120,17 @@ class ResourceAggregator extends Observable {
             r.tick();
             this.output = this.resources.reduce((sum, r) => sum + r.output, 0);
         }
-        this.notify({ type: this.resource, output: this.output });
+        const msg = { type: "msg", output: "" };
+        if ( mt_rand(0, 5000) > 4990 ) 
+            msg.output = this.cfg.getMessage();
+        this.notify([{ type: this.resource, output: this.output }, msg]);
     }
     add(r) {
         this.resources.push(r);
         this.resource = r.resource;
+    }
+    assignWorkers(idx, n, pop) {
+        this.resources[idx].assignWorkers(n, pop);
     }
 }
 
@@ -86,20 +139,24 @@ class Population extends ResourceAggregator {
         super();
     }
     tick() {
-        //this.pop += Math.floor(Math.random() * 3);
-        this.notify({ type: "population", output: this.resources.length });
+        for ( const r of this.resources ) {
+            r.tick();
+        }
+        this.notify([
+            { type: "population", output: this.resources.length },
+            { type: "morale", output: this.attr("morale") }
+        ]);
     }
-    get(n) {
-        if ( this.resources.length === 0 ) return [];
-        //let result = n;
-        if ( this.resources.length - n > 0 ) {            
-            //this.pop -= n;
+    getAvailable(n) {
+        const available = this.resources.filter(r => r.assignedTo === null);
+        return available.slice(0, n);
+    }
+    attr(a) {
+        let result = 0;
+        for ( const r of this.resources ) {
+            result += r.attr(a);
         }
-        else {
-            //result = this.pop;
-            //this.pop = 0;
-        }
-        return 3;//result;
+        return result;
     }
 }
 
@@ -107,44 +164,48 @@ class HUD {
     constructor() {
 
     }
-    update(resource) {
-        document.getElementById(resource.type).innerText = resource.output;
-        //console.log(resource);
+    update(data) {
+        for ( const d of data ) {
+            if ( d.type === "msg" && d.output === "" ) continue;
+            byId(d.type).innerText = d.output;
+        }
     }
+}
+
+
+const population = new Population();
+for ( let i = 0; i < 12; i++ )
+    population.add(new Human(new HumanBehaviour()));
+
+const config = new Config();
+
+function createResource(type) { //  factory function, will be a class later
+    const res = new FarmedResource(type);
+    const agg = new ResourceAggregator(config);
+    agg.add(res);
+    return agg;
 }
 const hud = new HUD();
 
-//const population = new Population();
-//population.add(new Human());
-//population.addObserver(hud);
 
-const Fe_mine = new Resource(new IronMining());
-Fe_mine.assignWorkers(3);//population.get(3));
-const ironMines = new ResourceAggregator();
-ironMines.add(Fe_mine);
+const ironMines = createResource(new IronMining); 
+const coalMines = createResource(new CoalMining()); 
+const wheatFarms = createResource(new WheatFarming()); 
 
-const C_mine = new Resource(new CoalMining());
-C_mine.assignWorkers(3);
-const coalMines = new ResourceAggregator();
-coalMines.add(C_mine);
-
-const W_farm = new Resource(new WheatFarming());
-W_farm.assignWorkers(3);
-const wheatFarms = new ResourceAggregator();
-wheatFarms.add(W_farm);
-
-//const wheatFarms = new ResourceAggregator();
-//wheatFarms.add(new Farm("wheat"));
+ironMines.assignWorkers(0, 3, population);
+coalMines.assignWorkers(0, 1, population);
+wheatFarms.assignWorkers(0, 2, population);
 
 ironMines.addObserver(hud);
 coalMines.addObserver(hud);
 wheatFarms.addObserver(hud);
+population.addObserver(hud);
 
 function loop(timestamp) {
     ironMines.tick();
     coalMines.tick();
     wheatFarms.tick();
-    //population.tick();
+    population.tick();
     requestAnimationFrame(loop);
 }
 
