@@ -1,5 +1,4 @@
-import { IronMining, CoalMining, WheatFarming, HumanBehaviour } from "./strategies.js";
-import { Human } from "./resources.js";
+import { IronMining, CoalMining, WheatFarming } from "./strategies.js";
 import Config from "./newconfig.js";
 import ResourceFactory from "./resource-factory.js";
 import Population from "./population.js";
@@ -8,8 +7,6 @@ import HUD from "./hud.js";
 
 const population = new Population();
 population.add(12);
-//for ( let i = 0; i < 12; i++ )
-    //population.add(new Human(new HumanBehaviour()));
 
 const config = new Config();
 
