@@ -120,9 +120,7 @@ class ResourceAggregator extends Observable {
             r.tick();
             this.output = this.resources.reduce((sum, r) => sum + r.output, 0);
         }
-        const msg = { type: "msg", output: "" };
-        if ( mt_rand(0, 5000) > 4990 ) 
-            msg.output = this.cfg.getMessage();
+        const msg = this.createMessage();
         this.notify([{ type: this.resource, output: this.output }, msg]);
     }
     add(r) {
@@ -131,6 +129,12 @@ class ResourceAggregator extends Observable {
     }
     assignWorkers(idx, n, pop) {
         this.resources[idx].assignWorkers(n, pop);
+    }
+    createMessage() {
+        const msg = { type: "msg", output: "" };
+        if ( mt_rand(0, 5000) > 4990 ) 
+            msg.output = this.cfg.getMessage();  
+        return msg;      
     }
 }
 
