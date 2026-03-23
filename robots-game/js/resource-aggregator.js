@@ -27,7 +27,7 @@ export default class ResourceAggregator extends Observable {
     createMessage() {
         const msg = { type: "msg", output: "" };
         if ( mt_rand(0, 5000) > 4990 ) 
-            msg.output = this.cfg.getMessage();  
+            msg.output = this.cfg.getMessage("iron");  
         return msg;      
     }
 }

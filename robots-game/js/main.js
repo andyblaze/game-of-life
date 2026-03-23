@@ -1,30 +1,24 @@
-import { mt_rand, byId } from "./functions.js";
 import { IronMining, CoalMining, WheatFarming, HumanBehaviour } from "./strategies.js";
-import { FarmedResource, Human } from "./resources.js";
+import { Human } from "./resources.js";
 import Config from "./newconfig.js";
-import ResourceAggregator from "./resource-aggregator.js";
+import ResourceFactory from "./resource-factory.js";
 import Population from "./population.js";
 import HUD from "./hud.js";
 
 
 const population = new Population();
-for ( let i = 0; i < 12; i++ )
-    population.add(new Human(new HumanBehaviour()));
+population.add(12);
+//for ( let i = 0; i < 12; i++ )
+    //population.add(new Human(new HumanBehaviour()));
 
 const config = new Config();
 
-function createResource(type) { //  factory function, will be a class later
-    const res = new FarmedResource(type);
-    const agg = new ResourceAggregator(config);
-    agg.add(res);
-    return agg;
-}
+const factory = new ResourceFactory();
 const hud = new HUD();
 
-
-const ironMines = createResource(new IronMining); 
-const coalMines = createResource(new CoalMining()); 
-const wheatFarms = createResource(new WheatFarming()); 
+const ironMines = factory.createAggregator(new IronMining(), config); 
+const coalMines = factory.createAggregator(new CoalMining(), config); 
+const wheatFarms = factory.createAggregator(new WheatFarming(), config); 
 
 ironMines.assignWorkers(0, 3, population);
 coalMines.assignWorkers(0, 1, population);

@@ -1,4 +1,6 @@
 import ResourceAggregator from "./resource-aggregator.js";
+import { Human } from "./resources.js";
+import { HumanBehaviour } from "./strategies.js";
 
 export default class Population extends ResourceAggregator {
     constructor() {
@@ -23,5 +25,12 @@ export default class Population extends ResourceAggregator {
             result += r.attr(a);
         }
         return result;
+    }
+    add(n) {
+        for ( let i = 0; i < n; i++ ) {
+            let r = new Human(new HumanBehaviour());
+            this.resources.push(r);
+            this.resource = r.resource;
+        }
     }
 }
