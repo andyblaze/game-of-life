@@ -3,10 +3,8 @@ export class IronMining {
         this.resource = "iron";
     }
     tick(workers) {
-        let str = 0;
-        for ( const w of workers )
-            str += w.attr("strength");
-        return 0.1 * str;
+        const str = workers.reduce((sum, w) => sum + w.attr("strength"), 0);
+        return Math.floor(0.0075 * str);
     }
 }
 export class CoalMining {
