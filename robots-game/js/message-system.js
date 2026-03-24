@@ -8,7 +8,7 @@ export default class MessageSystem {
         if ( instantly ) 
             return { type: "msg", output: resourceType + " : " + this.cfg.getMessage(resourceType) };
         const msg = { type: "msg", output: "" };
-        if ( mt_rand(0, 5000) > 4990 ) 
+        if ( mt_rand(0, 5000) > 2500 ) 
             msg.output = resourceType + " : " + this.cfg.getMessage(resourceType);  
         return msg;      
     }

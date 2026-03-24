@@ -3,7 +3,7 @@ class BaseStrategy {
         this.coolDown = 6000; // ms
         this.lastMessageSent = 0;
     }
-    canSend() {
+    canSend() { return true;
         this.lastMessageSent += 16.666;
         if ( this.lastMessageSent > this.coolDown )
             this.lastMessageSent = 0;
@@ -22,12 +22,12 @@ export class IronMining extends BaseStrategy {
         const str = this.total(workers, "strength");
         return { 
             output: (0.0075 * str), 
-            event: (this.canSend() && this.total(workers, "morale") < 20) 
+            event: (this.canSend() && this.total(workers, "morale") < 2000) 
         };
     }
 }
 export class CoalMining extends BaseStrategy {
-    constructor() {
+    constructor() { 
         super();
         this.resource = "coal";
     }

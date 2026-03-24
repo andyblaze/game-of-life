@@ -36,7 +36,7 @@ export class Human extends BaseResource {
         this.resource = strat.resource;
         this.intellect = mt_rand(20, 80);
         this.morale = mt_rand(20, 80);
-        this.strength = mt_rand(0, 1);
+        this.strength = mt_rand(10, 21);
         this.agility = mt_rand(12, 23);
         this.assignedTo = null;
     }

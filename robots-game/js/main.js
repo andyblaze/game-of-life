@@ -30,12 +30,24 @@ for ( const [idx, farm] of Object.entries(resourceFarms) ) {
 }
 population.addObserver(hud);
 
+let lastTime = 0;
+let accumulator = 0;
+const TICK_RATE = 1000; // ms per game tick 
 
 function loop(timestamp) {
-    for ( const [idx, farm] of Object.entries(resourceFarms) ) {
-        farm.tick();
+    const delta = timestamp - lastTime;
+    lastTime = timestamp;
+    accumulator += delta;
+
+    // run game logic at fixed intervals
+    while ( accumulator >= TICK_RATE ) {
+        for (const [key, farm] of Object.entries(resourceFarms)) {
+            farm.tick();
+        }
+        population.tick();
+        accumulator -= TICK_RATE;
     }
-    population.tick();
+    // render would go here (canvas updates etc) at 60 fps
     requestAnimationFrame(loop);
 }
 
