@@ -3,16 +3,22 @@ import { Human } from "./resources.js";
 import { HumanBehaviour } from "./strategies.js";
 
 export default class Population extends ResourceAggregator {
-    constructor() {
+    constructor(msgsys) {
         super();
+        this.messageSys = msgsys;
     }
     tick() {
+        let msg1 = {};
+        let msg2 = {};
         for ( const r of this.resources ) {
             r.tick();
+            msg1 = r.msg;
         }
+        msg2 = this.messageSys.emit("population");
         this.notify([
             { type: "population", output: this.resources.length },
-            { type: "morale", output: this.attr("morale") }
+            { type: "morale", output: this.attr("morale") },
+            msg1, msg2
         ]);
     }
     getAvailable(n) {
@@ -28,7 +34,7 @@ export default class Population extends ResourceAggregator {
     }
     add(n) {
         for ( let i = 0; i < n; i++ ) {
-            let r = new Human(new HumanBehaviour());
+            let r = new Human(new HumanBehaviour(), this.messageSys);
             this.resources.push(r);
             this.resource = r.resource;
         }

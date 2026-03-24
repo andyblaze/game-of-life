@@ -1,20 +1,19 @@
-import { mt_rand } from "./functions.js";
 import { Observable } from "./util-classes.js";
 
 export default class ResourceAggregator extends Observable {
-    constructor(cfg) {     
+    constructor() {     
         super();  
-        this.cfg = cfg; 
         this.resources = [];
         this.output = 0;
         this.resource = "";
     }
     tick() {
+        let msg = {};
         for( const r of this.resources ) {
             r.tick();
             this.output = this.resources.reduce((sum, r) => sum + r.output, 0);
+            msg = r.msg;
         }
-        const msg = this.createMessage();
         this.notify([{ type: this.resource, output: this.output }, msg]);
     }
     add(r) {
@@ -23,11 +22,5 @@ export default class ResourceAggregator extends Observable {
     }
     assignWorkers(idx, n, pop) {
         this.resources[idx].assignWorkers(n, pop);
-    }
-    createMessage() {
-        const msg = { type: "msg", output: "" };
-        if ( mt_rand(0, 5000) > 4990 ) 
-            msg.output = this.resource + " : " + this.cfg.getMessage(this.resource);  
-        return msg;      
     }
 }
