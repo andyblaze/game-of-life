@@ -2,6 +2,7 @@ import { IronMining, CoalMining, WheatFarming, WoodFarming } from "./strategies.
 import Config from "./newconfig.js";
 import ResourceFactory from "./resource-factory.js";
 import HUD from "./hud.js";
+import DeltaRreport from "./delta-report.js";
 
 const config = new Config();
 
@@ -38,14 +39,15 @@ function loop(timestamp) {
     const delta = timestamp - lastTime;
     lastTime = timestamp;
     accumulator += delta;
+    DeltaRreport.log(timestamp);
 
     // run game logic at fixed intervals
     while ( accumulator >= TICK_RATE ) {
         for (const [key, farm] of Object.entries(resourceFarms)) {
             farm.tick();
         }
-        population.tick();
-        accumulator -= TICK_RATE;
+        population.tick(); 
+        accumulator -= TICK_RATE;        
     }
     // render would go here (canvas updates etc) at 60 fps
     requestAnimationFrame(loop);

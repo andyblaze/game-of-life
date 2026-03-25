@@ -12,6 +12,9 @@ class BaseStrategy {
     total(workers, attr) {
         return workers.reduce((sum, w) => sum + w.attr(attr), 0);
     }
+    avg(workers, attr) {
+        return this.total(workers, attr) / workers.length;
+    }
 }
 export class IronMining extends BaseStrategy {
     constructor() {
@@ -19,10 +22,9 @@ export class IronMining extends BaseStrategy {
         this.resource = "iron";
     }
     tick(workers) {
-        const str = this.total(workers, "strength");
         return { 
-            output: (0.0075 * str), 
-            event: (this.canSend() && this.total(workers, "morale") < 2000) 
+            output: (0.0075 * this.total(workers, "strength")), 
+            event: (this.avg(workers, "morale") < 50) 
         };
     }
 }
@@ -61,6 +63,6 @@ export class HumanBehaviour extends BaseStrategy {
         this.resource = "human";
     }
     tick(parent) {
-        parent.morale -= 0.1;
+        parent.morale -= 1;
     }
 }
