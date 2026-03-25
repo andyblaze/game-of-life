@@ -29,17 +29,15 @@ export default class DeltaReport {
         this.timeSum += deltaTime;
         this.lastTime = timestamp;
 
-        //if (this.frameCount === 120) { // ~2 seconds at 60fps
-            this.fps = parseInt(60 / (this.sum / this.frameCount));
-            if ( this.fps < this.min ) this.min = this.fps; 
-            if ( this.fps > this.max ) this.max = this.fps; 
+        this.fps = parseInt(60 / (this.sum / this.frameCount));
+        if ( this.fps < this.min ) this.min = this.fps; 
+        if ( this.fps > this.max ) this.max = this.fps; 
 
-            const avgFrameTime = this.timeSum / this.frameCount; // ms
-            const totalSeconds = Math.floor((timestamp - this.startTime) / 1000);
-            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
-            const seconds = (totalSeconds % 60).toString().padStart(2, "0");
-            const elapsed = minutes + ":" + seconds;
-        //}
+        const avgFrameTime = this.timeSum / this.frameCount; // ms
+        const totalSeconds = Math.floor((timestamp - this.startTime) / 1000);
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+        const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+        const elapsed = minutes + ":" + seconds;
         return [ avgFrameTime, elapsed ];
     }
 
@@ -48,7 +46,7 @@ export default class DeltaReport {
         this.frameCount++;
         if (this.frameCount === 120) {
             DeltaReport.calc(timestamp);  
-            this.fpsEl.innerText = fps;
+            this.fpsEl.innerText = this.fps;
 
             // Clear any previous fps-* class
             this.fpsEl.classList.remove("fps-best", "fps-ok", "fps-bad");
