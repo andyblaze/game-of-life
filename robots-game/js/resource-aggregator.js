@@ -11,7 +11,7 @@ export default class ResourceAggregator extends Observable {
         let msg = {};
         for( const r of this.resources ) {
             r.tick();
-            this.output = this.resources.reduce((sum, r) => sum + r.output, 0);
+            this.output += this.resources.reduce((sum, r) => sum + r.output, 0);
             msg = r.msg;
         }
         this.notify([{ type: this.resource, output: this.output }, msg]);
@@ -22,5 +22,10 @@ export default class ResourceAggregator extends Observable {
     }
     assignWorkers(idx, n, pop) {
         this.resources[idx].assignWorkers(n, pop);
+    }
+    getResource(n) {
+        if ( this.output - n < 0 ) return 0;
+        this.output -= n;
+        return n;
     }
 }

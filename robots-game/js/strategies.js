@@ -34,7 +34,10 @@ export class CoalMining extends BaseStrategy {
         this.resource = "coal";
     }
     tick(workers) {
-        return { output: (0.025 * workers.length * this.total(workers, "morale")), event: false };
+        return { 
+            output: (0.025 * workers.length),// * this.avg(workers, "morale")), 
+            event: false 
+        };
     }
 }
 export class WheatFarming extends BaseStrategy {
