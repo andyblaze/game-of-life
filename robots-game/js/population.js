@@ -42,4 +42,7 @@ export default class Population extends ResourceAggregator {
     getCount() {
         return this.resources.length;
     }
+    getAll() {
+        return this.resources;
+    }
 }

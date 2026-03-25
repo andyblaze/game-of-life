@@ -13,7 +13,7 @@ class Furnace {
     }
     tick(farms, consumption) {
         this.power -= consumption;        
-        if ( this.power >= 100 ) return;
+        //if ( this.power >= 100 ) return;
         let fuel = farms.coalMines.getResource(2);
         if ( fuel > 0 ) 
             this.power += 4;
@@ -31,9 +31,13 @@ class Bakery {
         this.bread = 0;
         this.resource = "bread";
     }
-    tick(farms, consumption) {
-        this.bread -= consumption;
-        if ( this.bread >= 100 ) return;
+    tick(farms, consumers) {
+        for ( const c of consumers.getAll() ) {
+            if ( c.consume() )
+                this.bread -= 4;
+        }
+        //this.bread -= consumers;
+        //if ( this.bread >= 100 ) return;
         let fuel = farms.wheatFarms.getResource(16);
         if ( fuel > 0 )
             this.bread += 16;
@@ -60,7 +64,7 @@ const config = new Config();
 const factory = new ResourceFactory(config);
 
 const population = factory.createPopulation();
-population.add(12);
+population.add(24);
 
 const hud = new HUD();
 
@@ -85,7 +89,7 @@ population.addObserver(hud);
 const furnace = new Consumer(resourceFarms, new Furnace(), 2);
 furnace.addObserver(hud);
 
-const bakery = new Consumer(resourceFarms, new Bakery(), population.getCount());
+const bakery = new Consumer(resourceFarms, new Bakery(), population);
 bakery.addObserver(hud);
 
 let lastTime = 0;

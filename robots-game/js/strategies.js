@@ -66,6 +66,8 @@ export class HumanBehaviour extends BaseStrategy {
         this.resource = "human";
     }
     tick(parent) {
-        parent.morale -= 1;
+        parent.hunger += 1;
+        if ( parent.hunger > 80 )
+            parent.morale -= 1;
     }
 }

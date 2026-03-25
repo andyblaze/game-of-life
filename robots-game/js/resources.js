@@ -34,6 +34,7 @@ export class Human extends BaseResource {
     constructor(strat, msgsys) {
         super(strat, msgsys);
         this.resource = strat.resource;
+        this.hunger = mt_rand(20, 80);
         this.intellect = mt_rand(20, 80);
         this.morale = mt_rand(20, 80);
         this.strength = mt_rand(10, 21);
@@ -46,5 +47,12 @@ export class Human extends BaseResource {
     }
     attr(a) {
         return this[a];
+    }
+    consume() {
+        if ( this.hunger > 80 ) {
+            this.hunger -= 10;
+            return true;
+        }
+        else return false;
     }
 }
