@@ -13,7 +13,7 @@ class Furnace {
     }
     tick(farms, consumption) {
         this.power -= consumption;        
-        //if ( this.power >= 100 ) return;
+        if ( this.power >= 100 ) return { type: this.resource, output: this.power };
         let fuel = farms.coalMines.getResource(2);
         if ( fuel > 0 ) 
             this.power += 4;
@@ -32,17 +32,33 @@ class Bakery {
         this.resource = "bread";
     }
     tick(farms, consumers) {
+        let result = { type: this.resource, output: this.bread };
+        if ( this.bread >= consumers.getCount() ) return result;
+        const fuel = farms.woodFarms.getResource(16);
+        const grain = farms.wheatFarms.getResource(16);
+        if ( fuel > 0 && grain > 0 )
+            this.bread += 16;
         for ( const c of consumers.getAll() ) {
-            if ( c.consume() )
+            if ( this.bread - 4 > 0 && c.consume() )
                 this.bread -= 4;
         }
-        //this.bread -= consumers;
-        //if ( this.bread >= 100 ) return;
-        let fuel = farms.wheatFarms.getResource(16);
-        if ( fuel > 0 )
-            this.bread += 16;
         this.bread = clamp(this.bread, 0, Infinity);
-        return { type: this.resource, output: this.bread };
+        result.bread = this.bread;
+        return result;
+    }
+}
+
+class RobotFactory {
+    constructor() {
+        this.robots = 0;
+        this.resource = "robots";
+    }
+    tick(farms, consumptionRate) {
+        const fuel = farms.ironMines.getResource(consumptionRate);
+        if ( fuel > 0 ) {
+            this.robots += 1;
+        }
+        return { type: this.resource, output: this.robots };
     }
 }
 
@@ -86,11 +102,14 @@ for ( const [idx, farm] of Object.entries(resourceFarms) ) {
 }
 population.addObserver(hud);
 
-const furnace = new Consumer(resourceFarms, new Furnace(), 2);
-furnace.addObserver(hud);
-
-const bakery = new Consumer(resourceFarms, new Bakery(), population);
-bakery.addObserver(hud);
+const consumers = {
+    furnace: new Consumer(resourceFarms, new Furnace(), 2),
+    robotFactory: new Consumer(resourceFarms, new RobotFactory(), 40),
+    bakery: new Consumer(resourceFarms, new Bakery(), population)
+};
+for ( const [idx, consumer] of Object.entries(consumers) ) {
+    consumer.addObserver(hud);
+}
 
 let lastTime = 0;
 let accumulator = 0;
@@ -107,9 +126,10 @@ function loop(timestamp) {
         for (const [key, farm] of Object.entries(resourceFarms)) {
             farm.tick();
         }
+        for (const [key, consumer] of Object.entries(consumers)) {
+            consumer.tick();
+        }
         population.tick(); 
-        furnace.tick();
-        bakery.tick();
         accumulator -= TICK_RATE;        
     }
     // render would go here (canvas updates etc) at 60 fps
