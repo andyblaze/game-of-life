@@ -6,7 +6,7 @@ import DeltaRreport from "./delta-report.js";
 import { clamp } from "./functions.js";
 import { Observable } from "./util-classes.js";
 
-class Furnace {
+class PowerPlant {
     constructor() {
         this.product = 0;
         this.resource = "battery";
@@ -44,7 +44,7 @@ class Bakery {
             if ( this.product - 4 > 0 && c.consume() )
                 this.product -= 4;
         }
-        this.product = clamp(this.product, 0, Infinity);
+        this.product = clamp(this.product, 0, consumers.getCount());
         result.output = this.product;
         return result;
     }
@@ -52,15 +52,15 @@ class Bakery {
 
 class RobotFactory {
     constructor() {
-        this.robots = 0;
+        this.product = 0;
         this.resource = "robots";
     }
     tick(farms, consumptionRate) {
         const fuel = farms.ironMines.getResource(consumptionRate);
         if ( fuel > 0 ) {
-            this.robots += 1;
+            this.product += 1;
         }
-        return { type: this.resource, output: this.robots };
+        return { type: this.resource, output: this.product };
     }
 }
 
@@ -105,7 +105,7 @@ for ( const [idx, farm] of Object.entries(resourceFarms) ) {
 population.addObserver(hud);
 
 const consumers = {
-    furnace: new Consumer(resourceFarms, new Furnace(), 2),
+    powerPlant: new Consumer(resourceFarms, new PowerPlant(), 2),
     robotFactory: new Consumer(resourceFarms, new RobotFactory(), 40),
     bakery: new Consumer(resourceFarms, new Bakery(), population)
 };
