@@ -1,1 +1,1 @@
-todo
+robot factory seems to produce nothing
