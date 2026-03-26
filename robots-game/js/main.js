@@ -8,42 +8,44 @@ import { Observable } from "./util-classes.js";
 
 class Furnace {
     constructor() {
-        this.power = 0;
+        this.product = 0;
         this.resource = "battery";
     }
     tick(farms, consumption) {
-        this.power -= consumption;        
-        if ( this.power >= 100 ) return { type: this.resource, output: this.power };
+        let result = { type: this.resource, output: this.product };
+        this.product -= consumption;        
+        if ( this.product >= 100 ) return result;
         let fuel = farms.coalMines.getResource(2);
         if ( fuel > 0 ) 
-            this.power += 4;
+            this.product += 4;
         else { 
             fuel = farms.woodFarms.getResource(6);
-            if ( fuel > 0 ) this.power += 2;
+            if ( fuel > 0 ) this.pproduct += 2;
         }  
-        this.power = clamp(this.power, 0, 100);
-        return { type: this.resource, output: this.power };
+        this.product = clamp(this.product, 0, 100);
+        result.output = this.product;
+        return result;
     }
 }
 
 class Bakery {
     constructor() {
-        this.bread = 0;
+        this.product = 0;
         this.resource = "bread";
     }
     tick(farms, consumers) {
-        let result = { type: this.resource, output: this.bread };
-        if ( this.bread >= consumers.getCount() ) return result;
+        let result = { type: this.resource, output: this.product };
+        if ( this.product >= consumers.getCount() ) return result;
         const fuel = farms.woodFarms.getResource(16);
         const grain = farms.wheatFarms.getResource(16);
         if ( fuel > 0 && grain > 0 )
-            this.bread += 16;
+            this.product += 16;
         for ( const c of consumers.getAll() ) {
-            if ( this.bread - 4 > 0 && c.consume() )
-                this.bread -= 4;
+            if ( this.product - 4 > 0 && c.consume() )
+                this.product -= 4;
         }
-        this.bread = clamp(this.bread, 0, Infinity);
-        result.bread = this.bread;
+        this.product = clamp(this.product, 0, Infinity);
+        result.output = this.product;
         return result;
     }
 }
