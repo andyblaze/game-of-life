@@ -9,18 +9,29 @@ class Economy {
     constructor(cfg) {
         this.cfg = cfg;
         this.items = {};
+        this.stocks = {};
     }
     add(item) {
         const key = item.resourceName();
         this.items[key] = item;
+        this.stocks[key] = 0;
     }
     tick() {
         for ( const [key, item] of Object.entries(this.items) ) {
             item.tick();
         }
     }
-    getResources(key) {
-        return this.items[key].getResources();
+    deposit(key, n) {
+        this.stocks[key] += n;
+    }
+    consume(key, n) {
+        this.stocks[key] -= n;
+    }
+    getResources(key, n) {
+        const stock = this.stocks[key];
+        if ( stock - n < 0 ) return 0;
+        stock -= n;
+        return n;
     }
 }
 
