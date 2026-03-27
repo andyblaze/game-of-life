@@ -20,7 +20,7 @@ export class FarmedResource extends BaseResource {
     }
     tick() {
         const result = this.strategy.tick(this.workers);
-        this.output += result.output;
+        this.output = result.output;
         if ( result.event )
             this.msg = this.messageSys.emit(this.resource, true);
     }
