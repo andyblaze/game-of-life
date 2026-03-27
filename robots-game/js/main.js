@@ -18,7 +18,7 @@ class Economy {
     }
     tick() {
         for ( const [key, item] of Object.entries(this.items) ) {
-            item.tick();
+            item.tick(); 
         }
     } 
     deposit(key, n) {
