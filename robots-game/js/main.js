@@ -67,12 +67,12 @@ resourceFarms.woodFarms.assignWorkers(0, 2, population);
 for ( const [idx, farm] of Object.entries(resourceFarms) ) {
     farm.addObserver(hud);
 }
-population.addObserver(hud);
+population.addObserver(hud); 
 
 const consumers = {
-    powerPlant: factory.createConsumer(resourceFarms, new PowerPlant(), 2),
-    robotFactory: factory.createConsumer(resourceFarms, new RobotFactory(), 40),
-    bakery: factory.createConsumer(resourceFarms, new Bakery(), population)
+    powerPlant: factory.createConsumer(economy, new PowerPlant(), 2),
+    robotFactory: factory.createConsumer(economy, new RobotFactory(), 40),
+    bakery: factory.createConsumer(economy, new Bakery(), population)
 };
 for ( const [idx, consumer] of Object.entries(consumers) ) {
     consumer.addObserver(hud);

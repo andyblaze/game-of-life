@@ -22,7 +22,7 @@ export default class ResourceFactory {
     createPopulation() {
         return new Population(this.messageSystem);
     }
-    createConsumer(farms, type, consumptionRate) {
-        return new Consumer(farms, type, consumptionRate);
+    createConsumer(type, consumptionRate) {
+        return new Consumer(this.economy, type, consumptionRate);
     }
 }
