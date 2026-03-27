@@ -5,7 +5,10 @@ class BaseResource {
         this.strategy = strat;
         this.messageSys = msgsys;
         this.msg = { type: "msg", output: "" };
-    }    
+    }  
+    getResources() {
+        return this.output;
+    }  
 }
 export class FarmedResource extends BaseResource {
     constructor(strat, msgsys) {

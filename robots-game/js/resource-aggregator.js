@@ -28,4 +28,7 @@ export default class ResourceAggregator extends Observable {
         this.output -= n;
         return n;
     }
+    resourceName() {
+        return this.resource;
+    }
 }

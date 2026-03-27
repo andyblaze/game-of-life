@@ -1,13 +1,6 @@
 class BaseStrategy {
-    constructor() {
-        this.coolDown = 6000; // ms
-        this.lastMessageSent = 0;
-    }
-    canSend() { return true;
-        this.lastMessageSent += 16.666;
-        if ( this.lastMessageSent > this.coolDown )
-            this.lastMessageSent = 0;
-        return this.lastMessageSent === 0;
+    constructor(r) {
+        this.resource = r;
     }
     total(workers, attr) {
         return workers.reduce((sum, w) => sum + w.attr(attr), 0);
@@ -15,11 +8,13 @@ class BaseStrategy {
     avg(workers, attr) {
         return this.total(workers, attr) / workers.length;
     }
+    resourceName() {
+        return this.resource;
+    }
 }
 export class IronMining extends BaseStrategy {
     constructor() {
-        super();
-        this.resource = "iron";
+        super("iron");
     }
     tick(workers) {
         return { 
@@ -30,8 +25,7 @@ export class IronMining extends BaseStrategy {
 }
 export class CoalMining extends BaseStrategy {
     constructor() { 
-        super();
-        this.resource = "coal";
+        super("coal");
     }
     tick(workers) {
         return { 
@@ -42,28 +36,29 @@ export class CoalMining extends BaseStrategy {
 }
 export class WheatFarming extends BaseStrategy {
     constructor() {
-        super();
-        this.resource = "wheat";
+        super("wheat");
     }
     tick(workers) {
-        const int = this.total(workers, "intellect");
-        return { output: (0.0015 * int), event: false };
+        return { 
+            output: (0.0015 * this.avg(workers, "intellect")), 
+            event: false 
+        };
     }
 }
 export class WoodFarming extends BaseStrategy {
     constructor() {
-        super();
-        this.resource = "wood";
+        super("wood");
     }
     tick(workers) {
-        const agi = this.total(workers, "agility");
-        return { output: (0.0075 * agi), event: false };
+        return { 
+            output: (0.0075 * this.avg(workers, "agility")), 
+            event: false 
+        };
     }
 }
 export class HumanBehaviour extends BaseStrategy {
     constructor() {
-        super();
-        this.resource = "human";
+        super("human");
     }
     tick(parent) {
         parent.hunger += 1;

@@ -2,10 +2,12 @@ import { FarmedResource } from "./resources.js";
 import ResourceAggregator from "./resource-aggregator.js";
 import MessageSystem from "./message-system.js";
 import Population from "./population.js";
+import { Consumer } from "./consumers.js";
 
 export default class ResourceFactory {
-    constructor(cfg) {
+    constructor(cfg, economy) {
         //this.cfg = cfg;
+        //this.economy = economy;
         this.messageSystem = new MessageSystem(cfg);
     }
     createFarmedResource(type) {
@@ -19,5 +21,8 @@ export default class ResourceFactory {
     }
     createPopulation() {
         return new Population(this.messageSystem);
+    }
+    createConsumer(farms, type, consumptionRate) {
+        return new Consumer(farms, type, consumptionRate);
     }
 }

@@ -3,11 +3,33 @@ import Config from "./newconfig.js";
 import ResourceFactory from "./resource-factory.js";
 import HUD from "./hud.js";
 import DeltaRreport from "./delta-report.js";
-import { Consumer, Bakery, RobotFactory, PowerPlant } from "./consumers.js";
+import { Bakery, RobotFactory, PowerPlant } from "./consumers.js";
+
+class Economy {
+    constructor(cfg) {
+        this.cfg = cfg;
+        this.items = {};
+    }
+    add(item) {
+        const key = item.resourceName();
+        this.items[key] = item;
+    }
+    tick() {
+        for ( const [key, item] of Object.entries(this.items) ) {
+            item.tick();
+        }
+    }
+    getResources(key) {
+        return this.items[key].getResources();
+    }
+}
 
 const config = new Config();
 
-const factory = new ResourceFactory(config);
+const economy = new Economy(config);
+//economy.add()
+
+const factory = new ResourceFactory(config, economy);
 
 const population = factory.createPopulation();
 population.add(24);
@@ -33,9 +55,9 @@ for ( const [idx, farm] of Object.entries(resourceFarms) ) {
 population.addObserver(hud);
 
 const consumers = {
-    powerPlant: new Consumer(resourceFarms, new PowerPlant(), 2),
-    robotFactory: new Consumer(resourceFarms, new RobotFactory(), 40),
-    bakery: new Consumer(resourceFarms, new Bakery(), population)
+    powerPlant: factory.createConsumer(resourceFarms, new PowerPlant(), 2),
+    robotFactory: factory.createConsumer(resourceFarms, new RobotFactory(), 40),
+    bakery: factory.createConsumer(resourceFarms, new Bakery(), population)
 };
 for ( const [idx, consumer] of Object.entries(consumers) ) {
     consumer.addObserver(hud);
