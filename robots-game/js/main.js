@@ -28,6 +28,10 @@ class Economy {
         this.stocks[key] -= n;
     }
     getResources(key, n) {
+        if ( !(key in this.stocks) ) {
+            console.error(key + " is invalid.  Typo?");
+            return 0;
+        }
         const stock = this.stocks[key];
         if ( stock - n < 0 ) return 0;
         stock -= n;

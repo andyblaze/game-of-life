@@ -7,7 +7,7 @@ class BaseResource {
         this.msg = { type: "msg", output: "" };
     }  
     getResources() {
-        return this.output;
+        return this.output; 
     }  
 }
 export class FarmedResource extends BaseResource {

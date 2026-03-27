@@ -7,7 +7,7 @@ import { Consumer } from "./consumers.js";
 export default class ResourceFactory {
     constructor(cfg, economy) {
         //this.cfg = cfg;
-        //this.economy = economy;
+        this.economy = economy;
         this.messageSystem = new MessageSystem(cfg);
     }
     createFarmedResource(type) {
@@ -15,7 +15,7 @@ export default class ResourceFactory {
     }
     createAggregator(type) {
         const res = this.createFarmedResource(type);
-        const agg = new ResourceAggregator();
+        const agg = new ResourceAggregator(this.economy);
         agg.add(res);
         return agg;
     }

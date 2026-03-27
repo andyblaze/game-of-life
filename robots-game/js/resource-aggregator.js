@@ -1,20 +1,25 @@
 import { Observable } from "./util-classes.js";
 
 export default class ResourceAggregator extends Observable {
-    constructor() {     
-        super();  
+    constructor(economy) {     
+        super(); 
+        this.economy = economy; 
         this.resources = [];
-        this.output = 0;
+        this.sum = 0;
         this.resource = "";
     }
     tick() {
-        let msg = {};
+        //let msg = {};
         for( const r of this.resources ) {
             r.tick();
-            this.output += this.resources.reduce((sum, r) => sum + r.output, 0);
-            msg = r.msg;
+            this.sum += r.output;
+            //this.output = this.resources.reduce((sum, r) => sum + r.output, 0);
+            //msg = r.msg;
         }
-        this.notify([{ type: this.resource, output: this.output }, msg]);
+        //this.sum = this.resources.reduce((sum, r) => sum + r.output, 0);
+        this.economy.deposit(this.resource, this.sum);
+        this.sum = 0;
+        //this.notify([{ type: this.resource, output: this.output }, msg]);
     }
     add(r) {
         this.resources.push(r);
