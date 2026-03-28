@@ -10,11 +10,19 @@ class Economy {
         this.cfg = cfg;
         this.items = {};
         this.stocks = {};
+        this.population = {};
+        this.robots = {};
     }
     add(item) {
         const key = item.resourceName();
         this.items[key] = item;
         this.stocks[key] = 0;
+    }
+    addHumans(n) {
+        this.population.add(n);
+    }
+    addRobots(n) {
+        this.robots.add(n);
     }
     tick() {
         for ( const [key, item] of Object.entries(this.items) ) {
@@ -46,28 +54,27 @@ const economy = new Economy(config);
 
 const factory = new ResourceFactory(config, economy);
 
-const population = factory.createPopulation();
-population.add(24);
+economy.population = factory.createPopulation();
+economy.addHumans(24);
 
 const hud = new HUD();
 
-const resourceFarms = {
-    ironMines: factory.createAggregator(new IronMining()),
-    coalMines:  factory.createAggregator(new CoalMining()), 
-    wheatFarms: factory.createAggregator(new WheatFarming()), 
-    woodFarms: factory.createAggregator(new WoodFarming())
-};
+economy.add(factory.createAggregator(new IronMining()));
+economy.add(factory.createAggregator(new CoalMining()));
+economy.add(factory.createAggregator(new WheatFarming()));
+economy.add(factory.createAggregator(new WoodFarming()));
+
 
 //  sim user interaction to assign workers
-resourceFarms.ironMines.assignWorkers(0, 2, population);
-resourceFarms.coalMines.assignWorkers(0, 1, population);
-resourceFarms.wheatFarms.assignWorkers(0, 2, population);
-resourceFarms.woodFarms.assignWorkers(0, 2, population);
+economy.items.iron.assignWorkers(0, 2, economy.population);
+economy.items.coal.assignWorkers(0, 1, economy.population);
+economy.items.wheat.assignWorkers(0, 2, economy.population);
+economy.items.wood.assignWorkers(0, 2, economy.population);
 
-for ( const [idx, farm] of Object.entries(resourceFarms) ) {
-    farm.addObserver(hud);
+for ( const [key, item] of Object.entries(economy.items) ) {
+    item.addObserver(hud);
 }
-population.addObserver(hud); 
+economy.population.addObserver(hud); 
 
 const consumers = {
     powerPlant: factory.createConsumer(economy, new PowerPlant(), 2),
@@ -90,8 +97,8 @@ function loop(timestamp) {
 
     // run game logic at fixed intervals
     while ( accumulator >= TICK_RATE ) {
-        for (const [key, farm] of Object.entries(resourceFarms)) {
-            farm.tick();
+        for (const [key, item] of Object.entries(economy.items)) {
+            item.tick();
         }
         for (const [key, consumer] of Object.entries(consumers)) {
             consumer.tick();
