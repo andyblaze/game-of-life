@@ -1,6 +1,7 @@
 class HUD {
     update(data) { 
-        document.getElementById(data.type).innerText = data.output;
+        for ( const d of data)
+            document.getElementById(d.type).innerText = d.output;
     }
 }
 class World {
@@ -25,22 +26,33 @@ class World {
         this.stocks[type] += n;
     }
     notify() {
+        let data = [];
+        for ( const [key, item] of Object.entries(this.stocks ) )
+            data.push({ type: key, output: item });
         for ( const o of this.observers )
-            o.update({ type: "iron", output: this.stocks["iron"] });
+            o.update(data);
     }
 }
-class GameItem {
-    constructor(strat) {
-        this.strategy = strat;
-        this.product = strat.product;
-        this.result = 0;
+class Tickable {
+    constructor() {
+        this.result = null;
     }
+    consume(world) {}
+    produce(world) {}
+    finalise(world) {}
     ontick(world) {
         this.consume(world);
         this.produce(world);
         this.finalise(world);
     }
-    consume(world) {}
+}
+class GameItem extends Tickable {
+    constructor(strat) {
+        super();
+        this.strategy = strat;
+        this.product = strat.product;
+        this.result = 0;
+    }
     produce(world) {
         this.result = this.strategy.tick(world);
     }
@@ -51,20 +63,42 @@ class GameItem {
         this.ontick(world);        
     }
 }
-class IronMine {
-    type = "iron";
-    constructor() {
+class ResourceFarm extends Tickable {
+    constructor(type) {
+        super();
+        this.type = type;
         this.product = this.type;
         this.output = 0;
     }
     tick(world) {
-        return 1;
+        this.ontick(world);
+        return this.result;
+    }
+
+}
+class IronMine extends ResourceFarm {
+    type = "iron";
+    constructor() {
+        super("iron");
+    }
+    produce(world) {
+        this.result = 1;
+    }
+}
+class CoalMine extends ResourceFarm {
+    type = "coal";
+    constructor() {
+        super("coal");
+    }
+    produce(world) {
+        this.result = 2;
     }
 }
 const hud = new HUD();
 
 const world = new World();
 world.add(new GameItem(new IronMine()));
+world.add(new GameItem(new CoalMine()));
 world.addObserver(hud);
 
 let lastTime = 0;
