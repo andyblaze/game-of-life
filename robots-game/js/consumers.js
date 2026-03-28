@@ -11,6 +11,7 @@ class ConsumerStrategy {
         this.consume(consumption);
         this.produce(economy);
         this.finalise(consumption);
+        console.log(this.result);
     }
 }
 
@@ -35,9 +36,9 @@ export class PowerPlant extends ConsumerStrategy {
         this.product = clamp(this.product, 0, 100);
         this.result.output = this.product;
     }
-    tick(farms, consumption) {
+    tick(economy, consumption) {
         if ( this.product >= 100 ) return this.result;
-        this.ontick(farms, consumption);                      
+        this.ontick(economy, consumption);                      
         return this.result;
     }
 }
@@ -64,8 +65,8 @@ export class Bakery extends ConsumerStrategy {
     }
     tick(economy, consumers) {
         if ( this.product >= consumers.getCount() ) return this.result;
-        this.ontick(economy, consumers);        
-        return this.result;
+        this.ontick(economy, consumers);       console.log(this.result); 
+        return this.result; 
     }
 }
 
@@ -78,6 +79,7 @@ export class RobotFactory extends ConsumerStrategy {
         if ( fuel > 0 ) {
             this.product += 1;
         }
+        this.result.output = this.product;
         return this.result;
     }
 }
@@ -90,7 +92,7 @@ export class Consumer extends Observable {
         this.consumptionRate = cr;
     }
     tick() {
-        const data = this.strategy.tick(this.economy, this.consumptionRate);
-        this.notify([data]);      
+        const data = this.strategy.tick(this.economy, this.consumptionRate); //console.log(data);
+        //this.notify([data]);      
     }
 }

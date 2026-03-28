@@ -4,9 +4,11 @@ import ResourceFactory from "./resource-factory.js";
 import HUD from "./hud.js";
 import DeltaRreport from "./delta-report.js";
 import { Bakery, RobotFactory, PowerPlant } from "./consumers.js";
+import { Observable } from "./util-classes.js";
 
-class Economy {
+class Economy extends Observable {
     constructor(cfg) {
+        super();
         this.cfg = cfg;
         this.items = {};
         this.stocks = {};
@@ -28,6 +30,7 @@ class Economy {
         for ( const [key, item] of Object.entries(this.items) ) {
             item.tick(); 
         }
+        this.notify(this.getDeposits());
     } 
     deposit(key, n) {
         this.stocks[key] += n;
@@ -45,6 +48,12 @@ class Economy {
         stock -= n;
         return n;
     }
+    getDeposits() {
+        let data = [];
+        for ( const [key, stock] of Object.entries(this.stocks) )
+            data.push({type: key, output: stock});
+        return data;
+    }
 }
 
 const config = new Config();
@@ -58,6 +67,8 @@ economy.population = factory.createPopulation();
 economy.addHumans(24);
 
 const hud = new HUD();
+
+economy.addObserver(hud);
 
 economy.add(factory.createAggregator(new IronMining()));
 economy.add(factory.createAggregator(new CoalMining()));
@@ -97,13 +108,12 @@ function loop(timestamp) {
 
     // run game logic at fixed intervals
     while ( accumulator >= TICK_RATE ) {
-        for (const [key, item] of Object.entries(economy.items)) {
-            item.tick();
-        }
+        economy.tick();
+
         for (const [key, consumer] of Object.entries(consumers)) {
             consumer.tick();
         }
-        population.tick(); 
+        economy.population.tick(); 
         accumulator -= TICK_RATE;        
     }
     // render would go here (canvas updates etc) at 60 fps

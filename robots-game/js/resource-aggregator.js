@@ -19,7 +19,7 @@ export default class ResourceAggregator extends Observable {
         //this.sum = this.resources.reduce((sum, r) => sum + r.output, 0);
         this.economy.deposit(this.resource, this.sum);
         this.sum = 0;
-        //this.notify([{ type: this.resource, output: this.output }, msg]);
+        //this.notify([{ type: this.resource, output: this.output }]);//, msg]);
     }
     add(r) {
         this.resources.push(r);
