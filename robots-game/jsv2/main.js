@@ -29,19 +29,42 @@ class World {
             o.update({ type: "iron", output: this.stocks["iron"] });
     }
 }
+class GameItem {
+    constructor(strat) {
+        this.strategy = strat;
+        this.product = strat.product;
+        this.result = 0;
+    }
+    ontick(world) {
+        this.consume(world);
+        this.produce(world);
+        this.finalise(world);
+    }
+    consume(world) {}
+    produce(world) {
+        this.result = this.strategy.tick(world);
+    }
+    finalise(world) {
+        world.deposit(this.product, this.result);
+    }
+    tick(world) {
+        this.ontick(world);        
+    }
+}
 class IronMine {
+    type = "iron";
     constructor() {
-        this.product = "iron"
+        this.product = this.type;
         this.output = 0;
     }
     tick(world) {
-        world.deposit("iron", 1);
+        return 1;
     }
 }
 const hud = new HUD();
 
 const world = new World();
-world.add(new IronMine());
+world.add(new GameItem(new IronMine()));
 world.addObserver(hud);
 
 let lastTime = 0;
