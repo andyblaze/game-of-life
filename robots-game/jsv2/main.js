@@ -3,8 +3,12 @@ class HUD {
         this.elements = {};
     }
     update(data) { 
-        for ( const d of data)
-            document.getElementById(d.type).innerText = d.output;
+        for (const d of data) {
+            if ( !this.elements[d.type] ) {
+                this.elements[d.type] = document.getElementById(d.type);
+            }
+            this.elements[d.type].innerText = d.output;
+        }
     }
 }
 class World {
@@ -32,15 +36,19 @@ class World {
         }
         return ok;
     }
-    deposit(type, n) {
-        if ( this.stockUnknown(type) ) return;
-        this.stocks[type] += n;
+    deposit(d) {
+        if ( this.stockUnknown(d.type) ) return;
+        this.stocks[d.type] += d.amount;
     }
-    consume(type, n) {
-        if ( this.stockUnknown(type) ) return 0;
-        if ( this.stocks[type] - n < 0  ) return 0;
-        this.stocks[type] -= n;
-        return n;
+    hasResource(r) {
+        if ( this.stockUnknown(r.type) ) return false;
+        return this.stocks[r.type] >= r.amount;
+    }
+    consume(c) {
+        if ( this.stockUnknown(c.type) ) return 0;
+        if ( this.stocks[c.type] - c.amount < 0  ) return 0;
+        this.stocks[c.type] -= c.amount;
+        return c.amount;
         
     }
     notify() {
@@ -53,7 +61,7 @@ class World {
 }
 class Tickable {
     constructor() {
-        this.result = null;
+        this.result = {type: "", amount: 0};
     }
     consume(world) {}
     produce(world) {}
@@ -75,7 +83,7 @@ class GameItem extends Tickable {
         this.result = this.strategy.tick(world);
     }
     finalise(world) {
-        world.deposit(this.product, this.result);
+        world.deposit(this.result);
     }
     tick(world) {
         this.ontick(world);        
@@ -86,6 +94,7 @@ class ResourceFarm extends Tickable {
     constructor(type) {
         super();
         this.type = type;
+        this.result.type = type;
         this.product = this.type;
         this.output = 0;
     }
@@ -101,7 +110,7 @@ class IronMine extends ResourceFarm {
         super("iron");
     }
     produce(world) {
-        this.result = 1;
+        this.result.amount = 1;
     }
 }
 class CoalMine extends ResourceFarm {
@@ -110,14 +119,102 @@ class CoalMine extends ResourceFarm {
         super("coal");
     }
     produce(world) {
-        this.result = 2;
+         this.result.amount = 2;
     }
 }
+class WoodFarm extends ResourceFarm {
+    type = "wood";
+    constructor() {
+        super("wood");
+    }
+    produce(world) {
+         this.result.amount = 2;
+    }
+}
+class WheatFarm extends ResourceFarm {
+    type = "wheat";
+    constructor() {
+        super("wheat");
+    }
+    produce(world) {
+         this.result.amount = 2;
+    }
+}
+class Bakery extends ResourceFarm {
+    type = "bread";
+    constructor() {
+        super("bread");
+        this.wood = 0;
+        this.wheat = 0;
+        this.inputs = {
+            wood: 16,
+            wheat: 16
+        };
+        this.outputs = {
+            bread: 1
+        };
+    }
+    consume(world) {
+        const ok = Object.entries(this.inputs).every(
+            ([type, amount]) => world.hasResource({ "type": type, "amount": amount })
+        );
+
+        if (!ok) return;
+
+        for (const [type, amount] of Object.entries(this.inputs)) {
+            this[type] = world.consume({ "type": type, "amount": amount });
+        }
+    }
+    produce(world) { 
+        this.result.amount = 0;
+        if ( this.wood > 0 && this.wheat > 0 ) { 
+            this.result.amount = 1;
+            this.wood = 0;
+            this.wheat = 0;
+        }
+    }
+}
+class PowerPlant extends ResourceFarm {
+    type = "power";
+    constructor() {
+        super("power");
+        this.wood = 0;
+        this.coal = 0;
+        this.inputs = {
+            coal: 4,
+            wood: 8
+        };
+        this.outputs = {
+            power: 1
+        };
+    }
+    consume(world) {
+        world.consume({ type: "power", amount: 1 });
+        if ( world.hasResource({ type: "power", amount: 100 })) return;
+        this.coal = world.consume({ type: "coal", amount: 8 });
+        if ( this.coal > 0 ) return;
+
+        this.wood = world.consume({ type: "wood", amount: 8 });
+    }
+    produce(world) { 
+        this.result.amount = 0;
+        if ( this.wood > 0 || this.coal > 0 ) { 
+            this.result.amount = (this.wood / 2) + (this.coal / 2); console.log(this.result, (this.wood / 2) + (this.coal / 2));
+            this.wood = 0;
+            this.coal = 0;
+        }
+    }
+}
+
 const hud = new HUD();
 
 const world = new World();
+world.add(new GameItem(new PowerPlant()));
+world.add(new GameItem(new Bakery()));
 world.add(new GameItem(new IronMine()));
 world.add(new GameItem(new CoalMine()));
+world.add(new GameItem(new WoodFarm()));
+world.add(new GameItem(new WheatFarm()));
 world.addObserver(hud);
 
 let lastTime = 0;
