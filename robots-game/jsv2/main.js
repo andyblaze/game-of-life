@@ -22,8 +22,23 @@ class World {
             item.tick(this);
         this.notify();
     }
+    stockUnknown(type) {
+        const ok = !(type in this.stocks);
+        if ( true === ok ) {
+            console.error(type + " is not in stocks. Typo ?");
+        }
+        return ok;
+    }
     deposit(type, n) {
+        if ( this.stockUnknown(type) ) return;
         this.stocks[type] += n;
+    }
+    consume(type, n) {
+        if ( this.stockUnknown(type) ) return 0;
+        if ( this.stocks[type] - n < 0  ) return 0;
+        this.stocks[type] -= n;
+        return n;
+        
     }
     notify() {
         let data = [];
@@ -64,6 +79,7 @@ class GameItem extends Tickable {
     }
 }
 class ResourceFarm extends Tickable {
+    type = "";
     constructor(type) {
         super();
         this.type = type;
