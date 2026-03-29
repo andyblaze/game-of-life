@@ -1,4 +1,7 @@
 class HUD {
+    constructor() {
+        this.elements = {};
+    }
     update(data) { 
         for ( const d of data)
             document.getElementById(d.type).innerText = d.output;
