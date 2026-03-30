@@ -96,7 +96,7 @@ class ResourceFarm extends Tickable {
         this.type = type;
         this.result.type = type;
         this.product = this.type;
-        this.output = 0;
+        this.output = { type: this.type, amount: 0 };
     }
     tick(world) {
         this.ontick(world);
@@ -147,31 +147,32 @@ class Bakery extends ResourceFarm {
         this.wood = 0;
         this.wheat = 0;
         this.inputs = {
-            wood: 16,
-            wheat: 16
+            wheat: { type: "wheat", amount: 16 },
+            wood: { type: "wood", amount: 16 }
         };
-        this.outputs = {
-            bread: 1
-        };
+        this.output = { type: "bread", amount: 1 };
     }
     consume(world) {
         const ok = Object.entries(this.inputs).every(
-            ([type, amount]) => world.hasResource({ "type": type, "amount": amount })
+            ([type, input]) => world.hasResource(input)
         );
 
-        if (!ok) return;
+        if ( !ok ) return;
 
-        for (const [type, amount] of Object.entries(this.inputs)) {
-            this[type] = world.consume({ "type": type, "amount": amount });
+        for (const [type, input] of Object.entries(this.inputs)) {
+            this[type] = world.consume(input);
         }
     }
     produce(world) { 
-        this.result.amount = 0;
+        this.output.amount = 0;
         if ( this.wood > 0 && this.wheat > 0 ) { 
-            this.result.amount = 1;
-            this.wood = 0;
-            this.wheat = 0;
+            this.output.amount = 1;
+            this.result = this.output;
         }
+    }
+    finalise(world) {
+        this.wood = 0;
+        this.wheat = 0;
     }
 }
 class PowerPlant extends ResourceFarm {
@@ -188,6 +189,7 @@ class PowerPlant extends ResourceFarm {
     }
     consume(world) {
         world.consume({ type: "power", amount: 1 });
+
         if ( world.hasResource({ type: "power", amount: 100 })) return;
         this.coal = world.consume(this.inputs.coal);
         if ( this.coal > 0 ) return;
@@ -195,12 +197,15 @@ class PowerPlant extends ResourceFarm {
         this.wood = world.consume(this.inputs.wood);
     }
     produce(world) { 
-        this.result.amount = 0;
+        this.output.amount = 0;
         if ( this.wood > 0 || this.coal > 0 ) { 
-            this.result.amount = (this.wood / 4) + (this.coal / 2); 
-            this.wood = 0;
-            this.coal = 0;
+            this.output.amount = (this.wood / 4) + (this.coal / 2); 
+            this.result = this.output;
         }
+    }
+    finalise(world) {
+        this.wood = 0;
+        this.coal = 0;
     }
 }
 
