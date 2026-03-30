@@ -18,7 +18,7 @@ world.addObserver(hud);
 
 let lastTime = 0;
 let accumulator = 0;
-const TICK_RATE = 1000; // ms per game tick 
+const TICK_RATE = 1000; // ms per game tick  
 
 function loop(timestamp) {
     const delta = timestamp - lastTime;
