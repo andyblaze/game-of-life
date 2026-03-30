@@ -1,8 +1,9 @@
 import ResourceFarm from "./resource-farm.js";
 
 export default class PowerPlant extends ResourceFarm {
-    constructor(type) {
+    constructor(type, baseOutput) {
         super(type);
+        this.baseOutput = baseOutput;
         this.wood = 0;
         this.coal = 0;
         this.wheat = 0;
@@ -32,7 +33,7 @@ export default class PowerPlant extends ResourceFarm {
     produce(world) { 
         this.output.amount = 0;
         if ( this.wood > 0 || this.coal > 0 || this.wheat > 0 ) { 
-            this.output.amount = (this.wood / 6) + (this.coal / 2) + (this.wheat / 32); 
+            this.output.amount = this.baseOutput * (this.wood / 6) + (this.coal / 2) + (this.wheat / 32); 
             this.result = this.output;
         }
     }

@@ -1,8 +1,9 @@
 import ResourceFarm from "./resource-farm.js";
 
 export default class Bakery extends ResourceFarm {
-    constructor(type) {
+    constructor(type, baseOutput) {
         super(type);
+        this.baseOutput = baseOutput;
         this.wood = 0;
         this.wheat = 0;
         this.inputs = {
@@ -25,7 +26,7 @@ export default class Bakery extends ResourceFarm {
     produce(world) { 
         this.output.amount = 0;
         if ( this.wood > 0 && this.wheat > 0 ) { 
-            this.output.amount = 1;
+            this.output.amount = this.baseOutput;
             this.result = this.output;
         }
     }

@@ -3,16 +3,35 @@ import ObjectFactory from "./object-factory.js";
 import HUD from "./hud.js";
 import World from "./world.js";
 
-const factory = new ObjectFactory(Registry);
+const Balance = {
+    outputs: {
+        iron: 1,
+        coal: 2,
+        wood: 2,
+        wheat: 2,
+        bread: 1,
+        power: 1
+    }
+};
+
+const InitialWorldItems = [
+    "power", "bread", "iron", "coal", "wood", "wheat"
+];
+
+
+const factory = new ObjectFactory(Registry, Balance);
 const hud = new HUD();
 const world = new World();
 
-world.add(factory.create("power"));
+for ( const item of InitialWorldItems )
+    world.add(factory.create(item));
+
+/*world.add(factory.create("power"));
 world.add(factory.create("bread"));
 world.add(factory.create("iron"));
 world.add(factory.create("coal"));
 world.add(factory.create("wood"));
-world.add(factory.create("wheat"));
+world.add(factory.create("wheat"));*/
 
 world.addObserver(hud);
 
