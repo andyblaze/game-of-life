@@ -6,8 +6,8 @@ import World from "./world.js";
 const Balance = {
     outputs: {
         iron: 1,
-        coal: 2,
-        wood: 2,
+        coal: 4,
+        wood: 4,
         wheat: 2,
         bread: 1,
         power: 1
