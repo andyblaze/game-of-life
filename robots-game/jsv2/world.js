@@ -11,9 +11,20 @@ export default class World {
         this.items[item.product] = item;
         this.stocks[item.product] = 0;
     }
+    populate(type, pop) {
+        this[type] = pop;
+    }
+    getHumanCount() {
+        return this.humans.getCount();
+    }
+    getMorale() {
+        return this.humans.getMorale();
+    }
     tick() {
         for ( const [key, item] of Object.entries(this.items) )
             item.tick(this);
+        this.humans.tick(this);
+        this.robots.tick(this);
         this.notify();
     }
     stockUnknown(type) {
@@ -42,6 +53,9 @@ export default class World {
         let data = [];
         for ( const [key, item] of Object.entries(this.stocks ) )
             data.push({ type: key, output: item });
+        data.push({ type: "humans", output: this.humans.getCount()});
+        data.push({ type: "robots", output: this.robots.getCount()});
+        data.push({ type: "morale", output: this.humans.getMorale()});
         for ( const o of this.observers )
             o.update(data);
     }
