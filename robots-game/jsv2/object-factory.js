@@ -9,6 +9,7 @@ export default class ObjectFactory {
         const Ctor = this.registry[type];
         if ( !Ctor ) throw new Error(`ObjectFactory.create(type) : Unknown type: ${type} Typo ?`);
         const baseOutput = this.balance.outputs[type];
-        return new GameItem(new Ctor(type, baseOutput));
+        const inputs = this.balance.inputs[type] || {};
+        return new GameItem(new Ctor(type, baseOutput, inputs));
     }
 }

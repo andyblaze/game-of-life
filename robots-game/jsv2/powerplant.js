@@ -1,17 +1,13 @@
 import ResourceFarm from "./resource-farm.js";
 
 export default class PowerPlant extends ResourceFarm {
-    constructor(type, baseOutput) {
+    constructor(type, baseOutput, inputs) {
         super(type);
         this.baseOutput = baseOutput;
         this.wood = 0;
         this.coal = 0;
         this.wheat = 0;
-        this.inputs = {
-            coal: { type: "coal", amount: 8 },
-            wood: { type: "wood", amount: 12 },
-            wheat: { type: "wheat", amount: 32 }
-        };
+        this.inputs = inputs;
         this.output = { type: "power", amount: 1 };
     }
     consume(world) {

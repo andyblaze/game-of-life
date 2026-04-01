@@ -1,15 +1,15 @@
 import ResourceFarm from "./resource-farm.js";
 
 export default class Bakery extends ResourceFarm {
-    constructor(type, baseOutput) {
+    constructor(type, baseOutput, inputs) {
         super(type);
         this.baseOutput = baseOutput;
         this.wood = 0;
         this.wheat = 0;
-        this.inputs = {
+        this.inputs = inputs; /*{
             wheat: { type: "wheat", amount: 16 },
             wood: { type: "wood", amount: 16 }
-        };
+        };*/
         this.output = { type: "bread", amount: 1 };
     }
     consume(world) {
