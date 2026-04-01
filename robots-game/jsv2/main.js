@@ -2,9 +2,7 @@ import { Registry } from "./registry.js";
 import ObjectFactory from "./object-factory.js";
 import HUD from "./hud.js";
 import World from "./world.js";
-import GameItem from "./game-item.js";
-import Tickable from "./tickable.js";
-
+import { RobotPopulation, HumanPopulation } from "./populations.js";
 const Balance = {
     outputs: {
         iron: 1,
@@ -19,90 +17,6 @@ const Balance = {
 const InitialWorldItems = [
     "power", "bread", "iron", "coal", "wood", "wheat"
 ];
-
-class Human extends Tickable {
-    constructor() {
-        super();
-        this.hunger = 0;
-        this.morale = 50;
-        this.hungerRate = 0.8 + Math.random() * 0.4;
-    }
-
-    consume(world) {
-        this.hunger += this.hungerRate;
-
-        if (this.hunger > 50) {
-            const eaten = world.consume({ type: "bread", amount: 1 });
-            console.log("bread", eaten);
-
-            if (eaten) {
-                this.hunger -= 10;
-                this.morale += 1;
-            } else {
-                this.morale -= 1;
-            }
-        }
-    }
-}
-
-class HumanPopulation extends GameItem {
-    constructor(n) {
-        super({ product: "" });
-        this.pop = Array.from({ length: n }, () => new Human());
-    }
-    produce(world) {}
-    finalise(world) {}
-    tick(world) {
-        for (const human of this.pop) {
-            human.ontick(world);
-        }
-    }
-    getMorale() {
-        return this.pop.reduce((a, h) => a + h.morale, 0) / this.pop.length;
-    }
-    getCount() {
-        return this.pop.length;
-    }
-}
-
-class Robot extends Tickable {
-    constructor() {
-        super();
-        this.power = 100;
-        this.active = true;
-        this.powerUsage = 0.8 + Math.random() * 0.4;
-    }
-    consume(world) {
-        if  ( this.power < 10 ) this.active = false;
-        if ( false === this.active ) return;
-        this.power -= this.powerUsage;
-        if ( this.power < 50 ) {
-            const pwr = world.consume({ type: "power", amount: 1 });
-            console.log("power", pwr);    
-            if ( pwr )
-                this.power += 1;        
-        }
-    }
-}
-
-class RobotPopulation extends GameItem {
-    constructor(n) {
-        super({ product: "" });
-        this.pop = Array.from({ length: n }, () => new Robot());
-    }
-    getCount() {
-        return this.pop.length;
-    }
-    produce(world) {}
-    finalise(world) {}
-    tick(world) {
-        for (const robot of this.pop) {
-            robot.ontick(world);
-        }
-        console.log(this.pop.reduce((a, r) => a + r.power, 0) / this.pop.length);
-    }
-}
-
 
 const factory = new ObjectFactory(Registry, Balance);
 const hud = new HUD();
