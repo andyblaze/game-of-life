@@ -38,6 +38,6 @@ export class RobotPopulation extends GameItem {
         for (const robot of shuffled) {
             robot.ontick(world);
         }
-        console.log(this.pop.reduce((a, r) => a + r.power, 0) / this.pop.length);
+        //console.log(this.pop.reduce((a, r) => a + r.power, 0) / this.pop.length);
     }
 }

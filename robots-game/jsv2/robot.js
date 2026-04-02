@@ -15,13 +15,11 @@ export default class Robot extends Tickable {
             world.emitEvent(evt);
             this.power += world.consume({ type: "power", amount: 5 });
             this.active = (this.power > 10);
-            console.log(this.power, this.active);
             //return;
         }
         
         if ( this.power < 50 ) {
-            const pwr = world.consume({ type: "power", amount: 1 });
-            console.log("power", pwr);    
+            const pwr = world.consume({ type: "power", amount: 1 });   
             if ( pwr )
                 this.power += 1;        
         }

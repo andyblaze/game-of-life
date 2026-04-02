@@ -3,7 +3,7 @@ import Tickable from "./tickable.js";
 export default class Human extends Tickable {
     constructor() {
         super();
-        this.hunger = 0;
+        this.hunger = 50;
         this.morale = 50;
         this.hungerRate = 0.8 + Math.random() * 0.4;
     }
@@ -13,8 +13,6 @@ export default class Human extends Tickable {
 
         if (this.hunger > 50) {
             const eaten = world.consume({ type: "bread", amount: 1 });
-            console.log("bread", eaten);
-
             if (eaten) {
                 this.hunger -= 10;
                 this.morale += 1;
@@ -22,5 +20,10 @@ export default class Human extends Tickable {
                 this.morale -= 1;
             }
         }
+        if ( this.hunger > 50 ) {
+            const evt = { type: "state-change", source: "human", state: "hungry" };
+            world.emitEvent(evt);
+        }
+
     }
 }

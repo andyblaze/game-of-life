@@ -2,23 +2,18 @@ import { Registry } from "./registry.js";
 import { GameBalance } from "./game-balance.js";
 import Config from "./config.js";
 import ObjectFactory from "./object-factory.js";
+import MessageSystem from "./message-system.js";
 import HUD from "./hud.js";
 import World from "./world.js";
 import DeltaRreport from "./delta-report.js";
 
-class MessageSystem {
-    constructor() {
-        this.messages = [];
-    }
-    process(evt) {
-        return `${evt.type} , ${evt.source} , ${evt.state}`;
-    }
-}
 
 const config = new Config();
 const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
-const world = new World(new MessageSystem());
+const msgSystem = new MessageSystem();
+msgSystem.addObserver(hud);
+const world = new World(msgSystem);
 
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
