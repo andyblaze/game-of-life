@@ -34,11 +34,6 @@ export class RobotPopulation extends GameItem {
     produce(world) {}
     finalise(world) {}
     tick(world) {
-        /*this.offset = (this.offset + 1) % this.pop.length;
-        for (let i = 0; i < this.pop.length; i++) {
-            const idx = (i + this.offset) % this.pop.length;
-            this.pop[idx].ontick(world);
-        }*/
         const shuffled = [...this.pop].sort(() => Math.random() - 0.5);
         for (const robot of shuffled) {
             robot.ontick(world);

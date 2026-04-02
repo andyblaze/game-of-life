@@ -1,43 +1,23 @@
 import { Registry } from "./registry.js";
+import { GameBalance } from "./game-balance.js";
+import Config from "./config.js";
 import ObjectFactory from "./object-factory.js";
 import HUD from "./hud.js";
 import World from "./world.js";
-import { RobotPopulation, HumanPopulation } from "./populations.js";
-const Balance = {
-    outputs: {
-        iron: 1,
-        coal: 4,
-        wood: 6,
-        wheat: 3,
-        bread: 6,
-        power: 2
-    },
-    inputs: {
-        bread: {
-            wheat: { type: "wheat", amount: 16 },
-            wood: { type: "wood", amount: 16 }
-        },
-        power: {
-            coal: { type: "coal", amount: 8 },
-            wood: { type: "wood", amount: 12 },
-            wheat: { type: "wheat", amount: 32 }
-        }
-    }
-};
 
-const InitialWorldItems = [
-    "power", "bread", "iron", "coal", "wood", "wheat"
-];
 
-const factory = new ObjectFactory(Registry, Balance);
+
+const config = new Config();
+
+const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
 const world = new World();
 
-for ( const item of InitialWorldItems ) {
+for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
-world.populate("humans", new HumanPopulation(6));
-world.populate("robots", new RobotPopulation(4));
+world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
+world.populate("robots", factory.createPopulation("robots", config.initialRobotPop));
 world.addObserver(hud);
 
 let lastTime = 0;

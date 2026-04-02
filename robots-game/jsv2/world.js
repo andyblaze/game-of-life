@@ -21,8 +21,9 @@ export default class World {
         return this.humans.getMorale();
     }
     tick() {
-        for ( const [key, item] of Object.entries(this.items) )
+        for ( const [key, item] of Object.entries(this.items) ) {
             item.tick(this);
+        }
         this.humans.tick(this);
         this.robots.tick(this);
         this.notify();
@@ -51,12 +52,14 @@ export default class World {
     }
     notify() {
         let data = [];
-        for ( const [key, item] of Object.entries(this.stocks ) )
+        for ( const [key, item] of Object.entries(this.stocks ) ) {
             data.push({ type: key, output: item });
+        }
         data.push({ type: "humans", output: this.humans.getCount()});
         data.push({ type: "robots", output: this.robots.getCount()});
         data.push({ type: "morale", output: this.humans.getMorale()});
-        for ( const o of this.observers )
+        for ( const o of this.observers ) {
             o.update(data);
+        }
     }
 }
