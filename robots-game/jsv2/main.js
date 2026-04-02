@@ -37,7 +37,7 @@ for ( const item of InitialWorldItems ) {
     world.add(factory.create(item));
 }
 world.populate("humans", new HumanPopulation(6));
-world.populate("robots", new RobotPopulation(5));
+world.populate("robots", new RobotPopulation(4));
 world.addObserver(hud);
 
 let lastTime = 0;

@@ -6,10 +6,7 @@ export default class Bakery extends ResourceFarm {
         this.baseOutput = baseOutput;
         this.wood = 0;
         this.wheat = 0;
-        this.inputs = inputs; /*{
-            wheat: { type: "wheat", amount: 16 },
-            wood: { type: "wood", amount: 16 }
-        };*/
+        this.inputs = inputs; 
         this.output = { type: "bread", amount: 1 };
     }
     consume(world) {

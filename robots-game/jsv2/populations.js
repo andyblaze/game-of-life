@@ -10,7 +10,8 @@ export class HumanPopulation extends GameItem {
     produce(world) {}
     finalise(world) {}
     tick(world) {
-        for (const human of this.pop) {
+        const shuffled = [...this.pop].sort(() => Math.random() - 0.5);
+        for (const human of shuffled) {
             human.ontick(world);
         }
     }
@@ -33,7 +34,13 @@ export class RobotPopulation extends GameItem {
     produce(world) {}
     finalise(world) {}
     tick(world) {
-        for (const robot of this.pop) {
+        /*this.offset = (this.offset + 1) % this.pop.length;
+        for (let i = 0; i < this.pop.length; i++) {
+            const idx = (i + this.offset) % this.pop.length;
+            this.pop[idx].ontick(world);
+        }*/
+        const shuffled = [...this.pop].sort(() => Math.random() - 0.5);
+        for (const robot of shuffled) {
             robot.ontick(world);
         }
         console.log(this.pop.reduce((a, r) => a + r.power, 0) / this.pop.length);
