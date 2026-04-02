@@ -1,11 +1,10 @@
-export default class World {
+import { Observable } from "./util-classes.js";
+
+export default class World extends Observable {
     constructor() {
-        this.observers = [];
+        super();
         this.items = {};
         this.stocks = {};
-    }
-    addObserver(o) {
-        this.observers.push(o);
     }
     add(item) {
         this.items[item.product] = item;

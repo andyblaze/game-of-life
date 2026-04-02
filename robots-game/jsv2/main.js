@@ -5,10 +5,13 @@ import ObjectFactory from "./object-factory.js";
 import HUD from "./hud.js";
 import World from "./world.js";
 
-
+class MessageSystem {
+    constructor() {
+        this.messages = [];
+    }
+}
 
 const config = new Config();
-
 const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
 const world = new World();
