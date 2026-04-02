@@ -4,17 +4,21 @@ import Config from "./config.js";
 import ObjectFactory from "./object-factory.js";
 import HUD from "./hud.js";
 import World from "./world.js";
+import DeltaRreport from "./delta-report.js";
 
 class MessageSystem {
     constructor() {
         this.messages = [];
+    }
+    process(evt) {
+        return `${evt.type} , ${evt.source} , ${evt.state}`;
     }
 }
 
 const config = new Config();
 const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
-const world = new World();
+const world = new World(new MessageSystem());
 
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
@@ -31,7 +35,7 @@ function loop(timestamp) {
     const delta = timestamp - lastTime;
     lastTime = timestamp;
     accumulator += delta;
-    //DeltaRreport.log(timestamp);
+    DeltaRreport.log(timestamp);
 
     // run game logic at fixed intervals
     while ( accumulator >= TICK_RATE ) {

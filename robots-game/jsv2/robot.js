@@ -3,7 +3,7 @@ import Tickable from "./tickable.js";
 export default class Robot extends Tickable {
     constructor() {
         super();
-        this.power = 60;
+        this.power = 14;
         this.active = true;
         this.powerUsage = 0.8 + Math.random() * 0.4;
     }
@@ -11,6 +11,8 @@ export default class Robot extends Tickable {
         this.power -= this.powerUsage;
         if  ( this.power < 10 ) this.active = false;
         if ( false === this.active ) {
+            const evt = { type: "state-change", source: "robot", state: "inactive" };
+            world.emitEvent(evt);
             this.power += world.consume({ type: "power", amount: 5 });
             this.active = (this.power > 10);
             console.log(this.power, this.active);

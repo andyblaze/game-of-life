@@ -1,10 +1,12 @@
 import { Observable } from "./util-classes.js";
 
 export default class World extends Observable {
-    constructor() {
+    constructor(msgSys) {
         super();
+        this.messageSystem = msgSys;
         this.items = {};
         this.stocks = {};
+        this.msg = "";
     }
     add(item) {
         this.items[item.product] = item;
@@ -49,6 +51,9 @@ export default class World extends Observable {
         return c.amount;
         
     }
+    emitEvent(e) {
+        this.msg = this.messageSystem.process(e);
+    }
     notify() {
         let data = [];
         for ( const [key, item] of Object.entries(this.stocks ) ) {
@@ -57,8 +62,10 @@ export default class World extends Observable {
         data.push({ type: "humans", output: this.humans.getCount()});
         data.push({ type: "robots", output: this.robots.getCount()});
         data.push({ type: "morale", output: this.humans.getMorale()});
+        if ( this.msg.length > 0 ) data.push({ type: "msg", output: this.msg });
         for ( const o of this.observers ) {
             o.update(data);
         }
+        this.msg = "";
     }
 }
