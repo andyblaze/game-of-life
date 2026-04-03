@@ -11,7 +11,7 @@ export default class HUD {
             if ( !this.elements[d.type] ) {
                 this.elements[d.type] = document.getElementById(d.type);
             }
-            this.elements[d.type].innerText = this.sanitise(d.output);
+            this.elements[d.type].innerHTML = this.sanitise(d.output);
         }
     }
 }
