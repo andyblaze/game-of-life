@@ -13,7 +13,7 @@ export default class ResourceAggregator extends GameItem {
             this.result += r.tick(world).amount;
     }
     finalise(world) {
-        world.deposit({type: this.product, amount: this.result});
+        world.deposit({ type: this.product, amount: this.result });
         this.result = 0;
     }
 }

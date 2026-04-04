@@ -18,6 +18,7 @@ const world = new World(msgSystem);
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
+console.log(world);
 world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
 world.populate("robots", factory.createPopulation("robots", config.initialRobotPop));
 world.addObserver(hud);
