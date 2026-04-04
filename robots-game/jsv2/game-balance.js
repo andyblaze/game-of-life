@@ -13,7 +13,7 @@ export const GameBalance = {
             wood: { type: "wood", amount: 16 }
         },
         power: {
-            coal: { type: "coal", amount: 8 },
+            coal: { type: "coal", amount: 18 },
             wood: { type: "wood", amount: 12 },
             wheat: { type: "wheat", amount: 32 }
         }

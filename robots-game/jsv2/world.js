@@ -11,6 +11,10 @@ export default class World extends Observable {
         this.items[item.product] = item;
         this.stocks[item.product] = 0;
     }
+    addToAggregator(item) {
+        const agg = this.items[item.product];
+        agg.add(item);
+    }
     populate(type, pop) {
         this[type] = pop;
     }
@@ -35,9 +39,9 @@ export default class World extends Observable {
         }
         return ok;
     }
-    deposit(d) {
+    deposit(d) { 
         if ( this.stockUnknown(d.type) ) return;
-        this.stocks[d.type] += d.amount;
+        this.stocks[d.type] += d.amount; 
     }
     hasResource(r) {
         if ( this.stockUnknown(r.type) ) return false;
