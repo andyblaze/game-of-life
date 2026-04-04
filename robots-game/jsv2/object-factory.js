@@ -1,4 +1,5 @@
 import GameItem from "./game-item.js";
+import ResourceAggregator from "./resource-aggregatr.js";
 //import { RobotPopulation, HumanPopulation } from "./populations.js";
 
 export default class ObjectFactory {
@@ -11,7 +12,7 @@ export default class ObjectFactory {
         if ( !Ctor ) throw new Error(`ObjectFactory.create(type) : Unknown type: ${type} Typo ?`);
         const baseOutput = this.balance.outputs[type];
         const inputs = this.balance.inputs[type] || {};
-        return new GameItem(new Ctor(type, baseOutput, inputs));
+        return new ResourceAggregator(new Ctor(type, baseOutput, inputs));
     }
     createPopulation(type, n) {
         const Ctor = this.registry.populations[type];
