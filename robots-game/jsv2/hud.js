@@ -11,7 +11,10 @@ export default class HUD {
             if ( !this.elements[d.type] ) {
                 this.elements[d.type] = document.getElementById(d.type);
             }
-            this.elements[d.type].innerHTML = this.sanitise(d.output);
+            if ( d.type === "msg" ) 
+                this.elements[d.type].innerHTML = d.output.join("<br>");
+            else
+                this.elements[d.type].innerHTML = this.sanitise(d.output);
         }
     }
 }

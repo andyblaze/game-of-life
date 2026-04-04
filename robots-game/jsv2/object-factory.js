@@ -1,5 +1,5 @@
 import GameItem from "./game-item.js";
-import { RobotPopulation, HumanPopulation } from "./populations.js";
+//import { RobotPopulation, HumanPopulation } from "./populations.js";
 
 export default class ObjectFactory {
     constructor(r, b) {

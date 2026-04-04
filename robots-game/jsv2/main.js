@@ -35,6 +35,7 @@ function loop(timestamp) {
     // run game logic at fixed intervals
     while ( accumulator >= TICK_RATE ) {
         world.tick();
+        msgSystem.flush();
         accumulator -= TICK_RATE;        
     }
     // render would go here (canvas updates etc) at 60 fps
