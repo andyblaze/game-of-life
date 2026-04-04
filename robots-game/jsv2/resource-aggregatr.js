@@ -9,8 +9,9 @@ export default class ResourceAggregator extends GameItem {
         this.resources.push(resource);
     }
     produce(world) {
-        for ( const r of this.resources )
+        for ( const r of this.resources ) {
             this.result += r.tick(world).amount;
+        }
     }
     finalise(world) {
         world.deposit({ type: this.product, amount: this.result });
