@@ -8,12 +8,26 @@ import World from "./world.js";
 import DeltaRreport from "./delta-report.js";
 import { byQsArray } from "./functions.js";
 
+class BuildingSystem { 
+    constructor(w, f) {
+        this.world = w;
+        this.factory = f;
+    }
+    buildFarm(e) {
+        const type = e.currentTarget.dataset.type;
+        this.world.addToAggregator(this.factory.createFarm(type));
+        const evt = { type: "state-change", source: "builder", state: `new ${type} building` };
+        world.emitEvent(evt);
+    }
+}
+
 const config = new Config();
 const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
 const msgSystem = new MessageSystem();
 msgSystem.addObserver(hud);
 const world = new World(msgSystem);
+const buildings = new BuildingSystem(world, factory);
 
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
@@ -24,13 +38,8 @@ world.populate("robots", factory.createPopulation("robots", config.initialRobotP
 world.addObserver(hud);
 
 byQsArray(".farm-btn").forEach(btn => {
-    btn.addEventListener("click", handleFarmClick);
+    btn.addEventListener("click", (e) => buildings.buildFarm(e));
 });
-
-function handleFarmClick(e) {
-    const type = e.currentTarget.dataset.type;
-    world.addToAggregator(factory.createFarm(type));
-}
 
 let lastTime = 0;
 let accumulator = 0;
