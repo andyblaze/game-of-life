@@ -9,6 +9,7 @@
 
   #app {
     display: flex;
+    flex-direction: column;
     /*justify-content: center;
     align-items: center;*/
     height: 100vh;
@@ -60,4 +61,8 @@
 /* Highlight numbers slightly */
 span {
     color: #6cf;
+}
+#game-area {
+    margin-top: 22vh;
+    width: 100%; 
 }

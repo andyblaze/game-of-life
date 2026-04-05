@@ -6,6 +6,7 @@ import MessageSystem from "./message-system.js";
 import HUD from "./hud.js";
 import World from "./world.js";
 import DeltaRreport from "./delta-report.js";
+import { byQsArray } from "./functions.js";
 
 const config = new Config();
 const factory = new ObjectFactory(Registry, GameBalance);
@@ -17,10 +18,19 @@ const world = new World(msgSystem);
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
-world.addToAggregator(factory.createFarm("coal"));
+
 world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
 world.populate("robots", factory.createPopulation("robots", config.initialRobotPop));
 world.addObserver(hud);
+
+byQsArray(".farm-btn").forEach(btn => {
+    btn.addEventListener("click", handleFarmClick);
+});
+
+function handleFarmClick(e) {
+    const type = e.currentTarget.dataset.type;
+    world.addToAggregator(factory.createFarm(type));
+}
 
 let lastTime = 0;
 let accumulator = 0;
