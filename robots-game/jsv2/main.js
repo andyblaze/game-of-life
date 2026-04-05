@@ -6,28 +6,16 @@ import MessageSystem from "./message-system.js";
 import HUD from "./hud.js";
 import World from "./world.js";
 import DeltaRreport from "./delta-report.js";
-import { byQsArray } from "./functions.js";
-
-class BuildingSystem { 
-    constructor(w, f) {
-        this.world = w;
-        this.factory = f;
-    }
-    buildFarm(e) {
-        const type = e.currentTarget.dataset.type;
-        this.world.addToAggregator(this.factory.createFarm(type));
-        const evt = { type: "state-change", source: "builder", state: `new ${type} building` };
-        world.emitEvent(evt);
-    }
-}
+import BuildingSystem from "./building-system.js";
+import UI from "./ui-controls.js";
 
 const config = new Config();
 const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
 const msgSystem = new MessageSystem();
-msgSystem.addObserver(hud);
 const world = new World(msgSystem);
 const buildings = new BuildingSystem(world, factory);
+const ui = new UI(buildings);
 
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
@@ -36,10 +24,9 @@ for ( const item of config.initialWorldItems ) {
 world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
 world.populate("robots", factory.createPopulation("robots", config.initialRobotPop));
 world.addObserver(hud);
+msgSystem.addObserver(hud);
 
-byQsArray(".farm-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => buildings.buildFarm(e));
-});
+ui.buttons(".farm-btn"); 
 
 let lastTime = 0;
 let accumulator = 0;
