@@ -12,19 +12,6 @@
 <canvas id="game-canvas"></canvas>
 
 <script>
-const canvas = document.getElementById('game-canvas');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const ctx = canvas.getContext('2d');
-
-const width = canvas.width;
-const height = canvas.height;
-
-// --- Grid setup ---
-const GRID_SIZE = 40;
-const gridCols = Math.ceil(width / GRID_SIZE);
-const gridRows = Math.ceil(height / GRID_SIZE);
-const grid = Array.from({length:gridRows}, () => Array(gridCols).fill(null));
 
 // --- Simplex noise for wobble ---
 class SimplexNoise {
@@ -95,7 +82,97 @@ class SimplexNoise {
         return 70 * (n0 + n1 + n2);
     }
 }
-const noise = new SimplexNoise();
+const simplex = new SimplexNoise();
+
+const canvas = document.getElementById('game-canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const ctx = canvas.getContext('2d');
+
+const width = canvas.width;
+const height = canvas.height;
+const GRID_SIZE = 48;
+
+class Tile {
+    constructor() {
+        this.type = "";
+    }
+    setType(t) {
+        this.type = t;
+    }
+    getType() {
+        return this.type;
+    }
+}
+
+class Grid {
+    constructor(gs, w, h) {
+        this.GRID_SIZE = gs;
+        this.width = w;
+        this.height = h;
+        this.grid = [];
+        this.gridCols = 0;
+        this.gridRows = 0;
+        this.init();
+    }
+    init() {
+        this.gridCols = Math.ceil(this.width / this.GRID_SIZE);
+        this.gridRows = Math.ceil(this.height / this.GRID_SIZE);
+        this.grid = Array.from({length: this.gridRows}, () => 
+            Array.from({length: this.gridCols}, () => new Tile())
+        );    
+    }
+    isFreeAt(x,y,r) {
+        const startCol = Math.max(0, Math.floor((x-r)/this.GRID_SIZE));
+        const endCol   = Math.min(this.gridCols-1, Math.floor((x+r)/this.GRID_SIZE));
+        const startRow = Math.max(0, Math.floor((y-r)/this.GRID_SIZE));
+        const endRow   = Math.min(this.gridRows-1, Math.floor((y+r)/this.GRID_SIZE));
+        for(let row=startRow; row<=endRow; row++){
+            for(let col=startCol; col<=endCol; col++){
+                const tile = this.grid[row][col];
+                if(tile.getType() !== "") return false;
+            }
+        }
+        return true;
+    }
+    occupy(x,y,r,type){
+        const startCol = Math.max(0, Math.floor((x-r)/this.GRID_SIZE));
+        const endCol   = Math.min(this.gridCols-1, Math.floor((x+r)/this.GRID_SIZE));
+        const startRow = Math.max(0, Math.floor((y-r)/this.GRID_SIZE));
+        const endRow   = Math.min(this.gridRows-1, Math.floor((y+r)/this.GRID_SIZE));
+        for(let row=startRow; row<=endRow; row++){
+            for(let col=startCol; col<=endCol; col++){
+                const tile = this.grid[row][col];
+                tile.setType(type);
+            }
+        }
+    }
+}
+
+class Renderer {
+    render(patches, t) {
+        patches.forEach(p=>{
+            if( p.type==="pond" ) this.draw(p,t); // --- Animate ponds ---
+            else this.draw(p);
+        });    
+    }
+    draw(patch, t=0){ // --- Draw wobbly patch ---
+        const points = 80;
+        ctx.beginPath();
+        for( let i=0; i<=points; i++){
+            const angle = (i/points)*Math.PI*2;
+            const wobble = simplex.noise(Math.cos(angle)+patch.x, Math.sin(angle)+patch.y+t)*patch.r*0.2;
+            const r = patch.r + wobble;
+            const px = patch.x + Math.cos(angle)*r;
+            const py = patch.y + Math.sin(angle)*r;
+            if(i===0) ctx.moveTo(px,py);
+            else ctx.lineTo(px,py);
+        }
+        ctx.closePath();
+        ctx.fillStyle = patch.color;
+        ctx.fill();
+    }
+}
 
 // --- Terrain config ---
 const terrainConfig = [
@@ -107,35 +184,10 @@ const terrainConfig = [
 
 function randomBetween([min,max]) { return min + Math.random()*(max-min); }
 
-// --- Check if patch can fit in grid ---
-function gridFree(x,y,r){
-    const startCol = Math.max(0, Math.floor((x-r)/GRID_SIZE));
-    const endCol   = Math.min(gridCols-1, Math.floor((x+r)/GRID_SIZE));
-    const startRow = Math.max(0, Math.floor((y-r)/GRID_SIZE));
-    const endRow   = Math.min(gridRows-1, Math.floor((y+r)/GRID_SIZE));
-    for(let row=startRow; row<=endRow; row++){
-        for(let col=startCol; col<=endCol; col++){
-            if(grid[row][col]) return false;
-        }
-    }
-    return true;
-}
-
-// --- Mark grid cells as used ---
-function occupyGrid(x,y,r,type){
-    const startCol = Math.max(0, Math.floor((x-r)/GRID_SIZE));
-    const endCol   = Math.min(gridCols-1, Math.floor((x+r)/GRID_SIZE));
-    const startRow = Math.max(0, Math.floor((y-r)/GRID_SIZE));
-    const endRow   = Math.min(gridRows-1, Math.floor((y+r)/GRID_SIZE));
-    for(let row=startRow; row<=endRow; row++){
-        for(let col=startCol; col<=endCol; col++){
-            grid[row][col]=type;
-        }
-    }
-}
-
 // --- Store patches ---
 const patches = [];
+
+const grid = new Grid(GRID_SIZE, width, height);
 
 // --- Place patches ---
 terrainConfig.forEach(cfg=>{
@@ -147,40 +199,21 @@ terrainConfig.forEach(cfg=>{
         const r = randomBetween(cfg.radius);
         const x = r + Math.random()*(width-2*r);
         const y = r + Math.random()*(height-2*r);
-        if(gridFree(x,y,r)){
+        if(grid.isFreeAt(x,y,r)){
             patches.push({type:cfg.type,x,y,r,color:cfg.color});
-            occupyGrid(x,y,r,cfg.type);
+            grid.occupy(x,y,r,cfg.type);
             placed++;
         }
     }
 });
 
-// --- Draw wobbly patch ---
-function drawPatch(patch,t=0){
-    const points = 80;
-    ctx.beginPath();
-    for(let i=0;i<=points;i++){
-        const angle = (i/points)*Math.PI*2;
-        const wobble = noise.noise(Math.cos(angle)+patch.x, Math.sin(angle)+patch.y+t)*patch.r*0.2;
-        const r = patch.r + wobble;
-        const px = patch.x + Math.cos(angle)*r;
-        const py = patch.y + Math.sin(angle)*r;
-        if(i===0) ctx.moveTo(px,py);
-        else ctx.lineTo(px,py);
-    }
-    ctx.closePath();
-    ctx.fillStyle = patch.color;
-    ctx.fill();
-}
+const renderer = new Renderer();
 
-// --- Animate ponds ---
+
 let t=0;
 function animate(){
     ctx.clearRect(0,0,width,height);
-    patches.forEach(p=>{
-        if(p.type==="pond") drawPatch(p,t);
-        else drawPatch(p);
-    });
+    renderer.render(patches, t);
     t+=0.002;
     requestAnimationFrame(animate);
 }
