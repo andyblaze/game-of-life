@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Grid-Based Procedural Map</title>
+<style>
+  body { margin:0; overflow:hidden; background:#88c070; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+
+<script>
+const canvas = document.getElementById('game-canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const ctx = canvas.getContext('2d');
+
+const width = canvas.width;
+const height = canvas.height;
+
+// --- Grid setup ---
+const GRID_SIZE = 40;
+const gridCols = Math.ceil(width / GRID_SIZE);
+const gridRows = Math.ceil(height / GRID_SIZE);
+const grid = Array.from({length:gridRows}, () => Array(gridCols).fill(null));
+
+// --- Simplex noise for wobble ---
+class SimplexNoise {
+    constructor() {
+        this.grad3 = [
+            [1,1],[-1,1],[1,-1],[-1,-1],
+            [1,0],[-1,0],[1,0],[-1,0],
+            [0,1],[0,-1],[0,1],[0,-1]
+        ];
+        this.p = [];
+        for (let i = 0; i < 256; i++) this.p[i] = Math.floor(Math.random()*256);
+        this.perm = [];
+        for (let i = 0; i < 512; i++) this.perm[i] = this.p[i & 255];
+    }
+
+    dot(g, x, y) { return g[0]*x + g[1]*y; }
+
+    noise(xin, yin) {
+        const F2 = 0.5*(Math.sqrt(3)-1);
+        const G2 = (3-Math.sqrt(3))/6;
+
+        let s = (xin+yin)*F2;
+        let i = Math.floor(xin+s);
+        let j = Math.floor(yin+s);
+
+        let t = (i+j)*G2;
+        let X0 = i-t;
+        let Y0 = j-t;
+        let x0 = xin-X0;
+        let y0 = yin-Y0;
+
+        let i1, j1;
+        if (x0 > y0) { i1=1; j1=0; }
+        else { i1=0; j1=1; }
+
+        let x1 = x0 - i1 + G2;
+        let y1 = y0 - j1 + G2;
+        let x2 = x0 - 1 + 2*G2;
+        let y2 = y0 - 1 + 2*G2;
+
+        let ii = i & 255;
+        let jj = j & 255;
+
+        let gi0 = this.perm[ii+this.perm[jj]] % 12;
+        let gi1 = this.perm[ii+i1+this.perm[jj+j1]] % 12;
+        let gi2 = this.perm[ii+1+this.perm[jj+1]] % 12;
+
+        let n0=0, n1=0, n2=0;
+
+        let t0 = 0.5 - x0*x0 - y0*y0;
+        if (t0 >= 0) {
+            t0 *= t0;
+            n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0);
+        }
+
+        let t1 = 0.5 - x1*x1 - y1*y1;
+        if (t1 >= 0) {
+            t1 *= t1;
+            n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1);
+        }
+
+        let t2 = 0.5 - x2*x2 - y2*y2;
+        if (t2 >= 0) {
+            t2 *= t2;
+            n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2);
+        }
+
+        return 70 * (n0 + n1 + n2);
+    }
+}
+const noise = new SimplexNoise();
+
+// --- Terrain config ---
+const terrainConfig = [
+    { type:"pond", min:1, max:3, color:"#2DA4DB", radius:[50,120] },
+    { type:"rock", min:2, max:5, color:"#888888", radius:[30,80] },
+    { type:"forest", min:2, max:6, color:"#228B22", radius:[40,100] },
+    { type:"farm", min:3, max:8, color:"#D2B48C", radius:[60,120] },
+];
+
+function randomBetween([min,max]) { return min + Math.random()*(max-min); }
+
+// --- Check if patch can fit in grid ---
+function gridFree(x,y,r){
+    const startCol = Math.max(0, Math.floor((x-r)/GRID_SIZE));
+    const endCol   = Math.min(gridCols-1, Math.floor((x+r)/GRID_SIZE));
+    const startRow = Math.max(0, Math.floor((y-r)/GRID_SIZE));
+    const endRow   = Math.min(gridRows-1, Math.floor((y+r)/GRID_SIZE));
+    for(let row=startRow; row<=endRow; row++){
+        for(let col=startCol; col<=endCol; col++){
+            if(grid[row][col]) return false;
+        }
+    }
+    return true;
+}
+
+// --- Mark grid cells as used ---
+function occupyGrid(x,y,r,type){
+    const startCol = Math.max(0, Math.floor((x-r)/GRID_SIZE));
+    const endCol   = Math.min(gridCols-1, Math.floor((x+r)/GRID_SIZE));
+    const startRow = Math.max(0, Math.floor((y-r)/GRID_SIZE));
+    const endRow   = Math.min(gridRows-1, Math.floor((y+r)/GRID_SIZE));
+    for(let row=startRow; row<=endRow; row++){
+        for(let col=startCol; col<=endCol; col++){
+            grid[row][col]=type;
+        }
+    }
+}
+
+// --- Store patches ---
+const patches = [];
+
+// --- Place patches ---
+terrainConfig.forEach(cfg=>{
+    const count = cfg.min + Math.floor(Math.random()*(cfg.max-cfg.min+1));
+    let attempts = 0;
+    let placed = 0;
+    while(placed<count && attempts<50){
+        attempts++;
+        const r = randomBetween(cfg.radius);
+        const x = r + Math.random()*(width-2*r);
+        const y = r + Math.random()*(height-2*r);
+        if(gridFree(x,y,r)){
+            patches.push({type:cfg.type,x,y,r,color:cfg.color});
+            occupyGrid(x,y,r,cfg.type);
+            placed++;
+        }
+    }
+});
+
+// --- Draw wobbly patch ---
+function drawPatch(patch,t=0){
+    const points = 80;
+    ctx.beginPath();
+    for(let i=0;i<=points;i++){
+        const angle = (i/points)*Math.PI*2;
+        const wobble = noise.noise(Math.cos(angle)+patch.x, Math.sin(angle)+patch.y+t)*patch.r*0.2;
+        const r = patch.r + wobble;
+        const px = patch.x + Math.cos(angle)*r;
+        const py = patch.y + Math.sin(angle)*r;
+        if(i===0) ctx.moveTo(px,py);
+        else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = patch.color;
+    ctx.fill();
+}
+
+// --- Animate ponds ---
+let t=0;
+function animate(){
+    ctx.clearRect(0,0,width,height);
+    patches.forEach(p=>{
+        if(p.type==="pond") drawPatch(p,t);
+        else drawPatch(p);
+    });
+    t+=0.002;
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
