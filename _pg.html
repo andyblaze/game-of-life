@@ -412,8 +412,8 @@ canvas.addEventListener("click", (e) => {
 let t = 0;
 let last = performance.now();
 function animate(timestamp){
-    const dt = (now - last) / 1000;
-    last = now;
+    const dt = (timestamp - last) / 1000;
+    last = timestamp;
     ctx.clearRect(0, 0, width, height);
     renderer.render(terrain, t);
     unit.update(dt);
