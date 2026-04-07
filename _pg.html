@@ -248,10 +248,32 @@ class Unit {
         this.x = this.tile.col * this.grid.gridSize + this.grid.gridSize/2;
         this.y = this.tile.row * this.grid.gridSize + this.grid.gridSize/2;
         this.size = this.grid.gridSize * 0.6; // rectangle size
+        this.speed = 60; // → pixels per second
     }
-    // Placeholder: will move along a path in the future
     update(deltaTime) {
-        // For now, stays still
+        if (!this.path || this.pathIndex >= this.path.length) return;
+
+        const targetTile = this.path[this.pathIndex];
+        const targetX = targetTile.col * this.grid.gridSize + this.grid.gridSize / 2;
+        const targetY = targetTile.row * this.grid.gridSize + this.grid.gridSize / 2;
+
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        const dist = Math.hypot(dx, dy);
+
+        const step = this.speed * deltaTime;
+
+        if (dist <= step) {
+            // arrive at tile
+            this.x = targetX;
+            this.y = targetY;
+            this.tile = targetTile;
+            this.pathIndex++;
+        } else {
+            // move toward tile
+            this.x += (dx / dist) * step;
+            this.y += (dy / dist) * step;
+        }
     }
     render(ctx) {
         ctx.fillStyle = this.color;
@@ -367,14 +389,34 @@ canvas.addEventListener("click", (e) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const tile = grid.getTileAtPixel(x, y);
-    if (tile) console.log("Clicked tile:", tile);
+    const destTile = grid.getTileAtPixel(x, y);
+
+    if (!destTile) return;
+    if (!destTile.walkable) {
+        console.log("Destination blocked!");
+        return;
+    }
+
+    // Compute path from unit.tile → destTile
+    const path = findPath(grid, unit.tile, destTile);
+    if (path.length === 0) {
+        console.log("No path found!");
+        return;
+    }
+
+    // Assign path to the unit
+    unit.path = path;
+    unit.pathIndex = 0;
 });
 
 let t = 0;
+let last = performance.now();
 function animate(timestamp){
+    const dt = (now - last) / 1000;
+    last = now;
     ctx.clearRect(0, 0, width, height);
     renderer.render(terrain, t);
+    unit.update(dt);
     unit.render(ctx);
     t += 0.002;
     requestAnimationFrame(animate);
