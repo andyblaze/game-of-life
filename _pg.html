@@ -91,23 +91,35 @@ const ctx = canvas.getContext('2d');
 
 const width = canvas.width;
 const height = canvas.height;
-const GRID_SIZE = 48;
+const gridSize = 48;
 
 class Tile {
-    constructor() {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
         this.type = "";
+        this.walkable = true;
+        this.building = null;
+    }
+    isUsed() {
+        return this.type.length > 0;
     }
     setType(t) {
         this.type = t;
+        this.walkable = (t !== "pond");
     }
     getType() {
         return this.type;
+    }
+    setBuilding(b) {
+        this.building = b;
+        this.walkable = false;
     }
 }
 
 class Grid {
     constructor(gs, w, h) {
-        this.GRID_SIZE = gs;
+        this.gridSize = gs;
         this.width = w;
         this.height = h;
         this.grid = [];
@@ -116,36 +128,44 @@ class Grid {
         this.init();
     }
     init() {
-        this.gridCols = Math.ceil(this.width / this.GRID_SIZE);
-        this.gridRows = Math.ceil(this.height / this.GRID_SIZE);
-        this.grid = Array.from({length: this.gridRows}, () => 
-            Array.from({length: this.gridCols}, () => new Tile())
+        this.gridCols = Math.ceil(this.width / this.gridSize);
+        this.gridRows = Math.ceil(this.height / this.gridSize);
+        this.grid = Array.from({ length: this.gridRows }, (_, row) => 
+            Array.from({ length: this.gridCols }, (_, col) => new Tile(row, col))
         );    
     }
-    isFreeAt(x,y,r) {
-        const startCol = Math.max(0, Math.floor((x-r)/this.GRID_SIZE));
-        const endCol   = Math.min(this.gridCols-1, Math.floor((x+r)/this.GRID_SIZE));
-        const startRow = Math.max(0, Math.floor((y-r)/this.GRID_SIZE));
-        const endRow   = Math.min(this.gridRows-1, Math.floor((y+r)/this.GRID_SIZE));
-        for(let row=startRow; row<=endRow; row++){
-            for(let col=startCol; col<=endCol; col++){
+    calcSizes(x, y, r) {
+        return {
+            startCol: Math.max(0, Math.floor((x-r) / this.gridSize)),
+            endCol: Math.min(this.gridCols-1, Math.floor((x+r) / this.gridSize)),
+            startRow: Math.max(0, Math.floor((y-r) / this.gridSize)),
+            endRow: Math.min(this.gridRows-1, Math.floor((y + r) / this.gridSize))
+        };
+    }
+    isFreeAt(x, y, r) {
+        const { startCol, endCol, startRow, endRow } = this.calcSizes(x, y, r);
+        for( let row=startRow; row<=endRow; row++ ) {
+            for( let col=startCol; col<=endCol; col++ ) {
                 const tile = this.grid[row][col];
-                if(tile.getType() !== "") return false;
+                if ( tile.isUsed() ) return false;
             }
         }
         return true;
     }
-    occupy(x,y,r,type){
-        const startCol = Math.max(0, Math.floor((x-r)/this.GRID_SIZE));
-        const endCol   = Math.min(this.gridCols-1, Math.floor((x+r)/this.GRID_SIZE));
-        const startRow = Math.max(0, Math.floor((y-r)/this.GRID_SIZE));
-        const endRow   = Math.min(this.gridRows-1, Math.floor((y+r)/this.GRID_SIZE));
-        for(let row=startRow; row<=endRow; row++){
-            for(let col=startCol; col<=endCol; col++){
+    occupy(x, y, r, type) {
+        const { startCol, endCol, startRow, endRow } = this.calcSizes(x, y, r);
+        for( let row=startRow; row<=endRow; row++ ) {
+            for( let col=startCol; col<=endCol; col++ ) {
                 const tile = this.grid[row][col];
                 tile.setType(type);
             }
         }
+    }
+    getTileAtPixel(x, y) {
+        const col = Math.floor(x / this.gridSize);
+        const row = Math.floor(y / this.gridSize);
+        if (row < 0 || row >= this.gridRows || col < 0 || col >= this.gridCols) return null;
+        return this.grid[row][col];
     }
 }
 
@@ -174,51 +194,193 @@ class Renderer {
     }
 }
 
-// --- Terrain config ---
-const terrainConfig = [
-    { type:"pond", min:1, max:3, color:"#2DA4DB", radius:[50,120] },
-    { type:"rock", min:2, max:5, color:"#888888", radius:[30,80] },
-    { type:"forest", min:2, max:6, color:"#228B22", radius:[40,100] },
-    { type:"farm", min:3, max:8, color:"#D2B48C", radius:[60,120] },
-];
+class TerrainGenerator {
+    constructor(cfg, grid) {
+        this.cfg = cfg;
+        this.grid = grid;
+        this.terrain = [];
+    }
+    generate() {
+        this.cfg.forEach(cfg => {
+            const count = cfg.min + Math.floor(Math.random()*(cfg.max-cfg.min+1));
+            let attempts = 0;
+            let placed = 0;
+            while( placed < count && attempts < 50 ) {
+                attempts++;
+                const r = randomBetween(cfg.radius);
+                const x = r + Math.random()*(width-2*r);
+                const y = r + Math.random()*(height-2*r);
+                if( this.grid.isFreeAt(x,y,r) ) {
+                    this.terrain.push({type:cfg.type, x, y, r, color:cfg.color});
+                    this.grid.occupy(x, y, r, cfg.type);
+                    placed++;
+                }
+            }
+        });
+        return this.terrain;
+    }
+}
 
 function randomBetween([min,max]) { return min + Math.random()*(max-min); }
 
-// --- Store patches ---
-const patches = [];
+// --- Terrain config ---
+const terrainConfig = [
+    { type:"pond", min:1, max:3, color:"#2DA4DB", radius:[50, 120] },
+    { type:"rock", min:4, max:8, color:"#888888", radius:[30, 80] },
+    { type:"forest", min:2, max:6, color:"#228B22", radius:[40, 100] },
+    { type:"farm", min:3, max:8, color:"#D2B48C", radius:[60, 120] },
+];
 
-const grid = new Grid(GRID_SIZE, width, height);
-
-// --- Place patches ---
-terrainConfig.forEach(cfg=>{
-    const count = cfg.min + Math.floor(Math.random()*(cfg.max-cfg.min+1));
-    let attempts = 0;
-    let placed = 0;
-    while(placed<count && attempts<50){
-        attempts++;
-        const r = randomBetween(cfg.radius);
-        const x = r + Math.random()*(width-2*r);
-        const y = r + Math.random()*(height-2*r);
-        if(grid.isFreeAt(x,y,r)){
-            patches.push({type:cfg.type,x,y,r,color:cfg.color});
-            grid.occupy(x,y,r,cfg.type);
-            placed++;
-        }
-    }
-});
-
+const grid = new Grid(gridSize, width, height);
+const terrainGenerator = new TerrainGenerator(terrainConfig, grid);
+const terrain = terrainGenerator.generate();
 const renderer = new Renderer();
 
+const startTile = null;
+const endTile = null;
 
-let t=0;
-function animate(){
-    ctx.clearRect(0,0,width,height);
-    renderer.render(patches, t);
-    t+=0.002;
+class Unit {
+    constructor(tile, grid, color = "red") {
+        this.tile = tile;       // Tile object the unit is on
+        this.grid = grid;       // Reference to the Grid
+        this.color = color;
+        // Pixel position for smooth movement
+        this.x = this.tile.col * this.grid.gridSize + this.grid.gridSize/2;
+        this.y = this.tile.row * this.grid.gridSize + this.grid.gridSize/2;
+        this.size = this.grid.gridSize * 0.6; // rectangle size
+    }
+    // Placeholder: will move along a path in the future
+    update(deltaTime) {
+        // For now, stays still
+    }
+    render(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(
+            this.x - this.size/2,
+            this.y - this.size/2,
+            this.size,
+            this.size
+        );
+    }
+    // Utility: set tile and update pixel position
+    setTile(tile) {
+        this.tile = tile;
+        this.x = tile.col * this.grid.gridSize + this.grid.gridSize/2;
+        this.y = tile.row * this.grid.gridSize + this.grid.gridSize/2;
+    }
+}
+
+
+
+// --- A* pathfinding for grid ---
+function findPath(grid, startTile, endTile) {
+    const openSet = [];
+    const closedSet = new Set();
+
+    // Helper: tile key
+    const tileKey = t => `${t.row},${t.col}`;
+
+    // Initialize start
+    openSet.push({
+        tile: startTile,
+        g: 0,
+        h: heuristic(startTile, endTile),
+        f: heuristic(startTile, endTile),
+        parent: null
+    });
+
+    while(openSet.length > 0) {
+        // Sort by f score
+        openSet.sort((a,b) => a.f - b.f);
+        const current = openSet.shift();
+        closedSet.add(tileKey(current.tile));
+
+        // Found the goal
+        if (current.tile === endTile) {
+            const path = [];
+            let c = current;
+            while(c) {
+                path.unshift(c.tile);
+                c = c.parent;
+            }
+            return path; // list of tiles from start -> end
+        }
+
+        // Check neighbors (N, S, E, W)
+        const neighbors = getNeighbors(grid, current.tile);
+        for (const neighbor of neighbors) {
+            if (!neighbor.walkable) continue;
+            if (closedSet.has(tileKey(neighbor))) continue;
+
+            const gScore = current.g + 1; // all moves cost 1 for now
+            let existing = openSet.find(n => n.tile === neighbor);
+
+            if (!existing) {
+                openSet.push({
+                    tile: neighbor,
+                    g: gScore,
+                    h: heuristic(neighbor, endTile),
+                    f: gScore + heuristic(neighbor, endTile),
+                    parent: current
+                });
+            } else if (gScore < existing.g) {
+                existing.g = gScore;
+                existing.f = gScore + existing.h;
+                existing.parent = current;
+            }
+        }
+    }
+
+    // No path found
+    return [];
+}
+
+// --- Heuristic: Manhattan distance ---
+function heuristic(a, b) {
+    return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+}
+
+// --- Get N/S/E/W neighbors ---
+function getNeighbors(grid, tile) {
+    const dirs = [
+        [0,-1], // N
+        [0,1],  // S
+        [-1,0], // W
+        [1,0]   // E
+    ];
+    const neighbors = [];
+    for (const [dc, dr] of dirs) {
+        const r = tile.row + dr;
+        const c = tile.col + dc;
+        if (r >= 0 && r < grid.gridRows && c >= 0 && c < grid.gridCols) {
+            neighbors.push(grid.grid[r][c]);
+        }
+    }
+    return neighbors;
+}
+
+// --- Example usage ---
+const unit = new Unit(grid.grid[0][0], grid); // top-left tile
+
+// --- Click listener ---
+canvas.addEventListener("click", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const tile = grid.getTileAtPixel(x, y);
+    if (tile) console.log("Clicked tile:", tile);
+});
+
+let t = 0;
+function animate(timestamp){
+    ctx.clearRect(0, 0, width, height);
+    renderer.render(terrain, t);
+    unit.render(ctx);
+    t += 0.002;
     requestAnimationFrame(animate);
 }
 
-animate();
+animate(performance.now());
 </script>
 </body>
 </html>
