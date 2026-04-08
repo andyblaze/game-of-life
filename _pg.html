@@ -82,7 +82,6 @@ class SimplexNoise {
         return 70 * (n0 + n1 + n2);
     }
 }
-const simplex = new SimplexNoise();
 
 const canvas = document.getElementById('game-canvas');
 canvas.width = window.innerWidth;
@@ -91,7 +90,164 @@ const ctx = canvas.getContext('2d');
 
 const width = canvas.width;
 const height = canvas.height;
-const gridSize = 48;
+const tileSize = 48;
+
+class Unit {
+    constructor(tile, tileSize, color = "red") {
+        this.tile = tile;       // Tile object the unit is on
+        this.tileSize = tileSize;       
+        this.color = color;
+        // Pixel position for smooth movement
+        const { x, y } = this.tileToWorld(this.tile);
+        this.x = x; 
+        this.y = y; 
+        this.size = this.tileSize * 0.6; // rectangle size
+        this.speed = 160; // → pixels per second
+    }
+    tileToWorld(tile) {
+        return {
+            x: tile.col * this.tileSize + this.tileSize / 2,
+            y: tile.row * this.tileSize + this.tileSize / 2
+        };
+    }
+    update(deltaTime) {
+        if (!this.path || this.pathIndex >= this.path.length) return;
+
+        const targetTile = this.path[this.pathIndex];
+        const { x, y } = this.tileToWorld(targetTile);
+        const targetX = x;
+        const targetY = y;
+
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        const dist = Math.hypot(dx, dy);
+
+        const step = this.speed * deltaTime;
+
+        if (dist <= step) {
+            // arrive at tile
+            this.x = targetX;
+            this.y = targetY;
+            this.tile = targetTile;
+            this.pathIndex++;
+        } else {
+            // move toward tile
+            this.x += (dx / dist) * step;
+            this.y += (dy / dist) * step;
+        }
+    }
+    render(dt, ctx) {
+        this.update(dt);
+        ctx.fillStyle = this.color;
+        ctx.fillRect(
+            this.x - this.size / 2,
+            this.y - this.size / 2,
+            this.size,
+            this.size
+        );
+    }
+    // Utility: set tile and update pixel position
+    setTile(tile) {
+        this.tile = tile;
+        const { x, y } = this.tileToWorld(tile);
+        this.x = x;
+        this.y = y;
+    }
+}
+
+// --- A* pathfinding for grid ---
+class Astar {
+    constructor(grid) {
+        this.tileGrid = grid;
+        this.reset();
+    }
+    reset() {
+        this.openSet = [];
+        this.closedSet = new Set();
+    }
+    tileKey(t) {
+        return `${t.row},${t.col}`;
+    }
+    buildPath(current) {
+        const path = [];
+        let c = current;
+        while(c) {
+            path.unshift(c.tile);
+            c = c.parent;
+        } 
+        return path; // list of tiles from start -> end
+    }
+    createNode(tile1, tile2, gScore=0, tileParent=null) {
+        const heur = this.heuristic(tile1, tile2);
+        return {
+            tile: tile1,
+            g: gScore,
+            h: heur,
+            f: gScore + heur,
+            parent: tileParent
+        };
+    }
+    findPath(startTile, endTile) {
+        this.reset();
+        // Initialize start
+        this.openSet.push(this.createNode(startTile, endTile));
+
+        while( this.openSet.length > 0 ) {
+            // Sort by f score
+            this.openSet.sort((a,b) => a.f - b.f);
+            const current = this.openSet.shift();
+            this.closedSet.add(this.tileKey(current.tile));
+
+            // Found the goal
+            if ( current.tile === endTile ) {
+                return this.buildPath(current);
+            }
+
+            // Check neighbors (N, S, E, W)
+            const neighbors = this.getNeighbors(current.tile);
+            this.checkNeighbors(neighbors, current, endTile);
+        }
+        // No path found
+        return [];
+    }
+    checkNeighbors(neighbors, current, endTile) {
+        for ( const neighbor of neighbors ) {
+            if ( !neighbor.walkable ) continue;
+            if ( this.closedSet.has(this.tileKey(neighbor)) ) continue;
+
+            const gScore = current.g + 1; // all moves cost 1 for now
+            let existing = this.openSet.find(n => n.tile === neighbor);
+
+            if ( !existing ) {
+                this.openSet.push(this.createNode(neighbor, endTile, gScore, current));
+            } else if ( gScore < existing.g ) {
+                existing.g = gScore;
+                existing.f = gScore + existing.h;
+                existing.parent = current;
+            }
+        }
+    }
+    heuristic(a, b) { // --- Heuristic: Manhattan distance ---
+        return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+    }
+    getNeighbors(tile) { // --- Get N/S/E/W neighbors ---
+        const dirs = [
+            [0,-1], // N
+            [0,1],  // S
+            [-1,0], // W
+            [1,0]   // E
+        ];
+        const neighbors = [];
+        for ( const [dc, dr] of dirs ) {
+            const r = tile.row + dr;
+            const c = tile.col + dc;
+            if ( r >= 0 && r < this.tileGrid.rows && c >= 0 && c < this.tileGrid.columns ) {
+                neighbors.push(this.tileGrid.tileAt(r, c));
+            }
+        }
+        return neighbors;
+    }
+}
 
 class Tile {
     constructor(row, col) {
@@ -118,28 +274,28 @@ class Tile {
 }
 
 class Grid {
-    constructor(gs, w, h) {
-        this.gridSize = gs;
+    constructor(ts, w, h) {
+        this.tileSize = ts;
         this.width = w;
         this.height = h;
         this.grid = [];
-        this.gridCols = 0;
-        this.gridRows = 0;
+        this.columns = 0;
+        this.rows = 0;
         this.init();
     }
     init() {
-        this.gridCols = Math.ceil(this.width / this.gridSize);
-        this.gridRows = Math.ceil(this.height / this.gridSize);
-        this.grid = Array.from({ length: this.gridRows }, (_, row) => 
-            Array.from({ length: this.gridCols }, (_, col) => new Tile(row, col))
+        this.columns = Math.ceil(this.width / this.tileSize);
+        this.rows = Math.ceil(this.height / this.tileSize);
+        this.grid = Array.from({ length: this.rows }, (_, row) => 
+            Array.from({ length: this.columns }, (_, col) => new Tile(row, col))
         );    
     }
     calcSizes(x, y, r) {
         return {
-            startCol: Math.max(0, Math.floor((x-r) / this.gridSize)),
-            endCol: Math.min(this.gridCols-1, Math.floor((x+r) / this.gridSize)),
-            startRow: Math.max(0, Math.floor((y-r) / this.gridSize)),
-            endRow: Math.min(this.gridRows-1, Math.floor((y + r) / this.gridSize))
+            startCol: Math.max(0, Math.floor((x-r) / this.tileSize)),
+            endCol: Math.min(this.columns-1, Math.floor((x+r) / this.tileSize)),
+            startRow: Math.max(0, Math.floor((y-r) / this.tileSize)),
+            endRow: Math.min(this.rows-1, Math.floor((y + r) / this.tileSize))
         };
     }
     isFreeAt(x, y, r) {
@@ -162,31 +318,38 @@ class Grid {
         }
     }
     getTileAtPixel(x, y) {
-        const col = Math.floor(x / this.gridSize);
-        const row = Math.floor(y / this.gridSize);
-        if (row < 0 || row >= this.gridRows || col < 0 || col >= this.gridCols) return null;
+        const col = Math.floor(x / this.tileSize);
+        const row = Math.floor(y / this.tileSize);
+        if (row < 0 || row >= this.rows || col < 0 || col >= this.columns) return null;
+        return this.grid[row][col];
+    }
+    tileAt(row, col) {
         return this.grid[row][col];
     }
 }
 
-class Renderer {
-    render(patches, t) {
-        patches.forEach(p=>{
-            if( p.type==="pond" ) this.draw(p,t); // --- Animate ponds ---
+class Terrain {
+    constructor(generator, simplex) {
+        this.patches = generator.generate();
+        this.simplex = simplex;
+    }
+    render(t) {
+        this.patches.forEach(p => {
+            if( p.type==="pond" ) this.draw(p, t); // --- Animate ponds ---
             else this.draw(p);
         });    
     }
-    draw(patch, t=0){ // --- Draw wobbly patch ---
+    draw(patch, t=0){ // --- Draw wobbling patch if t != 0 ---
         const points = 80;
         ctx.beginPath();
-        for( let i=0; i<=points; i++){
-            const angle = (i/points)*Math.PI*2;
-            const wobble = simplex.noise(Math.cos(angle)+patch.x, Math.sin(angle)+patch.y+t)*patch.r*0.2;
+        for( let i=0; i <= points; i++) {
+            const angle = (i / points) * Math.PI * 2;
+            const wobble = this.simplex.noise(Math.cos(angle) + patch.x, Math.sin(angle) + patch.y + t) * patch.r * 0.2;
             const r = patch.r + wobble;
-            const px = patch.x + Math.cos(angle)*r;
-            const py = patch.y + Math.sin(angle)*r;
-            if(i===0) ctx.moveTo(px,py);
-            else ctx.lineTo(px,py);
+            const px = patch.x + Math.cos(angle) * r;
+            const py = patch.y + Math.sin(angle) * r;
+            if( i===0 ) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
         }
         ctx.closePath();
         ctx.fillStyle = patch.color;
@@ -202,15 +365,15 @@ class TerrainGenerator {
     }
     generate() {
         this.cfg.forEach(cfg => {
-            const count = cfg.min + Math.floor(Math.random()*(cfg.max-cfg.min+1));
+            const count = cfg.min + Math.floor(Math.random() * (cfg.max - cfg.min + 1));
             let attempts = 0;
             let placed = 0;
             while( placed < count && attempts < 50 ) {
                 attempts++;
                 const r = randomBetween(cfg.radius);
-                const x = r + Math.random()*(width-2*r);
-                const y = r + Math.random()*(height-2*r);
-                if( this.grid.isFreeAt(x,y,r) ) {
+                const x = r + Math.random() * (width - 2 * r);
+                const y = r + Math.random() * (height - 2 * r);
+                if( this.grid.isFreeAt(x, y, r) ) {
                     this.terrain.push({type:cfg.type, x, y, r, color:cfg.color});
                     this.grid.occupy(x, y, r, cfg.type);
                     placed++;
@@ -221,174 +384,21 @@ class TerrainGenerator {
     }
 }
 
-function randomBetween([min,max]) { return min + Math.random()*(max-min); }
+function randomBetween([min, max]) { return min + Math.random()*(max-min); }
 
 // --- Terrain config ---
 const terrainConfig = [
     { type:"pond", min:1, max:3, color:"#2DA4DB", radius:[50, 120] },
     { type:"rock", min:4, max:8, color:"#888888", radius:[30, 80] },
     { type:"forest", min:2, max:6, color:"#228B22", radius:[40, 100] },
-    { type:"farm", min:3, max:8, color:"#D2B48C", radius:[60, 120] },
+    { type:"farm", min:3, max:8, color:"#D2B48C", radius:[60, 120] }
 ];
 
-const grid = new Grid(gridSize, width, height);
-const terrainGenerator = new TerrainGenerator(terrainConfig, grid);
-const terrain = terrainGenerator.generate();
-const renderer = new Renderer();
-
-class Unit {
-    constructor(tile, gridSize, color = "red") {
-        this.tile = tile;       // Tile object the unit is on
-        this.gridSize = gridSize;       
-        this.color = color;
-        // Pixel position for smooth movement
-        this.x = this.tile.col * gridSize + gridSize / 2;
-        this.y = this.tile.row * gridSize + gridSize / 2;
-        this.size = this.gridSize * 0.6; // rectangle size
-        this.speed = 160; // → pixels per second
-    }
-    update(deltaTime) {
-        if (!this.path || this.pathIndex >= this.path.length) return;
-
-        const targetTile = this.path[this.pathIndex];
-        const targetX = targetTile.col * this.gridSize + this.gridSize / 2;
-        const targetY = targetTile.row * this.gridSize + this.gridSize / 2;
-
-        const dx = targetX - this.x;
-        const dy = targetY - this.y;
-        const dist = Math.hypot(dx, dy);
-
-        const step = this.speed * deltaTime;
-
-        if (dist <= step) {
-            // arrive at tile
-            this.x = targetX;
-            this.y = targetY;
-            this.tile = targetTile;
-            this.pathIndex++;
-        } else {
-            // move toward tile
-            this.x += (dx / dist) * step;
-            this.y += (dy / dist) * step;
-        }
-    }
-    render(ctx) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(
-            this.x - this.size/2,
-            this.y - this.size/2,
-            this.size,
-            this.size
-        );
-    }
-    // Utility: set tile and update pixel position
-    setTile(tile) {
-        this.tile = tile;
-        this.x = tile.col * this.gridSize + this.gridSize / 2;
-        this.y = tile.row * this.gridSize + this.gridSize / 2;
-    }
-}
-
-// --- A* pathfinding for grid ---
-class Astar {
-    constructor() {
-        this.reset();
-    }
-    reset() {
-        this.openSet = [];
-        this.closedSet = new Set();
-    }
-    tileKey(t) {
-        return `${t.row},${t.col}`;
-    }
-    buildPath(current) {
-        const path = [];
-        let c = current;
-        while(c) {
-            path.unshift(c.tile);
-            c = c.parent;
-        } 
-        return path; // list of tiles from start -> end
-    }
-    createObj(tile1, tile2, gScore=0, tileParent=null) {
-        const heur = this.heuristic(tile1, tile2);
-        return {
-            tile: tile1,
-            g: gScore,
-            h: heur,
-            f: gScore + heur,
-            parent: tileParent
-        };
-    }
-    findPath(grid, startTile, endTile) {
-        this.reset();
-        // Initialize start
-        this.openSet.push(this.createObj(startTile, endTile));
-
-        while( this.openSet.length > 0 ) {
-            // Sort by f score
-            this.openSet.sort((a,b) => a.f - b.f);
-            const current = this.openSet.shift();
-            this.closedSet.add(this.tileKey(current.tile));
-
-            // Found the goal
-            if ( current.tile === endTile ) {
-                return this.buildPath(current);
-            }
-
-            // Check neighbors (N, S, E, W)
-            const neighbors = this.getNeighbors(grid, current.tile);
-            this.checkNeighbors(neighbors, current, endTile);
-        }
-        // No path found
-        return [];
-    }
-    checkNeighbors(neighbors, current, endTile) {
-        for ( const neighbor of neighbors ) {
-            if ( !neighbor.walkable ) continue;
-            if ( this.closedSet.has(this.tileKey(neighbor)) ) continue;
-
-            const gScore = current.g + 1; // all moves cost 1 for now
-            let existing = this.openSet.find(n => n.tile === neighbor);
-
-            if ( !existing ) {
-                this.openSet.push(this.createObj(neighbor, endTile, gScore, current));
-            } else if ( gScore < existing.g ) {
-                existing.g = gScore;
-                existing.f = gScore + existing.h;
-                existing.parent = current;
-            }
-        }
-    }
-    heuristic(a, b) { // --- Heuristic: Manhattan distance ---
-        return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
-    }
-    getNeighbors(grid, tile) { // --- Get N/S/E/W neighbors ---
-        const dirs = [
-            [0,-1], // N
-            [0,1],  // S
-            [-1,0], // W
-            [1,0]   // E
-        ];
-        const neighbors = [];
-        for ( const [dc, dr] of dirs ) {
-            const r = tile.row + dr;
-            const c = tile.col + dc;
-            if ( r >= 0 && r < grid.gridRows && c >= 0 && c < grid.gridCols ) {
-                neighbors.push(grid.grid[r][c]);
-            }
-        }
-        return neighbors;
-    }
-}
-
-const astar = new Astar();
-
-
-
-
-// --- Example usage ---
-const unit = new Unit(grid.grid[0][0], gridSize); // top-left tile
+const grid = new Grid(tileSize, width, height);
+const terrain = new Terrain(new TerrainGenerator(terrainConfig, grid), new SimplexNoise());
+const astar = new Astar(grid);
+const unit1 = new Unit(grid.tileAt(0, 0), tileSize); // top-left tile
+const unit2 = new Unit(grid.tileAt(10, 10), tileSize); 
 
 // --- Click listener ---
 canvas.addEventListener("click", (e) => {
@@ -404,15 +414,18 @@ canvas.addEventListener("click", (e) => {
     }
 
     // Compute path from unit.tile → destTile
-    const path = astar.findPath(grid, unit.tile, destTile);
-    if (path.length === 0) {
+    const path1 = astar.findPath(unit1.tile, destTile);
+    const path2 = astar.findPath(unit2.tile, destTile);
+    if (path1.length === 0) {
         console.log("No path found!");
         return;
     }
 
     // Assign path to the unit
-    unit.path = path;
-    unit.pathIndex = 0;
+    unit1.path = path1;
+    unit1.pathIndex = 0;
+    unit2.path = path2;
+    unit2.pathIndex = 0;
 });
 
 let t = 0;
@@ -421,9 +434,9 @@ function animate(timestamp){
     const dt = (timestamp - last) / 1000;
     last = timestamp;
     ctx.clearRect(0, 0, width, height);
-    renderer.render(terrain, t);
-    unit.update(dt);
-    unit.render(ctx);
+    terrain.render(t);
+    unit1.render(dt, ctx);
+    unit2.render(dt, ctx);
     t += 0.002;
     requestAnimationFrame(animate);
 }
