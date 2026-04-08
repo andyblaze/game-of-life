@@ -291,8 +291,7 @@ class Unit {
 
 // --- A* pathfinding for grid ---
 class Astar {
-    constructor(grid) {
-        this.tileGrid = grid;
+    constructor() {
         this.reset();
     }
     reset() {
@@ -311,7 +310,7 @@ class Astar {
         } 
         return path; // list of tiles from start -> end
     }
-    createNode(tile1, tile2, gScore=0, tileParent=null) {
+    createObj(tile1, tile2, gScore=0, tileParent=null) {
         const heur = this.heuristic(tile1, tile2);
         return {
             tile: tile1,
@@ -321,10 +320,10 @@ class Astar {
             parent: tileParent
         };
     }
-    findPath(startTile, endTile) {
+    findPath(grid, startTile, endTile) {
         this.reset();
         // Initialize start
-        this.openSet.push(this.createNode(startTile, endTile));
+        this.openSet.push(this.createObj(startTile, endTile));
 
         while( this.openSet.length > 0 ) {
             // Sort by f score
@@ -338,7 +337,7 @@ class Astar {
             }
 
             // Check neighbors (N, S, E, W)
-            const neighbors = this.getNeighbors(current.tile);
+            const neighbors = this.getNeighbors(grid, current.tile);
             this.checkNeighbors(neighbors, current, endTile);
         }
         // No path found
@@ -353,7 +352,7 @@ class Astar {
             let existing = this.openSet.find(n => n.tile === neighbor);
 
             if ( !existing ) {
-                this.openSet.push(this.createNode(neighbor, endTile, gScore, current));
+                this.openSet.push(this.createObj(neighbor, endTile, gScore, current));
             } else if ( gScore < existing.g ) {
                 existing.g = gScore;
                 existing.f = gScore + existing.h;
@@ -364,7 +363,7 @@ class Astar {
     heuristic(a, b) { // --- Heuristic: Manhattan distance ---
         return Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
     }
-    getNeighbors(tile) { // --- Get N/S/E/W neighbors ---
+    getNeighbors(grid, tile) { // --- Get N/S/E/W neighbors ---
         const dirs = [
             [0,-1], // N
             [0,1],  // S
@@ -375,15 +374,15 @@ class Astar {
         for ( const [dc, dr] of dirs ) {
             const r = tile.row + dr;
             const c = tile.col + dc;
-            if ( r >= 0 && r < this.tileGrid.gridRows && c >= 0 && c < this.tileGrid.gridCols ) {
-                neighbors.push(this.tileGrid.grid[r][c]);
+            if ( r >= 0 && r < grid.gridRows && c >= 0 && c < grid.gridCols ) {
+                neighbors.push(grid.grid[r][c]);
             }
         }
         return neighbors;
     }
 }
 
-const astar = new Astar(grid);
+const astar = new Astar();
 
 
 
