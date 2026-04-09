@@ -1,0 +1,23 @@
+export default class Tile {
+    constructor(row, col) {
+        this.row = row;
+        this.col = col;
+        this.type = "";
+        this.walkable = true;
+        this.building = null;
+    }
+    isUsed() {
+        return this.type.length > 0;
+    }
+    setType(t) {
+        this.type = t;
+        this.walkable = (t !== "pond");
+    }
+    getType() {
+        return this.type;
+    }
+    setBuilding(b) {
+        this.building = b;
+        this.walkable = false;
+    }
+}

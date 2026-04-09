@@ -7,15 +7,53 @@ import HUD from "./hud.js";
 import World from "./world.js";
 import DeltaRreport from "./delta-report.js";
 import BuildingSystem from "./building-system.js";
+import Grid from "./grid.js";
+import Terrain from "./terrain.js";
+import TerrainGenerator from "./terrain-generator.js";
+import SimplexNoise from "./simplex-noise.js";
+import Astar from "./a-star.js";
+import Unit from "./unit.js";
 import UI from "./ui-controls.js";
 
-const config = new Config();
+const config = new Config("game-canvas");
 const factory = new ObjectFactory(Registry, GameBalance);
 const hud = new HUD();
 const msgSystem = new MessageSystem();
 const world = new World(msgSystem);
 const buildings = new BuildingSystem(world, factory);
 const ui = new UI(buildings);
+
+/* new */
+const grid = new Grid(config);
+const terrain = new Terrain(new TerrainGenerator(grid, config), new SimplexNoise());
+const astar = new Astar(grid);
+const unit = new Unit(grid.tileAt(0, 0), config.tileSize); // top-left tile
+
+config.canvas.addEventListener("click", (e) => {
+    const rect = config.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const destTile = grid.getTileAtPixel(x, y);
+
+    if (!destTile) return;
+    if (!destTile.walkable) {
+        console.log("Destination blocked!");
+        return;
+    }
+
+    // Compute path from unit.tile → destTile
+    const path = astar.findPath(unit.tile, destTile);
+    if (path.length === 0) {
+        console.log("No path found!");
+        return;
+    }
+
+    // Assign path to the unit
+    unit.path = path;
+    unit.pathIndex = 0;
+});
+
+/* end new */
 
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
@@ -26,14 +64,31 @@ world.populate("robots", factory.createPopulation("robots", config.initialRobotP
 world.addObserver(hud);
 msgSystem.addObserver(hud);
 
-ui.buttons(".farm-btn"); 
+//ui.buttons(".farm-btn"); 
 
+class Renderers {
+    constructor() {
+        this.t = 0;
+        this.renderers = [];
+    }
+    add(r) {
+        this.renderers.push(r);
+    }
+    render(dt) {
+        for ( const r of this.renderers ) {
+            r.render();
+        }
+    }
+}
+
+let t = 0;
 let lastTime = 0;
 let accumulator = 0;
 const TICK_RATE = 1000; // ms per game tick  
 
 function loop(timestamp) {
     const delta = timestamp - lastTime;
+    const dt = delta / 1000;
     lastTime = timestamp;
     accumulator += delta;
     DeltaRreport.log(timestamp);
@@ -44,7 +99,11 @@ function loop(timestamp) {
         msgSystem.flush();
         accumulator -= TICK_RATE;        
     }
-    // render would go here (canvas updates etc) at 60 fps
+    // rendering at full speed
+    config.ctx.clearRect(0, 0, config.width, config.height);
+    terrain.render(t, config.ctx);
+    unit.render(dt, config.ctx);
+    t += 0.002;
     requestAnimationFrame(loop);
 }
 

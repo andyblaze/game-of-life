@@ -17,6 +17,8 @@ export function mt_randf(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+export function randomBetween([min, max]) { return min + Math.random()*(max-min); }
+
 export function clamp(val, min, max) {
     return Math.max(min, Math.min(max, val));
 }

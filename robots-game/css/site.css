@@ -63,6 +63,13 @@ span {
     color: #6cf;
 }
 #game-area {
-    margin-top: 22vh;
+    margin-top: 0vh;
     width: 100%; 
+    height: 78vh;
+    background:#88c070;
+   /* background-color: #6cf;*/
+}
+#game-canvas {
+    width: 100%; 
+    height: 78vh;    
 }

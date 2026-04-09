@@ -83,10 +83,10 @@ class SimplexNoise {
     }
 }
 
-const canvas = document.getElementById('game-canvas');
+const canvas = document.getElementById("game-canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext("2d");
 
 const width = canvas.width;
 const height = canvas.height;
@@ -397,8 +397,7 @@ const terrainConfig = [
 const grid = new Grid(tileSize, width, height);
 const terrain = new Terrain(new TerrainGenerator(terrainConfig, grid), new SimplexNoise());
 const astar = new Astar(grid);
-const unit1 = new Unit(grid.tileAt(0, 0), tileSize); // top-left tile
-const unit2 = new Unit(grid.tileAt(10, 10), tileSize); 
+const unit = new Unit(grid.tileAt(0, 0), tileSize); // top-left tile
 
 // --- Click listener ---
 canvas.addEventListener("click", (e) => {
@@ -414,18 +413,15 @@ canvas.addEventListener("click", (e) => {
     }
 
     // Compute path from unit.tile → destTile
-    const path1 = astar.findPath(unit1.tile, destTile);
-    const path2 = astar.findPath(unit2.tile, destTile);
-    if (path1.length === 0) {
+    const path = astar.findPath(unit1.tile, destTile);
+    if (path.length === 0) {
         console.log("No path found!");
         return;
     }
 
     // Assign path to the unit
-    unit1.path = path1;
-    unit1.pathIndex = 0;
-    unit2.path = path2;
-    unit2.pathIndex = 0;
+    unit.path = path;
+    unit.pathIndex = 0;
 });
 
 let t = 0;
@@ -435,8 +431,7 @@ function animate(timestamp){
     last = timestamp;
     ctx.clearRect(0, 0, width, height);
     terrain.render(t);
-    unit1.render(dt, ctx);
-    unit2.render(dt, ctx);
+    unit.render(dt, ctx);
     t += 0.002;
     requestAnimationFrame(animate);
 }
