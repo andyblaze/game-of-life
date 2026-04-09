@@ -9,6 +9,8 @@ export default class Config {
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         this.tileSize = 48;
+
+        this.GAME_TICK_RATE = 1000; // ms between ticks
         
         this.initialHumanPop = 6;
         this.initialRobotPop = 3;
