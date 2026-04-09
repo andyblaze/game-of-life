@@ -2,10 +2,11 @@ export default class Terrain {
     constructor(generator, simplex) {
         this.patches = generator.generate();
         this.simplex = simplex;
+        this.timer = "noise";
     }
-    render(ctx, times) {
+    render(ctx, timers) {
         this.patches.forEach(p => {
-            if( p.type==="pond" ) this.draw(ctx, p, times.use); // --- Animate ponds ---
+            if( p.type==="pond" ) this.draw(ctx, p, timers[this.timer]); // --- Animate ponds ---
             else this.draw(ctx, p);
         });    
     }

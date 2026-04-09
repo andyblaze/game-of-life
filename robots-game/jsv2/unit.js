@@ -9,6 +9,7 @@ export default class Unit {
         this.y = y; 
         this.size = this.tileSize * 0.6; // rectangle size
         this.speed = 160; // → pixels per second
+        this.timer = "delta";
     }
     tileToWorld(tile) {
         return {
@@ -42,8 +43,8 @@ export default class Unit {
             this.y += (dy / dist) * step;
         }
     }
-    render(ctx, times) {
-        this.update(times.use);
+    render(ctx, timers) {
+        this.update(timers[this.timer]);
         ctx.fillStyle = this.color;
         ctx.fillRect(
             this.x - this.size / 2,

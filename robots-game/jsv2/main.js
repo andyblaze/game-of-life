@@ -68,21 +68,24 @@ msgSystem.addObserver(hud);
 
 class Renderers {
     constructor(cfg) {
+        this.cfg = cfg;
         this.ctx = cfg.ctx;
-        this.t = 0;
         this.renderers = [];
     }
     add(r) {
         this.renderers.push(r);
     }
-    render(ctx, dt) {
-        ctx.clearRect(0, 0, config.width, config.height);
+    render(ctx, timers) {
+        this.ctx.clearRect(0, 0, this.cfg.width, this.cfg.height);
         for ( const r of this.renderers ) {
-            r.render();
+            r.render(ctx, timers);
         }
-        this.t += 0.002;
     }
 }
+
+const renderers = new Renderers(config);
+renderers.add(terrain);
+renderers.add(unit);
 
 let t = 0;
 let lastTime = 0;
@@ -103,9 +106,8 @@ function loop(timestamp) {
         accumulator -= TICK_RATE;        
     }
     // rendering at full speed
-    config.ctx.clearRect(0, 0, config.width, config.height);
-    terrain.render(config.ctx, { use: t, dont: dt });
-    unit.render(config.ctx, { use: dt, dont: t} );
+    const timers = { noise: t, delta: dt };
+    renderers.render(config.ctx, timers);
     t += 0.002;
     requestAnimationFrame(loop);
 }
