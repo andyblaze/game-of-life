@@ -67,17 +67,20 @@ msgSystem.addObserver(hud);
 //ui.buttons(".farm-btn"); 
 
 class Renderers {
-    constructor() {
+    constructor(cfg) {
+        this.ctx = cfg.ctx;
         this.t = 0;
         this.renderers = [];
     }
     add(r) {
         this.renderers.push(r);
     }
-    render(dt) {
+    render(ctx, dt) {
+        ctx.clearRect(0, 0, config.width, config.height);
         for ( const r of this.renderers ) {
             r.render();
         }
+        this.t += 0.002;
     }
 }
 
@@ -101,8 +104,8 @@ function loop(timestamp) {
     }
     // rendering at full speed
     config.ctx.clearRect(0, 0, config.width, config.height);
-    terrain.render(t, config.ctx);
-    unit.render(dt, config.ctx);
+    terrain.render(config.ctx, { use: t, dont: dt });
+    unit.render(config.ctx, { use: dt, dont: t} );
     t += 0.002;
     requestAnimationFrame(loop);
 }

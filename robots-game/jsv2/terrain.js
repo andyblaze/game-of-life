@@ -3,9 +3,9 @@ export default class Terrain {
         this.patches = generator.generate();
         this.simplex = simplex;
     }
-    render(t, ctx) {
+    render(ctx, times) {
         this.patches.forEach(p => {
-            if( p.type==="pond" ) this.draw(ctx, p, t); // --- Animate ponds ---
+            if( p.type==="pond" ) this.draw(ctx, p, times.use); // --- Animate ponds ---
             else this.draw(ctx, p);
         });    
     }

@@ -42,8 +42,8 @@ export default class Unit {
             this.y += (dy / dist) * step;
         }
     }
-    render(dt, ctx) {
-        this.update(dt);
+    render(ctx, times) {
+        this.update(times.use);
         ctx.fillStyle = this.color;
         ctx.fillRect(
             this.x - this.size / 2,
