@@ -61,7 +61,22 @@ for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
 
-world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
+class Spawner {
+    constructor(grid) {
+        this.grid = grid;
+    }
+
+    getSpawnTiles(n) {
+        return this.grid.randomWalkableTiles(n);
+    }
+}
+
+const spawner = new Spawner(grid);
+const tiles = spawner.getSpawnTiles(config.initialHumanPop);
+const humans = factory.createPopulation("humans", config.initialHumanPop, tiles);
+world.populate("humans", humans);
+
+//world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
 world.populate("robots", factory.createPopulation("robots", config.initialRobotPop));
 world.addObserver(hud);
 msgSystem.addObserver(hud);
