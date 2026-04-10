@@ -1,6 +1,6 @@
-import GameItem from "./game-item.js";
-import Human from "./human.js";
-import Robot from "./robot.js";
+import GameItem from "./base-classes/game-item.js";
+import Human from "./units/human.js";
+import Robot from "./units/robot.js";
 
 export class HumanPopulation extends GameItem {
     constructor(n) {

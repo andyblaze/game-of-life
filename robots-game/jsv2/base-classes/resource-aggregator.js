@@ -1,4 +1,4 @@
-import GameItem from "./game-item.js";
+import GameItem from "../base-classes/game-item.js";
 
 export default class ResourceAggregator extends GameItem {
     constructor(strat) {

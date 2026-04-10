@@ -1,4 +1,4 @@
-import Tickable from "./tickable.js";
+import Tickable from "../base-classes/tickable.js";
 
 export default class Human extends Tickable {
     constructor() {

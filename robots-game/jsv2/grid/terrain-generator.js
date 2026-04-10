@@ -1,4 +1,4 @@
-import { randomBetween } from "./functions.js";
+import { randomBetween } from "../functions.js";
 
 export default class TerrainGenerator {
     constructor(grid, cfg) {

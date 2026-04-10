@@ -1,4 +1,4 @@
-import DeltaRreport from "./delta-report.js";
+import DeltaRreport from "./util-classes/delta-report.js";
 
 export default class RafLoop {
     constructor(world, renderers, msgSystem, config) {

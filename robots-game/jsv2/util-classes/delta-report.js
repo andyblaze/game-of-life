@@ -1,4 +1,4 @@
-import { byId } from "./functions.js";
+import { byId } from "../functions.js";
 
 export default class DeltaReport {
     static lastTime = performance.now();

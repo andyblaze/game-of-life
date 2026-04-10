@@ -1,4 +1,4 @@
-import { Observable } from "./util-classes.js";
+import { Observable } from "./util-classes/observable.js";
 
 export default class World extends Observable {
     constructor(msgSys) {

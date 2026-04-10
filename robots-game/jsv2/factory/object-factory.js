@@ -1,4 +1,4 @@
-import ResourceAggregator from "./resource-aggregatr.js";
+import ResourceAggregator from "../base-classes/resource-aggregator.js";
 
 export default class ObjectFactory {
     constructor(r, b) {
