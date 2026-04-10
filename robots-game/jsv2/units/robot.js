@@ -3,7 +3,7 @@ import Tickable from "../base-classes/tickable.js";
 export default class Robot extends Tickable {
     constructor() {
         super();
-        this.power = 14;
+        this.power = 80;
         this.active = true;
         this.powerUsage = 0.8 + Math.random() * 0.4;
     }

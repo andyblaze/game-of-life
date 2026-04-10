@@ -11,7 +11,7 @@ import Terrain from "./grid/terrain.js";
 import TerrainGenerator from "./grid/terrain-generator.js";
 import SimplexNoise from "./util-classes/simplex-noise.js";
 import Astar from "./util-classes/a-star.js";
-import Unit from "./base-classes/unit.js";
+import Actor from "./units/actor.js";
 import UI from "./ui-controls.js";
 import Renderers from "./util-classes/renderers.js";
 import RafLoop from "./raf-loop.js";
@@ -28,7 +28,8 @@ const ui = new UI(buildings);
 const grid = new Grid(config);
 const terrain = new Terrain(new TerrainGenerator(grid, config), new SimplexNoise());
 const astar = new Astar(grid);
-const unit = new Unit(grid.tileAt(0, 0), config.tileSize); // top-left tile
+const unit = new Actor(config.tileSize); 
+unit.setTile(grid.tileAt(0,0));
 
 config.canvas.addEventListener("click", (e) => {
     const rect = config.canvas.getBoundingClientRect();

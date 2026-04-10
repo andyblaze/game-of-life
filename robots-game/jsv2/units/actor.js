@@ -1,12 +1,11 @@
-export default class Unit {
-    constructor(tile, tileSize, color = "red") {
-        this.tile = tile;       // Tile object the unit is on
+export default class Actor {
+    constructor(tileSize, color = "red") {
+        this.tile = null; 
         this.tileSize = tileSize;       
         this.color = color;
         // Pixel position for smooth movement
-        const { x, y } = this.tileToWorld(this.tile);
-        this.x = x; 
-        this.y = y; 
+        this.x = 0; 
+        this.y = 0; 
         this.size = this.tileSize * 0.6; // rectangle size
         this.speed = 160; // → pixels per second
         this.timer = "delta";
