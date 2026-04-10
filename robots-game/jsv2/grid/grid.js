@@ -53,4 +53,26 @@ export default class Grid {
     tileAt(row, col) {
         return this.grid[row][col];
     }
+    randomWalkableTiles(n) {
+        const walkable = [];
+
+        // collect all walkable tiles
+        for (let row = 0; row < this.rows; row++) {
+            for (let col = 0; col < this.columns; col++) {
+                const tile = this.grid[row][col];
+                if (tile.isWalkable()) {
+                    walkable.push(tile);
+                }
+            }
+        }
+
+        // shuffle (Fisher-Yates)
+        for (let i = walkable.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [walkable[i], walkable[j]] = [walkable[j], walkable[i]];
+        }
+
+        // return first n (or all if not enough)
+        return walkable.slice(0, n);
+    }
 }

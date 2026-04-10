@@ -9,6 +9,9 @@ export default class Tile {
     isUsed() {
         return this.type.length > 0;
     }
+    isWalkable() {
+        return this.walkable;
+    }
     setType(t) {
         this.type = t;
         this.walkable = (t !== "pond");
