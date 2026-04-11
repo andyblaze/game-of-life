@@ -67,7 +67,16 @@ span {
     width: 100%; 
     height: 78vh;
     background:#88c070;
-   /* background-color: #6cf;*/
+    position: relative;
+}
+#game-panel {
+    width: 200px;
+    height: 100px;
+    background-color: #fff;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    display: none;
 }
 #game-canvas {
     width: 100%; 

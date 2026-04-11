@@ -74,7 +74,7 @@ config.canvas.addEventListener("click", (e) => {
 
     if (!tile) return;
 
-    const size = { w: 160, h: 100 };
+    const size = { w: 200, h: 100 };
 
     // anchor to tile centre
     let px = tile.col * grid.tileSize + grid.tileSize / 2 + 10;
@@ -90,31 +90,11 @@ config.canvas.addEventListener("click", (e) => {
         py = tile.row * grid.tileSize - size.h - 10;
     }
 
-    panel = {
-        x: px,
-        y: py,
-        w: size.w,
-        h: size.h,
-        tile: tile
-    };
+    const p = document.getElementById("game-panel");
+    p.style.left = px + "px";
+    p.style.top = py + "px";
+    p.style.display = "block";
 });
-
-function renderPanel(ctx) {
-    if (!panel) return;
-
-    // white box
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(panel.x, panel.y, panel.w, panel.h);
-
-    // border
-    ctx.strokeStyle = "#000000";
-    ctx.strokeRect(panel.x, panel.y, panel.w, panel.h);
-
-    // simple text (tile info)
-    ctx.fillStyle = "#000000";
-    ctx.font = "12px sans-serif";
-    ctx.fillText(`Tile: ${panel.tile.type || "empty"}`, panel.x + 10, panel.y + 20);
-}
 
 world.addObserver(hud);
 msgSystem.addObserver(hud);
