@@ -28,8 +28,8 @@ const ui = new UI(buildings);
 const grid = new Grid(config);
 const terrain = new Terrain(new TerrainGenerator(grid, config), new SimplexNoise());
 const astar = new Astar(grid);
-const unit = new Actor(config.tileSize); 
-unit.setTile(grid.tileAt(0,0));
+//const unit = new Actor(config.tileSize); 
+//unit.setTile(grid.tileAt(0,0));
 
 config.canvas.addEventListener("click", (e) => {
     const rect = config.canvas.getBoundingClientRect();
@@ -61,13 +61,19 @@ for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
 
+const actors = [];
+
 class Spawner {
-    constructor(grid) {
+    constructor(grid, cfg) {
         this.grid = grid;
+        this.cfg = cfg;
     }
 
     getSpawnTiles(n) {
-        return this.grid.randomWalkableTiles(n);
+        const tiles = this.grid.randomWalkableTiles(n);
+        for ( const t of tiles ) {
+            actors.push(new Actor(t, this.cfg.tileSize));
+        }
     }
 }
 
@@ -83,7 +89,7 @@ msgSystem.addObserver(hud);
 
 const renderers = new Renderers(config);
 renderers.add(terrain); // add in Z index order, else things will get covered up !
-renderers.add(unit);
+//renderers.add(unit);
 
 const loop = new RafLoop(world, renderers, msgSystem, config);
 loop.start();

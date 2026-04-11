@@ -1,11 +1,11 @@
 export default class Actor {
-    constructor(tileSize, color = "red") {
-        this.tile = null; 
+    constructor(tile, tileSize, color = "red") {
         this.tileSize = tileSize;       
         this.color = color;
         // Pixel position for smooth movement
         this.x = 0; 
         this.y = 0; 
+        this.tile = this.setTile(tile); 
         this.size = this.tileSize * 0.6; // rectangle size
         this.speed = 160; // → pixels per second
         this.timer = "delta";
