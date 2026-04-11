@@ -64,42 +64,57 @@ const robots = factory.createPopulation(
 world.populate("humans", humans);
 world.populate("robots", robots);
 
+let panel = null;
+
 config.canvas.addEventListener("click", (e) => {
     const rect = config.canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const destTile = grid.getTileAtPixel(x, y);
+    const tile = grid.getTileAtPixel(x, y);
 
-    if (!destTile) return;
-    if (!destTile.walkable) {
-        console.log("Destination blocked!");
-        return;
-    }
-    for ( const h of humans.getActors() ) { 
-        // Compute path from unit.tile → destTile
-        const path = astar.findPath(h.tile, destTile);
-        if (path.length === 0) {
-            console.log("No path found!");
-            return;
-        }
+    if (!tile) return;
 
-        // Assign path to the unit
-        h.path = path;
-        h.pathIndex = 0;
-    }
-    for ( const r of robots.getActors() ) { 
-        // Compute path from unit.tile → destTile
-        const path = astar.findPath(r.tile, destTile);
-        if (path.length === 0) {
-            console.log("No path found!");
-            return;
-        }
+    const size = { w: 160, h: 100 };
 
-        // Assign path to the unit
-        r.path = path;
-        r.pathIndex = 0;
+    // anchor to tile centre
+    let px = tile.col * grid.tileSize + grid.tileSize / 2 + 10;
+    let py = tile.row * grid.tileSize + grid.tileSize / 2 + 10;
+
+    // flip if overflowing right
+    if (px + size.w > config.width) {
+        px = tile.col * grid.tileSize - size.w - 10;
     }
+
+    // flip if overflowing bottom
+    if (py + size.h > config.height) {
+        py = tile.row * grid.tileSize - size.h - 10;
+    }
+
+    panel = {
+        x: px,
+        y: py,
+        w: size.w,
+        h: size.h,
+        tile: tile
+    };
 });
+
+function renderPanel(ctx) {
+    if (!panel) return;
+
+    // white box
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(panel.x, panel.y, panel.w, panel.h);
+
+    // border
+    ctx.strokeStyle = "#000000";
+    ctx.strokeRect(panel.x, panel.y, panel.w, panel.h);
+
+    // simple text (tile info)
+    ctx.fillStyle = "#000000";
+    ctx.font = "12px sans-serif";
+    ctx.fillText(`Tile: ${panel.tile.type || "empty"}`, panel.x + 10, panel.y + 20);
+}
 
 world.addObserver(hud);
 msgSystem.addObserver(hud);

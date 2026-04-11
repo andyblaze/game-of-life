@@ -9,7 +9,7 @@ export default class Actor {
         this.y = 0; 
         this.setTile(tile); 
         this.size = this.tileSize * 0.6; // rectangle size
-        this.speed = mt_rand(100, 160); // → pixels per second
+        this.speed = mt_rand(2, 16) * 10; // → pixels per second
         this.timer = "delta";
     }
     tileToWorld(tile) {
