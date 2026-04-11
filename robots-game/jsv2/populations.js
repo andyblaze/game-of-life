@@ -2,48 +2,43 @@ import GameItem from "./base-classes/game-item.js";
 import Human from "./units/human.js";
 import Robot from "./units/robot.js";
 
-export class HumanPopulation extends GameItem {
-    constructor(n, actors) {
-        super({ product: "" });
-        this.pop = Array.from({ length: n }, () => new Human());
-        this.actors = actors;
+class Population extends GameItem {
+    constructor(product) {
+        super(product);
+    }
+    getActors() {
+        return this.pop.map(a => a.actor);
+    }
+    render(ctx, timers) {
+        for ( const a of this.getActors() )
+            a.render(ctx, timers);
     }
     produce(world) {}
     finalise(world) {}
     tick(world) {
         const shuffled = [...this.pop].sort(() => Math.random() - 0.5);
-        for (const human of shuffled) {
-            human.ontick(world);
+        for ( const item of shuffled ) {
+            item.ontick(world);
         }
+    }
+    getCount() {
+        return this.pop.length;
+    }
+}
+
+export class HumanPopulation extends Population {
+    constructor(n, actors) {
+        super({ product: "" });
+        this.pop = actors.map(actor => new Human(actor));
     }
     getMorale() {
         return this.pop.reduce((a, h) => a + h.morale, 0) / this.pop.length;
     }
-    getCount() {
-        return this.pop.length;
-    }
-    render(ctx, timers) {
-        for ( const a of this.actors )
-            a.render(ctx, timers);
-    }
 }
 
-export class RobotPopulation extends GameItem {
+export class RobotPopulation extends Population {
     constructor(n, actors) {
         super({ product: "" });
-        this.pop = Array.from({ length: n }, () => new Robot());
-        this.actors = actors;
-    }
-    getCount() {
-        return this.pop.length;
-    }
-    produce(world) {}
-    finalise(world) {}
-    tick(world) {
-        const shuffled = [...this.pop].sort(() => Math.random() - 0.5);
-        for (const robot of shuffled) {
-            robot.ontick(world);
-        }
-        //console.log(this.pop.reduce((a, r) => a + r.power, 0) / this.pop.length);
+        this.pop = actors.map(actor => new Robot(actor));
     }
 }

@@ -1,8 +1,9 @@
 import Tickable from "../base-classes/tickable.js";
 
 export default class Human extends Tickable {
-    constructor() {
+    constructor(actor) {
         super();
+        this.actor = actor;
         this.hunger = 10;
         this.morale = 80;
         this.hungerRate = 0.8 + Math.random() * 0.4;

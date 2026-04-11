@@ -1,13 +1,15 @@
+import { mt_rand } from "../functions.js";
+
 export default class Actor {
-    constructor(tile, tileSize, color = "red") {
+    constructor(tile, tileSize, color="red") {
         this.tileSize = tileSize;       
         this.color = color;
         // Pixel position for smooth movement
         this.x = 0; 
         this.y = 0; 
-        this.tile = this.setTile(tile); 
+        this.setTile(tile); 
         this.size = this.tileSize * 0.6; // rectangle size
-        this.speed = 160; // → pixels per second
+        this.speed = mt_rand(100, 160); // → pixels per second
         this.timer = "delta";
     }
     tileToWorld(tile) {

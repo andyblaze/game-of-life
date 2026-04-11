@@ -1,8 +1,10 @@
 import Tickable from "../base-classes/tickable.js";
 
 export default class Robot extends Tickable {
-    constructor() {
+    constructor(actor) {
         super();
+        this.actor = actor;
+        this.actor.color = "blue";
         this.power = 80;
         this.active = true;
         this.powerUsage = 0.8 + Math.random() * 0.4;

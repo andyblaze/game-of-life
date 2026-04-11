@@ -24,44 +24,14 @@ const world = new World(msgSystem);
 const buildings = new BuildingSystem(world, factory);
 const ui = new UI(buildings);
 
-/* new */
 const grid = new Grid(config);
 const terrain = new Terrain(new TerrainGenerator(grid, config), new SimplexNoise());
 const astar = new Astar(grid);
-//const unit = new Actor(config.tileSize); 
-//unit.setTile(grid.tileAt(0,0));
 
-config.canvas.addEventListener("click", (e) => {
-    const rect = config.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const destTile = grid.getTileAtPixel(x, y);
-
-    if (!destTile) return;
-    if (!destTile.walkable) {
-        console.log("Destination blocked!");
-        return;
-    }
-
-    // Compute path from unit.tile → destTile
-    const path = astar.findPath(unit.tile, destTile);
-    if (path.length === 0) {
-        console.log("No path found!");
-        return;
-    }
-
-    // Assign path to the unit
-    unit.path = path;
-    unit.pathIndex = 0;
-});
-
-/* end new */
 
 for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
-
-
 
 class Spawner {
     constructor(grid, cfg) {
@@ -74,24 +44,70 @@ class Spawner {
         const actors = [];
         for ( const t of tiles ) {
             actors.push(new Actor(t, this.cfg.tileSize));
-        }
+        } 
         return actors;
     }
 }
 
-const spawn = new Spawner(grid);
-const actors = spawn.actors(config.initialHumanPop);
-const humans = factory.createPopulation("humans", config.initialHumanPop, actors);
-world.populate("humans", humans);
+const spawn = new Spawner(grid, config);
 
-//world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
-world.populate("robots", factory.createPopulation("robots", config.initialRobotPop));
+const humans = factory.createPopulation(
+    "humans", 
+    config.initialHumanPop, 
+    spawn.actors(config.initialHumanPop)
+);
+const robots = factory.createPopulation(
+    "robots",
+    config.initialRobotPop,
+    spawn.actors(config.initialRobotPop)
+);
+world.populate("humans", humans);
+world.populate("robots", robots);
+
+config.canvas.addEventListener("click", (e) => {
+    const rect = config.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const destTile = grid.getTileAtPixel(x, y);
+
+    if (!destTile) return;
+    if (!destTile.walkable) {
+        console.log("Destination blocked!");
+        return;
+    }
+    for ( const h of humans.getActors() ) { 
+        // Compute path from unit.tile → destTile
+        const path = astar.findPath(h.tile, destTile);
+        if (path.length === 0) {
+            console.log("No path found!");
+            return;
+        }
+
+        // Assign path to the unit
+        h.path = path;
+        h.pathIndex = 0;
+    }
+    for ( const r of robots.getActors() ) { 
+        // Compute path from unit.tile → destTile
+        const path = astar.findPath(r.tile, destTile);
+        if (path.length === 0) {
+            console.log("No path found!");
+            return;
+        }
+
+        // Assign path to the unit
+        r.path = path;
+        r.pathIndex = 0;
+    }
+});
+
 world.addObserver(hud);
 msgSystem.addObserver(hud);
 
 const renderers = new Renderers(config);
 renderers.add(terrain); // add in Z index order, else things will get covered up !
 renderers.add(humans);
+renderers.add(robots);
 
 const loop = new RafLoop(world, renderers, msgSystem, config);
 loop.start();
