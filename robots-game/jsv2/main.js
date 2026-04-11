@@ -61,7 +61,7 @@ for ( const item of config.initialWorldItems ) {
     world.add(factory.create(item));
 }
 
-const actors = [];
+
 
 class Spawner {
     constructor(grid, cfg) {
@@ -69,17 +69,19 @@ class Spawner {
         this.cfg = cfg;
     }
 
-    getSpawnTiles(n) {
+    actors(n) {
         const tiles = this.grid.randomWalkableTiles(n);
+        const actors = [];
         for ( const t of tiles ) {
             actors.push(new Actor(t, this.cfg.tileSize));
         }
+        return actors;
     }
 }
 
-const spawner = new Spawner(grid);
-const tiles = spawner.getSpawnTiles(config.initialHumanPop);
-const humans = factory.createPopulation("humans", config.initialHumanPop, tiles);
+const spawn = new Spawner(grid);
+const actors = spawn.actors(config.initialHumanPop);
+const humans = factory.createPopulation("humans", config.initialHumanPop, actors);
 world.populate("humans", humans);
 
 //world.populate("humans", factory.createPopulation("humans", config.initialHumanPop));
@@ -89,7 +91,7 @@ msgSystem.addObserver(hud);
 
 const renderers = new Renderers(config);
 renderers.add(terrain); // add in Z index order, else things will get covered up !
-//renderers.add(unit);
+renderers.add(humans);
 
 const loop = new RafLoop(world, renderers, msgSystem, config);
 loop.start();

@@ -27,8 +27,8 @@ export default class ObjectFactory {
         const inputs = this.getInputs(type);
         return new ResourceAggregator(new Ctor(type, baseOutput, inputs));
     }
-    createPopulation(type, n) {
+    createPopulation(type, n, actors) {
         const Ctor = this.getCtor(this.registry.populations, type);
-        return new Ctor(n);
+        return new Ctor(n, actors);
     }
 }

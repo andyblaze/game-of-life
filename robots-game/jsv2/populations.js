@@ -3,9 +3,10 @@ import Human from "./units/human.js";
 import Robot from "./units/robot.js";
 
 export class HumanPopulation extends GameItem {
-    constructor(n) {
+    constructor(n, actors) {
         super({ product: "" });
         this.pop = Array.from({ length: n }, () => new Human());
+        this.actors = actors;
     }
     produce(world) {}
     finalise(world) {}
@@ -21,12 +22,17 @@ export class HumanPopulation extends GameItem {
     getCount() {
         return this.pop.length;
     }
+    render(ctx, timers) {
+        for ( const a of this.actors )
+            a.render(ctx, timers);
+    }
 }
 
 export class RobotPopulation extends GameItem {
-    constructor(n) {
+    constructor(n, actors) {
         super({ product: "" });
         this.pop = Array.from({ length: n }, () => new Robot());
+        this.actors = actors;
     }
     getCount() {
         return this.pop.length;
