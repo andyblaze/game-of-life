@@ -59,7 +59,7 @@
 }
 
 /* Highlight numbers slightly */
-span {
+#hud span {
     color: #6cf;
 }
 #game-area {
@@ -76,7 +76,14 @@ span {
     position: absolute;
     left: 0px;
     top: 0px;
+    color: #000;
     display: none;
+}
+#game-panel h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.4rem;
+    font-weight: normal;
 }
 #game-canvas {
     width: 100%; 

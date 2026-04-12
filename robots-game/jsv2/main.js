@@ -47,24 +47,51 @@ class Spawner {
         } 
         return actors;
     }
+    population(type, n) {
+        return factory.createPopulation(type, n, this.actors(n));
+    }
 }
 
 const spawn = new Spawner(grid, config);
 
-const humans = factory.createPopulation(
-    "humans", 
-    config.initialHumanPop, 
-    spawn.actors(config.initialHumanPop)
-);
-const robots = factory.createPopulation(
-    "robots",
-    config.initialRobotPop,
-    spawn.actors(config.initialRobotPop)
-);
+const humans = spawn.population("humans", config.initialHumanPop);
+const robots = spawn.population("robots", config.initialRobotPop);
 world.populate("humans", humans);
 world.populate("robots", robots);
 
-let panel = null;
+class UiPanel {
+    constructor(id) {
+        this.panel = document.getElementById(id);
+        this.visible = false;
+        this.px = 0;
+        this.py = 0;
+    }
+    getSize() {
+        return { w: parseInt(this.panel.style.width), h: parseInt(this.panel.style.height) };
+    }
+    setOffset(tile, grid, cfg) {
+        const size = this.getSize();
+        // anchor to tile centre
+        this.px = tile.col * grid.tileSize + grid.tileSize / 2 + 10;
+        this.py = tile.row * grid.tileSize + grid.tileSize / 2 + 10;
+
+        // flip if overflowing right
+        if (this.px + size.w > cfg.width) {
+            this.px = tile.col * grid.tileSize - size.w - 10;
+        }
+
+        // flip if overflowing bottom
+        if (this.py + size.h > cfg.height) {
+            this.py = tile.row * grid.tileSize - size.h - 10;
+        }        
+    }
+    setStyle(l, t, d) {
+        this.panel.style.left = l;
+        this.panel.style.top = t;
+        this.panel.style.display = d;
+        this.visible = (d === "block");
+    }
+}
 
 config.canvas.addEventListener("click", (e) => {
     const rect = config.canvas.getBoundingClientRect();
@@ -74,7 +101,10 @@ config.canvas.addEventListener("click", (e) => {
 
     if (!tile) return;
 
-    const size = { w: 200, h: 100 };
+    const panel = new UiPanel("game-panel");
+    document.getElementById("tile-type").innerText = tile.type;
+
+    const size = panel.getSize();
 
     // anchor to tile centre
     let px = tile.col * grid.tileSize + grid.tileSize / 2 + 10;
@@ -90,10 +120,12 @@ config.canvas.addEventListener("click", (e) => {
         py = tile.row * grid.tileSize - size.h - 10;
     }
 
-    const p = document.getElementById("game-panel");
-    p.style.left = px + "px";
-    p.style.top = py + "px";
-    p.style.display = "block";
+    if ( panel.visible ) {
+        panel.setStyle("0px", "0px", "none");
+    }
+    else {
+        panel.setStyle(`${px}px`, `${py}px`, "block");
+    }
 });
 
 world.addObserver(hud);
