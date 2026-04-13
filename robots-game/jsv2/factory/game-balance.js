@@ -4,7 +4,7 @@ export const GameBalance = {
         coal: 4,
         wood: 6,
         wheat: 3,
-        bread: 6,
+        bread: 16,
         power: 2
     },
     inputs: {
