@@ -1,4 +1,5 @@
 import Tile from "./tile.js";
+import { randomFrom } from "../functions.js";
 
 export default class Grid {
     constructor(cfg) {
@@ -80,14 +81,15 @@ export default class Grid {
                 // skip ponds always
                 if (tile.type === "pond") 
                     continue;
+                if ( tile.isOccupied() )
+                    continue;
                 // if type specified, enforce it
-                if (type && tile.type !== type) 
+                if (type && tile.getType() !== type) 
                     continue;
                 tiles.push(tile);
             }
         }
         if (tiles.length === 0) return null;
-        const i = Math.floor(Math.random() * tiles.length);
-        return tiles[i];
+        return randomFrom(tiles);
     }
 }

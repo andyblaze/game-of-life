@@ -23,4 +23,10 @@ export default class Tile {
         this.building = b;
         this.walkable = false;
     }
+    isFree() {
+        return (this.building === null);
+    }
+    isOccupied() {
+        return (this.building !== null);
+    }
 }

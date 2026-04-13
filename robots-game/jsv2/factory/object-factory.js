@@ -31,7 +31,7 @@ export default class ObjectFactory {
             tile = this.grid.randomTile();
         else
             tile = this.grid.randomTile(type);
-        return new ResourceAggregator(new Ctor(type, baseOutput, inputs, tile));
+        return new ResourceAggregator(new Ctor(type, tile, baseOutput, inputs));
     }
     createPopulation(type, n, actors) {
         const Ctor = this.getCtor(this.registry.populations, type);
