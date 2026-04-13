@@ -13,27 +13,33 @@ export class IronMine extends ResourceFarm {
     }
 }
 export class CoalMine extends ResourceFarm {
-    constructor(type, baseOutput) {
+   constructor(type, tile, baseOutput) {
         super(type);
         this.baseOutput = baseOutput;
+        this.tile = tile;
+        this.actor = new Actor(tile, 48, "#000");
     }
     produce(world) {
          this.result.amount = this.baseOutput;
     }
 }
 export class WoodFarm extends ResourceFarm {
-    constructor(type, baseOutput) {
+   constructor(type, tile, baseOutput) {
         super(type);
         this.baseOutput = baseOutput;
+        this.tile = tile;
+        this.actor = new Actor(tile, 48, "#000");
     }
     produce(world) {
          this.result.amount = this.baseOutput;
     }
 }
 export class WheatFarm extends ResourceFarm {
-    constructor(type, baseOutput) {
+   constructor(type, tile, baseOutput) {
         super(type);
         this.baseOutput = baseOutput;
+        this.tile = tile;
+        this.actor = new Actor(tile, 48, "#000");
     }
     produce(world) {
          this.result.amount = this.baseOutput;

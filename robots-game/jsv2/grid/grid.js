@@ -79,7 +79,7 @@ export default class Grid {
             for (let c = 0; c < this.columns; c++) {
                 const tile = this.grid[r][c];
                 // skip ponds always
-                if (tile.type === "pond") 
+                if (tile.getType() === "pond") 
                     continue;
                 if ( tile.isOccupied() )
                     continue;

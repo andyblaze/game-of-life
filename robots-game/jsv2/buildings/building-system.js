@@ -12,6 +12,6 @@ export default class BuildingSystem {
     }
     render() {
         this.buildings = this.world.items;
-        console.log(this.buildings.iron);
+        //console.log(this.buildings.iron);
     }
 }

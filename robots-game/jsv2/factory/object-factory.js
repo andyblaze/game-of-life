@@ -20,7 +20,8 @@ export default class ObjectFactory {
     createFarm(type) {
         const Ctor = this.getCtor(this.registry.buildings, type);
         const baseOutput = this.getBaseOutput(type);
-        return new Ctor(type, baseOutput);
+        const tile = this.grid.randomTile(type);
+        return new Ctor(type, tile, baseOutput);
     }
     create(type) {
         const Ctor = this.getCtor(this.registry.buildings, type);
