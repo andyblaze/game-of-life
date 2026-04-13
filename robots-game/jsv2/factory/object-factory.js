@@ -1,9 +1,10 @@
 import ResourceAggregator from "../base-classes/resource-aggregator.js";
 
 export default class ObjectFactory {
-    constructor(r, b) {
+    constructor(r, b, g) {
         this.registry = r;
         this.balance = b;
+        this.grid = g;
     }
     getCtor(registry, type) {
         const Ctor = registry[type];
@@ -25,7 +26,12 @@ export default class ObjectFactory {
         const Ctor = this.getCtor(this.registry.buildings, type);
         const baseOutput = this.getBaseOutput(type);
         const inputs = this.getInputs(type);
-        return new ResourceAggregator(new Ctor(type, baseOutput, inputs));
+        let tile;
+        if ( type === "bread" || type === "power" )
+            tile = this.grid.randomTile();
+        else
+            tile = this.grid.randomTile(type);
+        return new ResourceAggregator(new Ctor(type, baseOutput, inputs, tile));
     }
     createPopulation(type, n, actors) {
         const Ctor = this.getCtor(this.registry.populations, type);

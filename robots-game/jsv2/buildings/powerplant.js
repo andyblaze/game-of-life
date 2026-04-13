@@ -1,8 +1,9 @@
 import ResourceFarm from "./resource-farm.js";
 
 export default class PowerPlant extends ResourceFarm {
-    constructor(type, baseOutput, inputs) {
+    constructor(type, tile, baseOutput, inputs) {
         super(type);
+        this.tile = tile;
         this.baseOutput = baseOutput;
         this.wood = 0;
         this.coal = 0;

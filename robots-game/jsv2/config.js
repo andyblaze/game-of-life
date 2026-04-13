@@ -19,9 +19,10 @@ export default class Config {
         ];
         this.terrain = [
             { type:"pond", min:1, max:3, color:"#2DA4DB", radius:[50, 120] },
-            { type:"rock", min:4, max:8, color:"#888888", radius:[30, 80] },
-            { type:"forest", min:2, max:6, color:"#228B22", radius:[40, 100] },
-            { type:"farm", min:3, max:8, color:"#D2B48C", radius:[60, 120] }
+            { type:"iron", min:2, max:4, color:"#888888", radius:[30, 80] },
+            { type:"coal", min:2, max:4, color:"#443c3c", radius:[30, 80] },
+            { type:"wood", min:2, max:6, color:"#228B22", radius:[40, 100] },
+            { type:"wheat", min:3, max:6, color:"#D2B48C", radius:[60, 120] }
         ];
     }
 }

@@ -55,7 +55,6 @@ export default class Grid {
     }
     randomWalkableTiles(n) {
         const walkable = [];
-
         // collect all walkable tiles
         for (let row = 0; row < this.rows; row++) {
             for (let col = 0; col < this.columns; col++) {
@@ -65,14 +64,30 @@ export default class Grid {
                 }
             }
         }
-
         // shuffle (Fisher-Yates)
         for (let i = walkable.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [walkable[i], walkable[j]] = [walkable[j], walkable[i]];
         }
-
         // return first n (or all if not enough)
         return walkable.slice(0, n);
+    }
+    randomTile(type = null) {
+        const tiles = [];
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.columns; c++) {
+                const tile = this.grid[r][c];
+                // skip ponds always
+                if (tile.type === "pond") 
+                    continue;
+                // if type specified, enforce it
+                if (type && tile.type !== type) 
+                    continue;
+                tiles.push(tile);
+            }
+        }
+        if (tiles.length === 0) return null;
+        const i = Math.floor(Math.random() * tiles.length);
+        return tiles[i];
     }
 }

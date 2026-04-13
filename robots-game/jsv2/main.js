@@ -17,13 +17,13 @@ import Renderers from "./util-classes/renderers.js";
 import RafLoop from "./raf-loop.js";
 
 const config = new Config("game-canvas");
-const factory = new ObjectFactory(Registry, GameBalance);
+const grid = new Grid(config);
+const factory = new ObjectFactory(Registry, GameBalance, grid);
 const hud = new HUD();
 const msgSystem = new MessageSystem();
 const world = new World(msgSystem);
 const buildings = new BuildingSystem(world, factory);
 
-const grid = new Grid(config);
 const terrain = new Terrain(new TerrainGenerator(grid, config), new SimplexNoise());
 const astar = new Astar(grid);
 
@@ -50,6 +50,7 @@ msgSystem.addObserver(hud);
 const renderers = new Renderers(config);
 renderers.add(terrain); // add in Z index order, else things will get covered up !
 renderers.add(humans);
+renderers.add(buildings);
 renderers.add(robots);
 
 const loop = new RafLoop(world, renderers, msgSystem, config);
