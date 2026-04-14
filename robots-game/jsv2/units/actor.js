@@ -4,6 +4,7 @@ export default class Actor {
     constructor(tile, color="red") {
         this.tileSize = tile.size; 
         this.color = color;
+        this.image = null;
         // Pixel position for smooth movement
         this.x = 0; 
         this.y = 0; 
@@ -44,15 +45,22 @@ export default class Actor {
             this.y += (dy / dist) * step;
         }
     }
+    renderImg(ctx) {
+        
+    }
     render(ctx, timers) {
         this.update(timers[this.timer]);
-        ctx.fillStyle = this.color;
-        ctx.fillRect(
-            this.x - this.size / 2,
-            this.y - this.size / 2,
-            this.size,
-            this.size
-        );
+        if ( this.image )
+            this.renderImg(ctx);
+        else {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(
+                this.x - this.size / 2,
+                this.y - this.size / 2,
+                this.size,
+                this.size
+            );
+        }
     }
     // Utility: set tile and update pixel position
     setTile(tile) {

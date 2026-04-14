@@ -4,6 +4,7 @@ export default class Human extends Tickable {
     constructor(actor) {
         super();
         this.actor = actor;
+        this.actor.image = "images/human.png";
         this.hunger = 10;
         this.hungerThreshold = 50;
         this.prevHunger = 10;
