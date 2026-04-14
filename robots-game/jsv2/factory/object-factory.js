@@ -17,6 +17,11 @@ export default class ObjectFactory {
     getInputs(type) {
         return this.balance.inputs[type] || {};
     }
+    getRandomTile(type) {
+        if ( type === "bread" || type === "power" )
+            return this.grid.randomTile();
+        return this.grid.randomTile(type);
+    }
     createFarm(type) {
         const Ctor = this.getCtor(this.registry.buildings, type);
         const baseOutput = this.getBaseOutput(type);
@@ -27,11 +32,7 @@ export default class ObjectFactory {
         const Ctor = this.getCtor(this.registry.buildings, type);
         const baseOutput = this.getBaseOutput(type);
         const inputs = this.getInputs(type);
-        let tile;
-        if ( type === "bread" || type === "power" )
-            tile = this.grid.randomTile();
-        else
-            tile = this.grid.randomTile(type);
+        const tile = this.getRandomTile(type);
         return new ResourceAggregator(new Ctor(type, tile, baseOutput, inputs));
     }
     createPopulation(type, n, actors) {

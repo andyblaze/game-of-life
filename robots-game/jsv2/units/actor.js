@@ -1,8 +1,8 @@
 import { mt_rand } from "../functions.js";
 
 export default class Actor {
-    constructor(tile, tileSize, color="red") {
-        this.tileSize = tileSize;       
+    constructor(tile, color="red") {
+        this.tileSize = tile.size; 
         this.color = color;
         // Pixel position for smooth movement
         this.x = 0; 

@@ -12,10 +12,10 @@ export default class Grid {
         this.init();
     }
     init() {
-        this.columns = Math.ceil(this.width / this.tileSize);
-        this.rows = Math.ceil(this.height / this.tileSize);
+        this.columns = Math.floor(this.width / this.tileSize);
+        this.rows = Math.floor(this.height / this.tileSize);
         this.grid = Array.from({ length: this.rows }, (_, row) => 
-            Array.from({ length: this.columns }, (_, col) => new Tile(row, col))
+            Array.from({ length: this.columns }, (_, col) => new Tile(row, col, this.tileSize))
         );    
     }
     calcSizes(x, y, r) {

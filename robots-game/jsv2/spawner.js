@@ -11,7 +11,7 @@ export default class Spawner {
         const tiles = this.grid.randomWalkableTiles(n);
         const actors = [];
         for ( const t of tiles ) {
-            actors.push(new Actor(t, this.cfg.tileSize));
+            actors.push(new Actor(t));
         } 
         return actors;
     }

@@ -17,7 +17,8 @@ class UiPanel {
         };
     }
     setOffset(tile) {
-        byId("tile-type").innerText = tile.type;
+        byId("tile-type").innerText = tile.getType();
+        byId("tile-building").innerText = tile.getBuilding();
         const size = this.getSize();
         // anchor to tile centre
         this.px = tile.col * this.grid.tileSize + this.grid.tileSize / 2 + 10;

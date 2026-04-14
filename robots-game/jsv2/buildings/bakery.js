@@ -3,9 +3,9 @@ import Actor from "../units/actor.js";
 
 export default class Bakery extends ResourceFarm {
     constructor(type, tile, baseOutput, inputs) {
-        super(type);
+        super(type, tile, baseOutput);
         this.tile = tile;
-        this.actor = new Actor(tile, 48, "#000");
+        this.actor = new Actor(tile, "#cff013");
         this.baseOutput = baseOutput;
         this.wood = 0;
         this.wheat = 0;

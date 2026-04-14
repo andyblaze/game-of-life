@@ -1,7 +1,8 @@
 export default class Tile {
-    constructor(row, col) {
+    constructor(row, col, size) {
         this.row = row;
         this.col = col;
+        this.size = size;
         this.type = "";
         this.walkable = true;
         this.building = null;
@@ -22,6 +23,9 @@ export default class Tile {
     setBuilding(b) {
         this.building = b;
         this.walkable = false;
+    }
+    getBuilding() {
+        return this.building;
     }
     isFree() {
         return (this.building === null);

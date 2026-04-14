@@ -22,7 +22,7 @@ const factory = new ObjectFactory(Registry, GameBalance, grid);
 const hud = new HUD();
 const msgSystem = new MessageSystem();
 const world = new World(msgSystem);
-const buildings = new BuildingSystem(world, factory);
+const buildings = new BuildingSystem(world, factory, config);
 
 const terrain = new Terrain(new TerrainGenerator(grid, config), new SimplexNoise());
 const astar = new Astar(grid);
