@@ -24,5 +24,9 @@ export default class Config {
             { type:"wood", min:2, max:6, color:"#228B22", radius:[40, 100] },
             { type:"wheat", min:3, max:6, color:"#D2B48C", radius:[60, 120] }
         ];
+        this.actorImages = {
+            human: "images/human.png",
+            robot: "images/robot.png"
+        }; 
     }
 }
