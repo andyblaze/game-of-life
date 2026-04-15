@@ -48,84 +48,70 @@ const DEPTH_SPREAD = 4000;
 // ----------------------------
 const stars = [];
 
-function makeStar(z) {
-  const hasPlanets = Math.random() < 0.6;
+const colors = ["cyan", "green", "yellow", "purple", "blue", "brown", "gray", "magenta"];
 
-  const planets = [];
-  if (hasPlanets) {
-    const n = 1 + Math.floor(Math.random() * 5);
-    for (let i = 0; i < n; i++) {
-      planets.push({
-        dist: 30 + Math.random() * 120,
-        angle: Math.random() * Math.PI * 2,
-        speed: 0.005 + Math.random() * 0.01,
-        size: 2 + Math.random() * 3
-      });
+class Planet {
+    constructor() {
+        this.dist = 30 + Math.random() * 120;
+        this.angle = Math.random() * Math.PI * 2;
+        this.speed = 0.005 + Math.random() * 0.01;
+        this.size = 2 + Math.random() * 3; 
+        this.color = colors[Math.floor(Math.random() * colors.length)];
     }
-  }
+    render(ctx, p) {
+        const px = p.x + Math.cos(this.angle) * this.dist * p.scale;
+        const py = p.y + Math.sin(this.angle) * this.dist * p.scale;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(px, py, this.size * p.scale, 0, Math.PI * 2);
+        ctx.fill();    
+    }
+}
 
-  return {
-    x: (Math.random() - 0.5) * 1200,
-    y: (Math.random() - 0.5) * 800,
-    z: z,
-    r: 2 + Math.random() * 3,
-    hasPlanets,
-    planets
-  };
+class Star {
+    constructor(zindex) {
+        this.planets = [];
+        this.hasPlanets = true;
+        this.setPlanets();
+        this.setPosition(zindex);
+        this.r = 2 + Math.random() * 3;
+    }
+    setPosition(zindex) {
+        this.x = (Math.random() - 0.5) * 1200;
+        this.y = (Math.random() - 0.5) * 800;
+        this.z = zindex;    
+    }
+    setPlanets() {
+        this.planets = [];
+        this.hasPlanets = Math.random() < 0.6;        
+        if (this.hasPlanets) {
+            const n = 1 + Math.floor(Math.random() * 5);
+            for (let i = 0; i < n; i++) {
+                this.planets.push(new Planet());
+            }
+        }
+    }
+    render(ctx, p) {
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, this.r * p.scale, 0, Math.PI * 2);
+        ctx.fill();  
+        if ( this.hasPlanets ) {
+            for (let pl of this.planets) {
+                pl.render(ctx, p);
+            }
+        }
+    }
+    update() {  // planets always orbit
+        for (let p of this.planets) {
+            p.angle += p.speed;
+        }    
+    }
 }
 
 // initial field ahead of ship
 for (let i = 0; i < STAR_COUNT; i++) {
-  stars.push(makeStar(Math.random() * DEPTH_SPREAD));
-}
-
-// ----------------------------
-// RECYCLING (behind ship → ahead)
-// ----------------------------
-function recycle(s) {
-  s.x = (Math.random() - 0.5) * 1200;
-  s.y = (Math.random() - 0.5) * 800;
-  s.z = ship.z + DEPTH_SPREAD;
-
-  s.hasPlanets = Math.random() < 0.6;
-
-  s.planets = [];
-  if (s.hasPlanets) {
-    const n = 1 + Math.floor(Math.random() * 5);
-    for (let i = 0; i < n; i++) {
-      s.planets.push({
-        dist: 30 + Math.random() * 120,
-        angle: Math.random() * Math.PI * 2,
-        speed: 0.005 + Math.random() * 0.01,
-        size: 2 + Math.random() * 3
-      });
-    }
-  }
-}
-
-// ----------------------------
-// UPDATE
-// ----------------------------
-function update() {
-
-  // ship moves forward
-  ship.z += ship.speed;
-
-  for (let s of stars) {
-
-    // planets always orbit
-    for (let p of s.planets) {
-      p.angle += p.speed;
-    }
-
-    // recycle when passed behind ship
-    if (s.z < ship.z - 200) {
-      recycle(s);
-    }
-  }
-
-  draw();
-  requestAnimationFrame(update);
+  stars.push(new Star(Math.random() * DEPTH_SPREAD)); //makeStar(Math.random() * DEPTH_SPREAD));
 }
 
 // ----------------------------
@@ -146,44 +132,46 @@ function project(s) {
 // ----------------------------
 // DRAW
 // ----------------------------
-function draw() {
+function draw(ctx, stars) {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, c.width, c.height);
 
-  for (let s of stars) {
-
-    const p = project(s);
-
+  for (let star of stars) {
+    const p = project(star);
     // behind or too close → skip rendering
     if (p.dz <= 0) continue;
-
     // star
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, s.r * p.scale, 0, Math.PI * 2);
-    ctx.fill();
-
-    // planets (only visible when close enough naturally via scale)
-    if (s.hasPlanets) {
-      for (let pl of s.planets) {
-
-        const px = p.x + Math.cos(pl.angle) * pl.dist * p.scale;
-        const py = p.y + Math.sin(pl.angle) * pl.dist * p.scale;
-
-        ctx.fillStyle = "rgba(200,200,255,1)";
-        ctx.beginPath();
-        ctx.arc(px, py, pl.size * p.scale, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+    star.render(ctx, p);
   }
-
   // ship marker
   ctx.fillStyle = "red";
   ctx.fillRect(c.width/2 - 2, c.height/2 - 2, 4, 4);
 }
+// ----------------------------
+// RECYCLING (behind ship → ahead)
+// ----------------------------
+function recycle(star) {
+    star.setPlanets();
+    star.setPosition(ship.z + DEPTH_SPREAD);
+}
 
-update();
+// ----------------------------
+// UPDATE
+// ----------------------------
+function update(timestamp) {
+    // ship moves forward
+    ship.z += ship.speed;
+    for ( let star of stars ) {
+        star.update();
+        // recycle when passed behind ship
+        if (star.z < ship.z - 200) {
+            recycle(star);
+        }
+    }
+    draw(ctx, stars);
+    requestAnimationFrame(update);
+}
+update(performance.now());
 </script>
 </body>
 </html>
