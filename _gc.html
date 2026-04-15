@@ -84,9 +84,9 @@ class Star {
     setPlanets() {
         this.planets = [];
         this.hasPlanets = Math.random() < 0.6;        
-        if (this.hasPlanets) {
+        if ( this.hasPlanets ) {
             const n = 1 + Math.floor(Math.random() * 5);
-            for (let i = 0; i < n; i++) {
+            for ( let i = 0; i < n; i++ ) {
                 this.planets.push(new Planet());
             }
         }
@@ -106,6 +106,13 @@ class Star {
         for (let p of this.planets) {
             p.angle += p.speed;
         }    
+    }
+    // ----------------------------
+    // RECYCLING (behind ship → ahead)
+    // ----------------------------
+    recycle(zindex) {
+        this.setPlanets();
+        this.setPosition(zindex);
     }
 }
 
@@ -136,20 +143,18 @@ function draw(ctx, stars) {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, c.width, c.height);
 
-  for (let star of stars) {
+  /*for (let star of stars) {
     const p = project(star);
     // behind or too close → skip rendering
     if (p.dz <= 0) continue;
     // star
     star.render(ctx, p);
-  }
+  }*/
   // ship marker
   ctx.fillStyle = "red";
   ctx.fillRect(c.width/2 - 2, c.height/2 - 2, 4, 4);
 }
-// ----------------------------
-// RECYCLING (behind ship → ahead)
-// ----------------------------
+
 function recycle(star) {
     star.setPlanets();
     star.setPosition(ship.z + DEPTH_SPREAD);
@@ -161,14 +166,24 @@ function recycle(star) {
 function update(timestamp) {
     // ship moves forward
     ship.z += ship.speed;
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, c.width, c.height);
     for ( let star of stars ) {
         star.update();
         // recycle when passed behind ship
         if (star.z < ship.z - 200) {
-            recycle(star);
+            star.recycle(ship.z + DEPTH_SPREAD);
         }
+        
+        const p = project(star);
+        // behind or too close → skip rendering
+        if (p.dz <= 0) continue;
+        // star
+        star.render(ctx, p);
     }
-    draw(ctx, stars);
+    ctx.fillStyle = "red";
+    ctx.fillRect(c.width/2 - 2, c.height/2 - 2, 4, 4);
+    //draw(ctx, stars);
     requestAnimationFrame(update);
 }
 update(performance.now());
