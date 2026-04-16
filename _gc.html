@@ -54,7 +54,9 @@ class Ship {
     constructor(cfg) {
         this.cfg = cfg;
         this.z = 0;
-        this.speed = 2.2; // forward speed
+        this.speed = 2; // forward speed
+        this.targetSpeed = 2;
+        this.isChangingSpeed = false;
         this.x = 0;
         this.y = 0;
         this.targetX = this.x;
@@ -63,7 +65,21 @@ class Ship {
     }
     update() {
         this.z += this.speed;
-        if ( Math.random() < 0.6 && this.isSteering === false ) {
+        if (Math.random() < 0.1 && this.isChangingSpeed === false) {
+            const newSpeed = Math.random() * 13; // 0 → 3 allows stop and faster movement
+            this.setSpeed(newSpeed);
+        }
+        if (this.isChangingSpeed === true) {
+            const easing = 0.02;
+
+            const ds = this.targetSpeed - this.speed;
+            this.speed += ds * easing;
+
+            if (Math.abs(ds) < 0.01) {
+                this.isChangingSpeed = false;
+            }
+        }
+        if ( Math.random() < 0.016 && this.isSteering === false ) {
             const sx = randomOutside(200, 400);
             const sy = randomOutside(50, 150);
             this.steer(sx, sy);
@@ -79,6 +95,10 @@ class Ship {
                 this.isSteering = false;
             }
         }
+    }
+    setSpeed(s) {
+        this.targetSpeed = s;
+        this.isChangingSpeed = true;
     }
     steer(h, v) {
         if ( this.isSteering === true ) return;
