@@ -16,56 +16,92 @@ canvas {
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="html-canvas"></canvas>
 
 <script>
-const c = document.getElementById("c");
-const ctx = c.getContext("2d");
-
-function resize() {
-  c.width = innerWidth;
-  c.height = innerHeight;
+class Config {
+    constructor(canvasId) {
+        this.STAR_COUNT = 120;
+        this.DEPTH_SPREAD = 4000;
+        this.planetColors = ["cyan", "green", "yellow", "purple", "blue", "brown", "gray", "magenta"];
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext("2d");
+        this.resize();
+    }
+    resize() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+        this.halfWidth = this.width / 2;
+        this.halfHeight = this.height / 2;
+    }
 }
-addEventListener("resize", resize);
-resize();
+
+const config = new Config("html-canvas");
+
+addEventListener("resize", () => config.resize());
+
+function randomOutside(min, max) {
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    return sign * (min + Math.random() * (max - min));
+}
 
 // ----------------------------
 // SHIP (forward motion)
 // ----------------------------
 class Ship {
-    constructor() {
+    constructor(cfg) {
+        this.cfg = cfg;
         this.z = 0;
         this.speed = 2.2; // forward speed
-        this.x = c.width/2 - 2;
-        this.y = c.height/2 - 2;
+        this.x = 0;
+        this.y = 0;
+        this.targetX = this.x;
+        this.targetY = this.y;
+        this.isSteering = false;
+    }
+    update() {
+        this.z += this.speed;
+        if ( Math.random() < 0.6 && this.isSteering === false ) {
+            const sx = randomOutside(200, 400);
+            const sy = randomOutside(50, 150);
+            this.steer(sx, sy);
+        }
+        if ( this.isSteering === true ) {
+            const easing = 0.05;
+            this.x += (this.targetX - this.x) * easing;
+            this.y += (this.targetY - this.y) * easing;
+            const dx = this.targetX - this.x;
+            const dy = this.targetY - this.y;
+
+            if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+                this.isSteering = false;
+            }
+        }
+    }
+    steer(h, v) {
+        if ( this.isSteering === true ) return;
+        this.targetX = this.x + h;
+        this.targetY = this.y + v;
+        this.isSteering = true;
     }
     render(ctx) {
         ctx.fillStyle = "red";
-        ctx.fillRect(this.x, this.y, 4, 4);
+        ctx.fillRect(this.cfg.halfWidth - 2, this.cfg.halfHeight - 2, 4, 4);
     }
 }
-const ship = new Ship();
-
-// ----------------------------
-// WORLD SETTINGS
-// ----------------------------
-const STAR_COUNT = 120;
-const DEPTH_SPREAD = 4000;
-
-// ----------------------------
-// STAR SYSTEMS
-// ----------------------------
-const stars = [];
-
-const colors = ["cyan", "green", "yellow", "purple", "blue", "brown", "gray", "magenta"];
 
 class Planet {
-    constructor() {
+    constructor(cfg) {
         this.dist = 30 + Math.random() * 120;
         this.angle = Math.random() * Math.PI * 2;
         this.speed = 0.005 + Math.random() * 0.01;
         this.size = 2 + Math.random() * 3; 
-        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.color = cfg.planetColors[Math.floor(Math.random() * cfg.planetColors.length)];
+    }
+    update() {
+        this.angle += this.speed;
     }
     render(ctx, p) {
         const px = p.x + Math.cos(this.angle) * this.dist * p.scale;
@@ -77,26 +113,31 @@ class Planet {
     }
 }
 
+// ----------------------------
+// STAR SYSTEMS
+// ----------------------------
 class Star {
-    constructor(zindex) {
+    constructor(cfg) {
+        this.cfg = cfg;
         this.planets = [];
         this.hasPlanets = true;
-        this.setPlanets();
+        this.setPlanets(cfg);
+        const zindex = Math.random() * cfg.DEPTH_SPREAD
         this.setPosition(zindex);
         this.r = 2 + Math.random() * 3;
     }
     setPosition(zindex) {
-        this.x = (Math.random() - 0.5) * 1200;
-        this.y = (Math.random() - 0.5) * 800;
+        this.x = (Math.random() - 0.5) * this.cfg.width;
+        this.y = (Math.random() - 0.5) * this.cfg.height;
         this.z = zindex;    
     }
-    setPlanets() {
+    setPlanets(cfg) {
         this.planets = [];
         this.hasPlanets = Math.random() < 0.6;        
         if ( this.hasPlanets ) {
             const n = 1 + Math.floor(Math.random() * 5);
             for ( let i = 0; i < n; i++ ) {
-                this.planets.push(new Planet());
+                this.planets.push(new Planet(cfg));
             }
         }
     }
@@ -113,85 +154,70 @@ class Star {
     }
     update() {  // planets always orbit
         for (let p of this.planets) {
-            p.angle += p.speed;
+            p.update();
         }    
     }
     // ----------------------------
     // RECYCLING (behind ship → ahead)
     // ----------------------------
     recycle(zindex) {
-        this.setPlanets();
+        this.setPlanets(this.cfg);
         this.setPosition(zindex);
     }
 }
 
+const stars = [];
 // initial field ahead of ship
-for (let i = 0; i < STAR_COUNT; i++) {
-  stars.push(new Star(Math.random() * DEPTH_SPREAD)); //makeStar(Math.random() * DEPTH_SPREAD));
+for ( let i = 0; i < config.STAR_COUNT; i++ ) {
+  stars.push(new Star(config)); 
 }
 
 // ----------------------------
 // SIMPLE PERSPECTIVE PROJECTION
 // ----------------------------
-function project(s) {
-  const dz = s.z - ship.z;
-  const scale = 600 / dz;
+class Perspective {
+    project(star, ship, cnvs) {
+        const dz = star.z - ship.z;
+        const scale = 600 / dz;
 
-  return {
-    x: c.width / 2 + s.x * scale,
-    y: c.height / 2 + s.y * scale,
-    scale,
-    dz
-  };
+        return {
+            //x: cnvs.halfWidth + star.x * scale,
+            //y: cnvs.halfHeight + star.y * scale,
+            x: cnvs.halfWidth + (star.x - ship.x) * scale,
+            y: cnvs.halfHeight + (star.y - ship.y) * scale,
+            scale,
+            dz
+        };
+    }
 }
 
-// ----------------------------
-// DRAW
-// ----------------------------
-function draw(ctx, stars) {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, c.width, c.height);
-
-  /*for (let star of stars) {
-    const p = project(star);
-    // behind or too close → skip rendering
-    if (p.dz <= 0) continue;
-    // star
-    star.render(ctx, p);
-  }*/
-  // ship marker
-  ctx.fillStyle = "red";
-  ctx.fillRect(c.width/2 - 2, c.height/2 - 2, 4, 4);
-}
-
-function recycle(star) {
-    star.setPlanets();
-    star.setPosition(ship.z + DEPTH_SPREAD);
-}
+const ship = new Ship(config);
+const perspective = new Perspective();
 
 // ----------------------------
 // UPDATE
 // ----------------------------
 function update(timestamp) {
     // ship moves forward
-    ship.z += ship.speed;
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, c.width, c.height);
+    ship.update();
+    config.ctx.fillStyle = "black";
+    config.ctx.fillRect(0, 0, config.width, config.height);
     for ( let star of stars ) {
         star.update();
         // recycle when passed behind ship
-        if (star.z < ship.z - 200) {
-            star.recycle(ship.z + DEPTH_SPREAD);
+        if ( star.z < ship.z - 200 ) {
+            star.recycle(ship.z + config.DEPTH_SPREAD);
         }
         
-        const p = project(star);
+        const p = perspective.project(star, ship, config);
         // behind or too close → skip rendering
         if (p.dz <= 0) continue;
         // star
-        star.render(ctx, p);
+        star.render(config.ctx, p);
     }
-    ship.render(ctx);
+    ship.render(config.ctx);
     requestAnimationFrame(update);
+    //ship.steer(-200, 0);
 }
 update(performance.now());
 </script>
