@@ -32,10 +32,19 @@ resize();
 // ----------------------------
 // SHIP (forward motion)
 // ----------------------------
-const ship = {
-  z: 0,
-  speed: 2.2 // forward speed
-};
+class Ship {
+    constructor() {
+        this.z = 0;
+        this.speed = 2.2; // forward speed
+        this.x = c.width/2 - 2;
+        this.y = c.height/2 - 2;
+    }
+    render(ctx) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(this.x, this.y, 4, 4);
+    }
+}
+const ship = new Ship();
 
 // ----------------------------
 // WORLD SETTINGS
@@ -181,9 +190,7 @@ function update(timestamp) {
         // star
         star.render(ctx, p);
     }
-    ctx.fillStyle = "red";
-    ctx.fillRect(c.width/2 - 2, c.height/2 - 2, 4, 4);
-    //draw(ctx, stars);
+    ship.render(ctx);
     requestAnimationFrame(update);
 }
 update(performance.now());
