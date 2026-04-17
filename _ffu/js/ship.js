@@ -1,60 +1,45 @@
-import { mt_randf, randomOutside } from "./functions.js";
+import { ease, isNear } from "./functions.js";
 
 export default class Ship {
-    constructor(cfg) {
+    constructor(cfg, nav) {
         this.cfg = cfg;
+        this.navigator = nav;
         this.z = 0;
         this.speed = 2; // forward speed
         this.targetSpeed = 2;
-        this.isChangingSpeed = false;
         this.x = 0;
         this.y = 0;
         this.targetX = this.x;
         this.targetY = this.y;
-        this.isSteering = false;
+    }
+    isAtSpeed() {
+        return isNear(this.speed, this.targetSpeed, 0.01);
+    }
+    isAtPosition() {
+        return (
+            isNear(this.x, this.targetX, 0.5) &&
+            isNear(this.y, this.targetY, 0.5)
+        );
+    }
+    setThrottle(s) {
+        this.targetSpeed = s;
+    }
+    setThrusters(sx, sy) {
+        this.targetX = this.x + sx;
+        this.targetY = this.y + sy;
     }
     update() {
+        // forward motion
         this.z += this.speed;
-        if (Math.random() < 0.1 && this.isChangingSpeed === false) {
-            const newSpeed = mt_randf(0, 3); // 0 → 3 allows stop and faster movement
-            this.setSpeed(newSpeed);
-        }
-        if (this.isChangingSpeed === true) {
-            const easing = 0.02;
+        this.navigator.steer(this);
 
-            const ds = this.targetSpeed - this.speed;
-            this.speed += ds * easing;
+        // ----------------------------
+        // APPLY EASING
+        // ----------------------------
+        this.speed = ease(this.speed, this.targetSpeed, 0.02);
 
-            if (Math.abs(ds) < 0.01) {
-                this.isChangingSpeed = false;
-            }
-        }
-        if ( Math.random() < 0.016 && this.isSteering === false ) {
-            const sx = randomOutside(200, 400);
-            const sy = randomOutside(50, 150);
-            this.steer(sx, sy);
-        }
-        if ( this.isSteering === true ) {
-            const easing = 0.05;
-            this.x += (this.targetX - this.x) * easing;
-            this.y += (this.targetY - this.y) * easing;
-            const dx = this.targetX - this.x;
-            const dy = this.targetY - this.y;
-
-            if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
-                this.isSteering = false;
-            }
-        }
-    }
-    setSpeed(s) {
-        this.targetSpeed = s;
-        this.isChangingSpeed = true;
-    }
-    steer(h, v) {
-        if ( this.isSteering === true ) return;
-        this.targetX = this.x + h;
-        this.targetY = this.y + v;
-        this.isSteering = true;
+        this.x = ease(this.x, this.targetX, 0.0125);
+        this.y = ease(this.y, this.targetY, 0.0125);
     }
     render(ctx) {
         ctx.fillStyle = "red";

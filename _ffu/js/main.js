@@ -1,4 +1,5 @@
 import Config from "./config.js";
+import Navigator from "./navigator.js";
 import Ship from "./ship.js";
 import Galaxy from "./galaxy.js";
 import Perspective from "./perspective.js";
@@ -8,7 +9,7 @@ const config = new Config("html-canvas");
 
 addEventListener("resize", () => config.resize());
 
-const ship = new Ship(config);
+const ship = new Ship(config, new Navigator());
 const view = new Galaxy(config, ship, new Perspective());
 
 // ----------------------------
