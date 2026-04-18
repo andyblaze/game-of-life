@@ -10,7 +10,7 @@ export default class Config {
             gas: ["#d6c6a1", "#c2a57b", "#a8835a", "#e6d6b8"]
         };
         this.starColors = [
-            { h: 0, s: 0, l: 100, a: 1 },        
+            { h: 0, s: 40, l: 100, a: 1 },        
             { h: 210, s: 80, l: 80, a: 1 },     
             { h: 40, s: 100, l: 75, a: 1 },   
             { h: 20, s: 100, l: 65, a: 1 }   

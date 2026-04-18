@@ -1,14 +1,16 @@
 import Star from "./star.js";
+import SimplexNoise from "./simplex-noise.js";
 
 export default class Galaxy {
     constructor(cfg, s, p) {
         this.cfg = cfg;
         this.ship = s;
+        this.simplexNoise = new SimplexNoise();
         this.perspective = p;
         this.stars = [];
         // initial field ahead of ship
         for ( let i = 0; i < cfg.STAR_COUNT; i++ ) 
-            this.stars.push(new Star(cfg)); 
+            this.stars.push(new Star(cfg, this.simplexNoise)); 
     }
     render(ctx) {
         ctx.fillStyle = "black";
