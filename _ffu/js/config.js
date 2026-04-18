@@ -9,7 +9,12 @@ export default class Config {
             ice: ["#cfe9ff", "#9fd3ff", "#bfc7d5", "#e6f2ff"],
             gas: ["#d6c6a1", "#c2a57b", "#a8835a", "#e6d6b8"]
         };
-        this.starColors = ["#ffffff", "#aaccff", "#ffd28a", "#ff9a6b"];
+        this.starColors = [
+            { h: 0, s: 0, l: 100, a: 1 },        
+            { h: 210, s: 80, l: 80, a: 1 },     
+            { h: 40, s: 100, l: 75, a: 1 },   
+            { h: 20, s: 100, l: 65, a: 1 }   
+        ];
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
         this.resize();

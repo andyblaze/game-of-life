@@ -28,3 +28,20 @@ export function ease(current, target, factor) {
 export function isNear(a, b, threshold = 0.01) {
     return Math.abs(a - b) < threshold;
 }
+
+export function HSLAString(c) {
+    return `hsla(${c.h},${c.s}%,${c.l}%,${c.a})`;
+}
+
+export function lerp(a, b, t) {
+    return a + (b - a) * t;
+} 
+
+export function lerpHSLAColor(c1, c2, t) {
+    return {
+        h: lerp(c1.h, c2.h, t),
+        s: lerp(c1.s, c2.s, t),
+        l: lerp(c1.l, c2.l, t),
+        a: lerp(c1.a, c2.a, t)
+    };
+}
