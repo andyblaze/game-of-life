@@ -51,7 +51,34 @@ export default class Ship {
         this.speed += this.vz;
     }
     render(ctx) {
-        ctx.fillStyle = "red";
-        ctx.fillRect(this.cfg.halfWidth - 2, this.cfg.halfHeight - 2, 4, 4);
+        const cx = this.cfg.halfWidth;
+        const cy = this.cfg.halfHeight;
+
+        const size = 10;     // half-length of lines
+        const gap = 4;       // gap in the centre
+        const thickness = 1;
+
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = thickness;
+
+        ctx.beginPath();
+
+        // horizontal left
+        ctx.moveTo(cx - size, cy);
+        ctx.lineTo(cx - gap, cy);
+
+        // horizontal right
+        ctx.moveTo(cx + gap, cy);
+        ctx.lineTo(cx + size, cy);
+
+        // vertical top
+        ctx.moveTo(cx, cy - size);
+        ctx.lineTo(cx, cy - gap);
+
+        // vertical bottom
+        ctx.moveTo(cx, cy + gap);
+        ctx.lineTo(cx, cy + size);
+
+        ctx.stroke();
     }
 }
