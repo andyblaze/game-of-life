@@ -36,10 +36,10 @@ export default class Ship {
         // ----------------------------
         // APPLY EASING
         // ----------------------------
-        this.speed = ease(this.speed, this.targetSpeed, 0.02);
+        this.speed = ease(this.speed, this.targetSpeed, 0.05);
 
-        this.x = ease(this.x, this.targetX, 0.0125);
-        this.y = ease(this.y, this.targetY, 0.0125);
+        this.x = ease(this.x, this.targetX, 0.05);
+        this.y = ease(this.y, this.targetY, 0.05);
     }
     render(ctx) {
         ctx.fillStyle = "red";

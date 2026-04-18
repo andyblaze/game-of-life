@@ -15,8 +15,14 @@ export function randomFrom(arr) {
     return arr[mt_rand(0, arr.length - 1)];
 }
 
-export function ease(current, target, factor) {
+export function ease1(current, target, factor) {
     return current + (target - current) * factor;
+}
+
+export function ease(current, target, factor) {
+    const t = factor;
+    const shaped = t * t * (3 - 2 * t); // smoothstep
+    return current + (target - current) * shaped;
 }
 
 export function isNear(a, b, threshold = 0.01) {
