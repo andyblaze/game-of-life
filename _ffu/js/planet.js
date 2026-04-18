@@ -30,7 +30,78 @@ export default class Planet {
         ctx.arc(px, py, radius, 0, Math.PI * 2);
         ctx.fill();    
     }
+    getLightGradient(ctx, px, py, radius, p) {
+        const lx = p.x - px;
+        const ly = p.y - py;
+        const len = Math.hypot(lx, ly) || 1;
+        const nx = lx / len;
+        const ny = ly / len;
+
+        const gx1 = px - nx * radius;
+        const gy1 = py - ny * radius;
+        const gx2 = px + nx * radius;
+        const gy2 = py + ny * radius;
+
+        const gradient = ctx.createLinearGradient(gx1, gy1, gx2, gy2);
+        gradient.addColorStop(0, "rgba(0,0,0,0.6)");
+        gradient.addColorStop(0.5, this.color);
+        gradient.addColorStop(1, "white");
+
+        return gradient;
+    }
+    renderLit(ctx, px, py, radius, p) {
+        const gradient = this.getLightGradient(ctx, px, py, radius, p);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
+
+        ctx.restore();
+    }
+    renderDetailed(ctx, px, py, radius, p) {
+        const gradient = this.getLightGradient(ctx, px, py, radius, p);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        // base lighting
+        ctx.fillStyle = gradient;
+        ctx.fillRect(px - radius, py - radius, radius * 2, radius * 2);
+
+        // blobs
+        for (let b of this.blobs) {
+            const bx = px + Math.cos(b.angle) * radius * b.dist;
+            const by = py + Math.sin(b.angle) * radius * b.dist;
+            const br = radius * b.size;
+
+            ctx.fillStyle = `rgba(0,0,0,${b.alpha})`;
+            ctx.beginPath();
+            ctx.arc(bx, by, br, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
     render(ctx, p) {
+        const px = p.x + Math.cos(this.angle) * this.dist * p.scale;
+        const py = p.y + Math.sin(this.angle) * this.dist * p.scale;
+        const radius = this.size * p.scale;
+
+        if (radius < 4) {
+            this.renderCircle(ctx, px, py, radius);
+        } else if (radius < 6) {
+            this.renderLit(ctx, px, py, radius, p);
+        } else {
+            this.renderDetailed(ctx, px, py, radius, p);
+        }
+    }
+    render1(ctx, p) {
         const px = p.x + Math.cos(this.angle) * this.dist * p.scale;
         const py = p.y + Math.sin(this.angle) * this.dist * p.scale;        
         const radius = this.size * p.scale;
