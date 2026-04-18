@@ -9,6 +9,11 @@ export default class Ship {
         this.targetSpeed = 2;
         this.x = 0;
         this.y = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.vz = 0;
+        this.accel = 0.002;
+        this.damping = 0.92;
         this.targetX = this.x;
         this.targetY = this.y;
     }
@@ -33,13 +38,17 @@ export default class Ship {
         this.z += this.speed;
         this.navigator.steer(this);
 
-        // ----------------------------
-        // APPLY EASING
-        // ----------------------------
-        this.speed = ease(this.speed, this.targetSpeed, 0.05);
+        this.vx += (this.targetX - this.x) * this.accel;
+        this.vx *= this.damping;
+        this.x += this.vx;
 
-        this.x = ease(this.x, this.targetX, 0.05);
-        this.y = ease(this.y, this.targetY, 0.05);
+        this.vy += (this.targetY - this.y) * this.accel;
+        this.vy *= this.damping;
+        this.y += this.vy;
+
+        this.vz += ( this.targetSpeed - this.speed) * this.accel;
+        this.vz *= this.damping;
+        this.speed += this.vz;
     }
     render(ctx) {
         ctx.fillStyle = "red";
