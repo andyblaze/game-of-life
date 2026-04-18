@@ -1,47 +1,14 @@
-/*import { mt_randf, randomOutside} from "./functions.js";
-
-export default class Navigator {
-    constructor() {
-
-    }
-    steer(ship) {
-        // speed decisions
-        if (Math.random() < 0.1 && ship.isAtSpeed()) {
-            ship.setThrottle(mt_randf(0, 3));
-        }
-        // direction decisions
-        if (Math.random() < 0.016 && ship.isAtPosition()) {
-            let sx = randomOutside(200, 400);
-            let sy = randomOutside(50, 150);
-            // ----------------------------
-            // CENTRE BIAS
-            // ----------------------------
-            const biasStrength = 0.15; // small nudge, not dominant
-            sx += (-ship.x) * biasStrength;
-            sy += (-ship.y) * biasStrength;
-            ship.setThrusters(sx, sy);
-        }
-    }
-}*/
-
-import { mt_randf, randomOutside } from "./functions.js";
+import { mt_rand, mt_randf, randomOutside } from "./functions.js";
 
 export default class Navigator {
     constructor() {
         this.mode = "pausing";
         this.pauseTime = 0;
+        this.pauseLength = 0;
         this.target = { x: 0, y: 0 };
     }
 
     steer(ship, dt = 16) {
-
-        // ----------------------------
-        // SPEED DECISIONS (always active)
-        // ----------------------------
-        if (Math.random() < 0.1 && ship.isAtSpeed()) {
-            //ship.setThrottle(mt_randf(2, 3));
-        }
-
         // ----------------------------
         // STATE MACHINE
         // ----------------------------
@@ -59,6 +26,7 @@ export default class Navigator {
 
             this.target.x = ship.x + sx;
             this.target.y = ship.y + sy;
+            this.pauseLength = mt_rand(2000, 4000);
 
             ship.setThrusters(sx, sy);
             ship.setThrottle(mt_randf(5, 9));
@@ -82,7 +50,7 @@ export default class Navigator {
             ship.setThrottle(0);
 
             // ~1–2 seconds pause (tweak freely)
-            if (this.pauseTime > 4000) {
+            if (this.pauseTime > this.pauseLength) {
                 this.mode = "choosing";
             }
         }
