@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fast Sun (2-layer)</title>
+<style>
+  body { margin:0; background:black; overflow:hidden; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<script>
+    class DeltaReport {
+    static lastTime = performance.now();
+    static startTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = Infinity;
+    static max = 0;
+    static timeSum = 0; // total ms of frame times (not normalised)
+    static fps = 0;
+    static fpsEl = null;
+
+    static spew() {
+        console.log(Math.random());
+    }
+
+    static reset() {
+        this.frameCount = 0;
+        this.sum = 0;
+        this.timeSum = 0;
+    }
+
+    static calc(timestamp) {        
+        const deltaTime = timestamp - this.lastTime; // ms since last frame
+        const delta = deltaTime / 16.67; // normalised to 60fps
+
+        this.sum += delta;
+        this.timeSum += deltaTime;
+        this.lastTime = timestamp;
+
+        this.fps = parseInt(60 / (this.sum / this.frameCount));
+        if ( this.fps < this.min ) this.min = this.fps; 
+        if ( this.fps > this.max ) this.max = this.fps; 
+
+        const avgFrameTime = this.timeSum / this.frameCount; // ms
+        const totalSeconds = Math.floor((timestamp - this.startTime) / 1000);
+        const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+        const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+        const elapsed = minutes + ":" + seconds;
+        return [ avgFrameTime, elapsed ];
+    }
+
+    static display(timestamp, htmlId) {
+        if ( this.fpsEl === null ) this.fpsEl = htmlId;
+        this.frameCount++;
+        if (this.frameCount === 120) {
+            DeltaReport.calc(timestamp);  
+            this.fpsEl.innerText = this.fps;
+
+            // Clear any previous fps-* class
+            this.fpsEl.classList.remove("fps-best", "fps-ok", "fps-bad");
+
+            // Add class based on fps
+            if (this.fps >= 55) {
+                this.fpsEl.classList.add("fps-best");
+            } else if (this.fps >= 40) {
+                this.fpsEl.classList.add("fps-ok");
+            } else {
+                this.fpsEl.classList.add("fps-bad");
+            }
+            DeltaReport.reset();
+        }
+    }
+
+    static log(timestamp) { 
+        this.frameCount++;
+        if (this.frameCount === 120) { // ~2 seconds at 60fps
+            const [avgFrameTime, elapsed] = DeltaReport.calc(timestamp);        
+
+            console.log(
+                "fps", this.fps,
+                "min=", this.min,
+                "max=", this.max,
+                "avgFrame=", avgFrameTime.toFixed(2) + "ms",
+                "elapsed=", elapsed
+            );
+            DeltaReport.reset();
+        }
+    }
+}
+
+// ==========================
+// TUNING
+// ==========================
+
+const SUN_RADIUS = 180;
+
+const NOISE_SIZE = 128;
+
+const LAYER1_SCALE = 1.0;
+const LAYER2_SCALE = 1.8;
+
+const LAYER1_SPEED_X = Math.abs(Math.random() - 0.2);
+const LAYER1_SPEED_Y = Math.abs(Math.random() - 0.2);
+
+const LAYER2_SPEED_X = Math.abs(Math.random() - 0.2);
+const LAYER2_SPEED_Y = -Math.abs(Math.random() - 0.2);
+
+const CONTRAST = 1.14;
+const BRIGHTNESS = 1.1;
+const SUN_COLOR = { h: 210, s: 80, l: 80, a: 1 };
+
+// ==========================
+// SIMPLEX NOISE (yours)
+// ==========================
+
+class SimplexNoise {
+    constructor() {
+        this.grad3 = [
+            [1,1],[-1,1],[1,-1],[-1,-1],
+            [1,0],[-1,0],[1,0],[-1,0],
+            [0,1],[0,-1],[0,1],[0,-1]
+        ];
+        this.p = [];
+        for (let i = 0; i < 256; i++) this.p[i] = Math.floor(Math.random()*256);
+        this.perm = [];
+        for (let i = 0; i < 512; i++) this.perm[i] = this.p[i & 255];
+    }
+    dot(g, x, y) { return g[0]*x + g[1]*y; }
+    noise(xin, yin) {
+        const F2 = 0.5*(Math.sqrt(3)-1);
+        const G2 = (3-Math.sqrt(3))/6;
+
+        let s = (xin+yin)*F2;
+        let i = Math.floor(xin+s);
+        let j = Math.floor(yin+s);
+
+        let t = (i+j)*G2;
+        let X0 = i-t;
+        let Y0 = j-t;
+        let x0 = xin-X0;
+        let y0 = yin-Y0;
+
+        let i1, j1;
+        if (x0 > y0) { i1=1; j1=0; }
+        else { i1=0; j1=1; }
+
+        let x1 = x0 - i1 + G2;
+        let y1 = y0 - j1 + G2;
+        let x2 = x0 - 1 + 2*G2;
+        let y2 = y0 - 1 + 2*G2;
+
+        let ii = i & 255;
+        let jj = j & 255;
+
+        let gi0 = this.perm[ii+this.perm[jj]] % 12;
+        let gi1 = this.perm[ii+i1+this.perm[jj+j1]] % 12;
+        let gi2 = this.perm[ii+1+this.perm[jj+1]] % 12;
+
+        let n0=0, n1=0, n2=0;
+
+        let t0 = 0.5 - x0*x0 - y0*y0;
+        if (t0 >= 0) {
+            t0 *= t0;
+            n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0);
+        }
+
+        let t1 = 0.5 - x1*x1 - y1*y1;
+        if (t1 >= 0) {
+            t1 *= t1;
+            n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1);
+        }
+
+        let t2 = 0.5 - x2*x2 - y2*y2;
+        if (t2 >= 0) {
+            t2 *= t2;
+            n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2);
+        }
+
+        return 70 * (n0 + n1 + n2);
+    }
+}
+
+const noise = new SimplexNoise();
+
+// ==========================
+// CANVAS
+// ==========================
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+let w, h, cx, cy;
+
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cx = w / 2;
+    cy = h / 2;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// ==========================
+// OFFSCREEN NOISE
+// ==========================
+
+const nCanvas = document.createElement("canvas");
+nCanvas.width = NOISE_SIZE;
+nCanvas.height = NOISE_SIZE;
+const nCtx = nCanvas.getContext("2d");
+
+function updateNoise(t) {
+    const img = nCtx.createImageData(NOISE_SIZE, NOISE_SIZE);
+    const d = img.data;
+
+    for (let y = 0; y < NOISE_SIZE; y++) {
+        for (let x = 0; x < NOISE_SIZE; x++) {
+
+            let n = noise.noise(x * 0.05 + t, y * 0.05);
+
+            // normalize + bias
+            n = (n * 0.5 + 0.5);
+            n = Math.pow(n, CONTRAST) * BRIGHTNESS;
+
+            const v = Math.floor(n * 255);
+
+            const i = (y * NOISE_SIZE + x) * 4;
+            d[i] = d[i+1] = d[i+2] = v;
+            d[i+3] = 255;
+        }
+    }
+
+    nCtx.putImageData(img, 0, 0);
+}
+
+// ==========================
+// DRAW SUN
+// ==========================
+
+function gradientFill(ctx) {
+    // BASE GRADIENT
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, SUN_RADIUS);
+    const c = SUN_COLOR;
+    g.addColorStop(0, `hsla(${c.h},${c.s}%,${c.l-20}%,1)`);
+    g.addColorStop(0.5, `hsla(${c.h-20},${c.s}%,${c.l-30}%,1)`);
+    g.addColorStop(1, `hsla(${c.h-40},${c.s}%,${c.l-40}%,1)`);
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+}
+function drawCircle(ctx) {
+    const c = SUN_COLOR;
+    ctx.fillStyle = `hsla(${c.h},${c.s}%,${c.l}%,1)`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
+    ctx.fill();  
+}
+
+function drawLayers(ctx, t)  {
+    // MASK
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
+    ctx.clip();
+
+    // LAYER 1
+    ctx.globalCompositeOperation = "overlay";
+    ctx.drawImage(
+        nCanvas,
+        cx - SUN_RADIUS + t * LAYER1_SPEED_X,
+        cy - SUN_RADIUS + t * LAYER1_SPEED_Y,
+        SUN_RADIUS * 2 * LAYER1_SCALE,
+        SUN_RADIUS * 2 * LAYER1_SCALE
+    );
+
+    // LAYER 2
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.4;
+    ctx.drawImage(
+        nCanvas,
+        cx - SUN_RADIUS + t * LAYER2_SPEED_X,
+        cy - SUN_RADIUS + t * LAYER2_SPEED_Y,
+        SUN_RADIUS * 2 * LAYER2_SCALE,
+        SUN_RADIUS * 2 * LAYER2_SCALE
+    );
+
+    ctx.globalAlpha = 0.1;
+    ctx.restore();
+}
+
+function drawGlow(ctx) {
+    ctx.globalCompositeOperation = "lighter";
+
+    const glow = ctx.createRadialGradient(
+        cx, cy, SUN_RADIUS * 0.8,
+        cx, cy, SUN_RADIUS * 1.4
+    );
+
+    const c = SUN_COLOR;
+
+    glow.addColorStop(0, `hsla(${c.h}, ${c.s}%, ${c.l}%, 0.1)`);
+    glow.addColorStop(0.3, `hsla(${c.h}, ${c.s}%, ${c.l}%, 0.2)`);
+    glow.addColorStop(1, `hsla(${c.h}, ${c.s}%, ${c.l}%, 0)`);
+
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS * 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalCompositeOperation = "source-over";
+}
+
+function drawSun(t) {
+    drawCircle(ctx);
+    gradientFill(ctx);
+    drawLayers(ctx, t);
+    drawGlow(ctx);
+}
+
+// ==========================
+// LOOP
+// ==========================
+
+let t = 0;
+let frameCount = 0;
+
+function loop(timestamp) {
+    t += 0.01;
+
+    ctx.clearRect(0, 0, w, h);
+
+    if (frameCount % 3 === 0) updateNoise(t * 0.3);
+
+    drawSun(t);
+
+    DeltaReport.log(timestamp)
+    frameCount++;
+    if ( frameCount > 60 ) frameCount = 0;
+
+    requestAnimationFrame(loop);
+}
+
+loop(performance.now());
+
+</script>
+</body>
+</html>
