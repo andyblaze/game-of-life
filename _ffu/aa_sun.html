@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Blob Sun</title>
+<style>
+  body { margin:0; background:black; overflow:hidden; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<script>
+
+// ==========================
+// YOUR CLASSES (unchanged)
+// ==========================
+
+class DeltaReport {
+    static lastTime = performance.now();
+    static startTime = performance.now();
+    static frameCount = 0;
+    static sum = 0;
+    static min = Infinity;
+    static max = 0;
+    static timeSum = 0;
+    static fps = 0;
+
+    static reset() {
+        this.frameCount = 0;
+        this.sum = 0;
+        this.timeSum = 0;
+    }
+
+    static calc(timestamp) {        
+        const deltaTime = timestamp - this.lastTime;
+        const delta = deltaTime / 16.67;
+
+        this.sum += delta;
+        this.timeSum += deltaTime;
+        this.lastTime = timestamp;
+
+        this.fps = parseInt(60 / (this.sum / this.frameCount));
+        if ( this.fps < this.min ) this.min = this.fps; 
+        if ( this.fps > this.max ) this.max = this.fps; 
+
+        const avgFrameTime = this.timeSum / this.frameCount;
+        const totalSeconds = Math.floor((timestamp - this.startTime) / 1000);
+
+        return [ avgFrameTime, totalSeconds ];
+    }
+
+    static log(timestamp) { 
+        this.frameCount++;
+        if (this.frameCount === 120) {
+            const [avgFrameTime, elapsed] = DeltaReport.calc(timestamp);        
+
+            console.log(
+                "fps", this.fps,
+                "min=", this.min,
+                "max=", this.max,
+                "avgFrame=", avgFrameTime.toFixed(2) + "ms",
+                "elapsed=", elapsed
+            );
+            DeltaReport.reset();
+        }
+    }
+}
+
+class SimplexNoise {
+    constructor() {
+        this.grad3 = [
+            [1,1],[-1,1],[1,-1],[-1,-1],
+            [1,0],[-1,0],[1,0],[-1,0],
+            [0,1],[0,-1],[0,1],[0,-1]
+        ];
+        this.p = [];
+        for (let i = 0; i < 256; i++) this.p[i] = Math.floor(Math.random()*256);
+        this.perm = [];
+        for (let i = 0; i < 512; i++) this.perm[i] = this.p[i & 255];
+    }
+    dot(g, x, y) { return g[0]*x + g[1]*y; }
+    noise(xin, yin) {
+        const F2 = 0.5*(Math.sqrt(3)-1);
+        const G2 = (3-Math.sqrt(3))/6;
+
+        let s = (xin+yin)*F2;
+        let i = Math.floor(xin+s);
+        let j = Math.floor(yin+s);
+
+        let t = (i+j)*G2;
+        let X0 = i-t;
+        let Y0 = j-t;
+        let x0 = xin-X0;
+        let y0 = yin-Y0;
+
+        let i1, j1;
+        if (x0 > y0) { i1=1; j1=0; }
+        else { i1=0; j1=1; }
+
+        let x1 = x0 - i1 + G2;
+        let y1 = y0 - j1 + G2;
+        let x2 = x0 - 1 + 2*G2;
+        let y2 = y0 - 1 + 2*G2;
+
+        let ii = i & 255;
+        let jj = j & 255;
+
+        let gi0 = this.perm[ii+this.perm[jj]] % 12;
+        let gi1 = this.perm[ii+i1+this.perm[jj+j1]] % 12;
+        let gi2 = this.perm[ii+1+this.perm[jj+1]] % 12;
+
+        let n0=0, n1=0, n2=0;
+
+        let t0 = 0.5 - x0*x0 - y0*y0;
+        if (t0 >= 0) {
+            t0 *= t0;
+            n0 = t0 * t0 * this.dot(this.grad3[gi0], x0, y0);
+        }
+
+        let t1 = 0.5 - x1*x1 - y1*y1;
+        if (t1 >= 0) {
+            t1 *= t1;
+            n1 = t1 * t1 * this.dot(this.grad3[gi1], x1, y1);
+        }
+
+        let t2 = 0.5 - x2*x2 - y2*y2;
+        if (t2 >= 0) {
+            t2 *= t2;
+            n2 = t2 * t2 * this.dot(this.grad3[gi2], x2, y2);
+        }
+
+        return 70 * (n0 + n1 + n2);
+    }
+}
+
+const noise = new SimplexNoise();
+
+// ==========================
+// SETUP
+// ==========================
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+let w, h, cx, cy;
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    cx = w / 2;
+    cy = h / 2;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// ==========================
+// SUN CONFIG
+// ==========================
+
+const SUN_RADIUS = 180;
+const BLOB_COUNT = SUN_RADIUS * 2;
+
+// blob data
+const blobs = [];
+for (let i = 0; i < BLOB_COUNT; i++) {
+    blobs.push({
+        angle: Math.random() * Math.PI * 2,
+        dist: Math.random() * SUN_RADIUS * 0.9,
+        size: 2 + Math.random() * 5,
+        speed: 0.2 + Math.random() * 0.5,
+        offset: Math.random() * 1000,
+        bright: Math.random() < 0.0017 // mostly bright blobs
+    });
+}
+
+// ==========================
+// DRAW
+// ==========================
+
+function drawSun(t) {
+
+    // BASE
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, SUN_RADIUS);
+    g.addColorStop(0, "hsla(50,100%,80%,1)");
+    g.addColorStop(0.5, "hsla(40,100%,60%,1)");
+    g.addColorStop(1, "hsla(20,100%,30%,1)");
+
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+
+    // MASK
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
+    ctx.clip();
+
+    // BLOBS
+    for (let b of blobs) {
+
+        const n = noise.noise(
+            Math.cos(b.angle) + t * b.speed,
+            Math.sin(b.angle) + b.offset
+        );
+
+        const drift = n * 20;
+
+        const x = cx + Math.cos(b.angle) * (b.dist + drift);
+        const y = cy + Math.sin(b.angle) * (b.dist + drift);
+
+        const r = b.size * (0.7 + n * 0.3);
+
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+
+        if (b.bright) {
+            ctx.fillStyle = "hsla(50,100%,70%,0.08)";
+            ctx.globalCompositeOperation = "lighter";
+        } else {
+            ctx.fillStyle = "rgba(120,0,0,0.05)";
+            ctx.globalCompositeOperation = "source-over";
+        }
+
+        ctx.fill();
+    }
+
+    ctx.restore();
+    ctx.globalCompositeOperation = "source-over";
+
+    // GLOW
+    ctx.globalCompositeOperation = "lighter";
+
+    const glow = ctx.createRadialGradient(cx, cy, SUN_RADIUS * 0.9, cx, cy, SUN_RADIUS * 1.6);
+    glow.addColorStop(0, "rgba(255,200,80,0.15)");
+    glow.addColorStop(1, "rgba(255,120,40,0)");
+
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, SUN_RADIUS * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalCompositeOperation = "source-over";
+}
+
+// ==========================
+// LOOP
+// ==========================
+
+let t = 0;
+
+function loop(timestamp) {
+    t += 0.01;
+
+    ctx.clearRect(0, 0, w, h);
+
+    drawSun(t);
+
+    DeltaReport.log(timestamp);
+
+    requestAnimationFrame(loop);
+}
+
+loop(performance.now());
+
+</script>
+</body>
+</html>
