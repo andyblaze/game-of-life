@@ -135,7 +135,15 @@ class SimplexNoise {
     }
 }
 
-const noise = new SimplexNoise();
+function HSLAString(c) {
+    return `hsla(${c.h},${c.s}%,${c.l}%,${c.a})`;
+}
+function mt_rand(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function mt_randf(min, max) {
+    return Math.random() * (max - min) + min;
+}
 
 // ==========================
 // SETUP
@@ -158,58 +166,70 @@ resize();
 // SUN CONFIG
 // ==========================
 
-const SUN_RADIUS = 180;
-const BLOB_COUNT = SUN_RADIUS * 0.8;
-const SUN_COLOR = { h: 60, s: 100, l: 100, a: 1 };
+class Star {
+    constructor(s) {
+        this.simplex = s;
+        this.RADIUS = 180;
+        this.BLOB_COUNT = this.RADIUS * 0.8;
+        this.COLOR = { h: 60, s: 100, l: 100, a: 1 };
 
-// blob data
-const blobs = [];
-for (let i = 0; i < BLOB_COUNT; i++) {
-blobs.push({
-    angle: Math.random() * Math.PI * 2,
-    dist: Math.random() * SUN_RADIUS * 0.9,
-    size: 18 + Math.random() * 38,
-    speed: 0.2 + Math.random() * 0.95,
-    offset: Math.random() * 1000,
-    shapeOffset: Math.random() * 1000,
-    bright: Math.random() < 0.002
-});
-}
+        // blob data
+        const points = 10;
+        this.blobs = [];
+        for ( let i = 0; i < this.BLOB_COUNT; i++ ) {
+            this.blobs.push({
+            angle: Math.random() * Math.PI * 2,
+            dist: Math.random() * this.RADIUS * 0.9,
+            size: mt_rand(this.RADIUS / 10, this.RADIUS / 4),
+            speed: 0.2 + Math.random() * 0.95,
+            offset: mt_randf(0, 1000),
+            shapeOffset: mt_randf(0, 1000),
+            bright: Math.random() < 0.002,
+            shape: Array.from({ length: points }, (_, j) =>
+                Math.sin(j / points * Math.PI * 2) * 0.5 + mt_randf(-0.3, 0.3)
+            )
+        });
+        }
+    }
+    drawCircle(ctx) {
+        ctx.fillStyle = HSLAString(this.COLOR);
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    drawGradient (ctx) {
+        // GRADIENT BASE
+        const c = { ...this.COLOR };
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.RADIUS);
+        g.addColorStop(0, HSLAString(c));
+        c.h -= 10;
+        c.l -= 40;
+        g.addColorStop(0.5, HSLAString(c));
+        c.h -= 20;
+        c.l -= 20;
+        g.addColorStop(1, HSLAString(c));
 
-// ==========================
-// DRAW
-// ==========================
-
-function drawSun(t) {
-    const c = SUN_COLOR;
-
-    // CIRCLE
-    ctx.fillStyle = `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`;
-    ctx.beginPath();
-    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
-    ctx.fill();
-
-    // GRADIENT BASE
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, SUN_RADIUS);
-    g.addColorStop(0, `hsla(${c.h}, ${c.s}%, ${c.l}%, ${c.a})`);
-    g.addColorStop(0.5, `hsla(${c.h-10}, ${c.s}%, ${c.l-40}%, ${c.a})`);
-    g.addColorStop(1, `hsla(${c.h-30}, ${c.s}%, ${c.l-60}%, ${c.a})`);
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
-    ctx.fill();
-
-    // MASK
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+    }
+drawBlobs(ctx, t) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, SUN_RADIUS, 0, Math.PI * 2);
+    ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
     ctx.clip();
 
-    // BLOBS
-    for (let b of blobs) {
+    const points = 10;
+    const step = (Math.PI * 2) / points;
 
-        const n = noise.noise(
+    for (let b of this.blobs) {
+
+        // slow angular drift
+        b.angle += 0.0005;
+
+        // ONE noise call per blob
+        const n = this.simplex.noise(
             Math.cos(b.angle) + t * b.speed,
             Math.sin(b.angle) + b.offset
         );
@@ -221,8 +241,8 @@ function drawSun(t) {
 
         const baseR = b.size * (0.7 + n * 0.3);
 
-        const points = 20;
-        const step = (Math.PI * 2) / points;
+        // small animated wobble (cheap)
+        const wobble = this.simplex.noise(b.offset, t * 0.5);
 
         ctx.beginPath();
 
@@ -230,13 +250,10 @@ function drawSun(t) {
 
             const a = i * step;
 
-            // noise-based radial distortion
-            const rn = noise.noise(
-                Math.cos(a) + b.shapeOffset,
-                Math.sin(a) + t * 0.5
-            );
+            // 👇 NO noise here anymore
+            const rn = b.shape[i % points];
 
-            const r = baseR + rn * baseR * 0.4;
+            const r = baseR + (rn + wobble * 0.5) * baseR * 0.4;
 
             const px = x + Math.cos(a) * r;
             const py = y + Math.sin(a) * r;
@@ -247,11 +264,14 @@ function drawSun(t) {
 
         ctx.closePath();
 
+        const c = { ...this.COLOR, a: 0.08 };
+
         if (b.bright) {
-            ctx.fillStyle = `hsla(${c.h}, ${c.s}%, ${c.l}%, 0.08)`;
+            ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "lighter";
         } else {
-            ctx.fillStyle = `hsla(${c.h-30}, ${c.s-20}%, ${c.l-60}%, 0.09)`;
+            c.h -= 30; c.s -= 20; c.l -= 60;
+            ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "source-over";
         }
 
@@ -260,21 +280,35 @@ function drawSun(t) {
 
     ctx.restore();
     ctx.globalCompositeOperation = "source-over";
-
-    // GLOW
-    ctx.globalCompositeOperation = "lighter";
-
-    const glow = ctx.createRadialGradient(cx, cy, SUN_RADIUS * 0.9, cx, cy, SUN_RADIUS * 1.5);
-    glow.addColorStop(0, `hsla(${c.h}, ${c.s}%, ${c.l-80}%, 0.7)`);
-    glow.addColorStop(1, `hsla(${c.h-20}, ${c.s-20}%, ${c.l-80}%, 0)`);
-
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(cx, cy, SUN_RADIUS * 1.6, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalCompositeOperation = "source-over";
 }
+    drawGlow(ctx) {
+        // GLOW
+        ctx.globalCompositeOperation = "lighter";
+
+        const c = { ...this.COLOR };
+        c.a = 0.25;
+
+        const glow = ctx.createRadialGradient(cx, cy, this.RADIUS * 0.9, cx, cy, this.RADIUS * 1.5);
+        glow.addColorStop(0, HSLAString(c));
+        c.h -= 20; c.s -= 20; c.l -= 80; c.a = 0;
+        glow.addColorStop(1, HSLAString(c));
+
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, this.RADIUS * 1.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalCompositeOperation = "source-over";
+    }
+    render(ctx, t) {
+        this.drawCircle(ctx);
+        this.drawGradient(ctx);
+        this.drawBlobs(ctx, t);
+        this.drawGlow(ctx);
+    }
+}
+
+const star = new Star(new SimplexNoise());
 
 // ==========================
 // LOOP
@@ -287,7 +321,7 @@ function loop(timestamp) {
 
     ctx.clearRect(0, 0, w, h);
 
-    drawSun(t);
+    star.render(ctx, t);
 
     DeltaReport.log(timestamp);
 
