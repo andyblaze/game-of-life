@@ -171,7 +171,7 @@ class Star {
         this.simplex = s;
         this.RADIUS = 180;
         this.BLOB_COUNT = this.RADIUS * 0.8;
-        this.COLOR = { h: 60, s: 100, l: 100, a: 1 };
+        this.COLOR = { h: 60, s: 100, l: 80, a: 1 };
 
         // blob data
         const points = 10;
@@ -202,11 +202,11 @@ class Star {
         const c = { ...this.COLOR };
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.RADIUS);
         g.addColorStop(0, HSLAString(c));
-        c.h -= 10;
-        c.l -= 40;
+        c.h *= 0.9; //mt_randf(-5, 5); // tiny variation only
+        c.l *= 0.8; // or 0.5–0.8 range
         g.addColorStop(0.5, HSLAString(c));
-        c.h -= 20;
-        c.l -= 20;
+        c.h *= 0.4;
+        c.l *= 0.4;
         g.addColorStop(1, HSLAString(c));
 
         ctx.fillStyle = g;
@@ -217,7 +217,7 @@ class Star {
 drawBlobs(ctx, t) {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
+    ctx.arc(cx, cy, this.RADIUS*1.1, 0, Math.PI * 2);
     ctx.clip();
 
     const points = 10;
@@ -226,7 +226,7 @@ drawBlobs(ctx, t) {
     for (let b of this.blobs) {
 
         // slow angular drift
-        b.angle += 0.0005;
+        b.angle += 0.0015;
 
         // ONE noise call per blob
         const n = this.simplex.noise(
@@ -270,7 +270,7 @@ drawBlobs(ctx, t) {
             ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "lighter";
         } else {
-            c.h -= 30; c.s -= 20; c.l -= 60;
+            c.h *= 0.1; c.s *= 0.6; c.l *= 0.4;
             ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "source-over";
         }
@@ -286,11 +286,11 @@ drawBlobs(ctx, t) {
         ctx.globalCompositeOperation = "lighter";
 
         const c = { ...this.COLOR };
-        c.a = 0.25;
+        c.a = 0.29;
 
         const glow = ctx.createRadialGradient(cx, cy, this.RADIUS * 0.9, cx, cy, this.RADIUS * 1.5);
         glow.addColorStop(0, HSLAString(c));
-        c.h -= 20; c.s -= 20; c.l -= 80; c.a = 0;
+        c.h *= 0.25; c.s *= 0.99; c.l *= 0.99; c.a = 0;
         glow.addColorStop(1, HSLAString(c));
 
         ctx.fillStyle = glow;
