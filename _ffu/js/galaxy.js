@@ -12,7 +12,7 @@ export default class Galaxy {
         for ( let i = 0; i < cfg.STAR_COUNT; i++ ) 
             this.stars.push(new Star(cfg, this.simplexNoise)); 
     }
-    render(ctx) {
+    render(ctx, t) {
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, this.cfg.width, this.cfg.height);
         for ( let star of this.stars ) {
@@ -26,7 +26,7 @@ export default class Galaxy {
             // behind or too close → skip rendering
             if ( p.dz <= 0 ) continue;
 
-            star.render(ctx, p);
+            star.render(ctx, p, t);
         }
     }
 }

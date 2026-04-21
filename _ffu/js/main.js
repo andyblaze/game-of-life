@@ -15,9 +15,11 @@ const view = new Galaxy(config, ship, new Perspective());
 // ----------------------------
 // UPDATE
 // ----------------------------
+let t = 0;
 function update(timestamp) {    
+    t += 0.01;
     ship.update(); // ship moves 
-    view.render(config.ctx); // stars & planets move & rendered
+    view.render(config.ctx, t); // stars & planets move & rendered
     ship.render(config.ctx); // ship on top
     requestAnimationFrame(update);
     DeltaReport.log(timestamp);

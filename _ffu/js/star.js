@@ -178,14 +178,14 @@ export default class Star {
         this.simplex = noise;
         this.COLOR = randomFrom(cfg.starColors);
         this.planets = [];
-        this.hasPlanets = true;
-        this.setPlanets(cfg);
+        this.hasPlanets = false;
+        //this.setPlanets(cfg);
         const zindex = mt_rand(0, cfg.DEPTH_SPREAD);
         this.setPosition(zindex);
         this.RADIUS = mt_rand(2, 5);
-        this.BLOB_COUNT = this.RADIUS * 0.8;
+        this.BLOB_COUNT = 0;//this.RADIUS * 0.8;
         this.blobs = [];
-        this.updateBlobs();
+        //this.updateBlobs();
     }
     updateBlobs() {
         const points = 10;
@@ -221,16 +221,16 @@ export default class Star {
             }
         }
     }
-    drawCircle(ctx) {
+    drawCircle(ctx, p) {
         ctx.fillStyle = HSLAString(this.COLOR);
         ctx.beginPath();
-        ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(p.x, p.y, this.RADIUS, 0, Math.PI * 2);
+        ctx.fill(); 
     }
-    drawGradient (ctx) {
+    drawGradient (ctx, p) {
         // GRADIENT BASE
         const c = { ...this.COLOR };
-        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, this.RADIUS);
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, this.RADIUS);
         g.addColorStop(0, HSLAString(c));
         c.h *= 0.9; //mt_randf(-5, 5); // tiny variation only
         c.l *= 0.8; // or 0.5–0.8 range
@@ -241,13 +241,14 @@ export default class Star {
 
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, this.RADIUS, 0, Math.PI * 2);
         ctx.fill();
     }
-    drawBlobs(ctx, t) {
+    drawBlobs(ctx, p, t) {
+        if ( this.blobs.length === 0 ) return;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, this.RADIUS, 0, Math.PI * 2);
         ctx.clip();
 
         const points = 10;
@@ -266,8 +267,8 @@ export default class Star {
 
             const drift = n * 20;
 
-            const x = cx + Math.cos(b.angle) * (b.dist + drift);
-            const y = cy + Math.sin(b.angle) * (b.dist + drift);
+            const x = p.x + Math.cos(b.angle) * (b.dist + drift);
+            const y = p.y + Math.sin(b.angle) * (b.dist + drift);
 
             const baseR = b.size * (0.7 + n * 0.3);
 
@@ -311,50 +312,57 @@ export default class Star {
         ctx.restore();
         ctx.globalCompositeOperation = "source-over";
     }
-    drawGlow(ctx) {
+    drawGlow(ctx, p) {
         // GLOW
         ctx.globalCompositeOperation = "lighter";
 
         const c = { ...this.COLOR };
         c.a = 0.29;
 
-        const glow = ctx.createRadialGradient(cx, cy, this.RADIUS * 0.9, cx, cy, this.RADIUS * 1.5);
+        const glow = ctx.createRadialGradient(p.x, p.y, this.RADIUS * 0.9, p.x, p.y, this.RADIUS * 1.5);
         glow.addColorStop(0, HSLAString(c));
         c.h *= 0.25; c.s *= 0.99; c.l *= 0.99; c.a = 0;
         glow.addColorStop(1, HSLAString(c));
 
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(cx, cy, this.RADIUS * 1.6, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, this.RADIUS * 1.6, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.globalCompositeOperation = "source-over";
     }
-    render(ctx, p) {
-        const radius = this.r * p.scale;
-        const baseColor = HSLAString(this.color);
+    render(ctx, p, t) {
+        //this.RADIUS = this.RADIUS * p.scale;
+        //this.updateBlobs();
+        this.drawCircle(ctx, p);
+        //this.drawGradient(ctx, p);
+        //this.drawBlobs(ctx, p, t);
+        //this.drawGlow(ctx, p);
+
+        
+        //const baseColor = HSLAString(this.color);
 
         // ----------------------------
         // STAR GLOW (key addition)
         // ----------------------------
-        ctx.save();
+        //ctx.save();
 
         //ctx.shadowBlur = 12 * p.scale;
         //ctx.shadowColor = baseColor;
 
 // clip to star
-    ctx.beginPath();
+    /*ctx.beginPath();
     ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
     ctx.clip();
 
     // base fill
     ctx.fillStyle = baseColor;
-    ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
+    ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);*/
 
     // ----------------------------
     // BLOBS (boiling effect)
     // ----------------------------
-    for (let b of this.blobs) {
+    /*for (let b of this.blobs) {
         const bx = p.x + Math.cos(b.angle) * radius * b.dist;
         const by = p.y + Math.sin(b.angle) * radius * b.dist;
         const br = radius * b.size;
@@ -374,7 +382,7 @@ export default class Star {
         ctx.fill();
     }
 
-    ctx.restore();
+    ctx.restore();*/
 
         /*ctx.fillStyle = color;
 
@@ -390,9 +398,9 @@ export default class Star {
         }
     }
     update() {
-        this.time += 0.005;
+        //this.time += 0.005;
 
-        // animate blobs
+        /*// animate blobs
         for (let b of this.blobs) {
             const n = this.simplex.noise(
                 this.time * 0.5,
@@ -406,13 +414,13 @@ export default class Star {
         if ( this.hasPlanets ) {   // planets always orbit
             for (let p of this.planets) 
                 p.update();   
-        }
+        }*/
     }
     // ----------------------------
     // RECYCLING (behind ship → ahead)
     // ----------------------------
     recycle(zindex) {
-        this.setPlanets(this.cfg);
+        //this.setPlanets(this.cfg);
         this.setPosition(zindex);
     }
 }
