@@ -48,31 +48,53 @@ export default class Star {
             }
         }
     }
-    render(ctx, p) {
+    drawCircle(ctx, p) {
         const radius = this.r * p.scale;
         const baseColor = HSLAString(this.color);
+        // clip to star
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        // base fill
+        ctx.fillStyle = baseColor;
+        ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
+        ctx.restore();
+    }
+    drawGlow(ctx, p) {
+        ctx.shadowBlur = 12 * p.scale;
+        ctx.shadowColor = HSLAString(this.color);
+    }
+    render(ctx, p) {
+        this.drawCircle(ctx, p);
+        if ( this.r > 15 ) 
+            this.drawGlow(ctx, p);
+        //const radius = this.r * p.scale;
+        //const baseColor = HSLAString(this.color);
+        //ctx.save();
 
         // ----------------------------
         // STAR GLOW (key addition)
         // ----------------------------
-        ctx.save();
+        //ctx.save();
 
-        //ctx.shadowBlur = 12 * p.scale;
-        //ctx.shadowColor = baseColor;
+       // ctx.shadowBlur = 12 * p.scale;
+       // ctx.shadowColor = baseColor;
 
-// clip to star
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-    ctx.clip();
+        // clip to star
+        //ctx.beginPath();
+        //ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        //ctx.clip();
 
-    // base fill
-    ctx.fillStyle = baseColor;
-    ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
+        // base fill
+        //ctx.fillStyle = baseColor;
+        //ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
 
     // ----------------------------
     // BLOBS (boiling effect)
     // ----------------------------
-    for (let b of this.blobs) {
+    /*for (let b of this.blobs) {
         const bx = p.x + Math.cos(b.angle) * radius * b.dist;
         const by = p.y + Math.sin(b.angle) * radius * b.dist;
         const br = radius * b.size;
@@ -92,7 +114,7 @@ export default class Star {
         ctx.fill();
     }
 
-    ctx.restore();
+    ctx.restore();*/
 
         /*ctx.fillStyle = color;
 
