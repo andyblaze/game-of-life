@@ -21,7 +21,7 @@ export default class Star {
         this.time = Math.random() * 1000;
 
         this.blobs = [];
-        const blobCount = mt_rand(2, 3);
+        const blobCount = mt_rand(12, 23);
 
         for (let i = 0; i < blobCount; i++) {
             this.blobs.push({
@@ -66,63 +66,42 @@ export default class Star {
         ctx.shadowBlur = 12 * p.scale;
         ctx.shadowColor = HSLAString(this.color);
     }
+    drawBlobs(ctx, p) {
+        const radius = this.r * p.scale;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.clip();
+        for (let b of this.blobs) {
+            const bx = p.x + Math.cos(b.angle) * radius * b.dist;
+            const by = p.y + Math.sin(b.angle) * radius * b.dist;
+            const br = 2;//radius * b.size;
+
+            // HSLA tint (same hue, darker/lighter)
+            /*const c = {
+                h: this.color.h,
+                s: this.color.s *= 0.8,
+                l: this.color.l *= 0.6 * b.strength,
+                a: 0.45
+            };*/
+
+            ctx.fillStyle = "#f00";//HSLAString(c);
+
+            ctx.beginPath();
+            ctx.arc(bx, by, br, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
     render(ctx, p) {
         this.drawCircle(ctx, p);
         if ( this.r > 15 ) 
             this.drawGlow(ctx, p);
-        //const radius = this.r * p.scale;
-        //const baseColor = HSLAString(this.color);
-        //ctx.save();
+        if ( this.r > 10 )
+            this.drawBlobs(ctx, p);
 
-        // ----------------------------
-        // STAR GLOW (key addition)
-        // ----------------------------
-        //ctx.save();
 
-       // ctx.shadowBlur = 12 * p.scale;
-       // ctx.shadowColor = baseColor;
-
-        // clip to star
-        //ctx.beginPath();
-        //ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-        //ctx.clip();
-
-        // base fill
-        //ctx.fillStyle = baseColor;
-        //ctx.fillRect(p.x - radius, p.y - radius, radius * 2, radius * 2);
-
-    // ----------------------------
-    // BLOBS (boiling effect)
-    // ----------------------------
-    /*for (let b of this.blobs) {
-        const bx = p.x + Math.cos(b.angle) * radius * b.dist;
-        const by = p.y + Math.sin(b.angle) * radius * b.dist;
-        const br = radius * b.size;
-
-        // HSLA tint (same hue, darker/lighter)
-        const c = {
-            h: this.color.h,
-            s: this.color.s - 40,
-            l: this.color.l - 40 * b.strength,
-            a: 0.45
-        };
-
-        ctx.fillStyle = HSLAString(c);
-
-        ctx.beginPath();
-        ctx.arc(bx, by, br, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    ctx.restore();*/
-
-        /*ctx.fillStyle = color;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();*/
         if ( this.hasPlanets ) {
             for (let pl of this.planets) {
                 pl.render(ctx, p);

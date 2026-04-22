@@ -26,7 +26,7 @@ export default class Navigator {
 
             this.target.x = ship.x + sx;
             this.target.y = ship.y + sy;
-            this.pauseLength = mt_rand(4000, 6000);
+            this.pauseLength = mt_rand(14000, 16000);
 
             ship.setThrusters(sx, sy);
             ship.setThrottle(mt_randf(5, 9));
