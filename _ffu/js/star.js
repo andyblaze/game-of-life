@@ -63,11 +63,14 @@ export default class Star {
         ctx.restore();
     }
     drawGlow(ctx, p) {
+        //const radius = this.r * p.scale;
+        //if ( radius < 15 ) return;
         ctx.shadowBlur = 12 * p.scale;
         ctx.shadowColor = HSLAString(this.color);
     }
     drawBlobs(ctx, p) {
         const radius = this.r * p.scale;
+        //if ( radius < 15 ) return;
         ctx.save();
         ctx.beginPath();
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
@@ -96,9 +99,9 @@ export default class Star {
     }
     render(ctx, p) {
         this.drawCircle(ctx, p);
-        if ( this.r > 15 ) 
+        if ( this.r > 15 )
             this.drawGlow(ctx, p);
-        if ( this.r > 10 )
+        if ( this.r > 1 )
             this.drawBlobs(ctx, p);
 
 
