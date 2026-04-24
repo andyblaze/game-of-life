@@ -23,21 +23,10 @@ export default class Star {
         this.blobs = [];
         const blobCount = Math.floor(this.r * 0.4);//mt_rand(12, 23);
         this.setBlobs(blobCount);
-
-        /*for (let i = 0; i < blobCount; i++) {
-            this.blobs.push({
-                seed: Math.random() * 1000,
-                angle: Math.random() * Math.PI * 2,
-                dist: Math.random() * 0.6,
-                size: mt_rand(4, 8),
-                strength: 0.1 + Math.random() * 0.92
-            });
-        }*/
     }
     setBlobs(n) {
         this.blobs = [];
         for (let i = 0; i < n; i++) {
-        //while ( this.blobs.length < n ) {
             this.blobs.push({
                 seed: Math.random() * 1000,
                 angle: Math.random() * Math.PI * 2,
@@ -77,15 +66,12 @@ export default class Star {
         ctx.restore();
     }
     drawGlow(ctx, p) {
-        //const radius = this.r * p.scale;
-        //if ( radius < 15 ) return;
         ctx.shadowBlur = 12 * p.scale;
         ctx.shadowColor = HSLAString(this.color);
     }
     drawBlobs(ctx, p) {
         const radius = this.r * p.scale;
         this.setBlobs(radius * 0.4);
-        //if ( radius < 15 ) return;
         ctx.save();
         ctx.beginPath();
         ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
@@ -95,15 +81,7 @@ export default class Star {
             const by = p.y + Math.sin(b.angle) * radius * b.dist;
             const br = 2;//radius * b.size;
 
-            // HSLA tint (same hue, darker/lighter)
-            /*const c = {
-                h: this.color.h,
-                s: this.color.s *= 0.8,
-                l: this.color.l *= 0.6 * b.strength,
-                a: 0.45
-            };*/
-
-            ctx.fillStyle = "#f00";//HSLAString(c);
+            ctx.fillStyle = "#f00";
 
             ctx.beginPath();
             ctx.arc(bx, by, br, 0, Math.PI * 2);
