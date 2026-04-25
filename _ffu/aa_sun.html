@@ -169,7 +169,7 @@ resize();
 class Star {
     constructor(s) {
         this.simplex = s;
-        this.RADIUS = 180;
+        this.RADIUS = 90;
         this.BLOB_COUNT = this.RADIUS * 0.8;
         this.COLOR = { h: 55, s: 100, l: 90, a: 1 };
 
@@ -179,12 +179,11 @@ class Star {
         for ( let i = 0; i < this.BLOB_COUNT; i++ ) {
             this.blobs.push({
             angle: Math.random() * Math.PI * 2,
-            dist: Math.random() * this.RADIUS * 0.9,
+            dist: Math.random() * this.RADIUS * 0.9 + (this.RADIUS / 10), // avoid centre
             size: mt_rand(this.RADIUS / 10, this.RADIUS / 4),
             speed: 0.2 + Math.random() * 0.95,
             offset: mt_randf(0, 1000),
             shapeOffset: mt_randf(0, 1000),
-            bright: Math.random() < 0.002,
             shape: Array.from({ length: points }, (_, j) =>
                     Math.sin(j / points * Math.PI * 2) * 0.5 + mt_randf(-0.3, 0.3)
                 )
@@ -222,6 +221,8 @@ drawBlobs(ctx, t) {
 
     const points = 10;
     const step = (Math.PI * 2) / points;
+
+    
 
     for (let b of this.blobs) {
 
@@ -264,16 +265,16 @@ drawBlobs(ctx, t) {
 
         ctx.closePath();
 
-        const c = { ...this.COLOR, a: 0.08 };
+        const c = { ...this.COLOR };
 
-        if (b.bright) {
+        /*if (b.bright) {
             ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "lighter";
-        } else {
-            c.h *= 0.1; c.s *= 0.6; c.l *= 0.4;
+        } else {*/
+            c.h *= 0.99; c.s *= 0.999; c.l *= 0.8; c.a = 0.08; console.log(HSLAString(c));
             ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "source-over";
-        }
+        //}
 
         ctx.fill();
     }
