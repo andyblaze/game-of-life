@@ -222,8 +222,6 @@ drawBlobs(ctx, t) {
     const points = 10;
     const step = (Math.PI * 2) / points;
 
-    
-
     for (let b of this.blobs) {
 
         // slow angular drift
@@ -271,16 +269,16 @@ drawBlobs(ctx, t) {
             ctx.fillStyle = HSLAString(c);
             ctx.globalCompositeOperation = "lighter";
         } else {*/
-            c.h *= 0.99; c.s *= 0.999; c.l *= 0.8; c.a = 0.08; console.log(HSLAString(c));
+            c.h *= 0.1; c.s *= 0.6; c.l *= 0.4; c.a = 0.08;
             ctx.fillStyle = HSLAString(c);
-            ctx.globalCompositeOperation = "source-over";
+            //ctx.globalCompositeOperation = "source-over";
         //}
 
         ctx.fill();
     }
 
     ctx.restore();
-    ctx.globalCompositeOperation = "source-over";
+    //ctx.globalCompositeOperation = "source-over";
 }
     drawGlow(ctx) {
         // GLOW
