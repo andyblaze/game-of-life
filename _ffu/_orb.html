@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Heat Haze Overlay</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+  }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let w, h;
+
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// --- load image ---
+const img = new Image();
+img.src = "bg.jpg";
+
+// --- offscreen canvas (IMPORTANT: prevents feedback artifacts) ---
+const srcCanvas = document.createElement('canvas');
+const srcCtx = srcCanvas.getContext('2d');
+
+// --- noise helpers (cheap smooth pseudo-noise) ---
+function hash(x, y) {
+  return Math.sin(x * 127.1 + y * 311.7) * 43758.5453 % 1;
+}
+
+function noise(x, y, t) {
+  const i = Math.floor(x);
+  const j = Math.floor(y);
+  const f = hash(i, j);
+  return Math.sin(f * 6.283 + t * 0.002);
+}
+
+function loop() {
+  if (!img.complete) return;
+
+  // draw source image once per frame
+  srcCtx.drawImage(img, 0, 0, w, h);
+  const src = srcCtx.getImageData(0, 0, w, h);
+  const out = ctx.createImageData(w, h);
+
+  const time = performance.now();
+
+  const horizon = h * 0.66;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+
+      const i = (y * w + x) * 4;
+
+      // only heat haze bottom third
+      if (y < horizon) {
+        out.data[i]     = src.data[i];
+        out.data[i + 1] = src.data[i + 1];
+        out.data[i + 2] = src.data[i + 2];
+        out.data[i + 3] = 255;
+        continue;
+      }
+
+      const depth = (y - horizon) / (h - horizon);
+
+      // smoother, higher-frequency noise (fixes big block look)
+      const scale = 1; // smaller = bigger waves, larger = finer shimmer
+      const n1 = noise(x * scale, y * scale, time);
+      const n2 = noise(x * scale + 200, y * scale + 200, time);
+
+      const amp = depth * 15;
+
+      const fx = x + n1 * amp;
+      const fy = y + n2 * amp;
+
+      // bilinear sampling (THIS is the key fix)
+      const x0 = Math.floor(fx);
+      const y0 = Math.floor(fy);
+      const x1 = Math.min(w - 1, x0 + 1);
+      const y1 = Math.min(h - 1, y0 + 1);
+
+      const tx = fx - x0;
+      const ty = fy - y0;
+
+      const i00 = (y0 * w + x0) * 4;
+      const i10 = (y0 * w + x1) * 4;
+      const i01 = (y1 * w + x0) * 4;
+      const i11 = (y1 * w + x1) * 4;
+
+      for (let c = 0; c < 3; c++) {
+        const v =
+          src.data[i00 + c] * (1 - tx) * (1 - ty) +
+          src.data[i10 + c] * tx * (1 - ty) +
+          src.data[i01 + c] * (1 - tx) * ty +
+          src.data[i11 + c] * tx * ty;
+
+        out.data[i + c] = v;
+      }
+
+      out.data[i + 3] = 255;
+
+      const shimmer = Math.abs(n1) * depth * 6;
+      out.data[i] += shimmer;
+    }
+  }
+
+  ctx.putImageData(out, 0, 0);
+
+  requestAnimationFrame(loop);
+}
+
+img.onload = () => {
+  srcCanvas.width = w;
+  srcCanvas.height = h;
+  loop();
+};
+</script>
+</body>
+</html>
